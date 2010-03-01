@@ -11,8 +11,8 @@ typedef unsigned long tort_val;
 
 #define tort_error_decl(X)  void X (const char *format, va_list vap)
 
-#define tort_lookup_decl(X) tort_val X (tort_val message, tort_val rcvr, ...)
-#define tort_apply_decl(X)  tort_val X (tort_val message, tort_val rcvr, ...)
+#define tort_lookup_decl(X) tort_val X (tort_val _tort_message, tort_val rcvr, ...)
+#define tort_apply_decl(X)  tort_val X (tort_val _tort_message, tort_val rcvr, ...)
 
 typedef
 struct tort_header {
@@ -72,12 +72,13 @@ struct tort_message {
   tort_val selector;
   tort_val receiver;
   tort_val method;
+  tort_val previous_message;
 } tort_message;
 
-typedef struct _tort_message {
+typedef struct _tort_message_data {
   struct tort_header _hdr;
   struct tort_message _msg;
-} _tort_message;
+} _tort_message_data;
 
 typedef
 struct tort_runtime {
@@ -99,24 +100,24 @@ struct tort_runtime {
   tort_val _s_set;
   tort_val _s_write;
   tort_val _s_value;
+  tort_val message;
 } tort_runtime;
 
 
 #define tort_send(SEL, RCVR, ARGS...)					\
   ({									\
-    _tort_message __msg = {						\
+    _tort_message_data __msg = {					\
       { _tort_message_applyf, _tort_message_lookupf, _tort->_mt_message }, \
-      { (SEL), (RCVR), tort_nil }					\
+      { (SEL), (RCVR), tort_nil, _tort_message }			\
     };									\
     tort_val __msg_val = tort_ref_box(&__msg._msg);			\
+    _tort_message = __msg_val;						\
     tort_lookupf(__msg_val)(0, __msg_val);				\
     tort_applyf(__msg._msg.method)(__msg_val, __msg._msg.receiver , ## ARGS); \
    })
  
 extern tort_runtime *_tort;
-extern tort_val _tort_message_apply;
-extern tort_val _tort_message_lookup;
-extern tort_val _tort_message_mtable;
+extern tort_val _tort_message;
 extern tort_val _tort_nil;
 
 #define tort_nil _tort->nil
@@ -124,10 +125,10 @@ extern tort_val _tort_nil;
 void *tort_malloc(size_t size);
 void *tort_realloc(void *ptr, size_t size);
 
-tort_val _tort_map_initialize(tort_val message, tort_val rcvr);
-tort_val _tort_map_set(tort_val message, tort_val rcvr, tort_val key, tort_val value);
-tort_map_entry *_tort_map_get_entry(tort_val message, tort_val rcvr, tort_val key);
-tort_val _tort_map_get(tort_val message, tort_val rcvr, tort_val key);
+tort_val _tort_map_initialize(tort_val _tort_message, tort_val rcvr);
+tort_val _tort_map_set(tort_val _tort_message, tort_val rcvr, tort_val key, tort_val value);
+tort_map_entry *_tort_map_get_entry(tort_val _tort_message, tort_val rcvr, tort_val key);
+tort_val _tort_map_get(tort_val _tort_message, tort_val rcvr, tort_val key);
 
 tort_lookup_decl(_tort_object_lookupf);
 tort_apply_decl(_tort_object_applyf);
@@ -135,7 +136,7 @@ tort_apply_decl(_tort_object_applyf);
 tort_lookup_decl(_tort_message_lookupf);
 tort_apply_decl(_tort_message_applyf);
 
-tort_val tort_allocate (tort_val message, tort_val rcvr, size_t size, tort_val meth_table);
+tort_val tort_allocate (tort_val _tort_message, tort_val rcvr, size_t size, tort_val meth_table);
 
 tort_val tort_symbol_make (const char *string);
 tort_val tort_method_make (tort_apply_decl((*applyf)));
