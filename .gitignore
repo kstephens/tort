@@ -1,0 +1,4 @@
+tort_test
+*.o
+src/*.o
+
