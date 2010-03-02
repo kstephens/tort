@@ -30,6 +30,7 @@ typedef
 struct tort_object {
   tort_val *slots;
   size_t nslots;
+  tort_val cmp;
 } tort_object;
 
 typedef 
@@ -94,6 +95,7 @@ struct tort_runtime {
   tort_val _mt_message;
   tort_val _mt_nil;
   tort_val _s_new;
+  tort_val _s_clone;
   tort_val _s_lookup;
   tort_val _s_apply;
   tort_val _s_get;
@@ -117,8 +119,7 @@ struct tort_runtime {
    })
  
 extern tort_runtime *_tort;
-extern tort_val _tort_message;
-extern tort_val _tort_nil;
+extern tort_val _tort_message; /* catch for top-level messages. */
 
 #define tort_nil _tort->nil
 
@@ -139,6 +140,8 @@ tort_apply_decl(_tort_message_applyf);
 tort_val tort_allocate (tort_val _tort_message, tort_val rcvr, size_t size, tort_val meth_table);
 
 tort_val tort_symbol_make (const char *string);
+#define tort_s(X) tort_symbol_make(#X)
+
 tort_val tort_method_make (tort_apply_decl((*applyf)));
 
 tort_val tort_add_method(tort_val rcvr, const char *name, void *applyf);
