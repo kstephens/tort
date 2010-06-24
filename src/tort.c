@@ -220,6 +220,7 @@ void _tort_error(const char *format, va_list vap)
   vfprintf(stderr, format, vap);
   fprintf(stderr, "\n");
   fflush(stderr);
+  abort();
 }
 
 
@@ -266,6 +267,7 @@ tort_val tort_runtime_create()
   tort_add_method(_tort->_mt_map, "get", _tort_map_get);
   tort_add_method(_tort->_mt_map, "set", _tort_map_set);
 
+  tort_runtime_initialize_io();
   tort_runtime_initialize_write();
 
   return tort_ref_box(_tort);

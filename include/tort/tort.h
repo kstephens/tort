@@ -1,8 +1,14 @@
 #ifndef _tort_tort_h
 #define _tort_tort_h
 
+/*
+ * tort - tiny object run-time
+ */
+
 #include <stdlib.h>
 #include <stdarg.h>
+#include <stdio.h>
+
 
 typedef unsigned long tort_val;
 
@@ -80,6 +86,11 @@ typedef struct _tort_message {
 } _tort_message;
 
 typedef
+struct tort_io {
+  FILE *fp;
+} tort_io;
+
+typedef
 struct tort_runtime {
   tort_val nil;
   tort_val symbols;
@@ -92,13 +103,23 @@ struct tort_runtime {
   tort_val _mt_method;
   tort_val _mt_message;
   tort_val _mt_nil;
+  tort_val _mt_io;
   tort_val _s_new;
   tort_val _s_lookup;
   tort_val _s_apply;
   tort_val _s_get;
   tort_val _s_set;
-  tort_val _s_write;
   tort_val _s_value;
+  /* io */
+  tort_val _s_create;
+  tort_val _s_open;
+  tort_val _s_close;
+  tort_val _s_write;
+  tort_val _s_printf;
+  /* io */
+  tort_val _io_stdin;
+  tort_val _io_stdout;
+  tort_val _io_stderr;
 } tort_runtime;
 
 
