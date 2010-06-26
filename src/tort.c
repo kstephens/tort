@@ -6,7 +6,7 @@
 
 
 tort_runtime *_tort;
-
+tort_val _tort_message;
 
 void *tort_malloc(size_t size)
 {
@@ -28,112 +28,7 @@ void *tort_realloc(void *ptr, size_t size)
 }
 
 
-tort_val _tort_map_initialize(tort_val message, tort_val rcvr)
-{
-  tort_map *map = tort_ref(tort_map, rcvr);
-  map->entry_n = 0;
-  map->entry = tort_malloc(sizeof(map->entry[0]) * (map->entry_n + 1));
-  return rcvr;
-}
-
-tort_val _tort_map_add(tort_val message, tort_val rcvr, tort_val key, tort_val value)
-{
-  tort_map *map = tort_ref(tort_map, rcvr);
-
-  tort_map_entry *e = tort_malloc(sizeof(*e));
-  e->key = key;
-  e->value = value;
-
-  map->entry = tort_realloc(map->entry, sizeof(map->entry[0]) * (map->entry_n + 2));
-  map->entry[map->entry_n] = e;
-  map->entry[++ map->entry_n] = 0;
-
-  return rcvr;
-}
-
-tort_val _tort_map_set(tort_val message, tort_val rcvr, tort_val key, tort_val value)
-{
-  tort_map *map = tort_ref(tort_map, rcvr);
-  tort_map_entry *e = _tort_map_get_entry(message, rcvr, key);
-  if ( ! e ) {
-    _tort_map_add(message, rcvr, key, value);
-  } else {
-    e->value = value;
-  }
-  return rcvr;
-}
-
-tort_map_entry *_tort_map_get_entry(tort_val message, tort_val rcvr, tort_val key)
-{
-  tort_map *map = tort_ref(tort_map, rcvr);
-  tort_map_entry **x = map->entry, *entry;
-
-  while ( entry = *(x ++) ) {
-    if ( entry->key == key ) {
-      return entry;
-    }
-  }
-
-  return 0;
-}
-
-
-tort_map_entry *_tort_map_get_entry_string(tort_val message, tort_val rcvr, const char *key)
-{
-  tort_map *map = tort_ref(tort_map, rcvr);
-  tort_map_entry **x = map->entry, *entry;
-
-  while ( entry = *(x ++) ) {
-    if ( strcmp(tort_string_data(entry->key), key) == 0 ) {
-      return entry;
-    }
-  }
-
-  return 0;
-}
-
-tort_val _tort_map_get(tort_val message, tort_val rcvr, tort_val key)
-{
-  tort_map *map = tort_ref(tort_map, rcvr);
-  tort_map_entry *e = _tort_map_get_entry(0, rcvr, key);
-  return e ? e->value : tort_nil;
-}
-
-tort_lookup_decl(_tort_object_lookupf) {
-  tort_ref(tort_message, message)->method = 
-    _tort_map_get(message,
-		  tort_mtable(tort_ref(tort_message, message)->receiver), 
-		  tort_ref(tort_message, message)->selector);
-  return message;
-}
-
-tort_apply_decl(_tort_object_applyf) {
-  tort_error("cannot apply this object");
-  return tort_nil;
-}
-
-
-tort_lookup_decl(_tort_message_lookupf) {
-  tort_message *msg = tort_ref(tort_message, rcvr);
-  msg->method = 
-    _tort_map_get(message,
-		  tort_mtable(msg->receiver), 
-		  msg->selector);
-  return msg->method;
-}
-
-tort_apply_decl(_tort_message_applyf) {
-  tort_message *msg = tort_ref(tort_message, rcvr);
-  if ( msg->method != tort_nil ) {
-    return tort_applyf(msg->method)(rcvr, msg->receiver);
-  } else {
-    return tort_nil;
-  }
-}
-
-
-
-tort_val tort_allocate(tort_val message, tort_val rcvr, size_t size, tort_val mtable)
+tort_val tort_allocate(tort_val _tort_message, tort_val rcvr, size_t size, tort_val mtable)
 {
   tort_val val;
   void *ptr;
@@ -148,6 +43,156 @@ tort_val tort_allocate(tort_val message, tort_val rcvr, size_t size, tort_val mt
 
   return tort_ref_box(ptr);
 }
+
+
+/******************************************************************************************************/
+
+
+tort_val _tort_map_initialize(tort_val _tort_message, tort_val rcvr)
+{
+  tort_map *map = tort_ref(tort_map, rcvr);
+  map->entry_n = 0;
+  map->entry = tort_malloc(sizeof(map->entry[0]) * (map->entry_n + 1));
+  return rcvr;
+}
+
+
+tort_val _tort_map_add(tort_val _tort_message, tort_val rcvr, tort_val key, tort_val value)
+{
+  tort_map *map = tort_ref(tort_map, rcvr);
+
+  tort_map_entry *e = tort_malloc(sizeof(*e));
+  e->key = key;
+  e->value = value;
+
+  map->entry = tort_realloc(map->entry, sizeof(map->entry[0]) * (map->entry_n + 2));
+  map->entry[map->entry_n] = e;
+  map->entry[++ map->entry_n] = 0;
+
+  return rcvr;
+}
+
+tort_val _tort_map_set(tort_val _tort_message, tort_val rcvr, tort_val key, tort_val value)
+{
+  tort_map *map = tort_ref(tort_map, rcvr);
+  tort_map_entry *e = _tort_map_get_entry(_tort_message, rcvr, key);
+  if ( ! e ) {
+    _tort_map_add(_tort_message, rcvr, key, value);
+  } else {
+    e->value = value;
+  }
+  return rcvr;
+}
+
+
+tort_map_entry *_tort_map_get_entry(tort_val _tort_message, tort_val rcvr, tort_val key)
+{
+  tort_map *map = tort_ref(tort_map, rcvr);
+  tort_map_entry **x = map->entry, *entry;
+
+  while ( entry = *(x ++) ) {
+    if ( entry->key == key ) {
+      return entry;
+    }
+  }
+
+  return 0;
+}
+
+
+tort_map_entry *_tort_map_get_entry_string(tort_val _tort_message, tort_val rcvr, tort_val key)
+{
+  tort_map *map = tort_ref(tort_map, rcvr);
+  tort_map_entry **x = map->entry, *entry;
+
+  while ( entry = *(x ++) ) {
+    if ( strcmp(tort_string_data(entry->key), tort_string_data(key)) == 0 ) {
+      return entry;
+    }
+  }
+
+  return 0;
+}
+
+
+tort_map_entry *_tort_map_get_entry_cstr(tort_val _tort_message, tort_val rcvr, const char *key)
+{
+  tort_map *map = tort_ref(tort_map, rcvr);
+  tort_map_entry **x = map->entry, *entry;
+
+  while ( entry = *(x ++) ) {
+    if ( strcmp(tort_string_data(entry->key), key) == 0 ) {
+      return entry;
+    }
+  }
+
+  return 0;
+}
+
+tort_val _tort_map_get(tort_val _tort_message, tort_val rcvr, tort_val key)
+{
+  tort_map *map = tort_ref(tort_map, rcvr);
+  tort_map_entry *e = _tort_map_get_entry(_tort_message, rcvr, key);
+  return e ? e->value : tort_nil;
+}
+
+
+tort_val _tort_map_get_string(tort_val _tort_message, tort_val rcvr, tort_val key)
+{
+  tort_map *map = tort_ref(tort_map, rcvr);
+  tort_map_entry *e = _tort_map_get_entry_string(_tort_message, rcvr, key);
+  return e ? e->value : tort_nil;
+}
+
+
+tort_val _tort_map_clone(tort_val _tort_message, tort_val rcvr)
+{
+  tort_map *map = tort_ref(tort_map, rcvr);
+  tort_val new_map = tort_allocate(_tort_message, 0, sizeof(tort_map), tort_mtable(rcvr));
+  _tort_map_initialize(_tort_message, new_map);
+  tort_map_entry **x = map->entry, *entry;
+
+  while ( entry = *(x ++) ) {
+    _tort_map_add(_tort_message, new_map, entry->key, entry->value);
+  }
+
+  return new_map;
+}
+
+
+
+tort_lookup_decl(_tort_object_lookupf) {
+  tort_ref(tort_message, _tort_message)->method = 
+    _tort_map_get(_tort_message,
+		  tort_mtable(tort_ref(tort_message, _tort_message)->receiver), 
+		  tort_ref(tort_message, _tort_message)->selector);
+  return _tort_message;
+}
+
+tort_apply_decl(_tort_object_applyf) {
+  tort_error("cannot apply this object");
+  return tort_nil;
+}
+
+
+tort_lookup_decl(_tort_message_lookupf) {
+  tort_message *msg = tort_ref(tort_message, rcvr);
+  msg->method = 
+    _tort_map_get(_tort_message,
+		  tort_mtable(msg->receiver), 
+		  msg->selector);
+  return msg->method;
+}
+
+tort_apply_decl(_tort_message_applyf) {
+  tort_message *msg = tort_ref(tort_message, rcvr);
+  if ( msg->method != tort_nil ) {
+    return tort_applyf(msg->method)(rcvr, msg->receiver);
+  } else {
+    return tort_nil;
+  }
+}
+
 
 
 tort_val tort_string_new_cstr(const char *string)
@@ -167,7 +212,7 @@ tort_val tort_string_new_cstr(const char *string)
 
 tort_val tort_symbol_make(const char *string)
 {
-  tort_map_entry *e = _tort_map_get_entry_string(0, _tort->symbols, string);
+  tort_map_entry *e = _tort_map_get_entry_cstr(0, _tort->symbols, string);
   if ( e ) {
     // fprintf(stderr, "\n old symbol = %s %p\n", tort_symbol_data(e->value), (void *) e->value);
     return e->value;
@@ -248,15 +293,17 @@ tort_val tort_runtime_create()
   _tort->_mt_nil         = tort_map_create();
 
   tort_nil = tort_allocate(0, 0, sizeof(tort_object), _tort->_mt_nil);
-  
+  _tort_message = tort_nil;
+  _tort->message = tort_nil;
+
   _tort->symbols = tort_map_create();
 
   _tort->_s_new    = tort_symbol_make("new");
+  _tort->_s_clone  = tort_symbol_make("clone");
   _tort->_s_lookup = tort_symbol_make("lookup");
   _tort->_s_apply  = tort_symbol_make("apply");
   _tort->_s_get    = tort_symbol_make("get");
   _tort->_s_set    = tort_symbol_make("set");
-  _tort->_s_write  = tort_symbol_make("write");
   _tort->_s_value  = tort_symbol_make("value");
 
   tort_add_method(_tort->_mt_object, "lookup", _tort_object_lookupf);
@@ -266,6 +313,10 @@ tort_val tort_runtime_create()
 
   tort_add_method(_tort->_mt_map, "get", _tort_map_get);
   tort_add_method(_tort->_mt_map, "set", _tort_map_set);
+  tort_add_method(_tort->_mt_map, "clone", _tort_map_clone);
+
+  tort_mtable(_tort->symbols) = tort_send(tort_s(clone), tort_mtable(_tort->symbols));
+  tort_add_method(tort_mtable(_tort->symbols), "get", _tort_map_get_string);
 
   tort_runtime_initialize_io();
   tort_runtime_initialize_write();
