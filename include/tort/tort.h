@@ -116,6 +116,7 @@ struct tort_runtime {
   tort_val _s_lookup;
   tort_val _s_apply;
   tort_val _s_get;
+  tort_val _s_get_key;
   tort_val _s_set;
   tort_val _s_value;
   /* io */

@@ -39,7 +39,9 @@ tort_write_decl(_tort_nil_write)
 
 tort_write_decl(_tort_method_write)
 {
-  printf("!method %p ", (void *) tort_applyf(rcvr));
+  tort_val meth_name = tort_ref(tort_method, rcvr)->name;
+  const char *meth_cstr = meth_name ? tort_symbol_data(meth_name) : "#<unknown>";
+  printf("!method %s@%p ", meth_cstr, (void *) tort_applyf(rcvr));
   return tort_nil;
 }
 

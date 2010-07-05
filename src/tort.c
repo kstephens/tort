@@ -100,6 +100,21 @@ tort_map_entry *_tort_map_get_entry(tort_val _tort_message, tort_val rcvr, tort_
 }
 
 
+tort_map_entry *_tort_map_get_entry_by_value(tort_val _tort_message, tort_val rcvr, tort_val value)
+{
+  tort_map *map = tort_ref(tort_map, rcvr);
+  tort_map_entry **x = map->entry, *entry;
+
+  while ( entry = *(x ++) ) {
+    if ( entry->value == value ) {
+      return entry;
+    }
+  }
+
+  return 0;
+}
+
+
 tort_map_entry *_tort_map_get_entry_string(tort_val _tort_message, tort_val rcvr, tort_val key)
 {
   tort_map *map = tort_ref(tort_map, rcvr);
@@ -134,6 +149,14 @@ tort_val _tort_map_get(tort_val _tort_message, tort_val rcvr, tort_val key)
   tort_map *map = tort_ref(tort_map, rcvr);
   tort_map_entry *e = _tort_map_get_entry(_tort_message, rcvr, key);
   return e ? e->value : tort_nil;
+}
+
+
+tort_val _tort_map_get_key(tort_val _tort_message, tort_val rcvr, tort_val value)
+{
+  tort_map *map = tort_ref(tort_map, rcvr);
+  tort_map_entry *e = _tort_map_get_entry_by_value(_tort_message, rcvr, value);
+  return e ? e->key : tort_nil;
 }
 
 
@@ -303,6 +326,7 @@ tort_val tort_runtime_create()
   _tort->_s_lookup = tort_symbol_make("lookup");
   _tort->_s_apply  = tort_symbol_make("apply");
   _tort->_s_get    = tort_symbol_make("get");
+  _tort->_s_get_key = tort_symbol_make("get_key");
   _tort->_s_set    = tort_symbol_make("set");
   _tort->_s_value  = tort_symbol_make("value");
 
@@ -312,6 +336,7 @@ tort_val tort_runtime_create()
   // tort_add_method(_tort->_mt_method, "apply", _tort_method_applyf);
 
   tort_add_method(_tort->_mt_map, "get", _tort_map_get);
+  tort_add_method(_tort->_mt_map, "get_key", _tort_map_get_key);
   tort_add_method(_tort->_mt_map, "set", _tort_map_set);
   tort_add_method(_tort->_mt_map, "clone", _tort_map_clone);
 
@@ -320,6 +345,7 @@ tort_val tort_runtime_create()
 
   tort_runtime_initialize_io();
   tort_runtime_initialize_write();
+  // tort_runtime_initialize_address();
 
   return tort_ref_box(_tort);
 }
