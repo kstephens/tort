@@ -192,6 +192,9 @@ _tort_printf_extension_arginfo (
 }
 
 
+/********************************************************************/
+
+
 void tort_runtime_initialize_io()
 {
   _tort->_s_create = tort_symbol_make("create");
@@ -226,7 +229,7 @@ void tort_runtime_initialize_io()
   _tort->_mt_eos    = tort_mtable_create(_tort->_mt_object);
   _tort->_io_eos    = tort_allocate(0, 0, sizeof(tort_object), _tort->_mt_eos);
 
-  /* Register the print function for tort_v.  */
+  /* Register the print functions for tort_v.  */
   register_printf_specifier('T', 
 			    _tort_printf_object,
 			    _tort_printf_extension_arginfo);

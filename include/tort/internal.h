@@ -3,6 +3,16 @@
 
 #include "tort/tort.h"
 
+
+/* map.c */
+tort_map_entry *_tort_map_get_entry(tort_v _tort_message, tort_v rcvr, tort_v key);
+
+tort_map_entry *_tort_map_get_entry_string(tort_v _tort_message, tort_v rcvr, tort_v key);
+
+tort_map_entry *_tort_map_get_entry_string(tort_v _tort_message, tort_v rcvr, tort_v key);
+
+tort_map_entry *_tort_map_get_entry_cstr(tort_v _tort_message, tort_v rcvr, const char *key);
+
 extern tort_v _tort_object___message(tort_v _tort_message, tort_v rcvr)
 ;
 extern tort_v _tort_message_backtrace(tort_v _tort_message, tort_v rcvr)
@@ -45,10 +55,6 @@ extern tort_v _tort_list_lisp_write(tort_v _tort_message, tort_v rcvr, tort_v io
 ;
 extern tort_v _tort_string_to_number(tort_v s, int radix)
 ;
-extern tort_v _tort_object_clone (tort_v _tort_message, tort_v rcvr)
-;
-extern tort_v _tort_object_identity (tort_v _tort_message, tort_v rcvr)
-;
 extern tort_v _tort_map_initialize(tort_v _tort_message, tort_v rcvr)
 ;
 extern tort_v _tort_map_add(tort_v _tort_message, tort_v rcvr, tort_v key, tort_v value)
@@ -66,6 +72,10 @@ extern tort_v _tort_map_delete(tort_v _tort_message, tort_v rcvr, tort_v key)
 extern tort_v _tort_map_size(tort_v _tort_message, tort_v rcvr)
 ;
 extern tort_v _tort_map_clone(tort_v _tort_message, tort_v rcvr)
+;
+extern tort_v _tort_object_clone (tort_v _tort_message, tort_v rcvr)
+;
+extern tort_v _tort_object_identity (tort_v _tort_message, tort_v rcvr)
 ;
 extern tort_v _tort_vector_new(tort_v _tort_message, tort_v rcvr, tort_v _size)
 ;
