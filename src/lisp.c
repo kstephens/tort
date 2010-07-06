@@ -53,7 +53,7 @@ static
 tort_val _tort_list_lisp_write(tort_val _tort_message, tort_val rcvr, tort_val io) 
 {
   tort_printf(io, "(");
-  while ( rcvr == tort_nil ) {
+  while ( rcvr != tort_nil ) {
     if ( tort_h_mtable(rcvr) == _tort->_mt_pair ) {
       tort_send(tort__s(lisp_write), tort_ref(tort_pair, rcvr)->car, io);
       rcvr = tort_ref(tort_pair, rcvr)->cdr;
