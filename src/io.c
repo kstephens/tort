@@ -118,9 +118,25 @@ _tort_printf_object (FILE *stream,
   tort_val v;
   int len = 128; /* ??? */
 
-  /* Format the output into a string.  */
   v = *(tort_val*) args[0];
   v = tort_write(FP_TORT_OBJ(stream), v);
+
+  return len;
+}
+
+
+static
+int 
+_tort_printf_object_lisp (FILE *stream,
+		     __const struct printf_info *info,
+		     __const void *__const *args
+		     )
+{
+  tort_val v;
+  int len = 128; /* ??? */
+
+  v = *(tort_val*) args[0];
+  v = tort_send(tort__s(format_lisp), v, FP_TORT_OBJ(stream));
 
   return len;
 }
@@ -154,7 +170,7 @@ void tort_runtime_initialize_io()
   _tort->_s_eof = tort_symbol_make("eof");
   _tort->_s_error = tort_symbol_make("error");
 
-  _tort->_mt_io = tort_map_create();
+  _tort->_mt_io = tort_mtable_create(_tort->_mt_object);
   tort_add_method(_tort->_mt_io, "create", _tort_io_create); 
   tort_add_method(_tort->_mt_io, "open", _tort_io_open);
   tort_add_method(_tort->_mt_io, "popen", _tort_io_popen);
@@ -169,10 +185,14 @@ void tort_runtime_initialize_io()
   _tort->_io_stdout = _tort_io_create(0, 0, stdout);
   _tort->_io_stderr = _tort_io_create(0, 0, stderr);
 
- /* Register the print function for widgets.  */
+  /* Register the print function for tort_val.  */
   register_printf_specifier('T', 
 			    _tort_printf_object,
-			    _tort_printf_extension_arginfo); /* No arginfo.   */
+			    _tort_printf_extension_arginfo);
+
+  register_printf_specifier('O', 
+			    _tort_printf_object_lisp,
+			    _tort_printf_extension_arginfo);
 
 }
 

@@ -103,6 +103,8 @@ int main(int argc, char **argv)
 	    );
   tort_printf(io, "v = %T\n", v);
 
+  tort_printf(io, "v as lisp object = %O\n", v);
+
   tort_send(tort_s(__debugger), v);
 
   return 0;

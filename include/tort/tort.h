@@ -204,6 +204,9 @@ struct tort_runtime {
   tort_val _s_backtrace;
   tort_val _s_backtrace_size;
 
+  tort_val _s_format;
+  tort_val _s_format_lisp;
+
   /* io */
   tort_val _io_stdin;
   tort_val _io_stdout;
