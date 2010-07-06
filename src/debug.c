@@ -1,31 +1,55 @@
 #include "tort/tort.h"
 
 
-#define IO stderr
-#define printf(fmt, args...) tort_send(tort_s(printf), IO, fmt, ##args)
+#define IO tort_stderr
+#define printf(fmt, args...) tort_send(tort__s(printf), IO, fmt, ##args)
 
 static
 tort_val _tort_message_backtrace(tort_val _tort_message, tort_val rcvr)
 {
-  tort_val v;
+  tort_val v, msg;
   size_t i = 0;
 
-  while ( rcvr != tort_nil ) {
-    ++ i;
-    rcvr = tort_ref(tort_message, rcvr)->previous_message;
+  i = 0;
+  msg = rcvr;
+  while ( msg != tort_nil ) {
+    i ++;
+    msg = tort_ref(tort_message, msg)->previous_message;
   }
 
-  v = tort_send(tort_s(new), tort_vector_null, tort_i(i));
+  v = tort_send(tort__s(new), tort_vector_null, tort_i(i));
 
   i = 0;
-  while ( rcvr != tort_nil ) {
-    tort_vector_data(v)[i] = rcvr;
-    ++ i;
-    rcvr = tort_ref(tort_message, rcvr)->previous_message; 
+  msg = rcvr;
+  while ( msg != tort_nil ) {
+    tort_vector_data(v)[i ++] = msg;
+    msg = tort_ref(tort_message, msg)->previous_message; 
   }
 
   return v;
 }
+
+static
+tort_val _tort_debugger_start(tort_val _tort_message, tort_val rcvr)
+{
+  tort_val bt;
+
+  printf("\ntort debugger:\n");
+  printf("rcvr = "); tort_write(rcvr, IO); printf("\n");
+  bt = tort_send(tort_s(backtrace), _tort_message);
+  printf("backtrace = "); 
+  tort_vector_loop(bt, msg); {
+    printf("  ");
+    tort_write(msg, IO);
+    printf("\n");
+  }
+  tort_vector_loop_end(bt);
+
+  printf("\n");
+
+  return rcvr;
+}
+
 
 #undef printf
 
@@ -116,5 +140,7 @@ void tort_runtime_initialize_debug()
 
   tort_add_method(_tort->_mt_message, "backtrace", _tort_message_backtrace);
   tort_add_method(_tort->_mt_object,  "_name", _tort_object_name);
+
+  tort_add_method(_tort->_mt_object, "__debugger", _tort_debugger_start);
 }
 

@@ -254,6 +254,8 @@ tort_lookup_decl(_tort_object_lookupf)
   tort_val meth;
   tort_val mtable;
   
+  _tort->message = _tort_message;
+
 #if TORT_LOOKUP_TRACE
   fprintf(stderr, "  tol: rcvr = %s, sel = %s\n", 
 	  tort_object_name(tort_ref(tort_message, _tort_message)->receiver), 
@@ -625,7 +627,7 @@ tort_val tort_runtime_create()
   tort_runtime_initialize_debug();
   // tort_runtime_initialize_address();
 
-  _tort->_initialized = tort_s(true);
+  _tort->_initialized = tort_true;
 
   return tort_ref_box(_tort);
 }

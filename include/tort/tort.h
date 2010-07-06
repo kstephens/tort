@@ -101,7 +101,15 @@ struct tort_vector { /* Same layout as tort_string. */
 #define tort_vector_data(X) tort_ref(tort_vector, X)->data
 #define tort_vector_size(X) tort_ref(tort_vector, X)->size
 #define tort_vector_alloc_size(X) tort_ref(tort_vector, X)->alloc_size
-
+#define tort_vector_loop(X, V) \
+  do {									\
+  size_t V##_i;								\
+  for ( V##_i = 0; V##_i < tort_vector_size(X); ++ V##_i ) {		\
+  tort_val V = tort_vector_data(X)[V##_i];
+#define tort_vector_loop_end(X)			\
+  }						\
+    } while ( 0 )
+    
 tort_val tort_vector_new(const tort_val *d, size_t s);
 
 typedef
@@ -203,7 +211,7 @@ struct tort_runtime {
 #define tort_stdin  (_tort->_io_stdin)
 #define tort_stdout (_tort->_io_stdout)
 #define tort_stderr (_tort->_io_stderr)
-#define tort_write(obj, io) tort_send(tort_s(write), obj, io)
+#define tort_write(obj, io) tort_send(tort__s(write), obj, io)
 
 #define tort_send(SEL, RCVR, ARGS...)					\
   ({									\
@@ -212,10 +220,9 @@ struct tort_runtime {
       { (SEL), (RCVR), tort_nil, _tort_message }			\
     };									\
     tort_val __msg_val = tort_ref_box(&__msg._msg);			\
-    _tort_message = __msg_val;						\
-    tort_h_lookupf(__msg._msg.receiver)(__msg_val, __msg._msg.receiver);				\
+    tort_h_lookupf(__msg._msg.receiver)(__msg_val, __msg._msg.receiver); \
     tort_h_applyf(__msg._msg.method)(__msg_val, __msg._msg.receiver , ## ARGS); \
-   })
+  })
  
 extern tort_runtime *_tort;
 extern tort_val _tort_message; /* catch for top-level messages. */
@@ -224,8 +231,8 @@ extern tort_val _tort_message; /* catch for top-level messages. */
 #define tort_string_null _tort->string_null
 #define tort_vector_null _tort->vector_null
 
-#define tort_true tort_s(true)
-#define tort_false tort_s(false)
+#define tort_true tort__s(true)
+#define tort_false tort__s(false)
 
 void *tort_malloc(size_t size);
 void *tort_realloc(void *ptr, size_t size);
@@ -251,6 +258,7 @@ tort_val _tort_allocate (tort_val _tort_message, tort_val rcvr, size_t size, tor
 
 tort_val tort_symbol_make (const char *string);
 #define tort_s(X) tort_symbol_make(#X)
+#define tort__s(X) _tort->_s_##X
 
 tort_val tort_method_make (tort_apply_decl((*applyf)));
 

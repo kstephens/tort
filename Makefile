@@ -20,12 +20,10 @@ $(OFILES) : include/tort/*.h
 
 gc : $(GC)/.libs/libgc.a
 
-$(GC)/.libs/libgc.a : $(GC)
+$(GC)/.libs/libgc.a : $(GC).tar.gz
+	if [ ! -d $(GC) ]; then tar -zxvf $^; fi
 	cd $(GC) && if [ ! -f Makefile ]; then ./configure; fi
 	cd $(GC) && make
-
-$(GC) : $(GC).tar.gz
-	tar -zxvf $^
 
 test : tort_test
 	./tort_test 

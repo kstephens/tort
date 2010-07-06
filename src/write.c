@@ -6,7 +6,7 @@
 
 #define IO (io ? io : tort_stdout)
 
-#define printf(fmt, args...) tort_send(tort_s(printf), IO, fmt, ##args)
+#define printf(fmt, args...) tort_send(tort__s(printf), IO, fmt, ##args)
 
 tort_write_decl(_tort_object_write)
 {
@@ -38,7 +38,7 @@ tort_write_decl(_tort_vector_write)
     tort_write(tort_vector_data(rcvr)[i], IO);
     printf(", ");
   }
-  printf(" } ");
+  printf(" }");
   return tort_nil;
 }
 
@@ -61,7 +61,7 @@ tort_write_decl(_tort_method_write)
 {
   tort_val meth_name = tort_ref(tort_method, rcvr)->name;
   const char *meth_cstr = meth_name ? tort_symbol_data(meth_name) : "#<unknown>";
-  printf("!method %s @%p ", meth_cstr, (void *) tort_h_applyf(rcvr));
+  printf("!method %s @%p", meth_cstr, (void *) tort_h_applyf(rcvr));
   return tort_nil;
 }
 
@@ -75,7 +75,7 @@ tort_write_decl(_tort_message_write)
   tort_write(msg->receiver, IO);
   printf(" ");
   tort_write(msg->method, IO);
-  printf(" } ");
+  printf("}");
  
   return tort_nil;
 }
@@ -93,7 +93,7 @@ tort_write_decl(_tort_map_write)
     tort_write(entry->value, IO);
     printf(", ");
   }
-  printf(" } ");
+  printf("}");
   return tort_nil;
 }
 
