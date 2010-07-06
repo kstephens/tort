@@ -178,6 +178,5 @@ void tort_runtime_initialize_write()
   tort_add_method(_tort->_mt_message, "lisp_write", _tort_message_write);
   tort_add_method(_tort->_mt_nil,    "lisp_write", _tort_nil_write);
   tort_add_method(_tort->_mt_map,    "lisp_write", _tort_map_lisp_write);
-
 }
 

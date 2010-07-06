@@ -224,6 +224,7 @@ READ_DECL
       case EOF:
 	RETURN(ERROR("eos after '#'"));
 
+	/* #! sh-bang comment till eof */
       case '!':
 	while ( (c == PEEKC(stream)) != EOF && c != '\n' ) {
 	  GETC(stream);
