@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <stdio.h>
+#include <string.h> /* memset() */
 
 
 typedef void* tort_v;
@@ -146,6 +147,7 @@ struct tort_io {
   tort_v name;
   tort_v mode;
   int popen;
+  int flags;
 } tort_io;
 
 typedef
@@ -211,6 +213,10 @@ struct tort_runtime {
 
   tort_v _s_format;
 
+  /* gc */
+  tort_v _s___finalize;
+  tort_v _s___register_finalizer;
+
   /* lisp */
   tort_v _s_lisp_write;
   tort_v _s_lisp_read;
@@ -248,7 +254,9 @@ struct tort_runtime {
     };									\
     tort_v __tort_msg_val = tort_ref_box(&__tort_msg._msg);			\
     tort_h_lookupf(__tort_msg._msg.receiver)(__tort_msg_val, __tort_msg._msg.receiver); \
-    tort_h_applyf(__tort_msg._msg.method)(__tort_msg_val, _tort_send_RCVR_ARGS(__tort_msg._msg.receiver, RCVR_AND_ARGS)); \
+    __tort_msg_val = tort_h_applyf(__tort_msg._msg.method)(__tort_msg_val, _tort_send_RCVR_ARGS(__tort_msg._msg.receiver, RCVR_AND_ARGS)); \
+    memset(&__tort_msg, 0, sizeof(__tort_msg)); \
+    __tort_msg_val; \
   })
 #define tort_send(SEL, RCVR_AND_ARGS...)_tort_send(SEL, RCVR_AND_ARGS)
 
@@ -286,6 +294,8 @@ tort_v tort_symbol_make (const char *string);
 #define tort_s(X) tort_symbol_make(#X)
 #define tort__s(X) _tort->_s_##X
 
+#define tort__mt(X) _tort->_mt_##X
+
 tort_v tort_method_make (tort_apply_decl((*applyf)));
 
 tort_v tort_add_method(tort_v map, const char *name, void *applyf);
@@ -298,7 +308,9 @@ tort_v tort_error_message(const char *format, ...);
 
 const char *tort_object_name(tort_v val);
 
+void tort_gc_collect();
 void tort_gc_dump_stats();
+void tort_gc_invoke_finalizers();
 
 #endif
 

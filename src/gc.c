@@ -1,6 +1,44 @@
 
 #include "tort/tort.h"
+#include "tort/internal.h"
 #include "gc.h"
+
+static
+void _tort_finalization_proc (void * obj, void * client_data)
+{
+  tort_send(tort__s(__finalize), tort_ref_box(obj));
+}
+
+
+tort_v _tort_object___register_finalizer(tort_v _tort_message, tort_v rcvr)
+{
+  fprintf(stderr, "\n  _tort_object___register_finalizer @%p\n", (void*) rcvr);
+  GC_register_finalizer(rcvr, _tort_finalization_proc, 0, 0, 0);
+  return tort_nil;
+}
+
+
+static
+void tort_gc_atexit()
+{
+  tort_gc_collect();
+  // tort_gc_dump_stats();
+}
+
+
+void tort_runtime_initialize_gc()
+{
+  GC_finalize_on_demand = 1;
+
+  tort__s(__finalize) = tort_symbol_make("__finalize");
+  tort__s(__register_finalizer) = tort_symbol_make("__register_finalizer");
+
+  tort_add_method(tort__mt(object), "__finalize",  _tort_object_identity);
+  tort_add_method(tort__mt(object), "__register_finalizer",  _tort_object___register_finalizer);
+
+  atexit(tort_gc_atexit);
+}
+
 
 void tort_gc_dump_stats()
 {
@@ -17,6 +55,36 @@ void tort_gc_dump_stats()
   P(get_bytes_since_gc);
   P(get_total_bytes);
 #undef P
-  tort_flush(io);
+#define P(X) tort_printf(io, "tort gc stats: %24s = %16lu\n", #X, GC_##X)
+  P(gc_no);
+  P(parallel);
+  P(all_interior_pointers);
+  P(finalize_on_demand);
+  P(java_finalization);
+  P(dont_gc);
+  P(dont_expand);
+  P(use_entire_heap);
+  P(full_freq);
+  P(non_gc_bytes);
+  P(no_dls);
+  P(free_space_divisor);
+  P(max_retries);
+  P(dont_precollect);
+#undef P
 
+  tort_flush(io);
 }
+
+
+void tort_gc_collect()
+{
+  GC_gcollect();
+  tort_gc_invoke_finalizers();
+}
+
+void tort_gc_invoke_finalizers()
+{
+  GC_invoke_finalizers();
+}
+
+

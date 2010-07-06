@@ -4,8 +4,22 @@ read lisp object from stdin: (read o) => (hash-semi-comment nothing nil () nil n
 
 tort gc stats:            get_heap_size =           131072
 tort gc stats:           get_free_bytes =            49152
-tort gc stats:       get_bytes_since_gc =            16576
-tort gc stats:          get_total_bytes =            16576
+tort gc stats:       get_bytes_since_gc =            16968
+tort gc stats:          get_total_bytes =            16968
+tort gc stats:                    gc_no =                1
+tort gc stats:                 parallel =                0
+tort gc stats:    all_interior_pointers =                1
+tort gc stats:       finalize_on_demand =                1
+tort gc stats:        java_finalization =                1
+tort gc stats:                  dont_gc =                0
+tort gc stats:              dont_expand =                0
+tort gc stats:          use_entire_heap =                0
+tort gc stats:                full_freq =               19
+tort gc stats:             non_gc_bytes =                0
+tort gc stats:                   no_dls =                0
+tort gc stats:       free_space_divisor =                3
+tort gc stats:              max_retries =                0
+tort gc stats:          dont_precollect =                0
 
 
 DONE

@@ -1,4 +1,5 @@
 #include "tort/tort.h"
+#include "tort/internal.h"
 
 #include <stdio.h>
 #include <printf.h>
@@ -9,39 +10,40 @@
 #define FP IO->fp
 #define FP_TORT_OBJ(fp) *(((tort_v*)(((struct _IO_FILE *) fp) + 1)) - 1)
 
-static
-tort_v _tort_io_create(tort_v message, tort_v rcvr, FILE *fp)
+
+tort_v _tort_io_create(tort_v _tort_message, tort_v rcvr, FILE *fp)
 {
-  rcvr = tort_allocate(message, rcvr, sizeof(tort_io), _tort->_mt_io);
+  rcvr = tort_allocate(_tort_message, rcvr, sizeof(tort_io), _tort->_mt_io);
   FP = fp;
   FP_TORT_OBJ(fp) = rcvr;
   return rcvr;
 }
 
 
-static
-tort_v _tort_io_open(tort_v message, tort_v rcvr, tort_v name, tort_v mode)
+tort_v _tort_io_open(tort_v _tort_message, tort_v rcvr, tort_v name, tort_v mode)
 {
   FP = fopen(tort_string_data(name), tort_string_data(mode));
   IO->name = name;
   IO->mode = mode;
+  IO->flags = 1;
+  tort_send(tort__s(__register_finalizer), rcvr);
   return rcvr;
 }
 
 
-static
-tort_v _tort_io_popen(tort_v message, tort_v rcvr, tort_v name, tort_v mode)
+tort_v _tort_io_popen(tort_v _tort_message, tort_v rcvr, tort_v name, tort_v mode)
 {
   FP = popen(tort_string_data(name), tort_string_data(mode));
   IO->name = name;
   IO->mode = mode;
   IO->popen = 1;
+  IO->flags = 1;
+  tort_send(tort__s(__register_finalizer), rcvr);
   return rcvr;
 }
 
 
-static
-tort_v _tort_io_close(tort_v message, tort_v rcvr)
+tort_v _tort_io_close(tort_v _tort_message, tort_v rcvr)
 {
   if ( FP ) {
     if ( IO->popen ) {
@@ -54,8 +56,8 @@ tort_v _tort_io_close(tort_v message, tort_v rcvr)
   return rcvr;
 }
 
-static
-tort_v _tort_io_write(tort_v message, tort_v rcvr, tort_v buf)
+
+tort_v _tort_io_write(tort_v _tort_message, tort_v rcvr, tort_v buf)
 {
   fwrite(tort_string_data(buf), 
 	 sizeof(tort_string_data(buf)[0]),
@@ -64,8 +66,7 @@ tort_v _tort_io_write(tort_v message, tort_v rcvr, tort_v buf)
 }
 
 
-static
-tort_v _tort_io_flush(tort_v message, tort_v rcvr)
+tort_v _tort_io_flush(tort_v _tort_message, tort_v rcvr)
 {
   if ( FP ) {
     fflush(FP);
@@ -74,8 +75,7 @@ tort_v _tort_io_flush(tort_v message, tort_v rcvr)
 }
 
 
-static
-tort_v _tort_io_printf(tort_v message, tort_v rcvr, const char *fmt, ...)
+tort_v _tort_io_printf(tort_v _tort_message, tort_v rcvr, const char *fmt, ...)
 {
   va_list vap;
   va_start(vap, fmt);
@@ -85,8 +85,7 @@ tort_v _tort_io_printf(tort_v message, tort_v rcvr, const char *fmt, ...)
 }
 
 
-static
-tort_v _tort_io_read(tort_v message, tort_v rcvr, tort_v buf)
+tort_v _tort_io_read(tort_v _tort_message, tort_v rcvr, tort_v buf)
 {
   int count;
 
@@ -107,21 +106,32 @@ tort_v _tort_io_read(tort_v message, tort_v rcvr, tort_v buf)
 }
 
 
-static
-tort_v _tort_io_eof(tort_v message, tort_v rcvr)
+tort_v _tort_io_eof(tort_v _tort_message, tort_v rcvr)
 {
   return tort_i(FP ? feof(FP) : -1);
 }
 
 
-static
-tort_v _tort_io_error(tort_v message, tort_v rcvr)
+tort_v _tort_io_error(tort_v _tort_message, tort_v rcvr)
 {
   return tort_i(FP ? ferror(FP) : -1);
 }
 
 
-static
+tort_v _tort_io___finalize(tort_v _tort_message, tort_v rcvr)
+{
+  if ( FP && (IO->flags & 1) ) {
+    IO->flags &= ~1;
+    fprintf(stderr, "\n  _tort_io___finalize @%p\n", (void*) rcvr);
+    _tort_io_close(_tort_message, rcvr);
+  }
+  return tort_nil;
+}
+
+
+/********************************************************************/
+
+
 int 
 _tort_printf_object (FILE *stream,
 		     __const struct printf_info *info,
@@ -194,6 +204,7 @@ void tort_runtime_initialize_io()
   tort_add_method(_tort->_mt_io, "eof", _tort_io_eof);
   tort_add_method(_tort->_mt_io, "error", _tort_io_error);
   tort_add_method(_tort->_mt_io, "flush", _tort_io_flush);
+  tort_add_method(_tort->_mt_io, "__finalize", _tort_io___finalize);
 
   _tort->_io_stdin  = _tort_io_create(0, 0, stdin);
   _tort->_io_stdout = _tort_io_create(0, 0, stdout);

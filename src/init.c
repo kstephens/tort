@@ -129,6 +129,7 @@ tort_v tort_runtime_create()
   tort_add_method(tort_h_mtable(_tort->symbols), "delete", _tort_object_identity);
 
   /* Subsystem initialization. */
+  tort_runtime_initialize_gc();
   tort_runtime_initialize_io();
   tort_runtime_initialize_write();
   tort_runtime_initialize_block();

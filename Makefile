@@ -76,23 +76,33 @@ run-test : $(TEST_EXE_FILES)
 test : $(TEST_EXE_FILES)
 	@echo "Testing:"
 	@set -e ;\
+	errors=0 ;\
 	for f in $(TEST_FILES); do \
 	  in=/dev/null ;\
 	  if [ -f $$f.in ] ; then in=$$f.in ; fi ;\
 	  echo -n "  test $$f.exe < $$in: " ;\
 	  ($$f.exe <$$in || echo $$?) 2>&1 | t/filter-output > $$f.out ;\
 	  if ! diff -U 10 $$f.exp $$f.out ; then \
-	    echo "  ========== $$f.out ==========" 1>&2 ;\
+	    echo "========== $$f.out ==========" 1>&2 ;\
 	    cat $$f.out ;\
-	    echo "  ========== To accept, run: " 1>&2 ;\
-	    echo "    rm -f $$f.exp; make accept-test;" ;\
+	    echo "========== To accept, run: " 1>&2 ;\
+	    echo "  rm -f $$f.exp; make accept-test;" ;\
+	    echo "  # OR make accept-all-test;" ;\
+	    errors=1 ;\
 	  fi ;\
 	  echo "ok" ;\
-	done
+	done ;\
+	exit $$errors
 
 accept-test : $(TEST_EXE_FILES)
 	@set -ex; for f in $(TEST_FILES); do \
 	  if [ ! -f $$f.exp ] ; then cp $$f.out $$f.exp ; fi ;\
+	done
+	git add t/*.c t/*.exp t/*.in
+
+accept-all-test : $(TEST_EXE_FILES)
+	@set -ex; for f in $(TEST_FILES); do \
+	  if [ -f $$f.out ] ; then cp $$f.out $$f.exp ; fi ;\
 	done
 	git add t/*.c t/*.exp t/*.in
 

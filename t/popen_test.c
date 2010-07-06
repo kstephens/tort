@@ -34,6 +34,9 @@ int main(int argc, char **argv)
 
   printf("\nDONE\n");
 
+  io = v = c = 0;
+  tort_gc_collect();
+
   return 0;
 }
 

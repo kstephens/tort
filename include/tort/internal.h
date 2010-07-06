@@ -15,25 +15,29 @@ extern tort_v _tort_fatal(const char *format, va_list vap)
 ;
 extern tort_v _tort_error(const char *format, va_list vap)
 ;
-extern tort_v _tort_io_create(tort_v message, tort_v rcvr, FILE *fp)
+extern tort_v _tort_object___register_finalizer(tort_v _tort_message, tort_v rcvr)
 ;
-extern tort_v _tort_io_open(tort_v message, tort_v rcvr, tort_v name, tort_v mode)
+extern tort_v _tort_io_create(tort_v _tort_message, tort_v rcvr, FILE *fp)
 ;
-extern tort_v _tort_io_popen(tort_v message, tort_v rcvr, tort_v name, tort_v mode)
+extern tort_v _tort_io_open(tort_v _tort_message, tort_v rcvr, tort_v name, tort_v mode)
 ;
-extern tort_v _tort_io_close(tort_v message, tort_v rcvr)
+extern tort_v _tort_io_popen(tort_v _tort_message, tort_v rcvr, tort_v name, tort_v mode)
 ;
-extern tort_v _tort_io_write(tort_v message, tort_v rcvr, tort_v buf)
+extern tort_v _tort_io_close(tort_v _tort_message, tort_v rcvr)
 ;
-extern tort_v _tort_io_flush(tort_v message, tort_v rcvr)
+extern tort_v _tort_io_write(tort_v _tort_message, tort_v rcvr, tort_v buf)
 ;
-extern tort_v _tort_io_printf(tort_v message, tort_v rcvr, const char *fmt, ...)
+extern tort_v _tort_io_flush(tort_v _tort_message, tort_v rcvr)
 ;
-extern tort_v _tort_io_read(tort_v message, tort_v rcvr, tort_v buf)
+extern tort_v _tort_io_printf(tort_v _tort_message, tort_v rcvr, const char *fmt, ...)
 ;
-extern tort_v _tort_io_eof(tort_v message, tort_v rcvr)
+extern tort_v _tort_io_read(tort_v _tort_message, tort_v rcvr, tort_v buf)
 ;
-extern tort_v _tort_io_error(tort_v message, tort_v rcvr)
+extern tort_v _tort_io_eof(tort_v _tort_message, tort_v rcvr)
+;
+extern tort_v _tort_io_error(tort_v _tort_message, tort_v rcvr)
+;
+extern tort_v _tort_io___finalize(tort_v _tort_message, tort_v rcvr)
 ;
 extern tort_v _tort_list_size(tort_v _tort_message, tort_v rcvr) 
 ;
