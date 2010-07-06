@@ -1,0 +1,29 @@
+
+  tort_nil => nil
+  tort_h_mtable(tort_nil) => !mtable nil
+
+  tort_true => true
+  tort_h_mtable(tort_true) => !mtable boolean
+
+  tort_false => false
+  tort_h_mtable(tort_false) => !mtable boolean
+
+  tort_eos => !object @x1
+  tort_h_mtable(tort_eos) => !mtable eos
+
+  tort_i(123) => 123
+  tort_h_mtable(tort_i(123)) => !mtable tagged
+
+  tort_string_new_cstr("cstring") => "cstring"
+  tort_h_mtable(tort_string_new_cstr("cstring")) => !mtable string
+
+  tort__s(new) => new
+  tort_h_mtable(tort__s(new)) => !mtable symbol
+
+  tort_object_make() => !object @x2
+  tort_h_mtable(tort_object_make()) => !mtable object
+
+  _tort => !tort
+  tort_h_mtable(_tort) => !map {  }
+
+DONE
