@@ -18,19 +18,24 @@ TEST_FILES = $(TEST_C_FILES:.c=)
 TEST_OUT_FILES = $(TEST_C_FILES:.c=.out)
 
 ######################################################################
+# default:
+#
 
 all : gc test
+
+######################################################################
+# library:
+#
 
 src/libtort.a : $(LIB_OFILES)
 	$(AR) $(ARFLAGS) $@ $(LIB_OFILES)
 	ranlib $@ || true
 
-$(TEST_EXE_FILES) : src/libtort.a
-	$(CC) $(CFLAGS) $(LDFLAGS) $(@:.exe=.c) src/libtort.a $(LIBS) -o $@
-
-$(TEST_EXE_FILES) $(LIB_OFILES) : include/tort/*.h
-
 src/lisp.o : src/lispread.c
+
+######################################################################
+# libgc.a:
+#
 
 gc : $(GC)/.libs/libgc.a
 
@@ -38,6 +43,15 @@ $(GC)/.libs/libgc.a : $(GC).tar.gz
 	if [ ! -d $(GC) ]; then tar -zxvf $^; fi
 	cd $(GC) && if [ ! -f Makefile ]; then ./configure; fi
 	cd $(GC) && make
+
+######################################################################
+# testing:
+#
+
+$(TEST_EXE_FILES) : src/libtort.a
+	$(CC) $(CFLAGS) $(LDFLAGS) $(@:.exe=.c) src/libtort.a $(LIBS) -o $@
+
+$(TEST_EXE_FILES) $(LIB_OFILES) : include/tort/*.h
 
 run-test : $(TEST_EXE_FILES)
 	@set -ex; for f in $(TEST_EXE_FILES); do \
@@ -67,11 +81,19 @@ accept-test : $(TEST_EXE_FILES)
 	done
 	git add t/*.c t/*.exp t/*.in
 
+######################################################################
+# debugging:
+#
+
 gdb : t/tort_test.exe
 	gdb --args t/tort_test.exe 
 
 disasm : t/tort_test.exe
 	objdump -DS t/tort_test.exe | less "+/<main>"
+
+######################################################################
+# maint:
+#
 
 clean :
 	rm -f $(TEST_EXE_FILES) src/libtort.a src/*.o t/*.out

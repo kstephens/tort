@@ -63,6 +63,17 @@ tort_val _tort_io_write(tort_val message, tort_val rcvr, tort_val buf)
   return rcvr;
 }
 
+
+static
+tort_val _tort_io_flush(tort_val message, tort_val rcvr)
+{
+  if ( FP ) {
+    fflush(FP);
+  }
+  return rcvr;
+}
+
+
 static
 tort_val _tort_io_printf(tort_val message, tort_val rcvr, const char *fmt, ...)
 {
@@ -182,6 +193,7 @@ void tort_runtime_initialize_io()
   tort_add_method(_tort->_mt_io, "printf", _tort_io_printf);
   tort_add_method(_tort->_mt_io, "eof", _tort_io_eof);
   tort_add_method(_tort->_mt_io, "error", _tort_io_error);
+  tort_add_method(_tort->_mt_io, "flush", _tort_io_flush);
 
   _tort->_io_stdin  = _tort_io_create(0, 0, stdin);
   _tort->_io_stdout = _tort_io_create(0, 0, stdout);

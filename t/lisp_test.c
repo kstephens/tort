@@ -37,6 +37,8 @@ int main(int argc, char **argv)
   v = tort_send(tort__s(lisp_read), tort_stdin);
   tort_printf(io, "(read o) => %O\n", v);
 
+  tort_gc_dump_stats();
+
   tort_printf(io, "\n\nDONE\n");
 
   return 0;

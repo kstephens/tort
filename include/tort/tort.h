@@ -235,6 +235,7 @@ struct tort_runtime {
 
 #define tort_write(io, obj) tort_send(tort__s(write), obj, io)
 #define tort_printf(io, fmt, args...) tort_send(tort__s(printf), io, fmt, ## args)
+#define tort_flush(io) tort_send(tort_s(flush), io)
 
 #define _tort_send_RCVR(RCVR, ARGS...)(RCVR)
 #define _tort_send_ARGS(RCVR, ARGS...)ARGS
@@ -299,6 +300,8 @@ tort_val tort_error (const char *format, ...);
 tort_val tort_error_message(const char *format, ...);
 
 const char *tort_object_name(tort_val val);
+
+void tort_gc_dump_stats();
 
 #endif
 
