@@ -5,7 +5,7 @@
 #include <assert.h>
 
 
-int main(int argc, char **argv)
+int main(int argc, char **argv, char **environ)
 {
   tort_v io;
   tort_v v, o, c;

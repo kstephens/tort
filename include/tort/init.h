@@ -9,5 +9,6 @@ void tort_runtime_initialize_write();
 void tort_runtime_initialize_block();
 void tort_runtime_initialize_debug();
 void tort_runtime_initialize_lisp();
+void tort_runtime_initialize_symtab();
 
 #endif

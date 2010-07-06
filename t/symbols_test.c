@@ -4,7 +4,7 @@
 #include <stdio.h>
 
 
-int main(int argc, char **argv)
+int main(int argc, char **argv, char **environ)
 {
   tort_v io;
   tort_v v;
@@ -13,11 +13,12 @@ int main(int argc, char **argv)
 
   io = tort_stdout;
 
-  v = tort_send(tort__s(get), _tort->symbols, tort_string_new_cstr("new"));
+  v = tort_send(tort__s(get), _tort->symbols, tort_string_new_cstr("size"));
 
-  tort_printf(io, "\n  (get symbols \"new\") => %T\n", v);
+  tort_printf(io, "  v = %T\n", v);
 
-  tort_printf(io, "\n  symbols => %T\n", _tort->symbols);
+  tort_printf(io, "  (size symbols) => %T\n", 
+	      tort_send(tort__s(size), _tort->symbols));
 
   printf("\nDONE\n");
 

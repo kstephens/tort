@@ -165,6 +165,10 @@ struct tort_runtime {
 
   tort_header _tagged_header;
 
+  int _argc;
+  char **_argv;
+  char **_env;
+
   tort_v _mt_object;
   tort_v _mt_string;
   tort_v _mt_vector;
@@ -231,6 +235,9 @@ struct tort_runtime {
   tort_v _io_stdout;
   tort_v _io_stderr;
   tort_v _io_eos;
+
+  /* symtab */
+  tort_v _symtab;
 
   tort_v _initialized;
 } tort_runtime;
@@ -305,7 +312,8 @@ tort_v tort_method_make (tort_apply_decl((*applyf)));
 
 tort_v tort_add_method(tort_v map, const char *name, void *applyf);
 
-tort_v tort_runtime_create ();
+tort_v tort_runtime_create_ (int *argcp, char ***argvp, char ***envp);
+#define tort_runtime_create() tort_runtime_create_(&argc, &argv, &environ)
 
 tort_v tort_fatal (const char *format, ...);
 tort_v tort_error (const char *format, ...);

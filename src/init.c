@@ -3,13 +3,18 @@
 #include "tort/init.h"
 
 
-tort_v tort_runtime_create()
+tort_v tort_runtime_create_ (int *argcp, char ***argvp, char ***envp)
 {
   tort_runtime_initialize_malloc();
 
   /* Create runtime object. */
   _tort = tort_ref(tort_runtime, tort_allocate(0, 0, sizeof(tort_runtime), 0));
   tort_runtime_initialize_error();
+
+  /* Setup environment from main. */
+  _tort->_argc = *argcp;
+  _tort->_argv = *argvp;
+  _tort->_env  = *envp;
 
   /* Create mtable method table. */
   _tort->_mt_mtable      = tort_mtable_create(0);
@@ -137,7 +142,7 @@ tort_v tort_runtime_create()
   tort_runtime_initialize_block();
   tort_runtime_initialize_debug();
   tort_runtime_initialize_lisp();
-  // tort_runtime_initialize_address();
+  tort_runtime_initialize_symtab();
 
   _tort->_initialized = tort_true;
 
