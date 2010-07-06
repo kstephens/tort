@@ -2,53 +2,53 @@
 
 #include <stdio.h>
 
-#define tort_write_decl(name) static tort_v name (tort_v message, tort_v rcvr, tort_v io)
+#define tort_inspect_decl(name) static tort_v name (tort_v message, tort_v rcvr, tort_v io)
 
 #define IO (io ? io : tort_stdout)
 
 #define printf(fmt, args...) tort_send(tort__s(printf), IO, fmt, ##args)
 
-tort_write_decl(_tort_object_write)
+tort_inspect_decl(_tort_object_write)
 {
   printf("!object @%p", (void *) rcvr);
   return tort_nil;
 }
 
 
-tort_write_decl(_tort_object_lisp_write)
+tort_inspect_decl(_tort_object_lisp_write)
 {
   printf("(make <object> @%p)", (void *) rcvr);
   return tort_nil;
 }
 
 
-tort_write_decl(_tort_tagged_write)
+tort_inspect_decl(_tort_tagged_write)
 {
   printf("%ld", (long) tort_tagged_data(rcvr));
   return tort_nil;
 }
 
 
-tort_write_decl(_tort_string_write)
+tort_inspect_decl(_tort_string_write)
 {
   printf("\"%s\"", (char *) tort_string_data(rcvr));
   return tort_nil;
 }
 
 
-tort_write_decl(_tort_vector_write)
+tort_inspect_decl(_tort_vector_write)
 {
   printf("!vector { ");
   tort_vector_loop(rcvr, obj) {
     if ( obj_i > 0 ) printf(", ");
-    tort_write(IO, obj);
+    tort_inspect(IO, obj);
   } tort_vector_loop_end(rcvr);
   printf(" }");
   return tort_nil;
 }
 
 
-tort_write_decl(_tort_vector_lisp_write)
+tort_inspect_decl(_tort_vector_lisp_write)
 {
   printf("#(");
   tort_vector_loop(rcvr, obj) {
@@ -60,7 +60,7 @@ tort_write_decl(_tort_vector_lisp_write)
 }
 
 
-tort_write_decl(_tort_symbol_write)
+tort_inspect_decl(_tort_symbol_write)
 {
   if ( tort_ref(tort_symbol, rcvr)->name != tort_nil ) {
     printf("%s", (char *) tort_symbol_data(rcvr));
@@ -71,7 +71,7 @@ tort_write_decl(_tort_symbol_write)
 }
 
 
-tort_write_decl(_tort_symbol_lisp_write)
+tort_inspect_decl(_tort_symbol_lisp_write)
 {
   if ( tort_ref(tort_symbol, rcvr)->name != tort_nil ) {
     printf("%s", (char *) tort_symbol_data(rcvr));
@@ -82,28 +82,28 @@ tort_write_decl(_tort_symbol_lisp_write)
 }
 
 
-tort_write_decl(_tort_nil_write)
+tort_inspect_decl(_tort_nil_write)
 {
   printf("nil");
   return tort_nil;
 }
 
 
-tort_write_decl(_tort_boolean_write)
+tort_inspect_decl(_tort_boolean_write)
 {
   printf(rcvr == tort_false ? "false" : "true");
   return tort_nil;
 }
 
 
-tort_write_decl(_tort_boolean_lisp_write)
+tort_inspect_decl(_tort_boolean_lisp_write)
 {
   printf(rcvr == tort_false ? "#f" : "#t");
   return tort_nil;
 }
 
 
-tort_write_decl(_tort_method_write)
+tort_inspect_decl(_tort_method_write)
 {
   tort_v meth_name = tort_ref(tort_method, rcvr)->name;
   const char *meth_cstr = meth_name ? tort_symbol_data(meth_name) : "#<unknown>";
@@ -112,22 +112,22 @@ tort_write_decl(_tort_method_write)
 }
 
 
-tort_write_decl(_tort_message_write)
+tort_inspect_decl(_tort_message_write)
 {
   tort_message *msg = tort_ref(tort_message, rcvr);
   printf("!message { ");
-  tort_write(IO, msg->selector);
+  tort_inspect(IO, msg->selector);
   printf(" ");
-  tort_write(IO, msg->receiver);
+  tort_inspect(IO, msg->receiver);
   printf(" ");
-  tort_write(IO, msg->method);
+  tort_inspect(IO, msg->method);
   printf("}");
  
   return tort_nil;
 }
 
 
-tort_write_decl(_tort_map_write)
+tort_inspect_decl(_tort_map_write)
 {
   tort_map *map = tort_ref(tort_map, rcvr);
   tort_map_entry **x = map->entry, *entry;
@@ -136,9 +136,9 @@ tort_write_decl(_tort_map_write)
   printf("!map { ");
   while ( (entry = *(x ++)) ) {
     if ( entry_i > 0 ) printf(", ");
-    tort_write(IO, entry->key);
+    tort_inspect(IO, entry->key);
     printf(" => ");
-    tort_write(IO, entry->value);
+    tort_inspect(IO, entry->value);
     entry_i ++;
   }
   printf(" }");
@@ -146,7 +146,7 @@ tort_write_decl(_tort_map_write)
 }
 
 
-tort_write_decl(_tort_map_lisp_write)
+tort_inspect_decl(_tort_map_lisp_write)
 {
   tort_map *map = tort_ref(tort_map, rcvr);
   tort_map_entry **x = map->entry, *entry;
@@ -165,7 +165,7 @@ tort_write_decl(_tort_map_lisp_write)
 }
 
 
-tort_write_decl(_tort_eos_lisp_write)
+tort_inspect_decl(_tort_eos_lisp_write)
 {
   printf("#e");
   return tort_nil;
@@ -177,17 +177,18 @@ tort_write_decl(_tort_eos_lisp_write)
 void tort_runtime_initialize_write()
 {
   _tort->_s_write  = tort_symbol_make("write");
+  _tort->_s__inspect  = tort_symbol_make("_inspect");
 
-  tort_add_method(_tort->_mt_object, "write", _tort_object_write);
-  tort_add_method(_tort->_mt_tagged, "write", _tort_tagged_write);
-  tort_add_method(_tort->_mt_string, "write", _tort_string_write);
-  tort_add_method(_tort->_mt_vector, "write", _tort_vector_write);
-  tort_add_method(_tort->_mt_symbol, "write", _tort_symbol_write);
-  tort_add_method(_tort->_mt_method, "write", _tort_method_write);
-  tort_add_method(_tort->_mt_message, "write", _tort_message_write);
-  tort_add_method(_tort->_mt_nil,    "write", _tort_nil_write);
-  tort_add_method(_tort->_mt_map,    "write", _tort_map_write);
-  tort_add_method(_tort->_mt_boolean, "write", _tort_boolean_write);
+  tort_add_method(_tort->_mt_object, "_inspect", _tort_object_write);
+  tort_add_method(_tort->_mt_tagged, "_inspect", _tort_tagged_write);
+  tort_add_method(_tort->_mt_string, "_inspect", _tort_string_write);
+  tort_add_method(_tort->_mt_vector, "_inspect", _tort_vector_write);
+  tort_add_method(_tort->_mt_symbol, "_inspect", _tort_symbol_write);
+  tort_add_method(_tort->_mt_method, "_inspect", _tort_method_write);
+  tort_add_method(_tort->_mt_message, "_inspect", _tort_message_write);
+  tort_add_method(_tort->_mt_nil,    "_inspect", _tort_nil_write);
+  tort_add_method(_tort->_mt_map,    "_inspect", _tort_map_write);
+  tort_add_method(_tort->_mt_boolean, "_inspect", _tort_boolean_write);
 
   _tort->_s_lisp_write  = tort_symbol_make("lisp_write");
 

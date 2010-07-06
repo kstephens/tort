@@ -324,7 +324,7 @@ tort_apply_decl(_tort_object_applyf)
 		     tort_h(rcvr).alloc_id);
 #endif
   abort();
-  tort_write(tort_stderr, _tort_message);
+  tort_inspect(tort_stderr, _tort_message);
   tort_error(": not applicable");
   return tort_nil;
 }

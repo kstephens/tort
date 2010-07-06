@@ -28,6 +28,8 @@ all : gc include/tort/internal.h test
 # include:
 #
 
+includes : include/tort/internal.h
+
 include/tort/internal.h : include/tort/internal.h.* $(LIB_CFILES) Makefile
 	( \
 	cat $@.begin; \
@@ -66,7 +68,7 @@ $(GC)/.libs/libgc.a : $(GC).tar.gz
 $(TEST_EXE_FILES) : src/libtort.a
 	$(CC) $(CFLAGS) $(LDFLAGS) $(@:.exe=.c) src/libtort.a $(LIBS) -o $@
 
-$(TEST_EXE_FILES) $(LIB_OFILES) : include/tort/*.h
+$(TEST_EXE_FILES) $(LIB_OFILES) : includes include/tort/*.h
 
 run-test : $(TEST_EXE_FILES)
 	@set -ex; for f in $(TEST_EXE_FILES); do \

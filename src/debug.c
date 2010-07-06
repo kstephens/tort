@@ -45,12 +45,12 @@ tort_v _tort_debugger_start(tort_v _tort_message, tort_v rcvr)
   tort_v bt;
 
   printf("\ntort debugger:\n");
-  printf("rcvr = "); tort_write(IO, rcvr); printf("\n");
+  printf("rcvr = "); tort_inspect(IO, rcvr); printf("\n");
   bt = tort_send(tort_s(backtrace), _tort_message);
   printf("backtrace = "); 
   tort_vector_loop(bt, msg); {
     printf("  ");
-    tort_write(IO, msg);
+    tort_inspect(IO, msg);
     printf("\n");
   }
   tort_vector_loop_end(bt);

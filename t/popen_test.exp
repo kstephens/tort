@@ -1,7 +1,15 @@
 
   _tort_object___register_finalizer @0@0x1
 
+  _tort_io_close @0@0x1
+
   _tort_object___register_finalizer @0@0x1
+
+  _tort_io_close @0@0x1
+
+  _tort_io___finalize @0@0x1
+
+  _tort_io___finalize @0@0x1
 
 read up to 64 chars from popen("echo 12345", "r") => "12345
 "

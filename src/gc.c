@@ -82,6 +82,7 @@ void tort_gc_collect()
   tort_gc_invoke_finalizers();
 }
 
+
 void tort_gc_invoke_finalizers()
 {
   GC_invoke_finalizers();

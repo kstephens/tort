@@ -16,6 +16,8 @@ tort_v _tort_io_create(tort_v _tort_message, tort_v rcvr, FILE *fp)
   rcvr = tort_allocate(_tort_message, rcvr, sizeof(tort_io), _tort->_mt_io);
   FP = fp;
   FP_TORT_OBJ(fp) = rcvr;
+  IO->name = IO->mode = tort_nil;
+  IO->flags = 0;
   return rcvr;
 }
 
@@ -36,8 +38,7 @@ tort_v _tort_io_popen(tort_v _tort_message, tort_v rcvr, tort_v name, tort_v mod
   FP = popen(tort_string_data(name), tort_string_data(mode));
   IO->name = name;
   IO->mode = mode;
-  IO->popen = 1;
-  IO->flags = 1;
+  IO->flags = 3;
   tort_send(tort__s(__register_finalizer), rcvr);
   return rcvr;
 }
@@ -46,7 +47,8 @@ tort_v _tort_io_popen(tort_v _tort_message, tort_v rcvr, tort_v name, tort_v mod
 tort_v _tort_io_close(tort_v _tort_message, tort_v rcvr)
 {
   if ( FP ) {
-    if ( IO->popen ) {
+    fprintf(stderr, "\n  _tort_io_close @%p\n", (void*) rcvr);
+    if ( IO->flags & 2 ) {
       pclose(FP);
     } else {
       fclose(FP);
@@ -57,12 +59,14 @@ tort_v _tort_io_close(tort_v _tort_message, tort_v rcvr)
 }
 
 
-tort_v _tort_io_write(tort_v _tort_message, tort_v rcvr, tort_v buf)
+tort_v _tort_io___write(tort_v _tort_message, tort_v rcvr, tort_v str)
 {
-  fwrite(tort_string_data(buf), 
-	 sizeof(tort_string_data(buf)[0]),
-	 tort_string_size(buf), FP);
-  return rcvr;
+  size_t size =
+    fwrite(tort_string_data(str), 
+	   sizeof(tort_string_data(str)[0]),
+	   tort_string_size(str), 
+	   FP);
+  return tort_i(size);
 }
 
 
@@ -120,9 +124,9 @@ tort_v _tort_io_error(tort_v _tort_message, tort_v rcvr)
 
 tort_v _tort_io___finalize(tort_v _tort_message, tort_v rcvr)
 {
+  fprintf(stderr, "\n  _tort_io___finalize @%p\n", (void*) rcvr);
   if ( FP && (IO->flags & 1) ) {
     IO->flags &= ~1;
-    fprintf(stderr, "\n  _tort_io___finalize @%p\n", (void*) rcvr);
     _tort_io_close(_tort_message, rcvr);
   }
   return tort_nil;
@@ -142,7 +146,7 @@ _tort_printf_object (FILE *stream,
   int len = 128; /* ??? */
 
   v = *(tort_v*) args[0];
-  v = tort_write(FP_TORT_OBJ(stream), v);
+  v = tort_inspect(FP_TORT_OBJ(stream), v);
 
   return len;
 }
@@ -188,6 +192,7 @@ void tort_runtime_initialize_io()
   _tort->_s_popen = tort_symbol_make("popen");
   _tort->_s_close = tort_symbol_make("close");
   _tort->_s_read = tort_symbol_make("read");
+  _tort->_s___write = tort_symbol_make("__write");
   _tort->_s_write = tort_symbol_make("write");
   _tort->_s_printf = tort_symbol_make("printf");
   _tort->_s_eof = tort_symbol_make("eof");
@@ -199,7 +204,7 @@ void tort_runtime_initialize_io()
   tort_add_method(_tort->_mt_io, "popen", _tort_io_popen);
   tort_add_method(_tort->_mt_io, "close", _tort_io_close);
   tort_add_method(_tort->_mt_io, "read", _tort_io_read);
-  tort_add_method(_tort->_mt_io, "write", _tort_io_write);
+  tort_add_method(_tort->_mt_io, "__write", _tort_io___write);
   tort_add_method(_tort->_mt_io, "printf", _tort_io_printf);
   tort_add_method(_tort->_mt_io, "eof", _tort_io_eof);
   tort_add_method(_tort->_mt_io, "error", _tort_io_error);

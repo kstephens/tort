@@ -14,7 +14,7 @@ int main(int argc, char **argv)
   io = tort_stdout;
 
   printf("\n  _mt_map => ");
-  tort_write(io, _tort->_mt_map);
+  tort_inspect(io, _tort->_mt_map);
 
   o = tort_map_create();
   tort_printf(io, "o => %T\n", o);

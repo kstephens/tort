@@ -12,7 +12,7 @@ int main(int argc, char **argv)
   io = tort_stdout;
 
   printf("\n  123 => ");
-  tort_write(io, tort_i(123));
+  tort_inspect(io, tort_i(123));
 
   printf("\nDONE\n");
 

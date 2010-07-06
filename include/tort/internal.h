@@ -25,7 +25,7 @@ extern tort_v _tort_io_popen(tort_v _tort_message, tort_v rcvr, tort_v name, tor
 ;
 extern tort_v _tort_io_close(tort_v _tort_message, tort_v rcvr)
 ;
-extern tort_v _tort_io_write(tort_v _tort_message, tort_v rcvr, tort_v buf)
+extern tort_v _tort_io___write(tort_v _tort_message, tort_v rcvr, tort_v str)
 ;
 extern tort_v _tort_io_flush(tort_v _tort_message, tort_v rcvr)
 ;

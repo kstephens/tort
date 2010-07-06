@@ -146,7 +146,6 @@ struct tort_io {
   FILE *fp;
   tort_v name;
   tort_v mode;
-  int popen;
   int flags;
 } tort_io;
 
@@ -203,10 +202,12 @@ struct tort_runtime {
   tort_v _s_popen;
   tort_v _s_close;
   tort_v _s_read;
+  tort_v _s___write;
   tort_v _s_write;
   tort_v _s_printf;
   tort_v _s_eof;
   tort_v _s_error;
+  tort_v _s__inspect;
 
   tort_v _s_backtrace;
   tort_v _s_backtrace_size;
@@ -239,7 +240,8 @@ struct tort_runtime {
 #define tort_stderr (_tort->_io_stderr)
 #define tort_eos    (_tort->_io_eos)
 
-#define tort_write(io, obj) tort_send(tort__s(write), obj, io)
+#define tort_write(io, str) tort_send(tort__s(__write), io, str)
+#define tort_inspect(io, obj) tort_send(tort__s(_inspect), obj, io)
 #define tort_printf(io, fmt, args...) tort_send(tort__s(printf), io, fmt, ## args)
 #define tort_flush(io) tort_send(tort_s(flush), io)
 
