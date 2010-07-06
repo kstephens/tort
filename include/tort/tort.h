@@ -152,6 +152,7 @@ typedef
 struct tort_runtime {
   tort_val nil;
   tort_val string_null, vector_null;
+  tort_val b_true, b_false;
   tort_val symbols;
   tort_val root;
 
@@ -174,6 +175,7 @@ struct tort_runtime {
   tort_val _mt_nil;
   tort_val _mt_tagged;
   tort_val _mt_io;
+  tort_val _mt_boolean;
   tort_val _mt_eos;
   tort_val _mt_block;
   tort_val _mt_pair;
@@ -256,8 +258,8 @@ extern tort_val _tort_message; /* catch for top-level messages. */
 #define tort_string_null _tort->string_null
 #define tort_vector_null _tort->vector_null
 
-#define tort_true tort__s(true)
-#define tort_false tort__s(false)
+#define tort_true  _tort->b_true
+#define tort_false _tort->b_false
 
 void *tort_malloc(size_t size);
 void *tort_realloc(void *ptr, size_t size);

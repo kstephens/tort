@@ -1,0 +1,6 @@
+v => !vector { nil, nil, nil, nil, nil, nil, nil, nil, nil, nil }
+v as lisp object => #(() () () () () () () () () ())
+read lisp object from stdin: (read o) => (nil () nil nil symbol symbol string "string" number 123 pair (1 . 2) true #t false #f improper-list (1 2 . 3) vector #(1 2 3 4 5) quote (quote quote) quasiquote (quasiquote quasiquote) unquote (unquote unquote) unquote-splicing (unquote_splicing unquote-splicing))
+
+
+DONE

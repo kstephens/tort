@@ -10,8 +10,10 @@ LIBS=-lgc
 LIB_CFILES = $(shell ls src/*.c)
 LIB_OFILES = $(LIB_CFILES:.c=.o)
 
-TEST_CFILES = $(shell ls t/*.c)
-TEST_PFILES = $(TEST_CFILES:.c=)
+TEST_C_FILES = $(shell ls t/*.c)
+TEST_EXE_FILES = $(TEST_C_FILES:.c=.exe)
+TEST_FILES = $(TEST_C_FILES:.c=)
+TEST_OUT_FILES = $(TEST_C_FILES:.c=.out)
 
 ######################################################################
 
@@ -21,10 +23,10 @@ src/libtort.a : $(LIB_OFILES)
 	$(AR) $(ARFLAGS) $@ $(LIB_OFILES)
 	ranlib $@ || true
 
-$(TEST_PFILES) : src/libtort.a
-	$(CC) $(CFLAGS) $(LDFLAGS) $(@:=.c) src/libtort.a $(LIBS) -o $@
+$(TEST_EXE_FILES) : src/libtort.a
+	$(CC) $(CFLAGS) $(LDFLAGS) $(@:.exe=.c) src/libtort.a $(LIBS) -o $@
 
-$(TEST_PFILES) $(LIB_OFILES) : include/tort/*.h
+$(TEST_EXE_FILES) $(LIB_OFILES) : include/tort/*.h
 
 gc : $(GC)/.libs/libgc.a
 
@@ -33,32 +35,41 @@ $(GC)/.libs/libgc.a : $(GC).tar.gz
 	cd $(GC) && if [ ! -f Makefile ]; then ./configure; fi
 	cd $(GC) && make
 
-run-test : $(TEST_PFILES)
-	for f in $(TEST_PFILES); do \
+run-test : $(TEST_EXE_FILES)
+	@set -ex; for f in $(TEST_EXE_FILES); do \
 	  $$f ;\
 	done
 
-test : $(TEST_PFILES)
-	@for f in $(TEST_PFILES); do \
-	   echo -n "  Testing $$f: " ;\
-           $$f 2>&1 </dev/null | t/filter-output > $$f.out ;\
-	   diff -U 10 $$f.exp $$f.out ;\
-	   echo "ok" ;\
+test : $(TEST_EXE_FILES)
+	@set -e ;\
+	for f in $(TEST_FILES); do \
+	  in=/dev/null ;\
+	  if [ -f $$f.in ] ; then in=$$f.in ; fi ;\
+	  echo -n "  Testing $$f.exe < $$in: " ;\
+	  ($$f.exe <$$in || echo $$?) 2>&1 | t/filter-output > $$f.out ;\
+	  if ! diff -U 10 $$f.exp $$f.out ; then \
+	    echo "  ========== $$f.out: ==========" ;\
+	    cat $$f.out ;\
+	    echo "  ========== To accept, run: " ;\
+	    echo "    rm -f $$f.exp; make accept-test;" ;\
+	  fi ;\
+	  echo "ok" ;\
 	done
 
-accept-test : $(TEST_PFILES)
-	for f in $(TEST_PFILES); do \
-	  cp $$f.out $$f.exp ;\
+accept-test : $(TEST_EXE_FILES)
+	@set -ex; for f in $(TEST_EXE_FILES); do \
+	  if [ ! -f $$f.exp ] ; then cp $$f.out $$f.exp ; fi ;\
 	done
+	git add t/*.c t/*.exp t/*.in
 
-gdb : t/tort_test
-	gdb --args t/tort_test 
+gdb : t/tort_test.exe
+	gdb --args t/tort_test.exe 
 
-disasm : t/tort_test
-	objdump -DS t/tort_test | less "+/<main>"
+disasm : t/tort_test.exe
+	objdump -DS t/tort_test.exe | less "+/<main>"
 
 clean :
-	rm -f $(TEST_PFILES) src/libtort.a src/*.o t/*.out
+	rm -f $(TEST_EXE_FILES) src/libtort.a src/*.o t/*.out
 
 very-clean : clean
 	cd $(GC) && make clean

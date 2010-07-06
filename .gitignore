@@ -4,4 +4,5 @@ tort_test
 src/*.o
 gc-7.0
 t/*.out
+t/*.exe
 

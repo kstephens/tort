@@ -408,10 +408,14 @@ READ_DECL
       s = STRING(buf, len);
       n = STRING_2_NUMBER(s, radix);
       if ( EQ(n, F) ) {
-        RETURN(STRING_2_SYMBOL(s));
-      } else {
-        RETURN(n);
+	n = STRING_2_SYMBOL(s);
+#ifdef NIL_SYMBOL
+        if ( EQ(n, NIL_SYMBOL) ) {
+	  n = NIL;
+	}
+#endif
       }
+      RETURN(n);
     }
       break;
 

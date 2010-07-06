@@ -7,14 +7,14 @@
 int main(int argc, char **argv)
 {
   tort_val io;
+  tort_val v;
 
   tort_runtime_create();
 
   io = tort_stdout;
 
-  tort_printf(io, "HELLO!\n");
-
-  tort_send(tort_s(__debugger), io);
+  v = tort_send(tort_s(__message), io);
+  tort_printf(io, "Some object ==> ( %T ) <== is in here!\n", v);
 
   printf("\nDONE\n");
 

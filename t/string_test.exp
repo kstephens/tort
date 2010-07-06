@@ -1,0 +1,8 @@
+
+  (v = "new") =>"new"
+  (clone v) => "new"
+  (size v) => 3
+  (alloc_size v) => 3
+  (get v 2) => 101
+  (set v 2 +1) => "nfw"
+DONE

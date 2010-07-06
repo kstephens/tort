@@ -89,6 +89,20 @@ tort_write_decl(_tort_nil_write)
 }
 
 
+tort_write_decl(_tort_boolean_write)
+{
+  printf(rcvr == tort_false ? "false" : "true");
+  return tort_nil;
+}
+
+
+tort_write_decl(_tort_boolean_lisp_write)
+{
+  printf(rcvr == tort_false ? "#f" : "#t");
+  return tort_nil;
+}
+
+
 tort_write_decl(_tort_method_write)
 {
   tort_val meth_name = tort_ref(tort_method, rcvr)->name;
@@ -173,6 +187,7 @@ void tort_runtime_initialize_write()
   tort_add_method(_tort->_mt_message, "write", _tort_message_write);
   tort_add_method(_tort->_mt_nil,    "write", _tort_nil_write);
   tort_add_method(_tort->_mt_map,    "write", _tort_map_write);
+  tort_add_method(_tort->_mt_boolean, "write", _tort_boolean_write);
 
   _tort->_s_lisp_write  = tort_symbol_make("lisp_write");
   tort_add_method(_tort->_mt_object, "lisp_write", _tort_object_lisp_write);
@@ -184,6 +199,7 @@ void tort_runtime_initialize_write()
   tort_add_method(_tort->_mt_message, "lisp_write", _tort_message_write);
   tort_add_method(_tort->_mt_nil,    "lisp_write", _tort_nil_write);
   tort_add_method(_tort->_mt_map,    "lisp_write", _tort_map_lisp_write);
+  tort_add_method(_tort->_mt_boolean, "lisp_write", _tort_boolean_lisp_write);
   tort_add_method(_tort->_mt_eos,    "lisp_write", _tort_eos_lisp_write);
 }
 

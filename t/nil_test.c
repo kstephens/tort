@@ -12,9 +12,8 @@ int main(int argc, char **argv)
 
   io = tort_stdout;
 
-  tort_printf(io, "HELLO!\n");
-
-  tort_send(tort_s(__debugger), io);
+  printf("\n  nil => ");
+  tort_write(io, tort_nil);
 
   printf("\nDONE\n");
 

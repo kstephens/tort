@@ -380,7 +380,7 @@ tort_val _tort_vector_get (
 			     )
 {
   long i = tort_I(_i);
-  return tort_i(tort_vector_data(rcvr)[i]);
+  return tort_vector_data(rcvr)[i];
 }
 
 
@@ -595,6 +595,7 @@ tort_val tort_runtime_create()
   _tort->_mt_method      = tort_mtable_create(_tort->_mt_object);
   _tort->_mt_message     = tort_mtable_create(_tort->_mt_object);
   _tort->_mt_nil         = tort_mtable_create(_tort->_mt_object);
+  _tort->_mt_boolean     = tort_mtable_create(_tort->_mt_object);
 
   /* Initialize tagged object header. */
   _tort->_mt_tagged      = tort_mtable_create(_tort->_mt_object);
@@ -605,6 +606,10 @@ tort_val tort_runtime_create()
 
   /* Create the nil object. */
   tort_nil = tort_allocate(0, 0, sizeof(tort_object), _tort->_mt_nil);
+
+  /* Create the boolean objects. */
+  tort_true = tort_allocate(0, 0, sizeof(tort_object), _tort->_mt_boolean);
+  tort_false = tort_allocate(0, 0, sizeof(tort_object), _tort->_mt_boolean);
 
   /* Backpatch object delegate as nil. */
   tort_ref(tort_mtable, _tort->_mt_object)->delegate = tort_nil;
@@ -640,9 +645,10 @@ tort_val tort_runtime_create()
   _tort->_s_map  = tort_symbol_make("map");
 
   /* Uncloneable objects. */
-  tort_add_method(_tort->_mt_symbol, "clone", _tort_object_identity);
-  tort_add_method(_tort->_mt_nil,    "clone", _tort_object_identity);
-  tort_add_method(_tort->_mt_tagged, "clone", _tort_object_identity);
+  tort_add_method(_tort->_mt_symbol,  "clone", _tort_object_identity);
+  tort_add_method(_tort->_mt_nil,     "clone", _tort_object_identity);
+  tort_add_method(_tort->_mt_tagged,  "clone", _tort_object_identity);
+  tort_add_method(_tort->_mt_boolean, "clone", _tort_object_identity);
 
   /* Basic object methods. */
   tort_add_method(_tort->_mt_object, "clone", _tort_object_clone);

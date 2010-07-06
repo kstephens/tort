@@ -1,0 +1,16 @@
+(
+  nil    ()
+  nil    nil
+  symbol symbol
+  string "string"
+  number 123
+  pair   (1 . 2)
+  true   #t
+  false  #f
+  improper-list (1 2 . 3)
+  vector #(1 2 3 4 5)
+  quote 'quote
+  quasiquote `quasiquote
+  unquote ,unquote
+  unquote-splicing ,@unquote-splicing
+)

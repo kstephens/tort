@@ -1,0 +1,19 @@
+v => !vector { nil, nil, nil, nil, nil, nil, nil, nil, nil, nil }
+(size v) => 10
+v[1] = nil
+v => !vector { nil, 1, nil, nil, nil, nil, nil, nil, nil, nil }
+v[1] => 1
+v => !vector { nil, 1, nil, nil, nil, nil, nil, nil, nil, nil }
+  in each 0@0x1[1] => nil
+  in each 0@0x1[2] => 1
+  in each 0@0x1[3] => nil
+  in each 0@0x1[4] => nil
+  in each 0@0x1[5] => nil
+  in each 0@0x1[6] => nil
+  in each 0@0x1[7] => nil
+  in each 0@0x1[8] => nil
+  in each 0@0x1[9] => nil
+  in each 0@0x1[10] => nil
+v = !vector { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 }
+
+DONE

@@ -78,6 +78,12 @@ const char *tort_object_name(tort_val val)
   else if ( val == tort_nil ) {
     snprintf(buf, S, "nil");
   }
+  else if ( val == tort_true ) {
+    snprintf(buf, S, "true");
+  }
+  else if ( val == tort_false ) {
+    snprintf(buf, S, "false");
+  }
   else if ( tort_taggedQ(val) ) {
     snprintf(buf, S, "%ld", (long) tort_I(val));
   }
@@ -107,6 +113,7 @@ const char *tort_object_name(tort_val val)
     mt(method)
     mt(message)
     mt(nil)
+    mt(boolean)
     mt(tagged)
     mt(io)
     mt(block)
@@ -122,6 +129,7 @@ const char *tort_object_name(tort_val val)
     mt(method)
     mt(message)
     mt(nil)
+    mt(boolean)
     mt(tagged)
     mt(io)
     mt(block)
