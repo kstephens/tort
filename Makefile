@@ -5,19 +5,26 @@ CFLAGS = -Iinclude -I$(GC)/include -Wall -Werror -g $(CFLAGS_OPTIMIZE)
 LDFLAGS = -L$(GC)/.libs
 LIBS=-lgc
 
-all : gc tort_test
+######################################################################
 
-CFILES = $(shell ls src/*.c)
-OFILES = $(CFILES:.c=.o)
+LIB_CFILES = $(shell ls src/*.c)
+LIB_OFILES = $(LIB_CFILES:.c=.o)
 
-libtort.a : $(OFILES)
-	$(AR) $(ARFLAGS) $@ $(OFILES)
+TEST_CFILES = $(shell ls t/*.c)
+TEST_PFILES = $(TEST_CFILES:.c=)
+
+######################################################################
+
+all : gc test
+
+src/libtort.a : $(LIB_OFILES)
+	$(AR) $(ARFLAGS) $@ $(LIB_OFILES)
 	ranlib $@ || true
 
-tort_test : tort_test.c libtort.a
-	$(CC) $(CFLAGS) $(LDFLAGS) $^ $(LIBS) -o $@
+$(TEST_PFILES) : src/libtort.a
+	$(CC) $(CFLAGS) $(LDFLAGS) $(@:=.c) src/libtort.a $(LIBS) -o $@
 
-tort_test $(OFILES) : include/tort/*.h
+$(TEST_PFILES) $(LIB_OFILES) : include/tort/*.h
 
 gc : $(GC)/.libs/libgc.a
 
@@ -26,24 +33,32 @@ $(GC)/.libs/libgc.a : $(GC).tar.gz
 	cd $(GC) && if [ ! -f Makefile ]; then ./configure; fi
 	cd $(GC) && make
 
-run-test : tort_test
-	./tort_test 
+run-test : $(TEST_PFILES)
+	for f in $(TEST_PFILES); do \
+	  $$f ;\
+	done
 
-test : ./tort_test
-	./tort_test 2>&1 </dev/null | t/filter-output > t/tort_test.out
-	diff -U 10 t/tort_test.exp t/tort_test.out
+test : $(TEST_PFILES)
+	@for f in $(TEST_PFILES); do \
+	   echo -n "  Testing $$f: " ;\
+           $$f 2>&1 </dev/null | t/filter-output > $$f.out ;\
+	   diff -U 10 $$f.exp $$f.out ;\
+	   echo "ok" ;\
+	done
 
-accept-test : tort_test
-	./tort_test 2>&1 </dev/null | t/filter-output > t/tort_test.exp
+accept-test : $(TEST_PFILES)
+	for f in $(TEST_PFILES); do \
+	  cp $$f.out $$f.exp ;\
+	done
 
-gdb : tort_test
-	gdb --args ./tort_test 
+gdb : t/tort_test
+	gdb --args t/tort_test 
 
-disasm : tort_test
-	objdump -DS ./tort_test | less "+/<main>"
+disasm : t/tort_test
+	objdump -DS t/tort_test | less "+/<main>"
 
 clean :
-	rm -f tort_test libtort.a src/*.o
+	rm -f $(TEST_PFILES) src/libtort.a src/*.o t/*.out
 
 very-clean : clean
 	cd $(GC) && make clean
