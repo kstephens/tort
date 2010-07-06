@@ -138,7 +138,7 @@ _tort_printf_object_lisp (FILE *stream,
   int len = 128; /* ??? */
 
   v = *(tort_val*) args[0];
-  v = tort_send(tort__s(format_lisp), v, FP_TORT_OBJ(stream));
+  v = tort_send(tort__s(lisp_write), v, FP_TORT_OBJ(stream));
 
   return len;
 }

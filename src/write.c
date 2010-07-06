@@ -15,7 +15,7 @@ tort_write_decl(_tort_object_write)
 }
 
 
-tort_write_decl(_tort_object_format_lisp)
+tort_write_decl(_tort_object_lisp_write)
 {
   printf("(make <object> @%p)", (void *) rcvr);
   return tort_nil;
@@ -48,12 +48,12 @@ tort_write_decl(_tort_vector_write)
 }
 
 
-tort_write_decl(_tort_vector_format_lisp)
+tort_write_decl(_tort_vector_lisp_write)
 {
   printf("#(");
   tort_vector_loop(rcvr, obj) {
     if ( obj_i > 0 ) printf(" ");
-    tort_send(tort__s(format_lisp), obj, IO);
+    tort_send(tort__s(lisp_write), obj, IO);
   } tort_vector_loop_end(rcvr);
   printf(")");
   return tort_nil;
@@ -71,7 +71,7 @@ tort_write_decl(_tort_symbol_write)
 }
 
 
-tort_write_decl(_tort_symbol_format_lisp)
+tort_write_decl(_tort_symbol_lisp_write)
 {
   if ( tort_ref(tort_symbol, rcvr)->name != tort_nil ) {
     printf("%s", (char *) tort_symbol_data(rcvr));
@@ -132,7 +132,7 @@ tort_write_decl(_tort_map_write)
 }
 
 
-tort_write_decl(_tort_map_format_lisp)
+tort_write_decl(_tort_map_lisp_write)
 {
   tort_map *map = tort_ref(tort_map, rcvr);
   tort_map_entry **x = map->entry, *entry;
@@ -141,9 +141,9 @@ tort_write_decl(_tort_map_format_lisp)
   printf("(make <map> ");
   while ( (entry = *(x ++)) ) {
     if ( entry_i > 0 ) printf(" ");
-    tort_send(tort__s(format_lisp), entry->key, IO);
+    tort_send(tort__s(lisp_write), entry->key, IO);
     printf(" ");
-    tort_send(tort__s(format_lisp), entry->value, IO);
+    tort_send(tort__s(lisp_write), entry->value, IO);
     entry_i ++;
   }
   printf(")");
@@ -168,16 +168,16 @@ void tort_runtime_initialize_write()
   tort_add_method(_tort->_mt_nil,    "write", _tort_nil_write);
   tort_add_method(_tort->_mt_map,    "write", _tort_map_write);
 
-  _tort->_s_format_lisp  = tort_symbol_make("format_lisp");
-  tort_add_method(_tort->_mt_object, "format_lisp", _tort_object_format_lisp);
-  tort_add_method(_tort->_mt_tagged, "format_lisp", _tort_tagged_write);
-  tort_add_method(_tort->_mt_string, "format_lisp", _tort_string_write);
-  tort_add_method(_tort->_mt_vector, "format_lisp", _tort_vector_format_lisp);
-  tort_add_method(_tort->_mt_symbol, "format_lisp", _tort_symbol_write);
-  tort_add_method(_tort->_mt_method, "format_lisp", _tort_method_write);
-  tort_add_method(_tort->_mt_message, "format_lisp", _tort_message_write);
-  tort_add_method(_tort->_mt_nil,    "format_lisp", _tort_nil_write);
-  tort_add_method(_tort->_mt_map,    "format_lisp", _tort_map_format_lisp);
+  _tort->_s_lisp_write  = tort_symbol_make("lisp_write");
+  tort_add_method(_tort->_mt_object, "lisp_write", _tort_object_lisp_write);
+  tort_add_method(_tort->_mt_tagged, "lisp_write", _tort_tagged_write);
+  tort_add_method(_tort->_mt_string, "lisp_write", _tort_string_write);
+  tort_add_method(_tort->_mt_vector, "lisp_write", _tort_vector_lisp_write);
+  tort_add_method(_tort->_mt_symbol, "lisp_write", _tort_symbol_write);
+  tort_add_method(_tort->_mt_method, "lisp_write", _tort_method_write);
+  tort_add_method(_tort->_mt_message, "lisp_write", _tort_message_write);
+  tort_add_method(_tort->_mt_nil,    "lisp_write", _tort_nil_write);
+  tort_add_method(_tort->_mt_map,    "lisp_write", _tort_map_lisp_write);
 
 }
 

@@ -209,7 +209,7 @@ struct tort_runtime {
   tort_val _s_format;
 
   /* lisp */
-  tort_val _s_format_lisp;
+  tort_val _s_lisp_write;
   tort_val _s_lisp_read;
   tort_val _s_set_cdrE;
   tort_val _s_list_TO_vector;
