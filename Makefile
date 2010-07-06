@@ -21,7 +21,22 @@ TEST_OUT_FILES = $(TEST_C_FILES:.c=.out)
 # default:
 #
 
-all : gc test
+all : gc include/tort/internal.h test
+
+
+######################################################################
+# include:
+#
+
+include/tort/internal.h : include/tort/internal.h.* $(LIB_CFILES) Makefile
+	( \
+	cat $@.begin; \
+	cat $(LIB_CFILES) | perl -ne 'print "extern ", $$_, ";\n" if ( /^tort_val\s+_tort_[a-z0-9_]+\s*[(].*[)]\s*$$/ ); ' ; \
+	cat $@.end; \
+	) > $@
+
+src/lisp.o : src/lispread.c
+
 
 ######################################################################
 # library:

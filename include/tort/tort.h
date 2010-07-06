@@ -265,10 +265,7 @@ extern tort_val _tort_message; /* catch for top-level messages. */
 void *tort_malloc(size_t size);
 void *tort_realloc(void *ptr, size_t size);
 
-tort_val _tort_map_initialize(tort_val _tort_message, tort_val rcvr);
-tort_val _tort_map_set(tort_val _tort_message, tort_val rcvr, tort_val key, tort_val value);
 tort_map_entry *_tort_map_get_entry(tort_val _tort_message, tort_val rcvr, tort_val key);
-tort_val _tort_map_get(tort_val _tort_message, tort_val rcvr, tort_val key);
 tort_val tort_map_create();
 
 tort_val tort_mtable_create();
