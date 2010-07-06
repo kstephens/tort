@@ -1,8 +1,12 @@
 #include "tort/core.h"
 
 
+/********************************************************************/
+
+
 #define IO tort_stderr
 #define printf(fmt, args...) tort_send(tort__s(printf), IO, fmt, ##args)
+
 
 tort_v _tort_object___message(tort_v _tort_message, tort_v rcvr)
 {
@@ -62,7 +66,7 @@ tort_v _tort_debugger_start(tort_v _tort_message, tort_v rcvr)
 #undef printf
 
 
-const char *tort_object_name(tort_v val)
+const char *tort_object_name_(tort_v val)
 {
   static int bufi = 0;
 #define S 63
@@ -70,6 +74,7 @@ const char *tort_object_name(tort_v val)
   char *buf = bufa[bufi = (bufi + 1) % 16];
 
   buf[S] = '\0';
+
   if ( val == 0 ) {
     snprintf(buf, S, "#<NULL>");
   }
@@ -115,26 +120,11 @@ const char *tort_object_name(tort_v val)
     mt(tagged)
     mt(io)
     mt(block)
-#undef mt
-
-#define mt(N) else if ( tort_h_mtable(val) == _tort->_mt_##N ) { snprintf(buf, S, "!%s @%p", #N, (void*) val); }
-  mt(mtable)
-    mt(object)
-    mt(map)
-    mt(string)
-    mt(vector)
-    mt(symbol)
-    mt(method)
-    mt(message)
-    mt(nil)
-    mt(boolean)
-    mt(tagged)
-    mt(io)
-    mt(block)
+    mt(eos)
 #undef mt
 
   else {
-    snprintf(buf, S, "%p", (void*) val);
+    return 0;
   }
 
   if ( buf[S] != '\0' ) {
@@ -146,6 +136,43 @@ const char *tort_object_name(tort_v val)
 
   return buf;
 }
+
+
+const char *tort_object_name(tort_v val)
+{
+  const char *str = tort_object_name_(val);
+  if ( ! str ) {
+    static int bufi = 0;
+#define S 63
+    static char bufa[16][S + 1];
+    char *buf = bufa[bufi = (bufi + 1) % 16];
+    
+    buf[S] = '\0';
+    
+    if ( 0 ) {
+    }
+#define mt(N) else if ( tort_h_mtable(val) == _tort->_mt_##N ) { snprintf(buf, S, "!%s @%p", #N, (void*) val); }
+    mt(mtable)
+      mt(object)
+      mt(map)
+      mt(string)
+      mt(vector)
+      mt(symbol)
+      mt(method)
+      mt(message)
+      mt(nil)
+      mt(boolean)
+      mt(tagged)
+      mt(io)
+      mt(block)
+      mt(eos)
+#undef mt
+  }
+  return str;
+}
+
+
+#undef S
 
 
 tort_v _tort_object_name(tort_v _tort_message, tort_v rcvr)

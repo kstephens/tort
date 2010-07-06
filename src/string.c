@@ -4,32 +4,6 @@
 /********************************************************************/
 
 
-tort_v tort_string_new(const char *string, size_t size)
-{
-  size_t alloc_size;
-  tort_v val = tort_allocate(0, 0, sizeof(tort_string), _tort->_mt_string);
-  alloc_size = sizeof(tort_ref(tort_string, val)->data[0]) * (size + 1);
-  tort_ref(tort_string, val)->size = 
-  tort_ref(tort_string, val)->alloc_size = 
-    size;
-  tort_ref(tort_string, val)->data = tort_malloc(alloc_size);
-  if ( string ) {
-    memcpy(tort_ref(tort_string, val)->data, string, alloc_size);
-    tort_ref(tort_string, val)->data[size] = 0;
-  } else {
-    memset(tort_ref(tort_string, val)->data, 0, alloc_size);
-  }
-  // fprintf(stderr, "\n new string = \"%s\" %p\n", tort_ref(tort_string, val)->data, (void *) val);
-  return val;
-}
-
-
-tort_v tort_string_new_cstr(const char *string)
-{
-  return tort_string_new(string, strlen(string));
-}
-
-
 tort_v _tort_string_new(tort_v _tort_message, tort_v rcvr, tort_v size)
 {
   return tort_string_new(0, tort_I(size));
@@ -62,5 +36,31 @@ tort_v _tort_string_set (tort_v _tort_message, tort_v rcvr, tort_v _i, tort_v _v
 
 
 /********************************************************************/
+
+
+tort_v tort_string_new(const char *string, size_t size)
+{
+  size_t alloc_size;
+  tort_v val = tort_allocate(0, 0, sizeof(tort_string), _tort->_mt_string);
+  alloc_size = sizeof(tort_ref(tort_string, val)->data[0]) * (size + 1);
+  tort_ref(tort_string, val)->size = 
+  tort_ref(tort_string, val)->alloc_size = 
+    size;
+  tort_ref(tort_string, val)->data = tort_malloc(alloc_size);
+  if ( string ) {
+    memcpy(tort_ref(tort_string, val)->data, string, alloc_size);
+    tort_ref(tort_string, val)->data[size] = 0;
+  } else {
+    memset(tort_ref(tort_string, val)->data, 0, alloc_size);
+  }
+  // fprintf(stderr, "\n new string = \"%s\" %p\n", tort_ref(tort_string, val)->data, (void *) val);
+  return val;
+}
+
+
+tort_v tort_string_new_cstr(const char *string)
+{
+  return tort_string_new(string, strlen(string));
+}
 
 

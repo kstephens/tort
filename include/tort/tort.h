@@ -298,6 +298,8 @@ tort_v tort_symbol_make (const char *string);
 
 #define tort__mt(X) _tort->_mt_##X
 
+tort_v tort_object_make ();
+
 tort_v tort_method_make (tort_apply_decl((*applyf)));
 
 tort_v tort_add_method(tort_v map, const char *name, void *applyf);
@@ -308,6 +310,7 @@ tort_v tort_fatal (const char *format, ...);
 tort_v tort_error (const char *format, ...);
 tort_v tort_error_message(const char *format, ...);
 
+const char *tort_object_name_(tort_v val);
 const char *tort_object_name(tort_v val);
 
 void tort_gc_collect();

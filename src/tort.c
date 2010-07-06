@@ -178,6 +178,13 @@ tort_apply_decl(_tort_object_applyf)
 /********************************************************************/
 
 
+tort_v tort_object_make()
+{
+  tort_v obj = tort_allocate(0, 0, sizeof(tort_object), tort__mt(object));
+  return obj;
+}
+
+
 tort_v tort_symbol_make(const char *string)
 {
   if ( string ) {

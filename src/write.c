@@ -16,7 +16,13 @@
 
 tort_inspect_decl(_tort_object_write)
 {
-  printf("!object @%p", (void *) rcvr);
+  const char *str = tort_object_name_(rcvr);
+  if ( str ) {
+    printf("%s", str);
+  } else {
+    printf("!object @%p", (void *) rcvr);
+  }
+
   return tort_nil;
 }
 
@@ -139,15 +145,20 @@ tort_inspect_decl(_tort_map_write)
   tort_map_entry **x = map->entry, *entry;
   size_t entry_i = 0;
 
-  printf("!map { ");
-  while ( (entry = *(x ++)) ) {
-    if ( entry_i > 0 ) printf(", ");
-    tort_inspect(IO, entry->key);
-    printf(" => ");
-    tort_inspect(IO, entry->value);
-    entry_i ++;
+  const char *str = tort_object_name_(rcvr);
+  if ( str ) {
+    printf("%s", str);
+  } else {
+    printf("!map { ");
+    while ( (entry = *(x ++)) ) {
+      if ( entry_i > 0 ) printf(", ");
+      tort_inspect(IO, entry->key);
+      printf(" => ");
+      tort_inspect(IO, entry->value);
+      entry_i ++;
+    }
+    printf(" }");
   }
-  printf(" }");
   return tort_nil;
 }
 
