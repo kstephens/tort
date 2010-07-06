@@ -111,7 +111,8 @@ disasm : t/tort_test.exe
 #
 
 clean :
-	rm -f $(TEST_EXE_FILES) src/libtort.a src/*.o t/*.out
+	rm -f $(TEST_EXE_FILES) src/libtort.a src/*.o t/*.out include/tort/internal.h
+
 very-clean : clean
 	cd $(GC) && make clean
 

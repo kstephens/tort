@@ -14,7 +14,7 @@ int main(int argc, char **argv)
 
   io = tort_stdout;
 
-  for ( i = 0; i < 2; i ++  ) {
+  for ( i = 0; i < 2; i ++ ) {
   printf("\nread up to 64 chars from popen(\"echo 12345\", \"r\") => ");
   v = tort_string_new_cstr("echo 12345");
   c = tort_string_new_cstr("r");
