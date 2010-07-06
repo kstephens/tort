@@ -10,6 +10,8 @@ LIBS=-lgc
 LIB_CFILES = $(shell ls src/*.c)
 LIB_OFILES = $(LIB_CFILES:.c=.o)
 
+######################################################################
+
 TEST_C_FILES = $(shell ls t/*.c)
 TEST_EXE_FILES = $(TEST_C_FILES:.c=.exe)
 TEST_FILES = $(TEST_C_FILES:.c=)
@@ -41,16 +43,17 @@ run-test : $(TEST_EXE_FILES)
 	done
 
 test : $(TEST_EXE_FILES)
+	@echo "Testing:"
 	@set -e ;\
 	for f in $(TEST_FILES); do \
 	  in=/dev/null ;\
 	  if [ -f $$f.in ] ; then in=$$f.in ; fi ;\
-	  echo -n "  Testing $$f.exe < $$in: " ;\
+	  echo -n "  test $$f.exe < $$in: " ;\
 	  ($$f.exe <$$in || echo $$?) 2>&1 | t/filter-output > $$f.out ;\
 	  if ! diff -U 10 $$f.exp $$f.out ; then \
-	    echo "  ========== $$f.out: ==========" ;\
+	    echo "  ========== $$f.out ==========" 1>&2 ;\
 	    cat $$f.out ;\
-	    echo "  ========== To accept, run: " ;\
+	    echo "  ========== To accept, run: " 1>&2 ;\
 	    echo "    rm -f $$f.exp; make accept-test;" ;\
 	  fi ;\
 	  echo "ok" ;\
@@ -70,7 +73,9 @@ disasm : t/tort_test.exe
 
 clean :
 	rm -f $(TEST_EXE_FILES) src/libtort.a src/*.o t/*.out
-
 very-clean : clean
 	cd $(GC) && make clean
 
+stats :
+	@echo "LoC:"
+	@find src include -name '*.h' -o -name '*.c' | xargs wc -l
