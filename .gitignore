@@ -2,4 +2,5 @@ tort_test
 *.a
 *.o
 src/*.o
+gc-7.0
 
