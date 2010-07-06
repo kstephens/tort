@@ -135,6 +135,10 @@ int main(int argc, char **argv)
   tort_printf(io, "(read o) => %O\n", v);
 #endif
 
+  tort_printf(io, "read lisp object from stdin: ");
+  v = tort_send(tort__s(lisp_read), tort_stdin);
+  tort_printf(io, "(read o) => %O\n", v);
+
   tort_send(tort_s(__debugger), v);
 
   return 0;

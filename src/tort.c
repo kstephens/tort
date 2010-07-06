@@ -694,6 +694,7 @@ tort_val tort_runtime_create()
   tort_runtime_initialize_write();
   tort_runtime_initialize_block();
   tort_runtime_initialize_debug();
+  tort_runtime_initialize_lisp();
   // tort_runtime_initialize_address();
 
   _tort->_initialized = tort_true;
