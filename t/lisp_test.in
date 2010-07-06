@@ -1,4 +1,9 @@
+;; comment
+#!comment
 (
+  hash-semi-comment #; ( 
+    list of symbols
+  ) nothing
   nil    ()
   nil    nil
   symbol symbol

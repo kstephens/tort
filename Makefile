@@ -30,6 +30,8 @@ $(TEST_EXE_FILES) : src/libtort.a
 
 $(TEST_EXE_FILES) $(LIB_OFILES) : include/tort/*.h
 
+src/lisp.o : src/lispread.c
+
 gc : $(GC)/.libs/libgc.a
 
 $(GC)/.libs/libgc.a : $(GC).tar.gz
@@ -60,7 +62,7 @@ test : $(TEST_EXE_FILES)
 	done
 
 accept-test : $(TEST_EXE_FILES)
-	@set -ex; for f in $(TEST_EXE_FILES); do \
+	@set -ex; for f in $(TEST_FILES); do \
 	  if [ ! -f $$f.exp ] ; then cp $$f.out $$f.exp ; fi ;\
 	done
 	git add t/*.c t/*.exp t/*.in

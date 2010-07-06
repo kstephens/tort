@@ -90,7 +90,11 @@ ERROR(format,...)   Raise an error using the printf() format.
 
 #ifndef PEEKC
 #define PEEKC(stream) \
-  ({ int _pc = GETC(stream); if ( _pc != -1 ) UNGETC(stream, _pc); _pc; })
+  ({ int _pc = GETC(stream); if ( _pc != EOF ) UNGETC(stream, _pc); _pc; })
+#endif
+
+#ifndef READ_DEBUG_WHITESPACE
+#define READ_DEBUG_WHITESPACE 0
 #endif
 
 static
@@ -100,26 +104,31 @@ int eat_whitespace_peekchar(VALUE stream)
 
  more_whitespace:
   while ( (c = PEEKC(stream)) != EOF && isspace(c) ) {
-#if 0
-    fprintf(stderr, "eat_whitespace_peekchar(): got '%c'\n", (int) c);
+#if READ_DEBUG_WHITESPACE
+    fprintf(stderr, "  read: eat_whitespace_peekchar(): whitespace '%c'\n", (int) c);
     fflush(stderr);
 #endif
     GETC(stream);
   }
   if ( c == ';' ) {
-#if 0
-    fprintf(stderr, "eat_whitespace_peekchar(): got '%c'\n", (int) c);
+#if READ_DEBUG_WHITESPACE
+    fprintf(stderr, "  read: eat_whitespace_peekchar(): comment start '%c'\n", (int) c);
     fflush(stderr);
 #endif
     while ( (c = PEEKC(stream)) != EOF && c != '\n' ) {
-#if 0
-      fprintf(stderr, "eat_whitespace_peekchar(): got '%c'\n", (int) c);
+#if READ_DEBUG_WHITESPACE
+      fprintf(stderr, "  read: eat_whitespace_peekchar(): comment in '%c'\n", (int) c);
       fflush(stderr);
 #endif
       GETC(stream);
     }
     goto more_whitespace;
   }
+
+#if READ_DEBUG_WHITESPACE
+  fprintf(stderr, "  read: eat_whitespace_peekchar(): done '%c'\n", (int) c);
+  fflush(stderr);
+#endif
 
   return(c);
 }
@@ -226,13 +235,23 @@ READ_DECL
 
 	/* #! sh-bang comment till eof */
       case '!':
-	while ( (c == PEEKC(stream)) != EOF && c != '\n' ) {
+#if READ_DEBUG_WHITESPACE
+	fprintf(stderr, "  read: #!\n");
+	fflush(stderr);
+#endif
+	GETC(stream);
+	while ( (c = PEEKC(stream)) != EOF && c != '\n' ) {
 	  GETC(stream);
 	}
     	goto try_again;
 
 	/* s-expr comment ala chez scheme */
       case ';':
+#if READ_DEBUG_WHITESPACE
+	fprintf(stderr, "  read: #;\n");
+	fflush(stderr);
+#endif
+	GETC(stream);
 	GETC(stream);
 	READ_CALL();
 	goto try_again;
