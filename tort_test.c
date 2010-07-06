@@ -61,6 +61,31 @@ int main(int argc, char **argv)
   tort_write(io, c = tort_send(tort__s(size), v));
   printf("\n  (alloc_size v) => ");
   tort_write(io, c = tort_send(tort__s(alloc_size), v));
+  
+  o = tort_map_create();
+  tort_printf(io, "o => %T\n", o);
+  v = tort_send(tort__s(size), o);
+  tort_printf(io, "(size o) => %T\n", v);
+
+  tort_send(tort_s(set), o, tort_i(1), tort_i(2));
+  tort_printf(io, "o => %T\n", o);
+  v = tort_send(tort__s(size), o);
+  tort_printf(io, "(size o) => %T\n", v); 
+
+  tort_send(tort_s(set), o, tort_i(1), tort_i(3));
+  tort_printf(io, "o => %T\n", o);
+  v = tort_send(tort__s(size), o);
+  tort_printf(io, "(size o) => %T\n", v);
+
+  tort_send(tort_s(set), o, tort_i(3), tort_i(4));
+  tort_printf(io, "o => %T\n", o);
+  v = tort_send(tort__s(size), o);
+  tort_printf(io, "(size o) => %T\n", v);
+
+  tort_send(tort_s(delete), o, tort_i(1));
+  tort_printf(io, "o => %T\n", o);
+  v = tort_send(tort__s(size), o);
+  tort_printf(io, "(size o) => %T\n", v);
 
 #if 0
   printf("\nread 1 char from stdin: ");

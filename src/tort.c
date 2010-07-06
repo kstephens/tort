@@ -240,6 +240,12 @@ tort_val _tort_map_delete(tort_val _tort_message, tort_val rcvr, tort_val key)
 }
 
 
+tort_val _tort_map_size(tort_val _tort_message, tort_val rcvr)
+{
+  return tort_i(tort_ref(tort_map, rcvr)->entry_n);
+}
+
+
 tort_val _tort_map_clone(tort_val _tort_message, tort_val rcvr)
 {
   tort_map *map = tort_ref(tort_map, rcvr);
@@ -654,6 +660,7 @@ tort_val tort_runtime_create()
   tort_add_method(_tort->_mt_map, "set", _tort_map_set);
   tort_add_method(_tort->_mt_map, "delete", _tort_map_delete);
   tort_add_method(_tort->_mt_map, "clone", _tort_map_clone);
+  tort_add_method(_tort->_mt_map, "size", _tort_map_size);
 
   /* Vector methods. */
   tort_add_method(_tort->_mt_vector, "new", _tort_vector_new);
