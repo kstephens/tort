@@ -1,4 +1,5 @@
 tort_test
+*.a
 *.o
 src/*.o
 

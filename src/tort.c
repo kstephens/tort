@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include "gc.h"
 
 
 tort_runtime *_tort;
@@ -10,7 +11,7 @@ tort_val _tort_message;
 
 void *tort_malloc(size_t size)
 {
-  void *ptr = malloc(size);
+  void *ptr = GC_malloc(size);
   if ( ! ptr ) {
     tort_fatal("tort_malloc(%lu): failed", (unsigned long) size);
   }
@@ -20,7 +21,7 @@ void *tort_malloc(size_t size)
 
 void *tort_realloc(void *ptr, size_t size)
 {
-  void *new_ptr = realloc(ptr, size);
+  void *new_ptr = GC_realloc(ptr, size);
   if ( ! new_ptr ) {
     tort_fatal("tort_realloc(%p, %lu): failed", (void *) ptr, (unsigned long) size);
   }
