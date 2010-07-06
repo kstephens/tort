@@ -102,4 +102,4 @@ very-clean : clean
 
 stats :
 	@echo "LoC:"
-	@find src include -name '*.h' -o -name '*.c' | xargs wc -l
+	@find Makefile src include t -name '*.h' -o -name '*.c' -o -name '*.in' -o -name Makefile | xargs wc -l
