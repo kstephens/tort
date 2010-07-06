@@ -1,7 +1,4 @@
-#include "tort/tort.h"
-
-#include <stdio.h>
-#include <stdlib.h>
+#include "tort/core.h"
 
 
 tort_v tort_error_messagev(const char *type, const char *format, va_list vap)

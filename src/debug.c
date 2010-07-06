@@ -1,10 +1,9 @@
-#include "tort/tort.h"
+#include "tort/core.h"
 
 
 #define IO tort_stderr
 #define printf(fmt, args...) tort_send(tort__s(printf), IO, fmt, ##args)
 
-static 
 tort_v _tort_object___message(tort_v _tort_message, tort_v rcvr)
 {
   rcvr = _tort_message;
@@ -13,7 +12,6 @@ tort_v _tort_object___message(tort_v _tort_message, tort_v rcvr)
 }
 
 
-static
 tort_v _tort_message_backtrace(tort_v _tort_message, tort_v rcvr)
 {
   tort_v v, msg;
@@ -39,7 +37,7 @@ tort_v _tort_message_backtrace(tort_v _tort_message, tort_v rcvr)
   return v;
 }
 
-static
+
 tort_v _tort_debugger_start(tort_v _tort_message, tort_v rcvr)
 {
   tort_v bt;
@@ -150,11 +148,13 @@ const char *tort_object_name(tort_v val)
 }
 
 
-static
 tort_v _tort_object_name(tort_v _tort_message, tort_v rcvr)
 {
   return tort_string_new_cstr(tort_object_name(rcvr));
 }
+
+
+/********************************************************************/
 
 
 void tort_runtime_initialize_debug()

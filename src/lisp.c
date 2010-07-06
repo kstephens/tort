@@ -1,9 +1,10 @@
-#include "tort/tort.h"
+#include "tort/core.h"
 
 
 typedef struct tort_pair {
   tort_v car, cdr;
 } tort_pair;
+
 
 tort_v tort_cons(tort_v a, tort_v d)
 {
@@ -12,6 +13,7 @@ tort_v tort_cons(tort_v a, tort_v d)
   tort_ref(tort_pair, val)->cdr = d;
   return val;
 }
+
 
 #define ACCESSOR(X)							\
   static								\
@@ -32,7 +34,7 @@ ACCESSOR(cdr)
 
 #undef ACCESSOR
 
-static							    
+
 tort_v _tort_list_size(tort_v _tort_message, tort_v rcvr) 
 {
   size_t i = 0;
@@ -49,7 +51,7 @@ tort_v _tort_list_size(tort_v _tort_message, tort_v rcvr)
 }
 
 
-static							    
+
 tort_v _tort_list_lisp_write(tort_v _tort_message, tort_v rcvr, tort_v io) 
 {
   tort_printf(io, "(");

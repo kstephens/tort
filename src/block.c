@@ -1,4 +1,4 @@
-#include "tort/tort.h"
+#include "tort/core.h"
 #include "tort/block.h"
 
 tort_apply_decl(_tort_block_lookupf)

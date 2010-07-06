@@ -1,14 +1,17 @@
-#include "tort/tort.h"
-#include "tort/internal.h"
-
-#include <stdio.h>
+#include "tort/core.h"
 #include <printf.h>
 #include <libio.h>
+
+
+/********************************************************************/
 
 
 #define IO tort_ref(tort_io, rcvr)
 #define FP IO->fp
 #define FP_TORT_OBJ(fp) *(((tort_v*)(((struct _IO_FILE *) fp) + 1)) - 1)
+
+
+/********************************************************************/
 
 
 size_t _tort_io_open_count, _tort_io_close_count;

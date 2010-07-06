@@ -1,9 +1,14 @@
+#include "tort/core.h"
 
-#include "tort/tort.h"
-#include "tort/internal.h"
-#include "gc.h"
+
+/********************************************************************/
+
 
 size_t _tort_gc_finalize_count = 0;
+
+
+/********************************************************************/
+
 
 static
 void _tort_finalization_proc (void * obj, void * client_data)

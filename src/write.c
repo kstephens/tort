@@ -1,12 +1,18 @@
-#include "tort/tort.h"
+#include "tort/core.h"
 
-#include <stdio.h>
+
+/********************************************************************/
+
 
 #define tort_inspect_decl(name) static tort_v name (tort_v message, tort_v rcvr, tort_v io)
 
 #define IO (io ? io : tort_stdout)
 
 #define printf(fmt, args...) tort_send(tort__s(printf), IO, fmt, ##args)
+
+
+/********************************************************************/
+
 
 tort_inspect_decl(_tort_object_write)
 {
@@ -171,8 +177,13 @@ tort_inspect_decl(_tort_eos_lisp_write)
   return tort_nil;
 }
 
+
 #undef printf
 #undef IO
+
+
+/********************************************************************/
+
 
 void tort_runtime_initialize_write()
 {
