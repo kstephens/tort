@@ -26,4 +26,7 @@
   _tort => @tort
   tort_h_mtable(_tort) => @map {  }
 
+  _tort->root => @root
+  tort_h_mtable(_tort->root) => @mtable map
+
 DONE

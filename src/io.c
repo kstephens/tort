@@ -8,7 +8,11 @@
 
 #define IO tort_ref(tort_io, rcvr)
 #define FP IO->fp
-#define FP_TORT_OBJ(fp) *(((tort_v*)(((struct _IO_FILE *) fp) + 1)) - 1)
+
+
+#define FP_TORT_OBJ(fp) *(((tort_v*)(((struct _IO_FILE *) fp) + 1)) - 4)
+// #define FP_TORT_OBJ(fp) *((tort_v*)(&((struct _IO_FILE *) fp)->_old_offset))
+// #define FP_TORT_OBJ(fp) (* (tort_v *) ((struct _IO_FILE *) (fp))->_unused2 )
 
 
 /********************************************************************/
@@ -16,11 +20,13 @@
 
 size_t _tort_io_open_count, _tort_io_close_count;
 
-tort_v _tort_io_create(tort_v _tort_message, tort_v rcvr, FILE *fp)
+tort_v _tort_io___create(tort_v _tort_message, tort_v rcvr, FILE *fp)
 {
   rcvr = tort_allocate(_tort_message, rcvr, sizeof(tort_io), _tort->_mt_io);
   FP = fp;
-  FP_TORT_OBJ(fp) = rcvr;
+  if ( FP ) {
+    FP_TORT_OBJ(FP) = rcvr;
+  }
   IO->name = IO->mode = tort_nil;
   IO->flags = 0;
   return rcvr;
@@ -31,6 +37,7 @@ tort_v _tort_io_open(tort_v _tort_message, tort_v rcvr, tort_v name, tort_v mode
 {
   if ( (FP = fopen(tort_string_data(name), tort_string_data(mode))) ){
     ++ _tort_io_open_count;
+    FP_TORT_OBJ(FP) = rcvr;
     IO->name = name;
     IO->mode = mode;
     IO->flags = 1;
@@ -44,6 +51,7 @@ tort_v _tort_io_popen(tort_v _tort_message, tort_v rcvr, tort_v name, tort_v mod
 {
   if ( (FP = FP = popen(tort_string_data(name), tort_string_data(mode))) ) {
     ++ _tort_io_open_count;
+    FP_TORT_OBJ(FP) = rcvr;
     IO->name = name;
     IO->mode = mode;
     IO->flags = 3;
@@ -63,6 +71,7 @@ tort_v _tort_io_close(tort_v _tort_message, tort_v rcvr)
       fclose(FP);
     }
     ++ _tort_io_close_count;
+    FP_TORT_OBJ(FP) = 0;
     FP = 0;
   }
   return rcvr;
@@ -200,7 +209,7 @@ _tort_printf_extension_arginfo (
 
 void tort_runtime_initialize_io()
 {
-  _tort->_s_create = tort_symbol_make("create");
+  _tort->_s___create = tort_symbol_make("__create");
   _tort->_s_open = tort_symbol_make("open");
   _tort->_s_popen = tort_symbol_make("popen");
   _tort->_s_close = tort_symbol_make("close");
@@ -213,7 +222,7 @@ void tort_runtime_initialize_io()
 
   _tort->_mt_io = tort_mtable_create(_tort->_mt_object);
 
-  tort_add_method(_tort->_mt_io, "create", _tort_io_create); 
+  tort_add_method(_tort->_mt_io, "__create", _tort_io___create); 
   tort_add_method(_tort->_mt_io, "open", _tort_io_open);
   tort_add_method(_tort->_mt_io, "popen", _tort_io_popen);
   tort_add_method(_tort->_mt_io, "close", _tort_io_close);
@@ -225,9 +234,9 @@ void tort_runtime_initialize_io()
   tort_add_method(_tort->_mt_io, "flush", _tort_io_flush);
   tort_add_method(_tort->_mt_io, "__finalize", _tort_io___finalize);
 
-  _tort->_io_stdin  = _tort_io_create(0, 0, stdin);
-  _tort->_io_stdout = _tort_io_create(0, 0, stdout);
-  _tort->_io_stderr = _tort_io_create(0, 0, stderr);
+  _tort->_io_stdin  = _tort_io___create(0, 0, stdin);
+  _tort->_io_stdout = _tort_io___create(0, 0, stdout);
+  _tort->_io_stderr = _tort_io___create(0, 0, stderr);
 
   _tort->_mt_eos    = tort_mtable_create(_tort->_mt_object);
   _tort->_io_eos    = tort_allocate(0, 0, sizeof(tort_object), _tort->_mt_eos);

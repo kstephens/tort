@@ -198,6 +198,7 @@ struct tort_runtime {
 
   /* io */
   tort_v _s_create;
+  tort_v _s___create;
   tort_v _s_open;
   tort_v _s_popen;
   tort_v _s_close;
@@ -313,6 +314,7 @@ tort_v tort_error_message(const char *format, ...);
 const char *tort_object_name_(tort_v val);
 const char *tort_object_name(tort_v val);
 
+extern int _tort_gc_mode;
 void tort_gc_collect();
 void tort_gc_dump_stats();
 void tort_gc_invoke_finalizers();

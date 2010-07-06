@@ -4,6 +4,7 @@ my %x = ( );
 my $i = 0;
 while ( <> ) {
   s/(\@0x[0-9a-f]+)/$x{$1} ||= '@x' . (++ $i)/ge;
+  s/(tort gc stats: .*? = .*?)(\d+)/$1 . ('#' x length($2))/ge;
   print $_;
 }
 # print "\n\n", keys %x, "\n", values %x, "\n";

@@ -68,6 +68,7 @@ tort_v _tort_debugger_start(tort_v _tort_message, tort_v rcvr)
 
 const char *tort_object_name_(tort_v val)
 {
+  char *str = 0;
   static int bufi = 0;
 #define S 63
   static char bufa[16][S + 1];
@@ -76,37 +77,37 @@ const char *tort_object_name_(tort_v val)
   buf[S] = '\0';
 
   if ( val == 0 ) {
-    snprintf(buf, S, "#<NULL>");
+    snprintf(str = buf, S, "#<NULL>");
   }
   else if ( val == tort_nil ) {
-    snprintf(buf, S, "nil");
+    snprintf(str = buf, S, "nil");
   }
   else if ( val == tort_true ) {
-    snprintf(buf, S, "true");
+    snprintf(str = buf, S, "true");
   }
   else if ( val == tort_false ) {
-    snprintf(buf, S, "false");
+    snprintf(str = buf, S, "false");
   }
   else if ( tort_taggedQ(val) ) {
-    snprintf(buf, S, "%ld", (long) tort_I(val));
+    snprintf(str = buf, S, "%ld", (long) tort_I(val));
   }
   else if ( tort_h_mtable(val) == _tort->_mt_string ) {
-    snprintf(buf, S, "\"%s\"", tort_string_data(val));
+    snprintf(str = buf, S, "\"%s\"", tort_string_data(val));
   }
   else if ( tort_h_mtable(val) == _tort->_mt_symbol ) {
     if ( tort_ref(tort_symbol, val)->name != tort_nil ) {
-      snprintf(buf, S, "%s", tort_symbol_data(val));
+      snprintf(str = buf, S, "%s", tort_symbol_data(val));
     } else {
-      snprintf(buf, S, "@symbol @%p", (void*) val);
+      snprintf(str = buf, S, "@symbol @%p", (void*) val);
     }
   }
   else if ( val == _tort ) {
-    snprintf(buf, S, "@tort");
+    snprintf(str = buf, S, "@tort");
   }
   else if ( val == _tort->root ) {
-    snprintf(buf, S, "@root");
+    snprintf(str = buf, S, "@root");
   }
-#define mt(N) else if ( val == _tort->_mt_##N ) { snprintf(buf, S, "@mtable %s", #N); }
+#define mt(N) else if ( val == _tort->_mt_##N ) { snprintf(str = buf, S, "@mtable %s", #N); }
   mt(mtable)
     mt(object)
     mt(map)
@@ -134,13 +135,13 @@ const char *tort_object_name_(tort_v val)
     buf[S] = '\0';
   }
 
-  return buf;
+  return str;
 }
 
 
 const char *tort_object_name(tort_v val)
 {
-  const char *str = tort_object_name_(val);
+  char *str = (char*) tort_object_name_(val);
   if ( ! str ) {
     static int bufi = 0;
 #define S 63
@@ -151,7 +152,7 @@ const char *tort_object_name(tort_v val)
     
     if ( 0 ) {
     }
-#define mt(N) else if ( tort_h_mtable(val) == _tort->_mt_##N ) { snprintf(buf, S, "!%s @%p", #N, (void*) val); }
+#define mt(N) else if ( tort_h_mtable(val) == _tort->_mt_##N ) { snprintf(str = buf, S, "!%s @%p", #N, (void*) val); }
     mt(mtable)
       mt(object)
       mt(map)
@@ -167,6 +168,18 @@ const char *tort_object_name(tort_v val)
       mt(block)
       mt(eos)
 #undef mt
+      
+    else {
+      snprintf(str = buf, S, "@? @%p", (void*) val);
+    }
+
+    if ( buf[S] != '\0' ) {
+      buf[S - 3] = '.';
+      buf[S - 2] = '.';
+      buf[S - 1] = '.';
+      buf[S] = '\0';
+    }
+
   }
   return str;
 }

@@ -23,27 +23,36 @@ int main(int argc, char **argv)
   for ( i = 0; i < 100; i ++ ) {
     p = tort_string_new_cstr("/dev/null");
     m = tort_string_new_cstr("r");
-    v = tort_send(tort__s(create), tort_stdin);
-    o = tort_send(tort__s(open), v, p, m);
-    tort_printf(io, "\n  o => %T", o);
-    s = tort_send(tort__s(read), o, tort_i(64));
-    tort_inspect(io, s);
-    printf("\n  (eof o) => ");
-    tort_inspect(io, tort_send(tort__s(eof), o));
-    printf("\n  (size v) => ");
-    tort_inspect(io, tort_send(tort__s(size), s));
-    printf("\n  (alloc_size v) => ");
-    tort_inspect(io, tort_send(tort__s(alloc_size), s));
-    printf("\n\n");
 
-    tort_gc_collect();
+    tort_printf(io, "  (open v %T %T)\n", p, m);
+
+    v = tort_send(tort__s(__create), tort_stdin, 0);
+    tort_printf(io, "  v => %T\n", v);
+
+    o = tort_send(tort__s(open), v, p, m);
+    tort_printf(io, "  o => %T\n", o);
+
+    s = tort_send(tort__s(read), o, tort_i(64));
+    tort_printf(io, "  s => %T\n", s);
+
+    tort_printf(io, "  (eof o) => %T\n", tort_send(tort__s(eof), o));
+    tort_printf(io, "  (size v) => %T\n", tort_send(tort__s(size), s));
+    tort_printf(io, "  (alloc_size v) => %T\n", tort_send(tort__s(alloc_size), s));
+
+    tort_printf(io, "\n\n");
+
+    if ( i % 4 == 0 ) {
+      tort_gc_collect();
+    }
   }
 
   tort_gc_collect();
 
-  assert(_tort_gc_finalize_count >= 100);
-  assert(_tort_io_open_count >= 100);
-  assert(_tort_io_close_count >= 100);
+  if ( _tort_gc_mode ) {
+    assert(_tort_gc_finalize_count >= 100);
+    assert(_tort_io_open_count >= 100);
+    assert(_tort_io_close_count >= 100);
+  }
 
   i = -1;
   assert(i = open("/dev/null", 0) < 10);

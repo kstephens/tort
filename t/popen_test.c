@@ -22,7 +22,7 @@ int main(int argc, char **argv)
     printf("\nread up to 64 chars from popen(\"echo 12345\", \"r\") => ");
     v = tort_string_new_cstr("echo 12345");
     c = tort_string_new_cstr("r");
-    o = tort_send(tort__s(create), tort_stdin);
+    o = tort_send(tort__s(__create), tort_stdin, 0);
     o = tort_send(tort__s(popen), o, v, c);
     v = tort_send(tort__s(read), o, tort_i(64));
     tort_inspect(io, v);
@@ -41,9 +41,11 @@ int main(int argc, char **argv)
   i = 0;
 
   tort_gc_collect();
-  assert(_tort_gc_finalize_count >= 2);
-  assert(_tort_io_open_count >= 2);
-  assert(_tort_io_close_count >= 2);
+  if ( _tort_gc_mode ) {
+    assert(_tort_gc_finalize_count >= 2);
+    assert(_tort_io_open_count >= 2);
+    assert(_tort_io_close_count >= 2);
+  }
 
   return 0;
 }

@@ -27,7 +27,7 @@ extern tort_v _tort_error(const char *format, va_list vap)
 ;
 extern tort_v _tort_object___register_finalizer(tort_v _tort_message, tort_v rcvr)
 ;
-extern tort_v _tort_io_create(tort_v _tort_message, tort_v rcvr, FILE *fp)
+extern tort_v _tort_io___create(tort_v _tort_message, tort_v rcvr, FILE *fp)
 ;
 extern tort_v _tort_io_open(tort_v _tort_message, tort_v rcvr, tort_v name, tort_v mode)
 ;

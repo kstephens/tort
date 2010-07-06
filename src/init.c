@@ -5,6 +5,8 @@
 
 tort_v tort_runtime_create()
 {
+  tort_runtime_initialize_malloc();
+
   /* Create runtime object. */
   _tort = tort_ref(tort_runtime, tort_allocate(0, 0, sizeof(tort_runtime), 0));
   tort_runtime_initialize_error();

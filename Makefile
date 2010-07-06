@@ -10,6 +10,8 @@ LIBS=-lgc
 LIB_CFILES = $(shell ls src/*.c)
 LIB_OFILES = $(LIB_CFILES:.c=.o)
 
+GEN_H_FILES = include/tort/internal.h
+
 ######################################################################
 
 TEST_C_FILES = $(shell ls t/*.c)
@@ -21,16 +23,17 @@ TEST_OUT_FILES = $(TEST_C_FILES:.c=.out)
 # default:
 #
 
-all : gc include/tort/internal.h test
+all : gc $(GEN_H_FILES) test
 
 
 ######################################################################
 # include:
 #
 
-includes : include/tort/internal.h
 
-include/tort/internal.h : include/tort/internal.h.* $(LIB_CFILES) Makefile
+includes : $(GEN_H_FILES)
+
+include/tort/internal.h : include/tort/internal.h.* $(LIB_CFILES)
 	( \
 	cat $@.begin; \
 	cat $(LIB_CFILES) | perl -ne 'print "extern ", $$_, ";\n" if ( /^tort_v\s+_tort_[a-z0-9_]+\s*[(].*[)]\s*$$/ ); ' ; \
@@ -68,7 +71,7 @@ $(GC)/.libs/libgc.a : $(GC).tar.gz
 $(TEST_EXE_FILES) : src/libtort.a
 	$(CC) $(CFLAGS) $(LDFLAGS) $(@:.exe=.c) src/libtort.a $(LIBS) -o $@
 
-$(TEST_EXE_FILES) $(LIB_OFILES) : includes include/tort/*.h
+$(TEST_EXE_FILES) $(LIB_OFILES) : $(GEN_H_FILES) include/tort/*.h
 
 run-test : $(TEST_EXE_FILES)
 	@set -ex; for f in $(TEST_EXE_FILES); do \
@@ -92,6 +95,19 @@ test : $(TEST_EXE_FILES)
 	    echo "  # OR make accept-all-test;" ;\
 	    errors=1 ;\
 	  fi ;\
+	  echo "ok" ;\
+	done ;\
+	exit $$errors
+
+valgrind : $(TEST_EXE_FILES)
+	@echo "Valgrind:"
+	@set -e ;\
+	errors=0 ;\
+	for f in $(TEST_FILES); do \
+	  in=/dev/null ;\
+	  if [ -f $$f.in ] ; then in=$$f.in ; fi ;\
+	  echo -n "  valgrind $$f.exe < $$in: " ;\
+	  (TORT_GC=0 valgrind $$f.exe <$$in || echo $$?) 2>&1 | t/filter-output ;\
 	  echo "ok" ;\
 	done ;\
 	exit $$errors

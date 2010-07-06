@@ -19,32 +19,10 @@ tort_v _tort_message;
 /********************************************************************/
 
 
-void *tort_malloc(size_t size)
-{
-  void *ptr = GC_malloc(size);
-  if ( ! ptr ) {
-    tort_fatal("tort_malloc(%lu): failed", (unsigned long) size);
-  }
-  memset(ptr, 0, size);
-  return ptr;
-}
-
-void *tort_realloc(void *ptr, size_t size)
-{
-  void *new_ptr = GC_realloc(ptr, size);
-  if ( ! new_ptr ) {
-    tort_fatal("tort_realloc(%p, %lu): failed", (void *) ptr, (unsigned long) size);
-  }
-  return new_ptr;
-}
-
-
 /********************************************************************/
 
 
-#if TORT_ALLOC_DEBUG
-static unsigned long _tort_alloc_id = 0;
-#endif
+unsigned long _tort_alloc_id = 0;
 
 tort_v _tort_allocate (
 #if TORT_ALLOC_DEBUG
@@ -69,10 +47,12 @@ tort_v _tort_allocate (
   tort_h_ref(val)->applyf  = _tort_object_applyf;
   tort_h_ref(val)->mtable  = mtable;
 
+  ++ _tort_alloc_id;
+
 #if TORT_ALLOC_DEBUG
   tort_h_ref(val)->alloc_file = alloc_file;
   tort_h_ref(val)->alloc_line = alloc_line;
-  tort_h_ref(val)->alloc_id   = ++ _tort_alloc_id;
+  tort_h_ref(val)->alloc_id   = _tort_alloc_id;
 
   if ( _tort_alloc_id == 0 ) {
     fprintf(stderr, "\nSTOP AT ALLOC ID = %lu\n", _tort_alloc_id);
@@ -182,31 +162,6 @@ tort_v tort_object_make()
 {
   tort_v obj = tort_allocate(0, 0, sizeof(tort_object), tort__mt(object));
   return obj;
-}
-
-
-tort_v tort_symbol_make(const char *string)
-{
-  if ( string ) {
-  tort_map_entry *e = _tort_map_get_entry_cstr(0, _tort->symbols, string);
-  if ( e ) {
-    // fprintf(stderr, "\n old symbol = %s %p\n", tort_symbol_data(e->value), (void *) e->value);
-    return e->value;
-  } else {
-    tort_v key, value;
-    key = tort_string_new_cstr(string);
-    value = tort_allocate(0, 0, sizeof(tort_symbol), _tort->_mt_symbol);
-    tort_ref(tort_symbol, value)->name = key;
-    _tort_map_add(0, _tort->symbols, key, value);
-    // fprintf(stderr, "\n new symbol = %s %p\n", tort_symbol_data(value), (void *) value);
-    return value;
-  } 
-  } else {
-    tort_v value;
-    value = tort_allocate(0, 0, sizeof(tort_symbol), _tort->_mt_symbol);
-    tort_ref(tort_symbol, value)->name = tort_nil;
-    return value;
-  }
 }
 
 

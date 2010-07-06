@@ -27,6 +27,7 @@ int main(int argc, char **argv)
   P(tort_object_make());
 
   P(_tort);
+  P(_tort->root);
 
 #undef P
 

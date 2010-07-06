@@ -2,24 +2,24 @@ v => @vector { nil, nil, nil, nil, nil, nil, nil, nil, nil, nil }
 v as lisp object => #(() () () () () () () () () ())
 read lisp object from stdin: (read o) => (hash-semi-comment nothing nil () nil nil symbol symbol string "string" number 123 pair (1 . 2) true #t false #f improper-list (1 2 . 3) vector #(1 2 3 4 5) quote (quote quote) quasiquote (quasiquote quasiquote) unquote (unquote unquote) unquote-splicing (unquote_splicing unquote-splicing))
 
-tort gc stats:            get_heap_size =           131072
-tort gc stats:           get_free_bytes =            49152
-tort gc stats:       get_bytes_since_gc =            17456
-tort gc stats:          get_total_bytes =            17456
-tort gc stats:                    gc_no =                1
-tort gc stats:                 parallel =                0
-tort gc stats:    all_interior_pointers =                1
-tort gc stats:       finalize_on_demand =                1
-tort gc stats:        java_finalization =                1
-tort gc stats:                  dont_gc =                0
-tort gc stats:              dont_expand =                0
-tort gc stats:          use_entire_heap =                0
-tort gc stats:                full_freq =               19
-tort gc stats:             non_gc_bytes =                0
-tort gc stats:                   no_dls =                0
-tort gc stats:       free_space_divisor =                3
-tort gc stats:              max_retries =                0
-tort gc stats:          dont_precollect =                0
+tort gc stats:            get_heap_size =           ######
+tort gc stats:           get_free_bytes =            #####
+tort gc stats:       get_bytes_since_gc =            #####
+tort gc stats:          get_total_bytes =            #####
+tort gc stats:                    gc_no =                #
+tort gc stats:                 parallel =                #
+tort gc stats:    all_interior_pointers =                #
+tort gc stats:       finalize_on_demand =                #
+tort gc stats:        java_finalization =                #
+tort gc stats:                  dont_gc =                #
+tort gc stats:              dont_expand =                #
+tort gc stats:          use_entire_heap =                #
+tort gc stats:                full_freq =               ##
+tort gc stats:             non_gc_bytes =                #
+tort gc stats:                   no_dls =                #
+tort gc stats:       free_space_divisor =                #
+tort gc stats:              max_retries =                #
+tort gc stats:          dont_precollect =                #
 
 
 DONE
