@@ -47,7 +47,7 @@ int main(int argc, char **argv)
   printf("\n  symbols => ");
   tort_write(io, _tort->symbols);
 
-  printf("\nread 1 char from popen(\"echo 12345\", \"r\") => ");
+  printf("\nread up to 64 chars from popen(\"echo 12345\", \"r\") => ");
   v = tort_string_new_cstr("echo 12345");
   c = tort_string_new_cstr("r");
   o = tort_send(tort__s(create), tort_stdin);
@@ -104,6 +104,17 @@ int main(int argc, char **argv)
   tort_printf(io, "v = %T\n", v);
 
   tort_printf(io, "v as lisp object = %O\n", v);
+
+#if 0
+  printf("\nread lisp object from popen(\"echo 12345\", \"r\") => ");
+  v = tort_string_new_cstr("echo 12345");
+  c = tort_string_new_cstr("r");
+  o = tort_send(tort__s(create), tort_stdin);
+  o = tort_send(tort__s(popen), o, v, c);
+  v = tort_send(tort__s(lisp_read), o);
+  tort_send(tort__s(close), o);
+  tort_printf(io, "(read o) => %O\n", v);
+#endif
 
   tort_send(tort_s(__debugger), v);
 

@@ -129,18 +129,6 @@ tort_val _tort_map_add(tort_val _tort_message, tort_val rcvr, tort_val key, tort
   return rcvr;
 }
 
-tort_val _tort_map_set(tort_val _tort_message, tort_val rcvr, tort_val key, tort_val value)
-{
-  tort_map_entry *e = _tort_map_get_entry(_tort_message, rcvr, key);
-  if ( ! e ) {
-    _tort_map_add(_tort_message, rcvr, key, value);
-  } else {
-    e->value = value;
-  }
-  return rcvr;
-}
-
-
 tort_map_entry *_tort_map_get_entry(tort_val _tort_message, tort_val rcvr, tort_val key)
 {
   tort_map *map = tort_ref(tort_map, rcvr);
@@ -218,6 +206,37 @@ tort_val _tort_map_get_string(tort_val _tort_message, tort_val rcvr, tort_val ke
 {
   tort_map_entry *e = _tort_map_get_entry_string(_tort_message, rcvr, key);
   return e ? e->value : tort_nil;
+}
+
+
+tort_val _tort_map_set(tort_val _tort_message, tort_val rcvr, tort_val key, tort_val value)
+{
+  tort_map_entry *e = _tort_map_get_entry(_tort_message, rcvr, key);
+  if ( ! e ) {
+    _tort_map_add(_tort_message, rcvr, key, value);
+  } else {
+    e->value = value;
+  }
+  return rcvr;
+}
+
+
+tort_val _tort_map_delete(tort_val _tort_message, tort_val rcvr, tort_val key)
+{
+  tort_map *map = tort_ref(tort_map, rcvr);
+  tort_map_entry **x = map->entry, *entry;
+
+  while ( (entry = *(x ++)) ) {
+    if ( entry->key == key ) {
+      do {
+	x[-1] = x[0];
+      } while ( (entry = *(x ++)) );
+      map->entry_n --;
+      break;
+    }
+  }
+
+  return rcvr;
 }
 
 
@@ -633,6 +652,7 @@ tort_val tort_runtime_create()
   tort_add_method(_tort->_mt_map, "get", _tort_map_get);
   tort_add_method(_tort->_mt_map, "get_key", _tort_map_get_key);
   tort_add_method(_tort->_mt_map, "set", _tort_map_set);
+  tort_add_method(_tort->_mt_map, "delete", _tort_map_delete);
   tort_add_method(_tort->_mt_map, "clone", _tort_map_clone);
 
   /* Vector methods. */
@@ -660,6 +680,7 @@ tort_val tort_runtime_create()
   tort_h(_tort->symbols)->mtable = tort_mtable_create(tort_h_mtable(_tort->symbols));
   tort_add_method(tort_h_mtable(_tort->symbols), "get", _tort_map_get_string);
   tort_add_method(tort_h_mtable(_tort->symbols), "set", _tort_object_identity);
+  tort_add_method(tort_h_mtable(_tort->symbols), "delete", _tort_object_identity);
 
   /* Subsystem initialization. */
   tort_runtime_initialize_io();

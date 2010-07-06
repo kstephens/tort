@@ -7,7 +7,7 @@
 
 #define IO tort_ref(tort_io, rcvr)
 #define FP IO->fp
-#define FP_TORT_OBJ(fp) *((tort_val*)&((struct _IO_FILE *)fp)->_unused2)
+#define FP_TORT_OBJ(fp) *(((tort_val*)(((struct _IO_FILE *) fp) + 1)) - 1)
 
 static
 tort_val _tort_io_create(tort_val message, tort_val rcvr, FILE *fp)
@@ -23,6 +23,7 @@ static
 tort_val _tort_io_open(tort_val message, tort_val rcvr, tort_val name, tort_val mode)
 {
   FP = fopen(tort_string_data(name), tort_string_data(mode));
+  IO->name = name;
   IO->mode = mode;
   return rcvr;
 }
@@ -32,6 +33,7 @@ static
 tort_val _tort_io_popen(tort_val message, tort_val rcvr, tort_val name, tort_val mode)
 {
   FP = popen(tort_string_data(name), tort_string_data(mode));
+  IO->name = name;
   IO->mode = mode;
   IO->popen = 1;
   return rcvr;

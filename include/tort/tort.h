@@ -22,7 +22,7 @@ typedef void* tort_val;
 #define tort_i(V) tort_tagged_box(V)
 #define tort_I(X) tort_tagged_data(X)
 
-#define tort_error_decl(X)  void X (const char *format, va_list vap)
+#define tort_error_decl(X)  tort_val X (const char *format, va_list vap)
 
 #define tort_lookup_decl(X) tort_val X (tort_val _tort_message, tort_val rcvr, ...)
 #define tort_apply_decl(X)  tort_val X (tort_val _tort_message, tort_val rcvr, ...)
@@ -143,6 +143,7 @@ typedef struct _tort_message_data {
 typedef
 struct tort_io {
   FILE *fp;
+  tort_val name;
   tort_val mode;
   int popen;
 } tort_io;
@@ -174,6 +175,7 @@ struct tort_runtime {
   tort_val _mt_tagged;
   tort_val _mt_io;
   tort_val _mt_block;
+  tort_val _mt_pair;
 
   tort_val _s_new;
   tort_val _s_clone;
@@ -205,12 +207,19 @@ struct tort_runtime {
   tort_val _s_backtrace_size;
 
   tort_val _s_format;
+
+  /* lisp */
   tort_val _s_format_lisp;
+  tort_val _s_lisp_read;
+  tort_val _s_set_cdrE;
+  tort_val _s_list_TO_vector;
+  tort_val _s_DOT;
 
   /* io */
   tort_val _io_stdin;
   tort_val _io_stdout;
   tort_val _io_stderr;
+  tort_val _io_eos;
 
   tort_val _initialized;
 } tort_runtime;
@@ -219,6 +228,7 @@ struct tort_runtime {
 #define tort_stdin  (_tort->_io_stdin)
 #define tort_stdout (_tort->_io_stdout)
 #define tort_stderr (_tort->_io_stderr)
+#define tort_eos    (_tort->_io_eos)
 
 #define tort_write(io, obj) tort_send(tort__s(write), obj, io)
 #define tort_printf(io, fmt, args...) tort_send(tort__s(printf), io, fmt, ## args)
@@ -277,9 +287,9 @@ tort_val tort_add_method(tort_val map, const char *name, void *applyf);
 
 tort_val tort_runtime_create ();
 
-void tort_fatal (const char *format, ...);
-void tort_error (const char *format, ...);
-void tort_error_message(const char *format, ...);
+tort_val tort_fatal (const char *format, ...);
+tort_val tort_error (const char *format, ...);
+tort_val tort_error_message(const char *format, ...);
 
 const char *tort_object_name(tort_val val);
 

@@ -16,7 +16,7 @@ libtort.a : $(OFILES)
 tort_test : tort_test.c libtort.a
 	$(CC) $(CFLAGS) $(LDFLAGS) $^ $(LIBS) -o $@
 
-$(OFILES) : include/tort/*.h
+tort_test $(OFILES) : include/tort/*.h
 
 gc : $(GC)/.libs/libgc.a
 

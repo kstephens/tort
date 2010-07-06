@@ -4,7 +4,7 @@
 #include <stdlib.h>
 
 
-void tort_error_messagev(const char *type, const char *format, va_list vap)
+tort_val tort_error_messagev(const char *type, const char *format, va_list vap)
 {
   if ( _tort->_in_error ) {
     fprintf(stderr, "\ntort: too many errors\n");
@@ -16,32 +16,36 @@ void tort_error_messagev(const char *type, const char *format, va_list vap)
     _tort->_in_error = 0;
   }
   fflush(stderr);
+  return 0;
 }
 
 
-void tort_error_message(const char *format, ...)
+tort_val tort_error_message(const char *format, ...)
 {
   va_list vap;
   va_start(vap, format);
   tort_error_messagev("error", format, vap);
   va_end(vap);
+  return 0;
 }
 
-void _tort_fatal(const char *format, va_list vap)
+tort_val _tort_fatal(const char *format, va_list vap)
 {
   tort_error_messagev("fatal", format, vap);
   abort();
+  return 0;
 }
 
 
-void _tort_error(const char *format, va_list vap)
+tort_val _tort_error(const char *format, va_list vap)
 {
   tort_error_messagev("error", format, vap);
   abort();
+  return 0;
 }
 
 
-void tort_fatal (const char *format, ...)
+tort_val tort_fatal (const char *format, ...)
 {
   va_list vap;
   va_start(vap, format);
@@ -52,15 +56,17 @@ void tort_fatal (const char *format, ...)
   }
   _tort->fatal(format, vap);
   va_end(vap);
+  return 0;
 }
 
 
-void tort_error (const char *format, ...)
+tort_val tort_error (const char *format, ...)
 {
   va_list vap;
   va_start(vap, format);
   _tort->error(format, vap);
   va_end(vap);
+  return 0;
 }
 
 
