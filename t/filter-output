@@ -1,5 +1,10 @@
-#!/usr/bin/perl -np
-%x = ( );
-$x = 0;
-s/(@0x[0-9a-f]+)/$x{$1} ||= '@0x' . (++ $x)/ge;
-
+#!/usr/bin/perl
+use strict;
+my %x = ( );
+my $i = 0;
+while ( <> ) {
+  s/(\@0x[0-9a-f]+)/$x{$1} ||= '@x' . (++ $i)/ge;
+  print $_;
+}
+# print "\n\n", keys %x, "\n", values %x, "\n";
+exit 0;

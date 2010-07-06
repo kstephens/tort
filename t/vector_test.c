@@ -29,7 +29,7 @@ int main(int argc, char **argv)
 
   b = 
     tort_block_(tort_v obj) {
-    return tort_printf(io, "  in each %p[%d] => %T\n", 
+    return tort_printf(io, "  in each @%p[%d] => %T\n", 
 		       (void*) v, 
 		       ++ i, 
 		       obj);

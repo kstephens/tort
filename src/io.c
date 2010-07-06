@@ -11,6 +11,8 @@
 #define FP_TORT_OBJ(fp) *(((tort_v*)(((struct _IO_FILE *) fp) + 1)) - 1)
 
 
+size_t _tort_io_open_count, _tort_io_close_count;
+
 tort_v _tort_io_create(tort_v _tort_message, tort_v rcvr, FILE *fp)
 {
   rcvr = tort_allocate(_tort_message, rcvr, sizeof(tort_io), _tort->_mt_io);
@@ -24,22 +26,26 @@ tort_v _tort_io_create(tort_v _tort_message, tort_v rcvr, FILE *fp)
 
 tort_v _tort_io_open(tort_v _tort_message, tort_v rcvr, tort_v name, tort_v mode)
 {
-  FP = fopen(tort_string_data(name), tort_string_data(mode));
-  IO->name = name;
-  IO->mode = mode;
-  IO->flags = 1;
-  tort_send(tort__s(__register_finalizer), rcvr);
+  if ( (FP = fopen(tort_string_data(name), tort_string_data(mode))) ){
+    ++ _tort_io_open_count;
+    IO->name = name;
+    IO->mode = mode;
+    IO->flags = 1;
+    tort_send(tort__s(__register_finalizer), rcvr);
+  }
   return rcvr;
 }
 
 
 tort_v _tort_io_popen(tort_v _tort_message, tort_v rcvr, tort_v name, tort_v mode)
 {
-  FP = popen(tort_string_data(name), tort_string_data(mode));
-  IO->name = name;
-  IO->mode = mode;
-  IO->flags = 3;
-  tort_send(tort__s(__register_finalizer), rcvr);
+  if ( (FP = FP = popen(tort_string_data(name), tort_string_data(mode))) ) {
+    ++ _tort_io_open_count;
+    IO->name = name;
+    IO->mode = mode;
+    IO->flags = 3;
+    tort_send(tort__s(__register_finalizer), rcvr);
+  }
   return rcvr;
 }
 
@@ -47,12 +53,13 @@ tort_v _tort_io_popen(tort_v _tort_message, tort_v rcvr, tort_v name, tort_v mod
 tort_v _tort_io_close(tort_v _tort_message, tort_v rcvr)
 {
   if ( FP ) {
-    fprintf(stderr, "\n  _tort_io_close @%p\n", (void*) rcvr);
+    // fprintf(stderr, "\n  _tort_io_close @%p\n", (void*) rcvr);
     if ( IO->flags & 2 ) {
       pclose(FP);
     } else {
       fclose(FP);
     }
+    ++ _tort_io_close_count;
     FP = 0;
   }
   return rcvr;
@@ -124,8 +131,8 @@ tort_v _tort_io_error(tort_v _tort_message, tort_v rcvr)
 
 tort_v _tort_io___finalize(tort_v _tort_message, tort_v rcvr)
 {
-  fprintf(stderr, "\n  _tort_io___finalize @%p\n", (void*) rcvr);
   if ( FP && (IO->flags & 1) ) {
+    // fprintf(stderr, "\n  _tort_io___finalize @%p\n", (void*) rcvr);
     IO->flags &= ~1;
     _tort_io_close(_tort_message, rcvr);
   }
@@ -199,6 +206,7 @@ void tort_runtime_initialize_io()
   _tort->_s_error = tort_symbol_make("error");
 
   _tort->_mt_io = tort_mtable_create(_tort->_mt_object);
+
   tort_add_method(_tort->_mt_io, "create", _tort_io_create); 
   tort_add_method(_tort->_mt_io, "open", _tort_io_open);
   tort_add_method(_tort->_mt_io, "popen", _tort_io_popen);

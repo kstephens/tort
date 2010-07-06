@@ -3,16 +3,19 @@
 #include "tort/internal.h"
 #include "gc.h"
 
+size_t _tort_gc_finalize_count = 0;
+
 static
 void _tort_finalization_proc (void * obj, void * client_data)
 {
+  _tort_gc_finalize_count ++;
   tort_send(tort__s(__finalize), tort_ref_box(obj));
 }
 
 
 tort_v _tort_object___register_finalizer(tort_v _tort_message, tort_v rcvr)
 {
-  fprintf(stderr, "\n  _tort_object___register_finalizer @%p\n", (void*) rcvr);
+  // fprintf(stderr, "\n  _tort_object___register_finalizer @%p\n", (void*) rcvr);
   GC_register_finalizer(rcvr, _tort_finalization_proc, 0, 0, 0);
   return tort_nil;
 }
@@ -21,6 +24,11 @@ tort_v _tort_object___register_finalizer(tort_v _tort_message, tort_v rcvr)
 static
 void tort_gc_atexit()
 {
+#if 0
+  fprintf(stderr, "\n  tort_gc_atexit()\n");
+  fflush(stderr);
+#endif
+
   tort_gc_collect();
   // tort_gc_dump_stats();
 }
