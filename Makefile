@@ -21,7 +21,7 @@ tort_test : tort_test.c libtort.a
 gc : $(GC)/.libs/libgc.a
 
 $(GC)/.libs/libgc.a : $(GC)
-	cd $(GC) && [ ! -f Makefile ] && ./configure
+	cd $(GC) && if [ ! -f Makefile ]; then ./configure; fi
 	cd $(GC) && make
 
 $(GC) : $(GC).tar.gz
