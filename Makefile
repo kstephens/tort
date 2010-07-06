@@ -32,6 +32,9 @@ test : tort_test
 gdb : tort_test
 	gdb --args ./tort_test 
 
+disasm : tort_test
+	objdump -DS ./tort_test | less "+/<main>"
+
 clean :
 	rm -f tort_test libtort.a src/*.o
 

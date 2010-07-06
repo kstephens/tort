@@ -174,6 +174,7 @@ struct tort_runtime {
   tort_val _mt_nil;
   tort_val _mt_tagged;
   tort_val _mt_io;
+  tort_val _mt_eos;
   tort_val _mt_block;
   tort_val _mt_pair;
 

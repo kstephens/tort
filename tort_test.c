@@ -47,6 +47,7 @@ int main(int argc, char **argv)
   printf("\n  symbols => ");
   tort_write(io, _tort->symbols);
 
+  for ( i = 0; i < 2; i ++  ) {
   printf("\nread up to 64 chars from popen(\"echo 12345\", \"r\") => ");
   v = tort_string_new_cstr("echo 12345");
   c = tort_string_new_cstr("r");
@@ -61,7 +62,9 @@ int main(int argc, char **argv)
   tort_write(io, c = tort_send(tort__s(size), v));
   printf("\n  (alloc_size v) => ");
   tort_write(io, c = tort_send(tort__s(alloc_size), v));
-  
+  printf("\n\n");
+  }
+
   o = tort_map_create();
   tort_printf(io, "o => %T\n", o);
   v = tort_send(tort__s(size), o);

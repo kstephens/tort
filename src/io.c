@@ -187,6 +187,9 @@ void tort_runtime_initialize_io()
   _tort->_io_stdout = _tort_io_create(0, 0, stdout);
   _tort->_io_stderr = _tort_io_create(0, 0, stderr);
 
+  _tort->_mt_eos    = tort_mtable_create(_tort->_mt_object);
+  _tort->_io_eos    = tort_allocate(0, 0, sizeof(tort_object), _tort->_mt_eos);
+
   /* Register the print function for tort_val.  */
   register_printf_specifier('T', 
 			    _tort_printf_object,

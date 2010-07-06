@@ -2,7 +2,7 @@
 
 #include <stdio.h>
 
-#define tort_write_decl(name) tort_val name (tort_val message, tort_val rcvr, tort_val io)
+#define tort_write_decl(name) static tort_val name (tort_val message, tort_val rcvr, tort_val io)
 
 #define IO (io ? io : tort_stdout)
 
@@ -151,6 +151,12 @@ tort_write_decl(_tort_map_lisp_write)
 }
 
 
+tort_write_decl(_tort_eos_lisp_write)
+{
+  printf("#e");
+  return tort_nil;
+}
+
 #undef printf
 #undef IO
 
@@ -173,10 +179,11 @@ void tort_runtime_initialize_write()
   tort_add_method(_tort->_mt_tagged, "lisp_write", _tort_tagged_write);
   tort_add_method(_tort->_mt_string, "lisp_write", _tort_string_write);
   tort_add_method(_tort->_mt_vector, "lisp_write", _tort_vector_lisp_write);
-  tort_add_method(_tort->_mt_symbol, "lisp_write", _tort_symbol_write);
+  tort_add_method(_tort->_mt_symbol, "lisp_write", _tort_symbol_lisp_write);
   tort_add_method(_tort->_mt_method, "lisp_write", _tort_method_write);
   tort_add_method(_tort->_mt_message, "lisp_write", _tort_message_write);
   tort_add_method(_tort->_mt_nil,    "lisp_write", _tort_nil_write);
   tort_add_method(_tort->_mt_map,    "lisp_write", _tort_map_lisp_write);
+  tort_add_method(_tort->_mt_eos,    "lisp_write", _tort_eos_lisp_write);
 }
 
