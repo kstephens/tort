@@ -10,7 +10,7 @@ void tort_runtime_initialize_symtab()
   char cmd[1024];
   tort_v st;
 
-  snprintf(cmd, sizeof(cmd), "nm -l %s", _tort->_argv[0]);
+  snprintf(cmd, sizeof(cmd), "nm -l %s 2>&1", _tort->_argv[0]);
 
   st = _tort->_symtab = tort_map_create();
 
