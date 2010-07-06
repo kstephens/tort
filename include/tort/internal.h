@@ -73,10 +73,6 @@ extern tort_v _tort_map_size(tort_v _tort_message, tort_v rcvr)
 ;
 extern tort_v _tort_map_clone(tort_v _tort_message, tort_v rcvr)
 ;
-extern tort_v _tort_object_clone (tort_v _tort_message, tort_v rcvr)
-;
-extern tort_v _tort_object_identity (tort_v _tort_message, tort_v rcvr)
-;
 extern tort_v _tort_string_new(tort_v _tort_message, tort_v rcvr, tort_v size)
 ;
 extern tort_v _tort_string_clone (tort_v _tort_message, tort_v rcvr)
@@ -84,6 +80,10 @@ extern tort_v _tort_string_clone (tort_v _tort_message, tort_v rcvr)
 extern tort_v _tort_string_get (tort_v _tort_message, tort_v rcvr, tort_v _i)
 ;
 extern tort_v _tort_string_set (tort_v _tort_message, tort_v rcvr, tort_v _i, tort_v _v)
+;
+extern tort_v _tort_object_clone (tort_v _tort_message, tort_v rcvr)
+;
+extern tort_v _tort_object_identity (tort_v _tort_message, tort_v rcvr)
 ;
 extern tort_v _tort_vector_new(tort_v _tort_message, tort_v rcvr, tort_v _size)
 ;
