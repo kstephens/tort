@@ -1,7 +1,7 @@
 
 tort debugger:
-rcvr = !object @x1
-backtrace =   !message { __debugger !object @x1 !method __debugger @x2}
+rcvr = @object @x1
+backtrace =   @message { __debugger @object @x1 @method __debugger @x2}
 
 HELLO!
 

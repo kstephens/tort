@@ -20,7 +20,7 @@ tort_inspect_decl(_tort_object_write)
   if ( str ) {
     printf("%s", str);
   } else {
-    printf("!object @%p", (void *) rcvr);
+    printf("@object @%p", (void *) rcvr);
   }
 
   return tort_nil;
@@ -50,7 +50,7 @@ tort_inspect_decl(_tort_string_write)
 
 tort_inspect_decl(_tort_vector_write)
 {
-  printf("!vector { ");
+  printf("@vector { ");
   tort_vector_loop(rcvr, obj) {
     if ( obj_i > 0 ) printf(", ");
     tort_inspect(IO, obj);
@@ -77,7 +77,7 @@ tort_inspect_decl(_tort_symbol_write)
   if ( tort_ref(tort_symbol, rcvr)->name != tort_nil ) {
     printf("%s", (char *) tort_symbol_data(rcvr));
   } else {
-    printf("!symbol @%p", (void*) rcvr);
+    printf("@symbol @%p", (void*) rcvr);
   }
   return tort_nil;
 }
@@ -119,7 +119,7 @@ tort_inspect_decl(_tort_method_write)
 {
   tort_v meth_name = tort_ref(tort_method, rcvr)->name;
   const char *meth_cstr = meth_name ? tort_symbol_data(meth_name) : "#<unknown>";
-  printf("!method %s @%p", meth_cstr, (void *) tort_h_applyf(rcvr));
+  printf("@method %s @%p", meth_cstr, (void *) tort_h_applyf(rcvr));
   return tort_nil;
 }
 
@@ -127,7 +127,7 @@ tort_inspect_decl(_tort_method_write)
 tort_inspect_decl(_tort_message_write)
 {
   tort_message *msg = tort_ref(tort_message, rcvr);
-  printf("!message { ");
+  printf("@message { ");
   tort_inspect(IO, msg->selector);
   printf(" ");
   tort_inspect(IO, msg->receiver);
@@ -149,7 +149,7 @@ tort_inspect_decl(_tort_map_write)
   if ( str ) {
     printf("%s", str);
   } else {
-    printf("!map { ");
+    printf("@map { ");
     while ( (entry = *(x ++)) ) {
       if ( entry_i > 0 ) printf(", ");
       tort_inspect(IO, entry->key);

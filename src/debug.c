@@ -97,16 +97,16 @@ const char *tort_object_name_(tort_v val)
     if ( tort_ref(tort_symbol, val)->name != tort_nil ) {
       snprintf(buf, S, "%s", tort_symbol_data(val));
     } else {
-      snprintf(buf, S, "!symbol @%p", (void*) val);
+      snprintf(buf, S, "@symbol @%p", (void*) val);
     }
   }
   else if ( val == _tort ) {
-    snprintf(buf, S, "!tort");
+    snprintf(buf, S, "@tort");
   }
   else if ( val == _tort->root ) {
-    snprintf(buf, S, "!root");
+    snprintf(buf, S, "@root");
   }
-#define mt(N) else if ( val == _tort->_mt_##N ) { snprintf(buf, S, "!mtable %s", #N); }
+#define mt(N) else if ( val == _tort->_mt_##N ) { snprintf(buf, S, "@mtable %s", #N); }
   mt(mtable)
     mt(object)
     mt(map)
