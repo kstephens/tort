@@ -84,8 +84,7 @@ int main(int argc, char **argv)
 
   tort_send(tort_s(delete), o, tort_i(1));
   tort_printf(io, "o => %T\n", o);
-  v = tort_send(tort__s(size), o);
-  tort_printf(io, "(size o) => %T\n", v);
+  tort_printf(io, "(size o) => %T\n", tort_send(tort__s(size), o));
 
 #if 0
   printf("\nread 1 char from stdin: ");
@@ -96,7 +95,7 @@ int main(int argc, char **argv)
   printf("\n");
 
   v = tort_send(tort_s(__message), v);
-  tort_printf(io, "some object %T in here\n", tort_nil);
+  tort_printf(io, "Some object ==> ( %T ) <== is in here!\n", tort_nil);
 
   v = tort_vector_new(0, 10);
   
@@ -110,10 +109,7 @@ int main(int argc, char **argv)
   tort_block_end();
   
   i = 0;
-  tort_send(tort_s(each), 
-	    v, 
-	    b
-	    );
+  tort_send(tort_s(each), v, b);
 
   b = 
     tort_block_(tort_val obj) {
@@ -122,10 +118,7 @@ int main(int argc, char **argv)
   tort_block_end();
   
   i = 0;
-  v = tort_send(tort_s(map), 
-	    v, 
-	    b
-	    );
+  v = tort_send(tort_s(map), v, b);
   tort_printf(io, "v = %T\n", v);
 
   tort_printf(io, "v as lisp object = %O\n", v);

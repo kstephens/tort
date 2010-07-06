@@ -233,17 +233,21 @@ struct tort_runtime {
 #define tort_write(io, obj) tort_send(tort__s(write), obj, io)
 #define tort_printf(io, fmt, args...) tort_send(tort__s(printf), io, fmt, ## args)
 
-#define tort_send(SEL, RCVR, ARGS...)					\
+#define _tort_send_RCVR(RCVR, ARGS...)(RCVR)
+#define _tort_send_ARGS(RCVR, ARGS...)ARGS
+#define _tort_send_RCVR_ARGS(RCVR, EATEN, ARGS...)RCVR, ##ARGS
+#define _tort_send(SEL, RCVR_AND_ARGS...)				\
   ({									\
-    _tort_message_data __msg = {					\
+    _tort_message_data __tort_msg = {					\
       { sizeof(tort_message), _tort_object_lookupf, _tort_object_applyf, _tort->_mt_message }, \
-      { (SEL), (RCVR), tort_nil, _tort_message }			\
+      { (SEL), _tort_send_RCVR(RCVR_AND_ARGS), tort_nil, _tort_message } \
     };									\
-    tort_val __msg_val = tort_ref_box(&__msg._msg);			\
-    tort_h_lookupf(__msg._msg.receiver)(__msg_val, __msg._msg.receiver); \
-    tort_h_applyf(__msg._msg.method)(__msg_val, __msg._msg.receiver , ## ARGS); \
+    tort_val __tort_msg_val = tort_ref_box(&__tort_msg._msg);			\
+    tort_h_lookupf(__tort_msg._msg.receiver)(__tort_msg_val, __tort_msg._msg.receiver); \
+    tort_h_applyf(__tort_msg._msg.method)(__tort_msg_val, _tort_send_RCVR_ARGS(__tort_msg._msg.receiver, RCVR_AND_ARGS)); \
   })
- 
+#define tort_send(SEL, RCVR_AND_ARGS...)_tort_send(SEL, RCVR_AND_ARGS)
+
 extern tort_runtime *_tort;
 extern tort_val _tort_message; /* catch for top-level messages. */
 

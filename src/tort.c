@@ -317,11 +317,11 @@ tort_lookup_decl(_tort_object_lookupf)
 tort_apply_decl(_tort_object_applyf) 
 {
   tort_error_message("cannot apply selector %s to", 
-		     (char *) tort_symbol_data(tort_ref(tort_message, _tort_message)->selector)
+		     (char *) tort_object_name(tort_ref(tort_message, _tort_message)->selector)
 		     );
-  tort_error_message("  receiver @%p", (void*) rcvr);
+  tort_error_message("  receiver %s", tort_object_name(rcvr));
 #if TORT_ALLOC_DEBUG
-  tort_error_message("  allocated at %s:%d#%lu", (void*) rcvr, 
+  tort_error_message("  allocated at %s:%d#%lu",
 		     tort_h(rcvr).alloc_file,
 		     tort_h(rcvr).alloc_line,
 		     tort_h(rcvr).alloc_id);
