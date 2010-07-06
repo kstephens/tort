@@ -276,7 +276,7 @@ tort_val _tort_map_clone(tort_val _tort_message, tort_val rcvr)
 
 tort_lookup_decl(_tort_object_lookupf)
 {
-  tort_val meth;
+  tort_val meth = tort_nil;
   tort_val mtable;
   
   _tort->message = _tort_message;
@@ -289,7 +289,7 @@ tort_lookup_decl(_tort_object_lookupf)
 
   mtable = tort_h_mtable(tort_ref(tort_message, _tort_message)->receiver);
   
-  while ( mtable != tort_nil ) {
+  do {
     meth =
       _tort_map_get(_tort_message,
 		    mtable, 
@@ -306,7 +306,7 @@ tort_lookup_decl(_tort_object_lookupf)
       break;
     
     mtable = tort_ref(tort_mtable, mtable)->delegate;
-  }
+ } while ( mtable != tort_nil );
   
   tort_ref(tort_message, _tort_message)->method = meth;
 

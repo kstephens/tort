@@ -124,6 +124,7 @@ int main(int argc, char **argv)
   tort_printf(io, "v as lisp object = %O\n", v);
 
 #if 0
+  // segfault
   printf("\nread lisp object from popen(\"echo 12345\", \"r\") => ");
   v = tort_string_new_cstr("echo 12345");
   c = tort_string_new_cstr("r");

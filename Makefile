@@ -1,6 +1,7 @@
 GC=gc-7.0
 
-CFLAGS = -Iinclude -I$(GC)/include -Wall -Werror -g # -O2
+CFLAGS_OPTIMIZE = -O2
+CFLAGS = -Iinclude -I$(GC)/include -Wall -Werror -g $(CFLAGS_OPTIMIZE)
 LDFLAGS = -L$(GC)/.libs
 LIBS=-lgc
 
