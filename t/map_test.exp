@@ -1,5 +1,5 @@
 
-  _mt_map => !map { initialize => !method initialize @0@0x1, get => !method get @0@0x2, get_key => !method get_key @0@0x3, set => !method set @0@0x4, delete => !method delete @0@0x5, clone => !method clone @0@0x6, size => !method size @0@0x7, _inspect => !method _inspect @0@0x8, lisp_write => !method lisp_write @0@0x9 }o => !map {  }
+  _mt_map => !map { initialize => !method initialize @x1, get => !method get @x2, get_key => !method get_key @x3, set => !method set @x4, delete => !method delete @x5, clone => !method clone @x6, size => !method size @x7, _inspect => !method _inspect @x8, lisp_write => !method lisp_write @x9 }o => !map {  }
 (size o) => 0
 o => !map { 1 => 2 }
 (size o) => 1

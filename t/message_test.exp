@@ -1,3 +1,3 @@
-Some object ==> ( !message { __message !object @0@0x1 !method __message @0@0x2} ) <== is in here!
+Some object ==> ( !message { __message !object @x1 !method __message @x2} ) <== is in here!
 
 DONE

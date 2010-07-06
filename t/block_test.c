@@ -16,29 +16,26 @@ int main(int argc, char **argv)
 
   v = tort_vector_new(0, 10);
   
-  b = 
-    tort_block_(tort_v obj) {
-    return tort_printf(io, "  in each %p[%d] => %T\n", 
-		       (void*) v, 
-		       ++ i, 
-		       obj);
-  }
-  tort_block_end();
-  
   i = 0;
-  tort_send(tort_s(each), v, b);
-
-  b = 
-    tort_block_(tort_v obj) {
+  b = tort_block_(tort_v obj) {
+    fprintf(stderr, "  %d\n", (int) i);
     return tort_i(i ++);
   }
   tort_block_end();
-  
-  i = 0;
   v = tort_send(tort_s(map), v, b);
   tort_printf(io, "v = %T\n", v);
-
-  tort_printf(io, "v as lisp object = %O\n", v);
+  
+  
+  i = 0;
+  b = tort_block_(tort_v obj) {
+    tort_printf(io,
+		"  in each [%d] => %T\n", 
+		i ++, 
+		obj);
+    return obj;
+  }
+  tort_block_end();
+  tort_send(tort_s(each), v, b);
 
   printf("\nDONE\n");
 
