@@ -5,7 +5,7 @@
 #define printf(fmt, args...) tort_send(tort__s(printf), IO, fmt, ##args)
 
 static 
-tort_val _tort_object___message(tort_val _tort_message, tort_val rcvr)
+tort_v _tort_object___message(tort_v _tort_message, tort_v rcvr)
 {
   rcvr = _tort_message;
   // rcvr = tort_ref(tort_message, rcvr)->previous_message;
@@ -14,9 +14,9 @@ tort_val _tort_object___message(tort_val _tort_message, tort_val rcvr)
 
 
 static
-tort_val _tort_message_backtrace(tort_val _tort_message, tort_val rcvr)
+tort_v _tort_message_backtrace(tort_v _tort_message, tort_v rcvr)
 {
-  tort_val v, msg;
+  tort_v v, msg;
   size_t i = 0;
 
   i = 0;
@@ -40,9 +40,9 @@ tort_val _tort_message_backtrace(tort_val _tort_message, tort_val rcvr)
 }
 
 static
-tort_val _tort_debugger_start(tort_val _tort_message, tort_val rcvr)
+tort_v _tort_debugger_start(tort_v _tort_message, tort_v rcvr)
 {
-  tort_val bt;
+  tort_v bt;
 
   printf("\ntort debugger:\n");
   printf("rcvr = "); tort_write(IO, rcvr); printf("\n");
@@ -64,7 +64,7 @@ tort_val _tort_debugger_start(tort_val _tort_message, tort_val rcvr)
 #undef printf
 
 
-const char *tort_object_name(tort_val val)
+const char *tort_object_name(tort_v val)
 {
   static int bufi = 0;
 #define S 63
@@ -151,7 +151,7 @@ const char *tort_object_name(tort_val val)
 
 
 static
-tort_val _tort_object_name(tort_val _tort_message, tort_val rcvr)
+tort_v _tort_object_name(tort_v _tort_message, tort_v rcvr)
 {
   return tort_string_new_cstr(tort_object_name(rcvr));
 }

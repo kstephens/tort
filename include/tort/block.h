@@ -34,7 +34,7 @@ typedef struct _tort_block {
       _tort->_mt_block				\
     },						\
   };						\
-  tort_val _blk_f (tort_val _blk_msg, tort_val _blk_obj, ##args)
+  tort_v _blk_f (tort_v _blk_msg, tort_v _blk_obj, ##args)
 
 #define tort_block_end()			\
   _blk._h.applyf = (void*) _blk_f;		\

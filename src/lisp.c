@@ -2,12 +2,12 @@
 
 
 typedef struct tort_pair {
-  tort_val car, cdr;
+  tort_v car, cdr;
 } tort_pair;
 
-tort_val tort_cons(tort_val a, tort_val d)
+tort_v tort_cons(tort_v a, tort_v d)
 {
-  tort_val val = tort_allocate(0, 0, sizeof(tort_pair), _tort->_mt_pair);
+  tort_v val = tort_allocate(0, 0, sizeof(tort_pair), _tort->_mt_pair);
   tort_ref(tort_pair, val)->car = a;
   tort_ref(tort_pair, val)->cdr = d;
   return val;
@@ -15,13 +15,13 @@ tort_val tort_cons(tort_val a, tort_val d)
 
 #define ACCESSOR(X)							\
   static								\
-  tort_val _tort_pair_##X(tort_val _tort_message, tort_val rcvr)	\
+  tort_v _tort_pair_##X(tort_v _tort_message, tort_v rcvr)	\
   {									\
     return tort_ref(tort_pair, rcvr)->X;				\
   }									\
   static								\
-  tort_val _tort_pair_set_##X##E(tort_val _tort_message, tort_val rcvr,	\
-			       tort_val val)				\
+  tort_v _tort_pair_set_##X##E(tort_v _tort_message, tort_v rcvr,	\
+			       tort_v val)				\
   {									\
     tort_ref(tort_pair, rcvr)->X = val;					\
     return rcvr;							\
@@ -33,7 +33,7 @@ ACCESSOR(cdr)
 #undef ACCESSOR
 
 static							    
-tort_val _tort_list_size(tort_val _tort_message, tort_val rcvr) 
+tort_v _tort_list_size(tort_v _tort_message, tort_v rcvr) 
 {
   size_t i = 0;
 
@@ -50,7 +50,7 @@ tort_val _tort_list_size(tort_val _tort_message, tort_val rcvr)
 
 
 static							    
-tort_val _tort_list_lisp_write(tort_val _tort_message, tort_val rcvr, tort_val io) 
+tort_v _tort_list_lisp_write(tort_v _tort_message, tort_v rcvr, tort_v io) 
 {
   tort_printf(io, "(");
   while ( rcvr != tort_nil ) {
@@ -73,10 +73,10 @@ tort_val _tort_list_lisp_write(tort_val _tort_message, tort_val rcvr, tort_val i
 
 
 static
-tort_val _tort_list_list_TO_vector(tort_val _tort_message, tort_val rcvr, tort_val io)
+tort_v _tort_list_list_TO_vector(tort_v _tort_message, tort_v rcvr, tort_v io)
 {
-  tort_val size = tort_send(tort__s(size), rcvr);
-  tort_val vec = tort_vector_new(0, tort_I(size));
+  tort_v size = tort_send(tort__s(size), rcvr);
+  tort_v vec = tort_vector_new(0, tort_I(size));
   size_t i = 0;
   while ( rcvr != tort_nil ) {
     if ( tort_h_mtable(rcvr) == _tort->_mt_pair ) {
@@ -92,8 +92,8 @@ tort_val _tort_list_list_TO_vector(tort_val _tort_message, tort_val rcvr, tort_v
 
 #define FP(s) tort_ref(tort_io, s)->fp
 
-#define VALUE tort_val
-#define READ_DECL VALUE _tort_io_lisp_read (tort_val _tort_message, tort_val stream)
+#define VALUE tort_v
+#define READ_DECL VALUE _tort_io_lisp_read (tort_v _tort_message, tort_v stream)
 #define READ_CALL() tort_send(tort__s(lisp_read), stream)
 #define MALLOC(s) tort_malloc(s)
 #define REALLOC(p, s) tort_realloc(p, s)
@@ -116,7 +116,7 @@ tort_val _tort_list_list_TO_vector(tort_val _tort_message, tort_val rcvr, tort_v
 #define U  tort_nil
 #define ERROR(format, args...) tort_error(format, ##args)
 
-tort_val _tort_string_to_number(tort_val s, int radix)
+tort_v _tort_string_to_number(tort_v s, int radix)
 {
   long d = 0;
   if ( radix == 10 && sscanf(tort_string_data(s), "%ld", &d) == 1 ) {

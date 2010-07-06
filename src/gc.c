@@ -4,7 +4,7 @@
 
 void tort_gc_dump_stats()
 {
-  tort_val io = tort_stderr;
+  tort_v io = tort_stderr;
 
   tort_flush(tort_stdout);
   tort_flush(tort_stderr);

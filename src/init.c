@@ -3,7 +3,7 @@
 #include "tort/init.h"
 
 
-tort_val tort_runtime_create()
+tort_v tort_runtime_create()
 {
   /* Create runtime object. */
   _tort = tort_ref(tort_runtime, tort_allocate(0, 0, sizeof(tort_runtime), 0));

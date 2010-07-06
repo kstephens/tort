@@ -7,10 +7,10 @@
 
 #define IO tort_ref(tort_io, rcvr)
 #define FP IO->fp
-#define FP_TORT_OBJ(fp) *(((tort_val*)(((struct _IO_FILE *) fp) + 1)) - 1)
+#define FP_TORT_OBJ(fp) *(((tort_v*)(((struct _IO_FILE *) fp) + 1)) - 1)
 
 static
-tort_val _tort_io_create(tort_val message, tort_val rcvr, FILE *fp)
+tort_v _tort_io_create(tort_v message, tort_v rcvr, FILE *fp)
 {
   rcvr = tort_allocate(message, rcvr, sizeof(tort_io), _tort->_mt_io);
   FP = fp;
@@ -20,7 +20,7 @@ tort_val _tort_io_create(tort_val message, tort_val rcvr, FILE *fp)
 
 
 static
-tort_val _tort_io_open(tort_val message, tort_val rcvr, tort_val name, tort_val mode)
+tort_v _tort_io_open(tort_v message, tort_v rcvr, tort_v name, tort_v mode)
 {
   FP = fopen(tort_string_data(name), tort_string_data(mode));
   IO->name = name;
@@ -30,7 +30,7 @@ tort_val _tort_io_open(tort_val message, tort_val rcvr, tort_val name, tort_val 
 
 
 static
-tort_val _tort_io_popen(tort_val message, tort_val rcvr, tort_val name, tort_val mode)
+tort_v _tort_io_popen(tort_v message, tort_v rcvr, tort_v name, tort_v mode)
 {
   FP = popen(tort_string_data(name), tort_string_data(mode));
   IO->name = name;
@@ -41,7 +41,7 @@ tort_val _tort_io_popen(tort_val message, tort_val rcvr, tort_val name, tort_val
 
 
 static
-tort_val _tort_io_close(tort_val message, tort_val rcvr)
+tort_v _tort_io_close(tort_v message, tort_v rcvr)
 {
   if ( FP ) {
     if ( IO->popen ) {
@@ -55,7 +55,7 @@ tort_val _tort_io_close(tort_val message, tort_val rcvr)
 }
 
 static
-tort_val _tort_io_write(tort_val message, tort_val rcvr, tort_val buf)
+tort_v _tort_io_write(tort_v message, tort_v rcvr, tort_v buf)
 {
   fwrite(tort_string_data(buf), 
 	 sizeof(tort_string_data(buf)[0]),
@@ -65,7 +65,7 @@ tort_val _tort_io_write(tort_val message, tort_val rcvr, tort_val buf)
 
 
 static
-tort_val _tort_io_flush(tort_val message, tort_val rcvr)
+tort_v _tort_io_flush(tort_v message, tort_v rcvr)
 {
   if ( FP ) {
     fflush(FP);
@@ -75,7 +75,7 @@ tort_val _tort_io_flush(tort_val message, tort_val rcvr)
 
 
 static
-tort_val _tort_io_printf(tort_val message, tort_val rcvr, const char *fmt, ...)
+tort_v _tort_io_printf(tort_v message, tort_v rcvr, const char *fmt, ...)
 {
   va_list vap;
   va_start(vap, fmt);
@@ -86,7 +86,7 @@ tort_val _tort_io_printf(tort_val message, tort_val rcvr, const char *fmt, ...)
 
 
 static
-tort_val _tort_io_read(tort_val message, tort_val rcvr, tort_val buf)
+tort_v _tort_io_read(tort_v message, tort_v rcvr, tort_v buf)
 {
   int count;
 
@@ -108,14 +108,14 @@ tort_val _tort_io_read(tort_val message, tort_val rcvr, tort_val buf)
 
 
 static
-tort_val _tort_io_eof(tort_val message, tort_val rcvr)
+tort_v _tort_io_eof(tort_v message, tort_v rcvr)
 {
   return tort_i(FP ? feof(FP) : -1);
 }
 
 
 static
-tort_val _tort_io_error(tort_val message, tort_val rcvr)
+tort_v _tort_io_error(tort_v message, tort_v rcvr)
 {
   return tort_i(FP ? ferror(FP) : -1);
 }
@@ -128,10 +128,10 @@ _tort_printf_object (FILE *stream,
 		     __const void *__const *args
 		     )
 {
-  tort_val v;
+  tort_v v;
   int len = 128; /* ??? */
 
-  v = *(tort_val*) args[0];
+  v = *(tort_v*) args[0];
   v = tort_write(FP_TORT_OBJ(stream), v);
 
   return len;
@@ -145,10 +145,10 @@ _tort_printf_object_lisp (FILE *stream,
 		     __const void *__const *args
 		     )
 {
-  tort_val v;
+  tort_v v;
   int len = 128; /* ??? */
 
-  v = *(tort_val*) args[0];
+  v = *(tort_v*) args[0];
   v = tort_send(tort__s(lisp_write), v, FP_TORT_OBJ(stream));
 
   return len;
@@ -165,7 +165,7 @@ _tort_printf_extension_arginfo (
 {
   if (n > 0) {
     argtypes[0] = PA_POINTER;
-    size[0] = sizeof(tort_val);
+    size[0] = sizeof(tort_v);
   }
   return 1;
 }
@@ -202,7 +202,7 @@ void tort_runtime_initialize_io()
   _tort->_mt_eos    = tort_mtable_create(_tort->_mt_object);
   _tort->_io_eos    = tort_allocate(0, 0, sizeof(tort_object), _tort->_mt_eos);
 
-  /* Register the print function for tort_val.  */
+  /* Register the print function for tort_v.  */
   register_printf_specifier('T', 
 			    _tort_printf_object,
 			    _tort_printf_extension_arginfo);

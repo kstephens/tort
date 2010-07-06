@@ -6,8 +6,8 @@
 
 int main(int argc, char **argv)
 {
-  tort_val io;
-  tort_val o, v;
+  tort_v io;
+  tort_v o, v;
 
   tort_runtime_create();
 

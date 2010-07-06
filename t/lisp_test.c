@@ -6,8 +6,8 @@
 
 int main(int argc, char **argv)
 {
-  tort_val io;
-  tort_val v;
+  tort_v io;
+  tort_v v;
  
   tort_runtime_create();
 
@@ -21,7 +21,7 @@ int main(int argc, char **argv)
 #if 0
   // segfault
   {
-    tort_val o, c;
+    tort_v o, c;
     printf("\nread lisp object from popen(\"echo 12345\", \"r\") => ");
     v = tort_string_new_cstr("echo 12345");
     c = tort_string_new_cstr("r");
