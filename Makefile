@@ -1,12 +1,12 @@
 GC=gc-7.0
 
-CFLAGS = -Iinclude -I$(GC)/include -g # -O2
+CFLAGS = -Iinclude -I$(GC)/include -Wall -Werror -g # -O2
 LDFLAGS = -L$(GC)/.libs
 LIBS=-lgc
 
 all : gc tort_test
 
-CFILES = src/tort.c src/error.c src/io.c src/write.c
+CFILES = $(shell ls src/*.c)
 OFILES = $(CFILES:.c=.o)
 
 libtort.a : $(OFILES)
@@ -16,7 +16,7 @@ libtort.a : $(OFILES)
 tort_test : tort_test.c libtort.a
 	$(CC) $(CFLAGS) $(LDFLAGS) $^ $(LIBS) -o $@
 
-# tort_test : include/tort/*.h
+$(OFILES) : include/tort/*.h
 
 gc : $(GC)/.libs/libgc.a
 
@@ -28,6 +28,9 @@ $(GC) : $(GC).tar.gz
 	tar -zxvf $^
 
 test : tort_test
+	./tort_test 
+
+gdb : tort_test
 	gdb --args ./tort_test 
 
 clean :

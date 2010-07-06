@@ -61,7 +61,7 @@ tort_write_decl(_tort_method_write)
 {
   tort_val meth_name = tort_ref(tort_method, rcvr)->name;
   const char *meth_cstr = meth_name ? tort_symbol_data(meth_name) : "#<unknown>";
-  printf("!method %s @%p ", meth_cstr, (void *) tort_applyf(rcvr));
+  printf("!method %s @%p ", meth_cstr, (void *) tort_h_applyf(rcvr));
   return tort_nil;
 }
 
@@ -87,7 +87,7 @@ tort_write_decl(_tort_map_write)
   tort_map_entry **x = map->entry, *entry;
 
   printf("!map { ");
-  while ( entry = *(x ++) ) {
+  while ( (entry = *(x ++)) ) {
     tort_write(entry->key, IO);
     printf(" => ");
     tort_write(entry->value, IO);
