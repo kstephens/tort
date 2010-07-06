@@ -1,16 +1,20 @@
 #include "tort/tort.h"
 
 #include <stdio.h>
+#include <printf.h>
+#include <libio.h>
 
 
 #define IO tort_ref(tort_io, rcvr)
 #define FP IO->fp
+#define FP_TORT_OBJ(fp) *((tort_val*)&((struct _IO_FILE *)fp)->_unused2)
 
 static
 tort_val _tort_io_create(tort_val message, tort_val rcvr, FILE *fp)
 {
   rcvr = tort_allocate(message, rcvr, sizeof(tort_io), _tort->_mt_io);
   FP = fp;
+  FP_TORT_OBJ(fp) = rcvr;
   return rcvr;
 }
 
@@ -104,6 +108,40 @@ tort_val _tort_io_error(tort_val message, tort_val rcvr)
 }
 
 
+static
+int 
+_tort_printf_object (FILE *stream,
+		     __const struct printf_info *info,
+		     __const void *__const *args
+		     )
+{
+  tort_val v;
+  int len = 128; /* ??? */
+
+  /* Format the output into a string.  */
+  v = *(tort_val*) args[0];
+  v = tort_write(FP_TORT_OBJ(stream), v);
+
+  return len;
+}
+
+
+static int
+_tort_printf_extension_arginfo (
+				    const struct printf_info *info, 
+				    size_t n,
+				    int *argtypes, 
+				    int *size
+				    )
+{
+  if (n > 0) {
+    argtypes[0] = PA_POINTER;
+    size[0] = sizeof(tort_val);
+  }
+  return 1;
+}
+
+
 void tort_runtime_initialize_io()
 {
   _tort->_s_create = tort_symbol_make("create");
@@ -130,5 +168,11 @@ void tort_runtime_initialize_io()
   _tort->_io_stdin  = _tort_io_create(0, 0, stdin);
   _tort->_io_stdout = _tort_io_create(0, 0, stdout);
   _tort->_io_stderr = _tort_io_create(0, 0, stderr);
+
+ /* Register the print function for widgets.  */
+  register_printf_specifier('T', 
+			    _tort_printf_object,
+			    _tort_printf_extension_arginfo); /* No arginfo.   */
+
 }
 

@@ -44,13 +44,13 @@ struct tort_header {
   tort_val mtable; /** The object's method table. */
 } tort_header;
 
-#define tort_h_ref(X)    ((struct tort_header*)tort_ref(tort_object, X))[-1]
-#define tort_h_tagged(X) _tort->_tagged_header
+#define tort_h_ref(X)    (((struct tort_header*) tort_ref(tort_object, X)) - 1)
+#define tort_h_tagged(X) &_tort->_tagged_header
 #define tort_h(X)        ( tort_taggedQ(X) ? tort_h_tagged(X) : tort_h_ref(X) )
 
-#define tort_h_applyf(X) tort_h(X).applyf
-#define tort_h_lookupf(X) tort_h(X).lookupf
-#define tort_h_mtable(X) tort_h(X).mtable
+#define tort_h_applyf(X) tort_h(X)->applyf
+#define tort_h_lookupf(X) tort_h(X)->lookupf
+#define tort_h_mtable(X) tort_h(X)->mtable
 
 typedef
 struct tort_object {
@@ -101,15 +101,17 @@ struct tort_vector { /* Same layout as tort_string. */
 #define tort_vector_data(X) tort_ref(tort_vector, X)->data
 #define tort_vector_size(X) tort_ref(tort_vector, X)->size
 #define tort_vector_alloc_size(X) tort_ref(tort_vector, X)->alloc_size
+
 #define tort_vector_loop(X, V) \
   do {									\
   size_t V##_i;								\
   for ( V##_i = 0; V##_i < tort_vector_size(X); ++ V##_i ) {		\
   tort_val V = tort_vector_data(X)[V##_i];
+
 #define tort_vector_loop_end(X)			\
   }						\
     } while ( 0 )
-    
+
 tort_val tort_vector_new(const tort_val *d, size_t s);
 
 typedef
@@ -171,6 +173,7 @@ struct tort_runtime {
   tort_val _mt_nil;
   tort_val _mt_tagged;
   tort_val _mt_io;
+  tort_val _mt_block;
 
   tort_val _s_new;
   tort_val _s_clone;
@@ -184,6 +187,8 @@ struct tort_runtime {
   tort_val _s_false;
   tort_val _s_size;
   tort_val _s_alloc_size;
+  tort_val _s_map;
+  tort_val _s_each;
 
   /* io */
   tort_val _s_create;
@@ -211,7 +216,9 @@ struct tort_runtime {
 #define tort_stdin  (_tort->_io_stdin)
 #define tort_stdout (_tort->_io_stdout)
 #define tort_stderr (_tort->_io_stderr)
-#define tort_write(obj, io) tort_send(tort__s(write), obj, io)
+
+#define tort_write(io, obj) tort_send(tort__s(write), obj, io)
+#define tort_printf(io, fmt, args...) tort_send(tort__s(printf), io, fmt, ## args)
 
 #define tort_send(SEL, RCVR, ARGS...)					\
   ({									\

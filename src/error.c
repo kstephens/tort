@@ -47,7 +47,7 @@ void tort_fatal (const char *format, ...)
   va_start(vap, format);
   if ( _tort->_initialized ) {
     fprintf(stderr, "  in message: ");
-    tort_write(_tort_message, tort_stderr);
+    tort_write(tort_stderr, _tort_message);
     fprintf(stderr, "\n");
   }
   _tort->fatal(format, vap);

@@ -53,15 +53,15 @@ tort_val _tort_allocate (
   ptr += sizeof(tort_header);
   val = tort_ref_box(ptr);
 
-  tort_h_ref(val).alloc_size = size;
-  tort_h_ref(val).lookupf = _tort_object_lookupf;
-  tort_h_ref(val).applyf  = _tort_object_applyf;
-  tort_h_ref(val).mtable  = mtable;
+  tort_h_ref(val)->alloc_size = size;
+  tort_h_ref(val)->lookupf = _tort_object_lookupf;
+  tort_h_ref(val)->applyf  = _tort_object_applyf;
+  tort_h_ref(val)->mtable  = mtable;
 
 #if TORT_ALLOC_DEBUG
-  tort_h_ref(val).alloc_file = alloc_file;
-  tort_h_ref(val).alloc_line = alloc_line;
-  tort_h_ref(val).alloc_id   = ++ _tort_alloc_id;
+  tort_h_ref(val)->alloc_file = alloc_file;
+  tort_h_ref(val)->alloc_line = alloc_line;
+  tort_h_ref(val)->alloc_id   = ++ _tort_alloc_id;
 
   if ( _tort_alloc_id == 0 ) {
     fprintf(stderr, "\nSTOP AT ALLOC ID = %lu\n", _tort_alloc_id);
@@ -80,13 +80,13 @@ tort_val _tort_object_clone (
 {
   tort_val val;
   void *ptr;
-  size_t alloc_size = sizeof(tort_header) + tort_h_ref(rcvr).alloc_size;
+  size_t alloc_size = sizeof(tort_header) + tort_h_ref(rcvr)->alloc_size;
 
-  assert(tort_h_ref(rcvr).alloc_size);
+  assert(tort_h_ref(rcvr)->alloc_size);
 
   ptr = tort_malloc(alloc_size);
 
-  memcpy(ptr, &tort_h_ref(rcvr), alloc_size);
+  memcpy(ptr, tort_h_ref(rcvr), alloc_size);
 
   ptr += sizeof(tort_header);
   val = tort_ref_box(ptr);
@@ -302,7 +302,7 @@ tort_apply_decl(_tort_object_applyf)
 		     tort_h(rcvr).alloc_id);
 #endif
   abort();
-  tort_write(_tort_message, tort_stderr);
+  tort_write(tort_stderr, _tort_message);
   tort_error(": not applicable");
   return tort_nil;
 }
@@ -381,6 +381,15 @@ tort_val _tort_vector_alloc_size (tort_val _tort_message, tort_val rcvr)
   return tort_i(tort_vector_alloc_size(rcvr));
 }
 
+
+tort_val _tort_vector_each (tort_val _tort_message, tort_val rcvr, tort_val block)
+{
+  tort_vector_loop(rcvr, x) {
+    tort_send(tort__s(value), block, x);
+  }
+  tort_vector_loop_end(rcvr);
+  return rcvr;
+}
 
 /******************************************************************************************************/
 
@@ -485,7 +494,7 @@ tort_val tort_method_make(tort_apply_decl((*applyf)))
   tort_method *meth = tort_ref(tort_method, val);
   meth->name = 0;
   val = tort_ref_box(meth);
-  tort_h_ref(val).applyf = applyf;
+  tort_h_ref(val)->applyf = applyf;
   return val;
 }
 
@@ -522,7 +531,7 @@ tort_val tort_runtime_create()
   _tort->_mt_object      = tort_mtable_create(0);
 
   /* Backpatch mtable method table as object. */
-  tort_h_ref(_tort->_mt_mtable).mtable = _tort->_mt_mtable;
+  tort_h_ref(_tort->_mt_mtable)->mtable = _tort->_mt_mtable;
 
   _tort->_mt_map         = tort_mtable_create(_tort->_mt_object);
   /* Backpatch mtable to map delegation. */
@@ -575,6 +584,8 @@ tort_val tort_runtime_create()
   _tort->_s_false  = tort_symbol_make("false");
   _tort->_s_size  = tort_symbol_make("size");
   _tort->_s_alloc_size  = tort_symbol_make("alloc_size");
+  _tort->_s_each  = tort_symbol_make("each");
+  _tort->_s_map  = tort_symbol_make("map");
 
   /* Uncloneable objects. */
   tort_add_method(_tort->_mt_symbol, "clone", _tort_object_identity);
@@ -604,6 +615,7 @@ tort_val tort_runtime_create()
   tort_add_method(_tort->_mt_vector, "set", _tort_vector_set);
   tort_add_method(_tort->_mt_vector, "size", _tort_vector_size);
   tort_add_method(_tort->_mt_vector, "alloc_size", _tort_vector_alloc_size);
+  tort_add_method(_tort->_mt_vector, "each", _tort_vector_each);
 
   /* String methods. */
   tort_add_method(_tort->_mt_string, "new", _tort_string_new);
@@ -614,16 +626,17 @@ tort_val tort_runtime_create()
   tort_add_method(_tort->_mt_string, "alloc_size", _tort_vector_alloc_size);
 
   /* Initialize system method table. */
-  tort_h_ref(_tort).mtable = tort_mtable_create(_tort->_mt_object);
+  tort_h(_tort)->mtable = tort_mtable_create(_tort->_mt_object);
 
   /* Prepare special symbol table get method. */
-  tort_h_ref(_tort->symbols).mtable = tort_mtable_create(tort_h_mtable(_tort->symbols));
+  tort_h(_tort->symbols)->mtable = tort_mtable_create(tort_h_mtable(_tort->symbols));
   tort_add_method(tort_h_mtable(_tort->symbols), "get", _tort_map_get_string);
   tort_add_method(tort_h_mtable(_tort->symbols), "set", _tort_object_identity);
 
   /* Subsystem initialization. */
   tort_runtime_initialize_io();
   tort_runtime_initialize_write();
+  tort_runtime_initialize_block();
   tort_runtime_initialize_debug();
   // tort_runtime_initialize_address();
 
