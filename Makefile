@@ -31,7 +31,7 @@ all : gc include/tort/internal.h test
 include/tort/internal.h : include/tort/internal.h.* $(LIB_CFILES) Makefile
 	( \
 	cat $@.begin; \
-	cat $(LIB_CFILES) | perl -ne 'print "extern ", $$_, ";\n" if ( /^tort_val\s+_tort_[a-z0-9_]+\s*[(].*[)]\s*$$/ ); ' ; \
+	cat $(LIB_CFILES) | perl -ne 'print "extern ", $$_, ";\n" if ( /^tort_v\s+_tort_[a-z0-9_]+\s*[(].*[)]\s*$$/ ); ' ; \
 	cat $@.end; \
 	) > $@
 

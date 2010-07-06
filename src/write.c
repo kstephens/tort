@@ -190,6 +190,7 @@ void tort_runtime_initialize_write()
   tort_add_method(_tort->_mt_boolean, "write", _tort_boolean_write);
 
   _tort->_s_lisp_write  = tort_symbol_make("lisp_write");
+
   tort_add_method(_tort->_mt_object, "lisp_write", _tort_object_lisp_write);
   tort_add_method(_tort->_mt_tagged, "lisp_write", _tort_tagged_write);
   tort_add_method(_tort->_mt_string, "lisp_write", _tort_string_write);
