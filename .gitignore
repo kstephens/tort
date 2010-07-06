@@ -3,4 +3,5 @@ tort_test
 *.o
 src/*.o
 gc-7.0
+t/*.out
 

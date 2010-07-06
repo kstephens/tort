@@ -26,8 +26,15 @@ $(GC)/.libs/libgc.a : $(GC).tar.gz
 	cd $(GC) && if [ ! -f Makefile ]; then ./configure; fi
 	cd $(GC) && make
 
-test : tort_test
+run-test : tort_test
 	./tort_test 
+
+test : 
+	./tort_test 2>&1 </dev/null | t/filter-output > t/tort_test.out
+	diff -U 10 t/tort_test.exp t/tort_test.out
+
+accept-test : tort_test
+	./tort_test 2>&1 </dev/null | t/filter-output > t/tort_test.exp
 
 gdb : tort_test
 	gdb --args ./tort_test 
