@@ -85,7 +85,11 @@ const char *tort_object_name(tort_val val)
     snprintf(buf, S, "\"%s\"", tort_string_data(val));
   }
   else if ( tort_h_mtable(val) == _tort->_mt_symbol ) {
-    snprintf(buf, S, "%s", tort_symbol_data(val));
+    if ( tort_ref(tort_symbol, val)->name != tort_nil ) {
+      snprintf(buf, S, "%s", tort_symbol_data(val));
+    } else {
+      snprintf(buf, S, "!symbol @%p", (void*) val);
+    }
   }
   else if ( val == _tort ) {
     snprintf(buf, S, "!tort");
@@ -105,6 +109,7 @@ const char *tort_object_name(tort_val val)
     mt(nil)
     mt(tagged)
     mt(io)
+    mt(block)
 #undef mt
 
 #define mt(N) else if ( tort_h_mtable(val) == _tort->_mt_##N ) { snprintf(buf, S, "!%s @%p", #N, (void*) val); }
@@ -119,6 +124,7 @@ const char *tort_object_name(tort_val val)
     mt(nil)
     mt(tagged)
     mt(io)
+    mt(block)
 #undef mt
 
   else {

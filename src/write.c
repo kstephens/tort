@@ -33,8 +33,8 @@ tort_write_decl(_tort_vector_write)
 {
   printf("!vector { ");
   tort_vector_loop(rcvr, obj) {
+    if ( obj_i > 0 ) printf(", ");
     tort_write(IO, obj);
-    printf(", ");
   } tort_vector_loop_end(rcvr);
   printf(" }");
   return tort_nil;
@@ -43,7 +43,11 @@ tort_write_decl(_tort_vector_write)
 
 tort_write_decl(_tort_symbol_write)
 {
-  printf("%s", (char *) tort_symbol_data(rcvr));
+  if ( tort_ref(tort_symbol, rcvr)->name != tort_nil ) {
+    printf("%s", (char *) tort_symbol_data(rcvr));
+  } else {
+    printf("!symbol @%p", (void*) rcvr);
+  }
   return tort_nil;
 }
 
@@ -83,15 +87,17 @@ tort_write_decl(_tort_map_write)
 {
   tort_map *map = tort_ref(tort_map, rcvr);
   tort_map_entry **x = map->entry, *entry;
+  size_t entry_i = 0;
 
   printf("!map { ");
   while ( (entry = *(x ++)) ) {
+    if ( entry_i > 0 ) printf(", ");
     tort_write(IO, entry->key);
     printf(" => ");
     tort_write(IO, entry->value);
-    printf(", ");
+    entry_i ++;
   }
-  printf("}");
+  printf(" }");
   return tort_nil;
 }
 

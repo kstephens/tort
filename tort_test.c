@@ -75,7 +75,6 @@ int main(int argc, char **argv)
 
   v = tort_vector_new(0, 10);
   
-  i = 0;
   b = 
     tort_block_(tort_val obj) {
     return tort_printf(io, "  in each %p[%d] => %T\n", 
@@ -85,10 +84,24 @@ int main(int argc, char **argv)
   }
   tort_block_end();
   
+  i = 0;
   tort_send(tort_s(each), 
 	    v, 
 	    b
 	    );
+
+  b = 
+    tort_block_(tort_val obj) {
+    return tort_i(i ++);
+  }
+  tort_block_end();
+  
+  i = 0;
+  v = tort_send(tort_s(map), 
+	    v, 
+	    b
+	    );
+  tort_printf(io, "v = %T\n", v);
 
   tort_send(tort_s(__debugger), v);
 

@@ -343,8 +343,8 @@ tort_val _tort_vector_clone (
 			     )
 {
   tort_val val = _tort_object_clone(_tort_message, rcvr);
-  tort_vector_data(val) = tort_malloc(sizeof(tort_vector_data(val)[0]) * (tort_vector_size(val) + 1));
-  memcpy(tort_vector_data(val), tort_vector_data(rcvr), sizeof(tort_vector_data(val)[0]) * (tort_vector_size(val) + 1));
+  tort_vector_data(val) = tort_malloc(sizeof(tort_vector_data(val)[0]) * (tort_vector_size(rcvr)));
+  memcpy(tort_vector_data(val), tort_vector_data(rcvr), sizeof(tort_vector_data(val)[0]) * (tort_vector_size(rcvr)));
   return val;
 }
 
@@ -389,6 +389,26 @@ tort_val _tort_vector_each (tort_val _tort_message, tort_val rcvr, tort_val bloc
   }
   tort_vector_loop_end(rcvr);
   return rcvr;
+}
+
+
+tort_val _tort_vector_map (tort_val _tort_message, tort_val rcvr, tort_val block)
+{
+  tort_val new_vec = tort_send(tort__s(clone), rcvr);
+  tort_vector_loop(rcvr, x) {
+    x = tort_send(tort__s(value), block, x);
+    tort_send(tort__s(set), new_vec, tort_i(x_i), x);
+#if 0
+    tort_printf(tort_stderr, 
+		"  tort_v_m(%p(%p) => %p(%p)[%d] => %T\n", 
+		rcvr, tort_vector_data(rcvr),
+		new_vec, tort_vector_data(new_vec),
+		x_i, 
+		tort_vector_data(new_vec)[x_i]);
+#endif
+ }
+  tort_vector_loop_end(rcvr);
+  return new_vec;
 }
 
 /******************************************************************************************************/
@@ -462,6 +482,7 @@ tort_val _tort_string_set (
 
 tort_val tort_symbol_make(const char *string)
 {
+  if ( string ) {
   tort_map_entry *e = _tort_map_get_entry_cstr(0, _tort->symbols, string);
   if ( e ) {
     // fprintf(stderr, "\n old symbol = %s %p\n", tort_symbol_data(e->value), (void *) e->value);
@@ -473,6 +494,12 @@ tort_val tort_symbol_make(const char *string)
     tort_ref(tort_symbol, value)->name = key;
     _tort_map_add(0, _tort->symbols, key, value);
     // fprintf(stderr, "\n new symbol = %s %p\n", tort_symbol_data(value), (void *) value);
+    return value;
+  } 
+  } else {
+    tort_val value;
+    value = tort_allocate(0, 0, sizeof(tort_symbol), _tort->_mt_symbol);
+    tort_ref(tort_symbol, value)->name = tort_nil;
     return value;
   }
 }
@@ -616,6 +643,7 @@ tort_val tort_runtime_create()
   tort_add_method(_tort->_mt_vector, "size", _tort_vector_size);
   tort_add_method(_tort->_mt_vector, "alloc_size", _tort_vector_alloc_size);
   tort_add_method(_tort->_mt_vector, "each", _tort_vector_each);
+  tort_add_method(_tort->_mt_vector, "map", _tort_vector_map);
 
   /* String methods. */
   tort_add_method(_tort->_mt_string, "new", _tort_string_new);

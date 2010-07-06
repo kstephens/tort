@@ -264,6 +264,7 @@ tort_val _tort_allocate (tort_val _tort_message, tort_val rcvr, size_t size, tor
 #endif
 
 tort_val tort_symbol_make (const char *string);
+
 #define tort_s(X) tort_symbol_make(#X)
 #define tort__s(X) _tort->_s_##X
 
