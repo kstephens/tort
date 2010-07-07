@@ -4,16 +4,29 @@
 /********************************************************************/
 
 
-void tort_runtime_initialize_symtab()
+#if 0
+tort_val _tort_mtable___import (tort_thread_param tort_v rcvr, tort_v sym)
+{
+  tort_val slot = tort_send(tort__s(get), _tort->_symtab, sym);
+  if ( slot != tort_nil ) {
+    _tort_mtable_add_method(tort_thread_arg rcvr, sym, slot);
+  } else {
+    return tort_nil;
+  }
+}
+#endif
+
+
+void _tort_load_symtab()
 {
   FILE *fp;
   char cmd[1024];
   tort_v st;
-
+  
   snprintf(cmd, sizeof(cmd), "nm -l %s 2>&1", _tort->_argv[0]);
-
+  
   st = _tort->_symtab = tort_map_create();
-
+  
   if ( (fp = popen(cmd, "r")) ) {
     char *line = 0;
     size_t line_size = 0;
@@ -58,5 +71,12 @@ void tort_runtime_initialize_symtab()
 
     fclose(fp);
   }
+}
+
+
+void tort_runtime_initialize_symtab()
+{
+  _tort_load_symtab();
+  // tort_add_method(tort__mt(mtable), "__import", _tort_mtable___import);
 }
 

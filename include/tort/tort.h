@@ -25,8 +25,11 @@ typedef void* tort_v;
 
 #define tort_error_decl(X)  tort_v X (const char *format, va_list vap)
 
-#define tort_lookup_decl(X) tort_v X (tort_v _tort_message, tort_v rcvr, ...)
-#define tort_apply_decl(X)  tort_v X (tort_v _tort_message, tort_v rcvr, ...)
+#define tort_thread_param tort_v _tort_message,
+#define tort_thread_arg          _tort_message,
+
+#define tort_lookup_decl(X) tort_v X (tort_thread_param tort_v rcvr, ...)
+#define tort_apply_decl(X)  tort_v X (tort_thread_param tort_v rcvr, ...)
 
 #ifndef TORT_ALLOC_DEBUG
 #define TORT_ALLOC_DEBUG 0

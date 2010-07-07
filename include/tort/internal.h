@@ -85,6 +85,8 @@ extern tort_v _tort_object_clone (tort_v _tort_message, tort_v rcvr)
 ;
 extern tort_v _tort_object_identity (tort_v _tort_message, tort_v rcvr)
 ;
+extern tort_v _tort_mtable_add_method (tort_thread_param tort_v map, tort_v sym, tort_v func)
+;
 extern tort_v _tort_vector_new(tort_v _tort_message, tort_v rcvr, tort_v _size)
 ;
 extern tort_v _tort_vector_clone (tort_v _tort_message, tort_v rcvr)
