@@ -8,7 +8,7 @@ tort_apply_decl(_tort_block_lookupf)
     return tort_ref(tort_message, _tort_message)->method = 
       tort_ref(tort_message, _tort_message)->receiver;
   } else {
-    return _tort_object_lookupf(_tort_message, rcvr);
+    return _tort_object_lookupf(tort_thread_arg rcvr);
   }
 }
 

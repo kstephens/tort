@@ -17,12 +17,12 @@ tort_v tort_cons(tort_v a, tort_v d)
 
 #define ACCESSOR(X)							\
   static								\
-  tort_v _tort_pair_##X(tort_v _tort_message, tort_v rcvr)	\
+  tort_v _tort_pair_##X(tort_thread_param tort_v rcvr)	\
   {									\
     return tort_ref(tort_pair, rcvr)->X;				\
   }									\
   static								\
-  tort_v _tort_pair_set_##X##E(tort_v _tort_message, tort_v rcvr,	\
+  tort_v _tort_pair_set_##X##E(tort_thread_param tort_v rcvr,	\
 			       tort_v val)				\
   {									\
     tort_ref(tort_pair, rcvr)->X = val;					\
@@ -35,7 +35,7 @@ ACCESSOR(cdr)
 #undef ACCESSOR
 
 
-tort_v _tort_list_size(tort_v _tort_message, tort_v rcvr) 
+tort_v _tort_list_size(tort_thread_param tort_v rcvr) 
 {
   size_t i = 0;
 
@@ -52,7 +52,7 @@ tort_v _tort_list_size(tort_v _tort_message, tort_v rcvr)
 
 
 
-tort_v _tort_list_lisp_write(tort_v _tort_message, tort_v rcvr, tort_v io) 
+tort_v _tort_list_lisp_write(tort_thread_param tort_v rcvr, tort_v io) 
 {
   tort_printf(io, "(");
   while ( rcvr != tort_nil ) {
@@ -75,7 +75,7 @@ tort_v _tort_list_lisp_write(tort_v _tort_message, tort_v rcvr, tort_v io)
 
 
 static
-tort_v _tort_list_list_TO_vector(tort_v _tort_message, tort_v rcvr, tort_v io)
+tort_v _tort_list_list_TO_vector(tort_thread_param tort_v rcvr, tort_v io)
 {
   tort_v size = tort_send(tort__s(size), rcvr);
   tort_v vec = tort_vector_new(0, tort_I(size));
@@ -95,7 +95,7 @@ tort_v _tort_list_list_TO_vector(tort_v _tort_message, tort_v rcvr, tort_v io)
 #define FP(s) tort_ref(tort_io, s)->fp
 
 #define VALUE tort_v
-#define READ_DECL VALUE _tort_io_lisp_read (tort_v _tort_message, tort_v stream)
+#define READ_DECL VALUE _tort_io_lisp_read (tort_thread_param tort_v stream)
 #define READ_CALL() tort_send(tort__s(lisp_read), stream)
 #define MALLOC(s) tort_malloc(s)
 #define REALLOC(p, s) tort_realloc(p, s)

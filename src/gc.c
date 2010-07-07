@@ -50,7 +50,7 @@ void _tort_finalization_proc (void * obj, void * client_data)
 }
 
 
-tort_v _tort_object___register_finalizer(tort_v _tort_message, tort_v rcvr)
+tort_v _tort_object___register_finalizer(tort_thread_param tort_v rcvr)
 {
   if ( _tort_gc_mode ) {
     // fprintf(stderr, "\n  _tort_object___register_finalizer @%p\n", (void*) rcvr);

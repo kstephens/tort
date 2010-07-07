@@ -4,7 +4,7 @@
 /********************************************************************/
 
 
-#define tort_inspect_decl(name) static tort_v name (tort_v message, tort_v rcvr, tort_v io)
+#define tort_inspect_decl(name) static tort_v name (tort_thread_param tort_v rcvr, tort_v io)
 
 #define IO (io ? io : tort_stdout)
 

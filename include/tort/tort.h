@@ -286,7 +286,7 @@ extern tort_v _tort_message; /* catch for top-level messages. */
 void *tort_malloc(size_t size);
 void *tort_realloc(void *ptr, size_t size);
 
-tort_map_entry *_tort_map_get_entry(tort_v _tort_message, tort_v rcvr, tort_v key);
+tort_map_entry *_tort_map_get_entry(tort_thread_param tort_v rcvr, tort_v key);
 tort_v tort_map_create();
 
 tort_v tort_mtable_create();
@@ -295,10 +295,10 @@ tort_lookup_decl(_tort_object_lookupf);
 tort_apply_decl(_tort_object_applyf);
 
 #if TORT_ALLOC_DEBUG
-tort_v _tort_allocate (const char *alloc_file, int alloc_line, tort_v _tort_message, tort_v rcvr, size_t size, tort_v meth_table);
+tort_v _tort_allocate (const char *alloc_file, int alloc_line, tort_thread_param tort_v rcvr, size_t size, tort_v meth_table);
 #define tort_allocate(_1, _2, _3, _4) _tort_allocate(__FILE__, __LINE__, _1, _2, _3, _4)
 #else
-tort_v _tort_allocate (tort_v _tort_message, tort_v rcvr, size_t size, tort_v meth_table);
+tort_v _tort_allocate (tort_thread_param tort_v rcvr, size_t size, tort_v meth_table);
 #define tort_allocate(_1, _2, _3, _4) _tort_allocate(_1, _2, _3, _4)
 #endif
 

@@ -20,9 +20,9 @@
 
 size_t _tort_io_open_count, _tort_io_close_count;
 
-tort_v _tort_io___create(tort_v _tort_message, tort_v rcvr, FILE *fp)
+tort_v _tort_io___create(tort_thread_param tort_v rcvr, FILE *fp)
 {
-  rcvr = tort_allocate(_tort_message, rcvr, sizeof(tort_io), _tort->_mt_io);
+  rcvr = _tort_allocate(tort_thread_arg rcvr, sizeof(tort_io), _tort->_mt_io);
   FP = fp;
   if ( FP ) {
     FP_TORT_OBJ(FP) = rcvr;
@@ -33,7 +33,7 @@ tort_v _tort_io___create(tort_v _tort_message, tort_v rcvr, FILE *fp)
 }
 
 
-tort_v _tort_io_open(tort_v _tort_message, tort_v rcvr, tort_v name, tort_v mode)
+tort_v _tort_io_open(tort_thread_param tort_v rcvr, tort_v name, tort_v mode)
 {
   if ( (FP = fopen(tort_string_data(name), tort_string_data(mode))) ){
     ++ _tort_io_open_count;
@@ -47,7 +47,7 @@ tort_v _tort_io_open(tort_v _tort_message, tort_v rcvr, tort_v name, tort_v mode
 }
 
 
-tort_v _tort_io_popen(tort_v _tort_message, tort_v rcvr, tort_v name, tort_v mode)
+tort_v _tort_io_popen(tort_thread_param tort_v rcvr, tort_v name, tort_v mode)
 {
   if ( (FP = FP = popen(tort_string_data(name), tort_string_data(mode))) ) {
     ++ _tort_io_open_count;
@@ -61,7 +61,7 @@ tort_v _tort_io_popen(tort_v _tort_message, tort_v rcvr, tort_v name, tort_v mod
 }
 
 
-tort_v _tort_io_close(tort_v _tort_message, tort_v rcvr)
+tort_v _tort_io_close(tort_thread_param tort_v rcvr)
 {
   if ( FP ) {
     // fprintf(stderr, "\n  _tort_io_close @%p\n", (void*) rcvr);
@@ -78,7 +78,7 @@ tort_v _tort_io_close(tort_v _tort_message, tort_v rcvr)
 }
 
 
-tort_v _tort_io___write(tort_v _tort_message, tort_v rcvr, tort_v str)
+tort_v _tort_io___write(tort_thread_param tort_v rcvr, tort_v str)
 {
   size_t size =
     fwrite(tort_string_data(str), 
@@ -89,7 +89,7 @@ tort_v _tort_io___write(tort_v _tort_message, tort_v rcvr, tort_v str)
 }
 
 
-tort_v _tort_io_flush(tort_v _tort_message, tort_v rcvr)
+tort_v _tort_io_flush(tort_thread_param tort_v rcvr)
 {
   if ( FP ) {
     fflush(FP);
@@ -98,7 +98,7 @@ tort_v _tort_io_flush(tort_v _tort_message, tort_v rcvr)
 }
 
 
-tort_v _tort_io_printf(tort_v _tort_message, tort_v rcvr, const char *fmt, ...)
+tort_v _tort_io_printf(tort_thread_param tort_v rcvr, const char *fmt, ...)
 {
   va_list vap;
   va_start(vap, fmt);
@@ -108,7 +108,7 @@ tort_v _tort_io_printf(tort_v _tort_message, tort_v rcvr, const char *fmt, ...)
 }
 
 
-tort_v _tort_io_read(tort_v _tort_message, tort_v rcvr, tort_v buf)
+tort_v _tort_io_read(tort_thread_param tort_v rcvr, tort_v buf)
 {
   int count;
 
@@ -129,24 +129,24 @@ tort_v _tort_io_read(tort_v _tort_message, tort_v rcvr, tort_v buf)
 }
 
 
-tort_v _tort_io_eof(tort_v _tort_message, tort_v rcvr)
+tort_v _tort_io_eof(tort_thread_param tort_v rcvr)
 {
   return tort_i(FP ? feof(FP) : -1);
 }
 
 
-tort_v _tort_io_error(tort_v _tort_message, tort_v rcvr)
+tort_v _tort_io_error(tort_thread_param tort_v rcvr)
 {
   return tort_i(FP ? ferror(FP) : -1);
 }
 
 
-tort_v _tort_io___finalize(tort_v _tort_message, tort_v rcvr)
+tort_v _tort_io___finalize(tort_thread_param tort_v rcvr)
 {
   if ( FP && (IO->flags & 1) ) {
     // fprintf(stderr, "\n  _tort_io___finalize @%p\n", (void*) rcvr);
     IO->flags &= ~1;
-    _tort_io_close(_tort_message, rcvr);
+    _tort_io_close(tort_thread_arg rcvr);
   }
   return tort_nil;
 }

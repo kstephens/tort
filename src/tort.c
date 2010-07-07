@@ -19,16 +19,13 @@ tort_v _tort_message;
 /********************************************************************/
 
 
-/********************************************************************/
-
-
 unsigned long _tort_alloc_id = 0;
 
 tort_v _tort_allocate (
 #if TORT_ALLOC_DEBUG
 			      const char *alloc_file, int alloc_line, 
 #endif
-			      tort_v _tort_message, 
+			      tort_thread_param 
 			      tort_v rcvr, size_t size, tort_v mtable)
 {
   tort_v val;
@@ -64,7 +61,7 @@ tort_v _tort_allocate (
 }
 
 
-tort_v _tort_object_clone (tort_v _tort_message, tort_v rcvr)
+tort_v _tort_object_clone (tort_thread_param tort_v rcvr)
 {
   tort_v val;
   void *ptr;
@@ -83,7 +80,7 @@ tort_v _tort_object_clone (tort_v _tort_message, tort_v rcvr)
 }
 
 
-tort_v _tort_object_identity (tort_v _tort_message, tort_v rcvr)
+tort_v _tort_object_identity (tort_thread_param tort_v rcvr)
 {
   return rcvr;
 }
