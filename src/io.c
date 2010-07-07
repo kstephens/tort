@@ -10,6 +10,7 @@
 #define FP IO->fp
 
 
+/* Use hidden slot in FILE* to point back to a tort_io object. */
 #define FP_TORT_OBJ(fp) *(((tort_v*)(((struct _IO_FILE *) fp) + 1)) - 4)
 // #define FP_TORT_OBJ(fp) *((tort_v*)(&((struct _IO_FILE *) fp)->_old_offset))
 // #define FP_TORT_OBJ(fp) (* (tort_v *) ((struct _IO_FILE *) (fp))->_unused2 )

@@ -68,8 +68,10 @@ $(GC)/.libs/libgc.a : $(GC).tar.gz
 # testing:
 #
 
-$(TEST_EXE_FILES) : src/libtort.a
+%.exe : %.c 
 	$(CC) $(CFLAGS) $(LDFLAGS) $(@:.exe=.c) src/libtort.a $(LIBS) -o $@
+
+$(TEST_EXE_FILES) : src/libtort.a
 
 $(TEST_EXE_FILES) $(LIB_OFILES) : $(GEN_H_FILES) include/tort/*.h
 
