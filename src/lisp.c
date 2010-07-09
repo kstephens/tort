@@ -35,7 +35,7 @@ ACCESSOR(cdr)
 #undef ACCESSOR
 
 
-tort_v _tort_list_size(tort_thread_param tort_v rcvr) 
+tort_v _tort_list_size(tort_thread_param tort_v rcvr) /**/
 {
   size_t i = 0;
 
@@ -52,7 +52,7 @@ tort_v _tort_list_size(tort_thread_param tort_v rcvr)
 
 
 
-tort_v _tort_list_lisp_write(tort_thread_param tort_v rcvr, tort_v io) 
+tort_v _tort_list_lisp_write(tort_thread_param tort_v rcvr, tort_v io) /**/
 {
   tort_printf(io, "(");
   while ( rcvr != tort_nil ) {
@@ -74,8 +74,7 @@ tort_v _tort_list_lisp_write(tort_thread_param tort_v rcvr, tort_v io)
 }
 
 
-static
-tort_v _tort_list_list_TO_vector(tort_thread_param tort_v rcvr, tort_v io)
+tort_v _tort_list_list_TO_vector(tort_thread_param tort_v rcvr, tort_v io) /**/
 {
   tort_v size = tort_send(tort__s(size), rcvr);
   tort_v vec = tort_vector_new(0, tort_I(size));
@@ -91,6 +90,11 @@ tort_v _tort_list_list_TO_vector(tort_thread_param tort_v rcvr, tort_v io)
   } 
   return vec;
 }
+
+
+extern 
+tort_v _tort_io_lisp_read (tort_thread_param tort_v stream)
+  ;
 
 #define FP(s) tort_ref(tort_io, s)->fp
 
@@ -118,7 +122,7 @@ tort_v _tort_list_list_TO_vector(tort_thread_param tort_v rcvr, tort_v io)
 #define U  tort_nil
 #define ERROR(format, args...) tort_error(format, ##args)
 
-tort_v _tort_string_to_number(tort_v s, int radix)
+tort_v _tort_string_to_number(tort_v s, int radix) /**/
 {
   long d = 0;
   if ( radix == 10 && sscanf(tort_string_data(s), "%ld", &d) == 1 ) {
@@ -132,7 +136,7 @@ tort_v _tort_string_to_number(tort_v s, int radix)
 
 void tort_runtime_initialize_lisp()
 {
-  _tort->_mt_pair = tort_mtable_create(_tort->_mt_object);
+  /* FIXME */
   tort_add_method(_tort->_mt_pair, "car", _tort_pair_car);
   tort_add_method(_tort->_mt_pair, "set-car!", _tort_pair_set_carE);
   tort_add_method(_tort->_mt_pair, "cdr", _tort_pair_cdr);
@@ -144,11 +148,10 @@ void tort_runtime_initialize_lisp()
   tort_add_method(_tort->_mt_pair, "list->vector", _tort_list_list_TO_vector);
   tort_add_method(_tort->_mt_nil,  "list->vector", _tort_list_list_TO_vector);
 
-  _tort->_s_lisp_read = tort_symbol_make("lisp_read");
+  /* FIXME */
   _tort->_s_set_cdrE = tort_symbol_make("set-cdr!");
   _tort->_s_DOT = tort_symbol_make(".");
   _tort->_s_list_TO_vector = tort_symbol_make("list->vector");
-    
-  tort_add_method(_tort->_mt_io, "lisp_read", _tort_io_lisp_read);
+  
 }
 

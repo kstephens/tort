@@ -3,7 +3,7 @@ v as lisp object => #(() () () () () () () () () ())
 read lisp object from stdin: (read o) => (hash-semi-comment nothing nil () nil nil symbol symbol string "string" number 123 pair (1 . 2) true #t false #f improper-list (1 2 . 3) vector #(1 2 3 4 5) quote (quote quote) quasiquote (quasiquote quasiquote) unquote (unquote unquote) unquote-splicing (unquote_splicing unquote-splicing))
 
 tort gc stats:            get_heap_size =           ######
-tort gc stats:           get_free_bytes =            #####
+tort gc stats:           get_free_bytes =             ####
 tort gc stats:       get_bytes_since_gc =            #####
 tort gc stats:          get_total_bytes =            #####
 tort gc stats:                    gc_no =                #

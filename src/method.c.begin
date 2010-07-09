@@ -1,0 +1,10 @@
+#include "tort/core.h"
+
+
+/********************************************************************/
+
+
+
+void tort_runtime_initialize_method()
+{
+

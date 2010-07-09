@@ -210,36 +210,10 @@ _tort_printf_extension_arginfo (
 
 void tort_runtime_initialize_io()
 {
-  _tort->_s___create = tort_symbol_make("__create");
-  _tort->_s_open = tort_symbol_make("open");
-  _tort->_s_popen = tort_symbol_make("popen");
-  _tort->_s_close = tort_symbol_make("close");
-  _tort->_s_read = tort_symbol_make("read");
-  _tort->_s___write = tort_symbol_make("__write");
-  _tort->_s_write = tort_symbol_make("write");
-  _tort->_s_printf = tort_symbol_make("printf");
-  _tort->_s_eof = tort_symbol_make("eof");
-  _tort->_s_error = tort_symbol_make("error");
-
-  _tort->_mt_io = tort_mtable_create(_tort->_mt_object);
-
-  tort_add_method(_tort->_mt_io, "__create", _tort_io___create); 
-  tort_add_method(_tort->_mt_io, "open", _tort_io_open);
-  tort_add_method(_tort->_mt_io, "popen", _tort_io_popen);
-  tort_add_method(_tort->_mt_io, "close", _tort_io_close);
-  tort_add_method(_tort->_mt_io, "read", _tort_io_read);
-  tort_add_method(_tort->_mt_io, "__write", _tort_io___write);
-  tort_add_method(_tort->_mt_io, "printf", _tort_io_printf);
-  tort_add_method(_tort->_mt_io, "eof", _tort_io_eof);
-  tort_add_method(_tort->_mt_io, "error", _tort_io_error);
-  tort_add_method(_tort->_mt_io, "flush", _tort_io_flush);
-  tort_add_method(_tort->_mt_io, "__finalize", _tort_io___finalize);
-
   _tort->_io_stdin  = _tort_io___create(0, 0, stdin);
   _tort->_io_stdout = _tort_io___create(0, 0, stdout);
   _tort->_io_stderr = _tort_io___create(0, 0, stderr);
 
-  _tort->_mt_eos    = tort_mtable_create(_tort->_mt_object);
   _tort->_io_eos    = tort_allocate(0, 0, sizeof(tort_object), _tort->_mt_eos);
 
   /* Register the print functions for tort_v.  */

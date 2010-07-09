@@ -88,11 +88,7 @@ void tort_runtime_initialize_malloc()
 
 void tort_runtime_initialize_gc()
 {
-  tort__s(__finalize) = tort_symbol_make("__finalize");
-  tort__s(__register_finalizer) = tort_symbol_make("__register_finalizer");
-
   tort_add_method(tort__mt(object), "__finalize",  _tort_object_identity);
-  tort_add_method(tort__mt(object), "__register_finalizer",  _tort_object___register_finalizer);
 
   atexit(tort_gc_atexit);
 }

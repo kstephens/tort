@@ -42,7 +42,7 @@ tort_v _tort_message_backtrace(tort_thread_param tort_v rcvr)
 }
 
 
-tort_v _tort_debugger_start(tort_thread_param tort_v rcvr)
+tort_v _tort_object___debugger(tort_thread_param tort_v rcvr)
 {
   tort_v bt;
 
@@ -188,7 +188,7 @@ const char *tort_object_name(tort_v val)
 #undef S
 
 
-tort_v _tort_object_name(tort_thread_param tort_v rcvr)
+tort_v _tort_object__name(tort_thread_param tort_v rcvr)
 {
   return tort_string_new_cstr(tort_object_name(rcvr));
 }
@@ -199,13 +199,5 @@ tort_v _tort_object_name(tort_thread_param tort_v rcvr)
 
 void tort_runtime_initialize_debug()
 {
-  _tort->_s_backtrace = tort_symbol_make("backtrace");
-  _tort->_s_backtrace_size = tort_symbol_make("backtrace_size");
-
-  tort_add_method(_tort->_mt_message, "backtrace", _tort_message_backtrace);
-  tort_add_method(_tort->_mt_object,  "_name", _tort_object_name);
-
-  tort_add_method(_tort->_mt_object, "__debugger", _tort_debugger_start);
-  tort_add_method(_tort->_mt_object, "__message", _tort_object___message);
 }
 

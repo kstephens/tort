@@ -7,10 +7,18 @@ LIBS=-lgc
 
 ######################################################################
 
-LIB_CFILES = $(shell ls src/*.c)
+GEN_H_FILES = include/tort/internal.h
+GEN_C_FILES = src/symbol.c src/method.c
+
+LIB_CFILES = $(shell ls src/*.c) $(GEN_C_FILES)
+LIB_HFILES = $(shell ls include/tort/*.h) $(GEN_H_FILES)
 LIB_OFILES = $(LIB_CFILES:.c=.o)
 
-GEN_H_FILES = include/tort/internal.h
+export LIB_CFILES
+export LIB_HFILES
+export LIB_OFILES
+
+LIBTORT     = src/libtort.a
 
 ######################################################################
 
@@ -23,7 +31,7 @@ TEST_OUT_FILES = $(TEST_C_FILES:.c=.out)
 # default:
 #
 
-all : gc $(GEN_H_FILES) test
+all : gc $(GEN_H_FILES) $(GEN_C_FILES) $(LIBTORT) test
 
 
 ######################################################################
@@ -34,11 +42,29 @@ all : gc $(GEN_H_FILES) test
 includes : $(GEN_H_FILES)
 
 include/tort/internal.h : include/tort/internal.h.* $(LIB_CFILES)
-	( \
+	( set -e; \
 	cat $@.begin; \
 	cat $(LIB_CFILES) | perl -ne 'print "extern ", $$_, ";\n" if ( /^tort_v\s+_tort_[a-z0-9_]+\s*[(].*[)]\s*$$/ ); ' ; \
 	cat $@.end; \
 	) > $@
+
+######################################################################
+# src:
+#
+
+srcs : $(GEN_C_FILES)
+
+src/symbol.c : src/symbol.c.* include/tort/tort.h
+	$@.gen $@
+
+src/method.c : src/method.c.* ${LIB_CFILES}
+	$@.gen $@
+
+$(GEN_C_FILES) $(GEN_H_FILES) : Makefile
+
+######################################################################
+# object:
+#
 
 src/lisp.o : src/lispread.c
 
@@ -47,7 +73,7 @@ src/lisp.o : src/lispread.c
 # library:
 #
 
-src/libtort.a : $(LIB_OFILES)
+$(LIBTORT) : $(LIB_OFILES)
 	$(AR) $(ARFLAGS) $@ $(LIB_OFILES)
 	ranlib $@ || true
 

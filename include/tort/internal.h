@@ -17,9 +17,9 @@ extern tort_v _tort_object___message(tort_thread_param tort_v rcvr)
 ;
 extern tort_v _tort_message_backtrace(tort_thread_param tort_v rcvr)
 ;
-extern tort_v _tort_debugger_start(tort_thread_param tort_v rcvr)
+extern tort_v _tort_object___debugger(tort_thread_param tort_v rcvr)
 ;
-extern tort_v _tort_object_name(tort_thread_param tort_v rcvr)
+extern tort_v _tort_object__name(tort_thread_param tort_v rcvr)
 ;
 extern tort_v _tort_fatal(const char *format, va_list vap)
 ;
@@ -49,11 +49,7 @@ extern tort_v _tort_io_error(tort_thread_param tort_v rcvr)
 ;
 extern tort_v _tort_io___finalize(tort_thread_param tort_v rcvr)
 ;
-extern tort_v _tort_list_size(tort_thread_param tort_v rcvr) 
-;
-extern tort_v _tort_list_lisp_write(tort_thread_param tort_v rcvr, tort_v io) 
-;
-extern tort_v _tort_string_to_number(tort_v s, int radix)
+extern tort_v _tort_io_lisp_read (tort_thread_param tort_v stream)
 ;
 extern tort_v _tort_map_initialize(tort_thread_param tort_v rcvr)
 ;
@@ -102,6 +98,38 @@ extern tort_v _tort_vector_alloc_size (tort_thread_param tort_v rcvr)
 extern tort_v _tort_vector_each (tort_thread_param tort_v rcvr, tort_v block)
 ;
 extern tort_v _tort_vector_map (tort_thread_param tort_v rcvr, tort_v block)
+;
+extern tort_v _tort_object__inspect(tort_thread_param tort_v rcvr, tort_v io)
+;
+extern tort_v _tort_object_lisp_write(tort_thread_param tort_v rcvr, tort_v io)
+;
+extern tort_v _tort_tagged__inspect(tort_thread_param tort_v rcvr, tort_v io)
+;
+extern tort_v _tort_string__inspect(tort_thread_param tort_v rcvr, tort_v io)
+;
+extern tort_v _tort_vector__inspect(tort_thread_param tort_v rcvr, tort_v io)
+;
+extern tort_v _tort_vector_lisp_write(tort_thread_param tort_v rcvr, tort_v io)
+;
+extern tort_v _tort_symbol__inspect(tort_thread_param tort_v rcvr, tort_v io)
+;
+extern tort_v _tort_symbol_lisp_write(tort_thread_param tort_v rcvr, tort_v io)
+;
+extern tort_v _tort_nil__inspect(tort_thread_param tort_v rcvr, tort_v io)
+;
+extern tort_v _tort_boolean__inspect(tort_thread_param tort_v rcvr, tort_v io)
+;
+extern tort_v _tort_boolean_lisp_write(tort_thread_param tort_v rcvr, tort_v io)
+;
+extern tort_v _tort_method__inspect(tort_thread_param tort_v rcvr, tort_v io)
+;
+extern tort_v _tort_message__inspect(tort_thread_param tort_v rcvr, tort_v io)
+;
+extern tort_v _tort_map__inspect(tort_thread_param tort_v rcvr, tort_v io)
+;
+extern tort_v _tort_map_lisp_write(tort_thread_param tort_v rcvr, tort_v io)
+;
+extern tort_v _tort_eos_lisp_write(tort_thread_param tort_v rcvr, tort_v io)
 ;
 
 #endif
