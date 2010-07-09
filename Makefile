@@ -31,7 +31,7 @@ TEST_OUT_FILES = $(TEST_C_FILES:.c=.out)
 # default:
 #
 
-all : gc $(GEN_H_FILES) $(GEN_C_FILES) $(LIBTORT) test
+all : gc $(GEN_H_FILES) $(GEN_C_FILES) $(LIBTORT) test stats
 
 
 ######################################################################
@@ -172,17 +172,26 @@ clean :
 very-clean : clean
 	cd $(GC) && make clean
 
+FIND_STAT_FILES= \
+   -name '*.h' -o -name '*.c' \
+-o -name '*.in' \
+-o -name '*.begin' -o -name '*.end' -o -name '*.gen' \
+-o -name Makefile
+
 stats :
 	mkdir -p .stats
-	find Makefile src include t \
-	  -name '*.h' -o -name '*.c' \
-	  -o -name '*.in' \
-	  -o -name '*.begin' -o -name '*.end' -o -name '*.gen' \
-          -o -name Makefile | sort -u > .stats/files_all
-	ls $(GEN_H_FILES) $(GEN_C_FILES) | sort -u > .stats/files_gen
-	comm -3 .stats/files_all .stats/files_gen > .stats/files_src
+	ls $(GEN_H_FILES) $(GEN_C_FILES) | \
+	  sort -u > .stats/files_gen
 	@echo "Source LoC:"
+	find Makefile src include $(FIND_STAT_FILES) | \
+	  sort -u > .stats/files.t
+	comm -3 .stats/files.t .stats/files_gen > .stats/files_src
 	xargs wc -l < .stats/files_src
+	@echo "Test LoC:"
+	find t $(FIND_STAT_FILES) | \
+	  sort -u > .stats/files.t
+	comm -3 .stats/files.t .stats/files_gen > .stats/files_t
+	xargs wc -l < .stats/files_t
 	@echo "Generated LoC:"
 	xargs wc -l < .stats/files_gen
 
