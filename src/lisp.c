@@ -1,10 +1,15 @@
 #include "tort/core.h"
 
 
+/********************************************************************/
+
+
 typedef struct tort_pair {
   tort_v car, cdr;
 } tort_pair;
 
+
+/********************************************************************/
 
 tort_v tort_cons(tort_v a, tort_v d)
 {
@@ -92,6 +97,82 @@ tort_v _tort_list_list_TO_vector(tort_thread_param tort_v rcvr, tort_v io) /**/
 }
 
 
+/********************************************************************/
+
+#define IO (io ? io : tort_stdout)
+
+#define printf(fmt, args...) tort_send(tort__s(printf), IO, fmt, ##args)
+
+
+tort_v _tort_object_lisp_write(tort_thread_param tort_v rcvr, tort_v io)
+{
+  printf("(make <object> @%p)", (void *) rcvr);
+  return tort_nil;
+}
+
+
+tort_v _tort_vector_lisp_write(tort_thread_param tort_v rcvr, tort_v io)
+{
+  printf("#(");
+  tort_vector_loop(rcvr, obj) {
+    if ( obj_i > 0 ) printf(" ");
+    tort_send(tort__s(lisp_write), obj, IO);
+  } tort_vector_loop_end(rcvr);
+  printf(")");
+  return tort_nil;
+}
+
+
+tort_v _tort_symbol_lisp_write(tort_thread_param tort_v rcvr, tort_v io)
+{
+  if ( tort_ref(tort_symbol, rcvr)->name != tort_nil ) {
+    printf("%s", (char *) tort_symbol_data(rcvr));
+  } else {
+    printf("(make <symbol> @%p)", (void*) rcvr);
+  }
+  return tort_nil;
+}
+
+
+tort_v _tort_boolean_lisp_write(tort_thread_param tort_v rcvr, tort_v io)
+{
+  printf(rcvr == tort_false ? "#f" : "#t");
+  return tort_nil;
+}
+
+
+tort_v _tort_map_lisp_write(tort_thread_param tort_v rcvr, tort_v io)
+{
+  tort_map *map = tort_ref(tort_map, rcvr);
+  tort_map_entry **x = map->entry, *entry;
+  size_t entry_i = 0;
+
+  printf("(make <map> ");
+  while ( (entry = *(x ++)) ) {
+    if ( entry_i > 0 ) printf(" ");
+    tort_send(tort__s(lisp_write), entry->key, IO);
+    printf(" ");
+    tort_send(tort__s(lisp_write), entry->value, IO);
+    entry_i ++;
+  }
+  printf(")");
+  return tort_nil;
+}
+
+
+tort_v _tort_eos_lisp_write(tort_thread_param tort_v rcvr, tort_v io)
+{
+  printf("#e");
+  return tort_nil;
+}
+
+
+#undef printf
+#undef IO
+
+
+/********************************************************************/
+
 extern 
 tort_v _tort_io_lisp_read (tort_thread_param tort_v stream)
   ;
@@ -136,6 +217,14 @@ tort_v _tort_string_to_number(tort_v s, int radix) /**/
 
 void tort_runtime_initialize_lisp()
 {
+
+  /* Reused methods. */
+  tort_add_method(_tort->_mt_tagged, "lisp_write", _tort_tagged__inspect);
+  tort_add_method(_tort->_mt_string, "lisp_write", _tort_string__inspect);
+  tort_add_method(_tort->_mt_method, "lisp_write", _tort_method__inspect);
+  tort_add_method(_tort->_mt_message, "lisp_write", _tort_message__inspect);
+  tort_add_method(_tort->_mt_nil,    "lisp_write", _tort_nil__inspect);
+
   /* FIXME */
   tort_add_method(_tort->_mt_pair, "car", _tort_pair_car);
   tort_add_method(_tort->_mt_pair, "set-car!", _tort_pair_set_carE);
