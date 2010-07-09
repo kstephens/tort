@@ -167,11 +167,22 @@ disasm : t/tort_test.exe
 #
 
 clean :
-	rm -f $(TEST_EXE_FILES) src/libtort.a src/*.o t/*.out include/tort/internal.h
+	rm -f $(TEST_EXE_FILES) src/libtort.a src/*.o t/*.out include/tort/internal.h .stats/*
 
 very-clean : clean
 	cd $(GC) && make clean
 
 stats :
-	@echo "LoC:"
-	@find Makefile src include t -name '*.h' -o -name '*.c' -o -name '*.in' -o -name Makefile | xargs wc -l
+	mkdir -p .stats
+	find Makefile src include t \
+	  -name '*.h' -o -name '*.c' \
+	  -o -name '*.in' \
+	  -o -name '*.begin' -o -name '*.end' -o -name '*.gen' \
+          -o -name Makefile | sort -u > .stats/files_all
+	ls $(GEN_H_FILES) $(GEN_C_FILES) | sort -u > .stats/files_gen
+	comm -3 .stats/files_all .stats/files_gen > .stats/files_src
+	@echo "Source LoC:"
+	xargs wc -l < .stats/files_src
+	@echo "Generated LoC:"
+	xargs wc -l < .stats/files_gen
+
