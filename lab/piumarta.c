@@ -81,7 +81,7 @@ struct object *closure_new(method_t method, struct object *data)
   struct closure *closure = alloc(sizeof(*closure));
   closure->_vt[-1] = closure_vt;
   closure->method = method;
-  closure->data = 0;
+  closure->data = data;
   return (struct object *)closure;
 }
 
