@@ -56,6 +56,7 @@ struct object *s_allocate   = 0;
 struct object *s_delegated  = 0;
 struct object *s_lookup     = 0;
 struct object *s_intern     = 0;
+struct object *s_setParent  = 0;
 
 struct object *symbol         = 0;
 struct vtable *SymbolList     = 0;
@@ -160,10 +161,9 @@ struct closure * _bind(struct object *rcv, struct symbol *msg)
 static void _flush_mcache(struct vtable *vt, struct object *msg)
 {
   int i;
-  return;
   for ( i = 0; i < MCACHE_SIZE; ++ i ) {
     struct mcache_entry *line = MethodCache + i;
-    if ( (void*) line->selector == (void*) msg ) {
+    if ( ! msg || (void*) line->selector == (void*) msg ) {
       line->vtable = 0;
       line->selector = 0;
       line->selector_version = 0;
@@ -193,6 +193,18 @@ struct vtable *vtable_delegated(struct vtable *self)
 }
 
 
+struct object *vtable_setParent(struct vtable *self, struct vtable *value)
+{
+#if MCACHE
+  if ( self->parent != value ) {
+    _flush_mcache(self, 0);
+  }
+#endif
+  self->parent = value;
+  return (void *) self;
+}
+
+
 struct object *vtable_addMethod(struct vtable *self, struct object *key, struct object *value)
 {
   int i;
@@ -215,9 +227,6 @@ struct object *vtable_addMethod(struct vtable *self, struct object *key, struct 
   if ( self != SymbolList ) {
     /* If the key is a symbol, invalidate mcache and icaches. */
     if ( symbol_vt && key->_vt[-1] == symbol_vt ) {
-#if MCACHE
-      _flush_mcache(self, key);
-#endif
 #if MCACHE || ICACHE
       ((struct symbol *) key)->version ++;
 #endif
@@ -281,6 +290,9 @@ void init(void)
 
   s_allocate = symbol_intern(0, "allocate");
   send(vtable_vt, s_addMethod, s_allocate, closure_new((method_t) vtable_allocate, 0));
+
+  s_setParent = symbol_intern(0, "setParent");
+  send(vtable_vt, s_addMethod, s_setParent, closure_new((method_t) vtable_setParent, 0));
 
   symbol = send(symbol_vt, s_allocate, sizeof(struct symbol));
 
