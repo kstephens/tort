@@ -39,9 +39,17 @@ struct symbol
   int version;
 };
 
+struct closure
+{
+  struct vtable *_vt[0];
+  method_t method;
+  struct object *data;
+};
+
 struct vtable *vtable_vt      = 0;
 struct vtable *object_vt      = 0;
 struct vtable *symbol_vt      = 0;
+struct vtable *closure_vt     = 0;
 
 struct object *s_addMethod  = 0;
 struct object *s_allocate   = 0;
@@ -67,11 +75,20 @@ struct object *symbol_new(char *string)
   return (struct object *)symbol;
 }
 
+struct object *closure_new(method_t method, struct object *data)
+{
+  struct closure *closure = alloc(sizeof(*closure));
+  closure->_vt[-1] = closure_vt;
+  closure->method = method;
+  closure->data = 0;
+  return (struct object *)closure;
+}
+
 struct mcache_entry {
   struct vtable *vtable;
   struct symbol *selector;
   long /* long */ selector_version;
-  method_t method;
+  struct closure *closure;
 };
 
 struct object *vtable_lookup(struct vtable *self, struct object *key);
@@ -85,18 +102,20 @@ struct object *vtable_lookup(struct vtable *self, struct object *key);
     struct symbol *sel = (void*) _send_SEL(SEL_AND_ARGS);		\
     (cache.vtable == vt &&						\
      cache.selector == sel && cache.selector_version == sel->version	\
-     ? cache.method							\
+     ? cache.closure							\
      : (cache.vtable = vt,						\
 	cache.selector = sel,						\
 	cache.selector_version = sel->version,				\
-	cache.method = _bind(r, (void*) sel)))(_send_RCV_ARGS(r, SEL_AND_ARGS)); \
+	cache.closure = _bind(r, (void*) sel)))				\
+      ->method(_send_RCV_ARGS(r, SEL_AND_ARGS));			\
   })
 #else
-# define _send(RCV, SEL_AND_ARGS...) ({					\
-  struct object *r      = (struct object *)(RCV);			\
-  (_bind(r, (struct symbol*) _send_SEL(SEL_AND_ARGS)))			\
-    (_send_RCV_ARGS(r, SEL_AND_ARGS));					\
-    })
+# define _send(RCV, SEL_AND_ARGS...)					\
+  ({									\
+    struct object *r      = (struct object *)(RCV);			\
+    _bind(r, (struct symbol*) _send_SEL(SEL_AND_ARGS))			\
+      ->method(_send_RCV_ARGS(r, SEL_AND_ARGS));			\
+  })
 #endif
 #define _send_SEL(SEL, ARGS...)(SEL)
 #define __send_RCV_ARGS(RCV, ARGS...)RCV, ##ARGS
@@ -109,9 +128,9 @@ struct mcache_entry MethodCache[MCACHE_SIZE];
 #define MHASH(vt, msg) (((unsigned)vt << 2) ^ ((unsigned)msg >> 3)) % MCACHE_SIZE;
 #endif
 
-method_t _bind(struct object *rcv, struct symbol *msg)
+struct closure * _bind(struct object *rcv, struct symbol *msg)
 {
-  method_t method;
+  struct closure *method;
   struct vtable *vt = rcv->_vt[-1];
 
 #if MCACHE
@@ -120,18 +139,18 @@ method_t _bind(struct object *rcv, struct symbol *msg)
   if ( line->vtable == vt && 
        line->selector == msg && line->selector_version == msg->version
        )
-    return line->method;
+    return line->closure;
 #endif
 
   method = (((void *) msg == (void*) s_lookup) && (rcv == (struct object *)vtable_vt))
-    ? (method_t)vtable_lookup(vt, (void*) msg)
-    : (method_t)send(vt, s_lookup, (void*) msg);
+    ? (struct closure *)vtable_lookup(vt, (void*) msg)
+    : (struct closure *)send(vt, s_lookup, (void*) msg);
 
 #if MCACHE
   line->vtable    = vt;
   line->selector  = msg;
   line->selector_version = msg->version;
-  line->method    = method;
+  line->closure    = method;
 #endif
 
   return method;
@@ -148,7 +167,7 @@ static void _flush_mcache(struct vtable *vt, struct object *msg)
       line->vtable = 0;
       line->selector = 0;
       line->selector_version = 0;
-      line->method = 0;
+      line->closure = 0;
     }
   }
 }
@@ -173,12 +192,13 @@ struct vtable *vtable_delegated(struct vtable *self)
   return child;
 }
 
-struct object *vtable_addMethod(struct vtable *self, struct object *key, struct object *method)
+
+struct object *vtable_addMethod(struct vtable *self, struct object *key, struct object *value)
 {
   int i;
   for (i = 0; i < self->tally; ++i)
     if (key == self->keys[i]) {
-       self->values[i] = (struct object *)method;
+       self->values[i] = (struct object *)value;
        goto done;
     }
 
@@ -189,12 +209,12 @@ struct object *vtable_addMethod(struct vtable *self, struct object *key, struct 
        self->values = realloc(self->values, sizeof(self->values[0]) * self->size);
     }
   self->keys[self->tally] = key;
-  self->values[self->tally++] = method;
+  self->values[self->tally++] = value;
 
  done:
   if ( self != SymbolList ) {
-    /* If the key is a symbol, flush mcache and invalidate icaches. */
-    if ( symbol_vt && key->_vt[-1] == symbol_vt) {
+    /* If the key is a symbol, invalidate mcache and icaches. */
+    if ( symbol_vt && key->_vt[-1] == symbol_vt ) {
 #if MCACHE
       _flush_mcache(self, key);
 #endif
@@ -204,7 +224,7 @@ struct object *vtable_addMethod(struct vtable *self, struct object *key, struct 
     }
   }
 
-  return method;
+  return value;
 }
 
 struct object *vtable_lookup(struct vtable *self, struct object *key)
@@ -251,22 +271,24 @@ void init(void)
 
   SymbolList = vtable_delegated(0);
 
+  closure_vt = vtable_delegated(object_vt);
+
   s_lookup = symbol_intern(0, "lookup");
-  vtable_addMethod(vtable_vt, s_lookup,    (struct object *)vtable_lookup);
+  vtable_addMethod(vtable_vt, s_lookup,    closure_new((method_t) vtable_lookup, 0));
 
   s_addMethod = symbol_intern(0, "addMethod");
-  vtable_addMethod(vtable_vt, s_addMethod, (struct object *)vtable_addMethod);
+  vtable_addMethod(vtable_vt, s_addMethod, closure_new((method_t) vtable_addMethod, 0));
 
   s_allocate = symbol_intern(0, "allocate");
-  send(vtable_vt, s_addMethod, s_allocate, vtable_allocate);
+  send(vtable_vt, s_addMethod, s_allocate, closure_new((method_t) vtable_allocate, 0));
 
   symbol = send(symbol_vt, s_allocate, sizeof(struct symbol));
 
   s_intern = symbol_intern(0, "intern");
-  send(symbol_vt, s_addMethod, s_intern, symbol_intern);
+  send(symbol_vt, s_addMethod, s_intern, closure_new((method_t) symbol_intern, 0));
 
   s_delegated = send(symbol, s_intern, "delegated");
-  send(vtable_vt, s_addMethod, s_delegated, vtable_delegated);
+  send(vtable_vt, s_addMethod, s_delegated, closure_new((method_t) vtable_delegated, 0));
 }
 
 /********************************************************************/
@@ -310,7 +332,7 @@ int main(int argc, char **argv)
 
   takker_vt = (void*) send(vtable_vt, s_delegated, object_vt);
   s_tak = (void*) send(symbol, s_intern, (struct object*) "tak");
-  send(takker_vt, s_addMethod, s_tak, tak);
+  send(takker_vt, s_addMethod, s_tak, closure_new((method_t) tak, 0));
   t = (void*) send(takker_vt, s_allocate, sizeof(*t));
   
   {
