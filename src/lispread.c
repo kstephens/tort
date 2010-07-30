@@ -38,17 +38,18 @@ READ_DECL           A C function definition for the lisp read function.
 	            be bound to a VALUE of the input stream.
 READ_DECL_END       Terminate the read C function definition.  Opt.
 READ_CALL()         Call the lisp read function recursively.
-RETURN(X)           Return a VALUE from the READ_DECL function.
+RETURN(X)           Return a VALUE from the READ_DECL function.  Opt.
 
 MALLOC(s)           Allocate memory buffer from lisp.
 REALLOC(p,s)        Reallocate a previously MALLOCed buffer from lisp.
 
-PEEKC(stream)       Peek a C char or EOF from the stream
-GETC(stream)        Read a C char or EOF from the stream
+PEEKC(stream)       Peek a C char or EOF from the stream.  Opt.  See UNGETC().
+UNGETC(stream,c)    Used to implement PEEKC() if PEEKC is #undef.  Opt.
+GETC(stream)        Read a C char or EOF from the stream.
 
 EOS                 The end-of-stream VALUE.
 CONS(X,Y)           Return a new lisp CONS object.
-IMMUTABLE_CONS(X)   Converts pair X to an immutable cons.
+IMMUTABLE_CONS(X)   Converts pair X to an immutable cons.  Opt.
 CAR(CONS)           Get the car field of a pair VALUE as in: (car CONS)
 SET_CDR(CONS,V)     Set the cdr field of a pair VALUE as in: (set-cdr! CONS V)
 SET(LOC,V)          Set a local variable as in (set! VARIABLE V).  Opt.  
@@ -56,25 +57,27 @@ SET(LOC,V)          Set a local variable as in (set! VARIABLE V).  Opt.
 MAKE_CHAR(I)        Create a lisp CHARACTER VALUE from a C integer.
 
 LIST_2_VECTOR(X)    Convert list VALUE X into a VECTOR VALUE.
-IMMUTABLE_VECTOR(X) Convert VECTOR VALUE X into an immutable VECTOR VALUE.
+IMMUTABLE_VECTOR(X) Convert VECTOR VALUE X into an immutable VECTOR VALUE.  Opt.
 
 STRING(char*,int)   Create a new lisp STRING VALUE from a MALLOCed buffer.
-IMMUTABLE_STRING(X) Convert STRING VALUE X to an immutable STRING VALUE.
-ESCAPE_STRING(X)    Return a new STRING VALUE with escaped characters (\\, \") replaced.
+IMMUTABLE_STRING(X) Convert STRING VALUE X to an immutable STRING VALUE.  Opt.
+ESCAPE_STRING(X)    Return a new STRING VALUE with escaped characters (\\, \") replaced.  Opt.
 STRING_2_NUMBER(X)  Convert string VALUE X into a NUMBER VALUE, or return F.
 STRING_2_SYMBOL(X)  Convert string VALUE X into a SYMBOL VALUE.
 
 SYMBOL(NAME)        Return a symbol VALUE for NAME with '_' replaced with '-'.
 SYMBOL_DOT          The "." symbol.
 
-CALL_MACRO_CHAR(X)  Call the macro character function for the C char X.  If the function returns F, continue scanning, otherwise return the CAR of the result.
+CALL_MACRO_CHAR(X)  Call the macro character function for the C char X.  
+                    If the function returns F, continue scanning, 
+                    otherwise return the CAR of the result.  Opt.
 
 EQ(X,Y)             Return non-zero C value if (eq? X Y).
 
 NIL                 The empty list VALUE.
-T                   The true VALUE. Opt.
-F                   The false VALUE.
-U                   The unspecified VALUE. Opt.
+T                   The true VALUE for #t.  Opt.
+F                   The false VALUE for #f.  Opt.
+U                   The unspecified VALUE for #u.  Opt.
 
 ERROR(format,...)   Raise an error using the printf() format.
 
@@ -303,9 +306,11 @@ READ_DECL
 	}
 	RETURN(MAKE_CHAR(c));
 
+#ifdef F
       case 'f': case 'F':
 	GETC(stream);
 	RETURN(F);
+#endif
 
 #ifdef T
       case 't': case 'T':
