@@ -1,5 +1,9 @@
 /* A sample implementation in GNU C of the object model described in this paper.
   * This code, and that of the benchmarks discussed in the text, can be downloaded from: http://piumarta.com/oopsla07
+
+  This is my hacked up version:
+  Supports symbol versioning to invalidate ICACHE and MCACHE entries.
+  Flushes all MCACHE entries when a vtable->parent is changed.
   */
 #include <stdio.h>
 #include <stdlib.h>
