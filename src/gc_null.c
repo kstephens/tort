@@ -10,6 +10,10 @@ void *GC_realloc(void *ptr, size_t size)
 {
   return realloc(ptr, size);
 }
+void GC_free(void *ptr)
+{
+  free(ptr);
+}
 void GC_gcollect()
 {
 }
