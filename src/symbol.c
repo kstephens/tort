@@ -32,7 +32,6 @@ tort_v tort_symbol_make(const char *string)
 void tort_runtime_initialize_symbol()
 {
 
-  _tort->_s_DOT = tort_symbol_make("DOT");
   _tort->_s___create = tort_symbol_make("__create");
   _tort->_s___finalize = tort_symbol_make("__finalize");
   _tort->_s___register_finalizer = tort_symbol_make("__register_finalizer");
@@ -52,9 +51,6 @@ void tort_runtime_initialize_symbol()
   _tort->_s_format = tort_symbol_make("format");
   _tort->_s_get = tort_symbol_make("get");
   _tort->_s_get_key = tort_symbol_make("get_key");
-  _tort->_s_lisp_read = tort_symbol_make("lisp_read");
-  _tort->_s_lisp_write = tort_symbol_make("lisp_write");
-  _tort->_s_list_TO_vector = tort_symbol_make("list_TO_vector");
   _tort->_s_lookup = tort_symbol_make("lookup");
   _tort->_s_map = tort_symbol_make("map");
   _tort->_s_new = tort_symbol_make("new");
@@ -63,7 +59,6 @@ void tort_runtime_initialize_symbol()
   _tort->_s_printf = tort_symbol_make("printf");
   _tort->_s_read = tort_symbol_make("read");
   _tort->_s_set = tort_symbol_make("set");
-  _tort->_s_set_cdrE = tort_symbol_make("set_cdrE");
   _tort->_s_size = tort_symbol_make("size");
   _tort->_s_true = tort_symbol_make("true");
   _tort->_s_value = tort_symbol_make("value");

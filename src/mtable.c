@@ -3,6 +3,23 @@
 
 /********************************************************************/
 
+tort_v tort_class_get(const char *name)
+{
+  tort_v sym = tort_symbol_make(name);
+  tort_v mt = tort_send(tort__s(get), _tort->_m_class, sym);
+  return mt;
+}
+
+tort_v tort_class_make(const char *name, tort_v parent)
+{
+  tort_v sym = tort_symbol_make(name);
+  tort_v mt = tort_send(tort__s(get), _tort->_m_class, sym);
+  if ( mt == tort_nil ) {
+    mt = tort_mtable_create(parent ? parent : _tort->_mt_object);
+    tort_send(tort__s(set), _tort->_m_class, sym, mt);
+  }
+  return mt;
+}
 
 void tort_runtime_initialize_mtable()
 {
@@ -32,14 +49,13 @@ void tort_runtime_initialize_mtable()
   _tort->_tagged_header.alloc_size = 0;
   _tort->_tagged_header.lookupf = _tort_object_lookupf;
   _tort->_tagged_header.applyf  = _tort_object_applyf;
-  _tort->_tagged_header.mtable = _tort->_mt_tagged;
-
-  _tort->_mt_block = tort_mtable_create(_tort->_mt_object);
+  _tort->_tagged_header.mtable  = _tort->_mt_tagged;
 
   _tort->_mt_io     = tort_mtable_create(_tort->_mt_object);
   _tort->_mt_eos    = tort_mtable_create(_tort->_mt_object);
 
+#if 0
   _tort->_mt_pair = tort_mtable_create(_tort->_mt_object);
-
+#endif
 }
 

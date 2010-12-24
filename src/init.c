@@ -69,14 +69,24 @@ tort_v tort_runtime_create_ (int *argcp, char ***argvp, char ***envp)
 
   /* Subsystem initialization. */
   tort_runtime_initialize_gc();
+
+  /* Create the class table. */
+  _tort->_m_class = tort_map_create();
+  tort_send(tort__s(set), _tort->root, tort_symbol_make("class"), _tort->_m_class);
+  
   tort_runtime_initialize_io();
   tort_runtime_initialize_write();
+#if 0
   tort_runtime_initialize_block();
+#endif
   tort_runtime_initialize_debug();
   tort_runtime_initialize_method();
 
+
   /* Addons. */
+#if 0
   tort_runtime_initialize_lisp();
+#endif
   tort_runtime_initialize_symtab();
 
   _tort->_initialized = tort_true;

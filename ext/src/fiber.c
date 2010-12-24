@@ -28,7 +28,7 @@ int _tort_dummy_false = 0;
     S(30)= S(31)= S(32)= S(33)= S(34)= 0;	\
   }
 
-void *_tort_fiber_yield(TORT_FIBER_VOLATILE tort_fiber_t *fiber, TORT_FIBER_VOLATILE tort_fiber_t *other_fiber)
+void *__tort_fiber_yield(TORT_FIBER_VOLATILE tort_fiber_t *fiber, TORT_FIBER_VOLATILE tort_fiber_t *other_fiber)
 {
   _FLUSH_REGISTERS;
   if ( other_fiber == fiber ) {
@@ -49,7 +49,7 @@ void *_tort_fiber_yield(TORT_FIBER_VOLATILE tort_fiber_t *fiber, TORT_FIBER_VOLA
 
 
 static
-void *_tort_fiber_begin(TORT_FIBER_VOLATILE tort_fiber_t *fiber)
+void *__tort_fiber_begin(TORT_FIBER_VOLATILE tort_fiber_t *fiber)
 {
   _FLUSH_REGISTERS;
   /* Pause parent fiber. */
@@ -69,7 +69,7 @@ void *_tort_fiber_begin(TORT_FIBER_VOLATILE tort_fiber_t *fiber)
 
 size_t _tort_fiber_default_stack_size = 1 * 1024 * 1024;
 
-void *_tort_fiber_new(tort_fiber_t *fiber_parent, tort_fiber_func func, void *func_data, size_t size)
+void *__tort_fiber_new(tort_fiber_t *fiber_parent, tort_fiber_func func, void *func_data, size_t size)
 {
   tort_fiber_t *fiber = malloc(sizeof(*fiber));
   memset(fiber, 0, sizeof(*fiber));
@@ -101,6 +101,35 @@ void *_tort_fiber_new(tort_fiber_t *fiber_parent, tort_fiber_func func, void *fu
   size_t pad = sizeof(void*);
   fiber->start_sp = __builtin_alloca((dist + pad) & ~pad);
   // fprintf(stderr, "    start_sp = @%18p\n", fiber->start_sp);
-  return _tort_fiber_begin(fiber);
+  return __tort_fiber_begin(fiber);
 }
+
+/********************************************************************/
+
+static
+tort_fiber_func_DECL(fiber_func)
+{
+  tort_v _tort_fiber = (tort_v) _tort_fiber_ptr;
+  return (tort_v) tort_send(tort__s(value), (tort_v) data);
+}
+
+tort_v _tort_fiber_new(tort_thread_param tort_v rcvr, tort_v proc)
+{
+  return __tort_fiber_new((tort_fiber_t*) _tort_fiber, fiber_func, (void*) proc, 0);  
+}
+
+tort_v _tort_fiber_yield (tort_thread_param tort_v rcvr)
+{
+  return (tort_v) __tort_fiber_yield(_tort_fiber, tort_ref(tort_fiber_t, rcvr));
+}
+
+void tort_runtime_initialize_fiber()
+{
+  tort_v _mt_fiber = tort_class_make("fiber", 0);
+
+  tort_add_method(_mt_fiber, "new", _tort_fiber_new);
+  tort_add_method(_mt_fiber, "yield", _tort_fiber_yield);
+}
+
+
 

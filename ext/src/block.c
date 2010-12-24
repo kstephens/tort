@@ -15,5 +15,6 @@ tort_apply_decl(_tort_block_lookupf)
 
 void tort_runtime_initialize_block()
 {
+  _tort->_mt_block = tort_class_make("block", 0);
 }
 

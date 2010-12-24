@@ -34,7 +34,7 @@ int main(int argc, char **argv, char **environ)
 #endif
 
   tort_printf(io, "read lisp object from stdin: ");
-  v = tort_send(tort__s(lisp_read), tort_stdin);
+  v = tort_send(tort_symbol_make("lisp_read"), tort_stdin);
   tort_printf(io, "(read o) => %O\n", v);
 
   tort_gc_dump_stats();

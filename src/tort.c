@@ -14,7 +14,7 @@
 
 tort_runtime *_tort;
 tort_v _tort_message;
-
+tort_v _tort_fiber;
 
 /********************************************************************/
 
@@ -188,6 +188,4 @@ tort_v tort_method_make(tort_apply_decl((*applyf)))
   tort_h_ref(val)->applyf = applyf;
   return val;
 }
-
-
 

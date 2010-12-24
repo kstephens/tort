@@ -137,6 +137,7 @@ struct tort_message {
   tort_v receiver;
   tort_v method;
   tort_v previous_message;
+  tort_v fiber;
 } tort_message;
 
 typedef struct _tort_message_data {
@@ -182,11 +183,13 @@ struct tort_runtime {
   tort_v _mt_message;
   tort_v _mt_nil;
   tort_v _mt_tagged;
-  tort_v _mt_io;
   tort_v _mt_boolean;
+  tort_v _mt_io;
   tort_v _mt_eos;
   tort_v _mt_block;
+#if 0
   tort_v _mt_pair;
+#endif
 
   tort_v _s_new;
   tort_v _s_clone;
@@ -226,12 +229,14 @@ struct tort_runtime {
   tort_v _s___finalize;
   tort_v _s___register_finalizer;
 
+#if 0
   /* lisp */
   tort_v _s_lisp_write;
   tort_v _s_lisp_read;
   tort_v _s_set_cdrE;
   tort_v _s_list_TO_vector;
   tort_v _s_DOT;
+#endif
 
   /* io */
   tort_v _io_stdin;
@@ -241,6 +246,9 @@ struct tort_runtime {
 
   /* symtab */
   tort_v _symtab;
+
+  /* globals */
+  tort_v _m_class;
 
   tort_v _initialized;
 } tort_runtime;
@@ -263,7 +271,7 @@ struct tort_runtime {
   ({									\
     _tort_message_data __tort_msg = {					\
       { sizeof(tort_message), _tort_object_lookupf, _tort_object_applyf, _tort->_mt_message }, \
-      { (SEL), _tort_send_RCVR(RCVR_AND_ARGS), tort_nil, _tort_message } \
+      { (SEL), _tort_send_RCVR(RCVR_AND_ARGS), tort_nil, _tort_message, _tort_fiber } \
     };									\
     tort_v __tort_msg_val = tort_ref_box(&__tort_msg._msg);			\
     tort_h_lookupf(__tort_msg._msg.receiver)(__tort_msg_val, __tort_msg._msg.receiver); \
@@ -275,6 +283,7 @@ struct tort_runtime {
 
 extern tort_runtime *_tort;
 extern tort_v _tort_message; /* catch for top-level messages. */
+extern tort_v _tort_fiber;   /* catch for top-level messages. */
 
 #define tort_nil _tort->nil
 #define tort_string_null _tort->string_null
@@ -310,6 +319,9 @@ tort_v tort_symbol_make (const char *string);
 #define tort__mt(X) _tort->_mt_##X
 
 tort_v tort_object_make ();
+
+tort_v tort_class_get (const char *string);
+tort_v tort_class_make (const char *string, tort_v parent);
 
 tort_v tort_method_make (tort_apply_decl((*applyf)));
 

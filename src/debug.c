@@ -120,7 +120,6 @@ const char *tort_object_name_(tort_v val)
     mt(boolean)
     mt(tagged)
     mt(io)
-    mt(block)
     mt(eos)
 #undef mt
 
@@ -165,7 +164,6 @@ const char *tort_object_name(tort_v val)
       mt(boolean)
       mt(tagged)
       mt(io)
-      mt(block)
       mt(eos)
 #undef mt
       
