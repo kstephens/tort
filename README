@@ -1,0 +1,28 @@
+
+tort - Tiny Object RunTime
+
+Core is under 2500 lines of C.
+
+Supports:
+
+* Primitive object types.
+** Tagged integers.
+** Strings.
+** Vectors.
+** Symbols.
+** Method table.
+** Methods.
+* Dynamic message dispatch.
+** On OS X 64-bit 
+** 100000000 send/11.071671962738037109 sec = 9032059.5061479657888 send/sec
+* Dynamic library loading with automatic initialization and method installation.
+
+Extensions are dynamically loaded:
+
+* Example Extension Library.
+** LISP primitives.
+*** pair.
+*** lisp reader.
+*** lisp writer.
+** Blocks.
+** Fibers.
