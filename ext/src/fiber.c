@@ -1,37 +1,12 @@
+#include "tort/fiber.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stddef.h>
 #include <string.h> /* memset(). */
-#include <setjmp.h>
 #include <sys/mman.h>
 #include <assert.h>
 
-#define TORT_FIBER_VOLATILE
-#ifndef TORT_FIBER_VOLATILE
-#define TORT_FIBER_VOLATILE volatile
-#endif
-
-struct tort_fiber_t;
-typedef struct tort_fiber_t tort_fiber_t;
-
-#define tort_fiber_func_DECL(X) \
-  void * X(TORT_FIBER_VOLATILE tort_fiber_t *_tort_fiber, TORT_FIBER_VOLATILE void *data)
-
-typedef tort_fiber_func_DECL((*tort_fiber_func));
-
-struct tort_fiber_t {
-  jmp_buf _jb;
-#define _tort_setjmp(F) setjmp((F)->_jb)
-#define _tort_longjmp(F, V) longjmp((F)->_jb, (V))
-  struct tort_fiber_t *parent;
-  tort_fiber_func func;
-  void *func_result;
-  void *func_data;
-  void *stk_ptr;
-  size_t stk_size;
-  void *parent_sp;
-  void *start_sp;
-};
 
 #define C(X) _rse_##X##0, _rse_##X##1, _rse_##X##2, _rse_##X##3, _rse_##X##4 
 #define S(X) _rse_##X##0= _rse_##X##1= _rse_##X##2= _rse_##X##3= _rse_##X##4 
@@ -129,57 +104,3 @@ void *_tort_fiber_new(tort_fiber_t *fiber_parent, tort_fiber_func func, void *fu
   return _tort_fiber_begin(fiber);
 }
 
-/********************************************************************/
-
-static tort_fiber_t *fiber_a, *fiber_b;
-
-static tort_fiber_func_DECL(a);
-static tort_fiber_func_DECL(b);
-
-static
-tort_fiber_func_DECL(a)
-{
-  static int n = 10;
-  fiber_a = _tort_fiber;
-  fprintf(stderr, "fiber_a = @%p\n", fiber_a);
-  while ( n -- ) {
-    // fprintf(stderr, "a: fiber = %p\n", _tort_fiber);
-    assert(_tort_fiber == fiber_a);
-    fprintf(stderr, "a(%s) @%p @%p: n = %d\n", (char*) data, _tort_fiber, &_tort_fiber, n);
-    if ( ! fiber_b ) {
-      _tort_fiber_new(fiber_a, b, "from a()", (size_t) 0);
-    } else {
-      _tort_fiber_yield(fiber_a, fiber_b);
-    }
-  }
-  return "a return";
-}
-
-static
-tort_fiber_func_DECL(b)
-{
-  static int n = 10;
-  fiber_b = _tort_fiber;
-  fprintf(stderr, "fiber_b = @%p\n", fiber_b);
-  while ( n -- ) {
-    // fprintf(stderr, "b: fiber = @%p\n", _tort_fiber);
-    assert(_tort_fiber == fiber_b);
-    fprintf(stderr, "b(%s) @ @%p @%p: n = %d\n", (char*) data, _tort_fiber, &_tort_fiber, n);
-    _tort_fiber_yield(fiber_b, fiber_a);
-  }
-  return "b return";
-}
-
-
-int main(int argc, char **argv)
-{
-  void *result;
-
-  fprintf(stderr, "main() @%p\n", &argv);
-
-  result = _tort_fiber_new(0, a, "from main()", (size_t) 0);
-
-  fprintf(stderr, "  => %s\n", (char*) result);
-
-  return 0;
-}

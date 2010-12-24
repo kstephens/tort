@@ -4,16 +4,11 @@ TAK_C_CALL=0
 endif
 
 CFLAGS= #
-#CFLAGS+= -O3 #
+CFLAGS+= -O3 #
 CFLAGS+= -DTAK_C_CALL=$(TAK_C_CALL) #
 CFLAGS+= -g
 
-all: fiber fiber.s
-
-fiber: fiber.c
-
-fiber.s : fiber.c
-	gcc -S -Wa,-adlh $(CFLAGS) -o $@ $<
+all: piumarta-$(TAK_C_CALL)-run
 
 piumarta-$(TAK_C_CALL)-run : piumarta-$(TAK_C_CALL)
 	time ./$(@:-run=) || gdb --args $(@:-run=)
