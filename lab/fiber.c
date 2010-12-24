@@ -1,20 +1,8 @@
-#ifndef USE_CONTEXT
-#define USE_CONTEXT 0
-#endif
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <stddef.h>
 #include <string.h> /* memset(). */
-#if USE_CONTEXT
-#ifdef __APPLE__
-/* ucontext routines are deprecated, and require _XOPEN_SOURCE to be defined */
-#define _XOPEN_SOURCE 1
-#endif
-#include <ucontext.h>
-#else
 #include <setjmp.h>
-#endif
 #include <sys/mman.h>
 #include <assert.h>
 
@@ -32,16 +20,9 @@ typedef struct tort_fiber_t tort_fiber_t;
 typedef tort_fiber_func_DECL((*tort_fiber_func));
 
 struct tort_fiber_t {
-#if USE_CONTEXT
-  ucontext_t _context;
-  int _context_val;
-#define _tort_setjmp(F) ((F)->_context_val = 0, getcontext(&((F)->_context)), (F)->_context_val)
-#define _tort_longjmp(F, V) ((F)->_context_val = (V), setcontext(&(F)->_context))
-#else
   jmp_buf _jb;
 #define _tort_setjmp(F) setjmp((F)->_jb)
 #define _tort_longjmp(F, V) longjmp((F)->_jb, (V))
-#endif
   struct tort_fiber_t *parent;
   tort_fiber_func func;
   void *func_result;
@@ -113,7 +94,6 @@ void *_tort_fiber_begin(TORT_FIBER_VOLATILE tort_fiber_t *fiber)
 
 size_t _tort_fiber_default_stack_size = 1 * 1024 * 1024;
 
-static
 void *_tort_fiber_new(tort_fiber_t *fiber_parent, tort_fiber_func func, void *func_data, size_t size)
 {
   tort_fiber_t *fiber = malloc(sizeof(*fiber));
@@ -142,11 +122,10 @@ void *_tort_fiber_new(tort_fiber_t *fiber_parent, tort_fiber_func func, void *fu
   */
   fiber->parent_sp = __builtin_alloca((size_t) 0); /* (void*) &ptr; */
   long long dist = fiber->parent_sp - (fiber->stk_ptr + fiber->stk_size);
-  fprintf(stderr, "  fiber(%18p)\n        sp = %18p\n       ptr = %18p\n      dist = 0x%16llx\n",
-	  fiber, fiber->parent_sp, fiber->stk_ptr, (long long) dist);
+  // fprintf(stderr, "  fiber(@%18p)\n        sp = @%18p\n       ptr = @%18p\n      dist = @0x%16llx\n", fiber, fiber->parent_sp, fiber->stk_ptr, (long long) dist);
   size_t pad = sizeof(void*);
   fiber->start_sp = __builtin_alloca((dist + pad) & ~pad);
-  fprintf(stderr, "    start_sp = %18p\n", fiber->start_sp);
+  // fprintf(stderr, "    start_sp = @%18p\n", fiber->start_sp);
   return _tort_fiber_begin(fiber);
 }
 
@@ -162,11 +141,11 @@ tort_fiber_func_DECL(a)
 {
   static int n = 10;
   fiber_a = _tort_fiber;
-  fprintf(stderr, "fiber_a = %p\n", fiber_a);
+  fprintf(stderr, "fiber_a = @%p\n", fiber_a);
   while ( n -- ) {
     // fprintf(stderr, "a: fiber = %p\n", _tort_fiber);
     assert(_tort_fiber == fiber_a);
-    fprintf(stderr, "a(%s) @ %p %p: n = %d\n", (char*) data, _tort_fiber, &_tort_fiber, n);
+    fprintf(stderr, "a(%s) @%p @%p: n = %d\n", (char*) data, _tort_fiber, &_tort_fiber, n);
     if ( ! fiber_b ) {
       _tort_fiber_new(fiber_a, b, "from a()", (size_t) 0);
     } else {
@@ -181,11 +160,11 @@ tort_fiber_func_DECL(b)
 {
   static int n = 10;
   fiber_b = _tort_fiber;
-  fprintf(stderr, "fiber_b = %p\n", fiber_b);
+  fprintf(stderr, "fiber_b = @%p\n", fiber_b);
   while ( n -- ) {
-    // fprintf(stderr, "b: fiber = %p\n", _tort_fiber);
+    // fprintf(stderr, "b: fiber = @%p\n", _tort_fiber);
     assert(_tort_fiber == fiber_b);
-    fprintf(stderr, "b(%s) @ %p %p: n = %d\n", (char*) data, _tort_fiber, &_tort_fiber, n);
+    fprintf(stderr, "b(%s) @ @%p @%p: n = %d\n", (char*) data, _tort_fiber, &_tort_fiber, n);
     _tort_fiber_yield(fiber_b, fiber_a);
   }
   return "b return";
@@ -196,7 +175,7 @@ int main(int argc, char **argv)
 {
   void *result;
 
-  fprintf(stderr, "main() @ %p\n", &argv);
+  fprintf(stderr, "main() @%p\n", &argv);
 
   result = _tort_fiber_new(0, a, "from main()", (size_t) 0);
 
