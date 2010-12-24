@@ -101,8 +101,36 @@ tort_v _tort_load_symtab(const char *file)
 }
 
 
-tort_v tort_symtab_load_methods()
+tort_v tort_m_map___load_methods(tort_thread_param tort_v map)
 {
+  static const char prefix[] = "__tort_m_";
+  tort_map_EACH(map, e); {
+    if ( tort_h_mtable(e->key) != _tort->_mt_symbol ) continue;
+    char *name = tort_symbol_data(e->key);
+    // fprintf(stderr, "e = @%p \"%s\"\n", e, name);
+    if ( strncmp(name, prefix, strlen(prefix)) == 0 ) {
+      char *cls = name + strlen(prefix);
+      char *meth = cls;
+      while ( *meth ) {
+	if ( meth[0] == '_' && meth[1] == '_' ) {
+	  char cls_buf[meth - cls + 1];
+	  strncpy(cls_buf, cls, meth - cls);
+	  cls_buf[meth - cls] = 0;
+	  cls = cls_buf;
+	  meth += 2;
+	  void *ptr = (void*) tort_I(e->value);
+	  fprintf(stderr, "  %s.%s => @%p\n", cls, meth, ptr);
+#if 0
+	  tort_v cls_obj = tort_class_get(cls_buf);
+	  tort_add_method(cls_obj, meth, e->value);
+#endif
+	  break;
+	}
+	++ meth;
+      }
+    }
+  }
+  tort_map_EACH_END();
   return 0;
 }
 
@@ -110,7 +138,8 @@ tort_v tort_symtab_load_methods()
 tort_v tort_runtime_initialize_symtab()
 {
   tort_v st = _tort_load_symtab(_tort->_argv[0]);
-  tort_send(tort__s(set), _tort->root, tort_s(symtab), st);
+  tort_send(tort__s(set), _tort->root, tort_s(core_symtab), st);
+  tort_m_map___load_methods(tort_thread_arg st);
   // tort_add_method(tort__mt(mtable), "__import", _tort_mtable___import);
   return st;
 }

@@ -16,9 +16,9 @@ typedef void* tort_v;
 #define tort_ref(T, X)      ((struct T *)(X))
 #define tort_ref_box(PTR)   ((tort_v)(PTR))
 
-#define tort_taggedQ(X)     ((long)(X) & 1)
-#define tort_tagged_box(V)  ((tort_v) ((((long) (V)) << 1) | 1))
-#define tort_tagged_data(X) (((long) (X)) >> 1)
+#define tort_taggedQ(X)     ((size_t)(X) & 1)
+#define tort_tagged_box(V)  ((tort_v) ((((ssize_t) (V)) << 1) | 1))
+#define tort_tagged_data(X) (((ssize_t) (X)) >> 1)
 
 #define tort_i(V) tort_tagged_box(V)
 #define tort_I(X) tort_tagged_data(X)
@@ -40,7 +40,7 @@ struct tort_header {
 #if TORT_ALLOC_DEBUG
   const char *alloc_file;
   int alloc_line;
-  unsigned long alloc_id;
+  size_t alloc_id;
 #endif
   size_t alloc_size; /** allocated size, not including this header */
   tort_lookup_decl((*lookupf));
@@ -74,6 +74,13 @@ struct tort_map {
   tort_map_entry **entry;
   size_t entry_n;
 } tort_map;
+
+#define tort_map_EACH(m, me)					\
+  {								\
+  int me##i = 0;						\
+  while ( me##i < tort_ref(tort_map, m)->entry_n ) {		\
+    tort_map_entry *me = tort_ref(tort_map, m)->entry[me##i ++]
+#define tort_map_EACH_END() }}
 
 typedef
 struct tort_mtable {
