@@ -2,7 +2,7 @@ GC=gc-20101223-cvs
 USE_GC=0
 
 CFLAGS_OPTIMIZE = -O2
-CFLAGS += -DUSE_GC=$(USE_GC) -fnested-functions -Iinclude -I$(GC)/include -Wall -Werror -g $(CFLAGS_OPTIMIZE)
+CFLAGS += -DUSE_GC=$(USE_GC) -fnested-functions -Iinclude -Iext/include -I$(GC)/include -Wall -Werror -g $(CFLAGS_OPTIMIZE)
 
 ifeq "$(USE_GC)" "0"
 else
@@ -19,7 +19,7 @@ LIB_CFILES = $(shell ls src/*.c) $(GEN_C_FILES)
 LIB_HFILES = $(shell ls include/tort/*.h) $(GEN_H_FILES)
 LIB_OFILES = $(LIB_CFILES:.c=.o)
 
-LIBTORT     = src/libtort.a
+LIB_TORT     = src/libtort.a
 
 export LIB_CFILES
 export LIB_HFILES
@@ -29,7 +29,7 @@ LIBEXT_CFILES = $(shell ls ext/src/*.c)
 LIBEXT_HFILES = $(shell ls ext/include/tort/*.h)
 LIBEXT_OFILES = $(LIBEXT_CFILES:.c=.o)
 
-LIBTORTEXT   = ext/src/libtortext.a
+LIB_TORTEXT   = ext/src/libtortext.a
 
 export LIBEXT_CFILES
 export LIBEXT_HFILES
@@ -37,7 +37,7 @@ export LIBEXT_OFILES
 
 ######################################################################
 
-TEST_C_FILES = $(shell ls t/*.c)
+TEST_C_FILES = $(shell ls t/*.c ext/t/*.c | sort -u)
 TEST_EXE_FILES = $(TEST_C_FILES:.c=.exe)
 TEST_FILES = $(TEST_C_FILES:.c=)
 TEST_OUT_FILES = $(TEST_C_FILES:.c=.out)
@@ -46,7 +46,7 @@ TEST_OUT_FILES = $(TEST_C_FILES:.c=.out)
 # default:
 #
 
-all : gc $(GEN_H_FILES) $(GEN_C_FILES) $(LIBTORT) $(LIBTORTEXT) test stats
+all : gc $(GEN_H_FILES) $(GEN_C_FILES) $(LIB_TORT) $(LIB_TORTEXT) test stats
 
 
 ######################################################################
@@ -88,15 +88,15 @@ src/lisp.o : src/lispread.c
 # library:
 #
 
-$(LIBTORT) : $(LIB_OFILES)
+$(LIB_TORT) : $(LIB_OFILES)
 	$(AR) $(ARFLAGS) $@ $(LIB_OFILES)
 	ranlib $@ || true
 
-$(LIBTORTEXT) : $(LIBEXT_OFILES)
+$(LIB_TORTEXT) : $(LIBEXT_OFILES)
 	$(AR) $(ARFLAGS) $@ $(LIBEXT_OFILES)
 	ranlib $@ || true
 
-src/lisp.o : src/lispread.c
+ext/src/lisp.o : ext/src/lispread.c
 
 ######################################################################
 # libgc.a:
@@ -117,12 +117,14 @@ endif
 # testing:
 #
 
+TEST_LIBS = $(LIB_TORT) $(LIB_TORTEXT)
+
 %.exe : %.c 
-	$(CC) $(CFLAGS) $(LDFLAGS) $(@:.exe=.c) src/libtort.a $(LIBS) -o $@
+	$(CC) $(CFLAGS) $(LDFLAGS) $(@:.exe=.c) $(TEST_LIBS) $(LIBS) -o $@
 
-$(TEST_EXE_FILES) : src/libtort.a
+$(TEST_EXE_FILES) : $(TEST_LIBS)
 
-$(TEST_EXE_FILES) $(LIB_OFILES) : $(GEN_H_FILES) include/tort/*.h
+$(TEST_EXE_FILES) $(LIB_OFILES) : $(GEN_H_FILES) include/tort/*.h ext/include/tort/*.h
 
 run-test : $(TEST_EXE_FILES)
 	@set -ex; for f in $(TEST_EXE_FILES); do \
@@ -203,18 +205,28 @@ FIND_STAT_FILES= \
 
 stats :
 	mkdir -p .stats
-	ls $(GEN_H_FILES) $(GEN_C_FILES) | \
+	@echo "core Generated LoC:"
+	find $(GEN_H_FILES) $(GEN_C_FILES) | \
 	  sort -u > .stats/files_gen
-	@echo "Source LoC:"
-	find Makefile src include $(FIND_STAT_FILES) | \
+	xargs wc -l < .stats/files_gen
+	@echo "core Source LoC:"
+	find src include $(FIND_STAT_FILES) | \
 	  sort -u > .stats/files.t
 	comm -3 .stats/files.t .stats/files_gen > .stats/files_src
 	xargs wc -l < .stats/files_src
-	@echo "Test LoC:"
+	@echo "core Test LoC:"
 	find t $(FIND_STAT_FILES) | \
 	  sort -u > .stats/files.t
 	comm -3 .stats/files.t .stats/files_gen > .stats/files_t
 	xargs wc -l < .stats/files_t
-	@echo "Generated LoC:"
-	xargs wc -l < .stats/files_gen
+	@echo "ext/ Source LoC:"
+	find ext/src ext/include $(FIND_STAT_FILES) | \
+	  sort -u > .stats/files.t
+	comm -3 .stats/files.t .stats/files_gen > .stats/files_src
+	xargs wc -l < .stats/files_src
+	@echo "ext/ Test LoC:"
+	find ext/t $(FIND_STAT_FILES) | \
+	  sort -u > .stats/files.t
+	comm -3 .stats/files.t .stats/files_gen > .stats/files_t
+	xargs wc -l < .stats/files_t
 

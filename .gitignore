@@ -5,5 +5,7 @@ src/*.o
 gc-*/
 t/*.out
 t/*.exe
+ext/t/*.out
+ext/t/*.exe
 .stats/*
 *.dSYM/

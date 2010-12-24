@@ -241,6 +241,14 @@ void tort_runtime_initialize_lisp()
   _tort->_s_set_cdrE = tort_symbol_make("set-cdr!");
   _tort->_s_DOT = tort_symbol_make(".");
   _tort->_s_list_TO_vector = tort_symbol_make("list->vector");
-  
+ 
+  tort_add_method(_tort->_mt_io, "lisp_read", _tort_io_lisp_read);
+
+  tort_add_method(_tort->_mt_boolean, "lisp_write", _tort_boolean_lisp_write);
+  tort_add_method(_tort->_mt_eos, "lisp_write", _tort_eos_lisp_write);
+  tort_add_method(_tort->_mt_map, "lisp_write", _tort_map_lisp_write);
+  tort_add_method(_tort->_mt_object, "lisp_write", _tort_object_lisp_write);
+  tort_add_method(_tort->_mt_symbol, "lisp_write", _tort_symbol_lisp_write);
+  tort_add_method(_tort->_mt_vector, "lisp_write", _tort_vector_lisp_write);
 }
 
