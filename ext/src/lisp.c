@@ -228,31 +228,12 @@ tort_v tort_runtime_initialize_lisp()
 
   tort_add_method(_mt_pair, "value", _tort_m_pair__car);
 
-  /* FIXME */
-#if 0
-  tort_add_method(_mt_pair, "car", _tort_m_pair__car);
-  tort_add_method(_mt_pair, "set-car!", _tort_m_pair__set_carE);
-  tort_add_method(_mt_pair, "cdr", _tort_m_pair__cdr);
-  tort_add_method(_mt_pair, "set-cdr!", _tort_m_pair__set_cdrE);
-#endif
-
   tort_add_method(_mt_pair, "lisp_write", _tort_m_list__lisp_write);
   tort_add_method(_tort->_mt_nil,  "lisp_write", _tort_m_list__lisp_write);
   tort_add_method(_mt_pair, "size", _tort_m_list__size);
   tort_add_method(_tort->_mt_nil,  "size", _tort_m_list__size);
   tort_add_method(_mt_pair, "list->vector", _tort_m_list__list_TO_vector);
   tort_add_method(_tort->_mt_nil,  "list->vector", _tort_m_list__list_TO_vector);
-
-#if 0
-  tort_add_method(_tort->_mt_io, "lisp_read", _tort_m_io__lisp_read);
-
-  tort_add_method(_tort->_mt_boolean, "lisp_write", _tort_m_boolean__lisp_write);
-  tort_add_method(_tort->_mt_eos, "lisp_write", _tort_m_eos__lisp_write);
-  tort_add_method(_tort->_mt_map, "lisp_write", _tort_m_map__lisp_write);
-  tort_add_method(_tort->_mt_object, "lisp_write", _tort_m_object__lisp_write);
-  tort_add_method(_tort->_mt_symbol, "lisp_write", _tort_m_symbol__lisp_write);
-  tort_add_method(_tort->_mt_vector, "lisp_write", _tort_m_vector__lisp_write);
-#endif
 
   return _mt_pair;
 }

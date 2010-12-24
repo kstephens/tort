@@ -15,9 +15,18 @@ int main(int argc, char **argv, char **environ)
 
   st = tort_send(tort_s(_dlopen), tort_string_new_cstr(LIB_DIR "/libtortext.dylib"));
 
-  tort_send(tort_s(_inspect), st, io);
+  // tort_send(tort_s(_inspect), st, io);
 
   tort_send(tort_s(lisp_write), tort_nil, io);
+  tort_printf(io, "\n");
+
+  tort_send(tort_s(lisp_write), tort_true, io);
+  tort_printf(io, "\n");
+
+  tort_send(tort_s(lisp_write), tort_false, io);
+  tort_printf(io, "\n");
+
+  tort_printf(io, "\nDONE\n");
 
   return 0;
 }
