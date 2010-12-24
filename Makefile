@@ -11,6 +11,7 @@ LIBS += -lgc #
 endif
 
 ######################################################################
+GEN_LIBS = 
 
 GEN_H_FILES = include/tort/internal.h
 GEN_C_FILES = src/symbol.c src/method.c
@@ -20,6 +21,7 @@ LIB_HFILES = $(shell ls include/tort/*.h) $(GEN_H_FILES)
 LIB_OFILES = $(LIB_CFILES:.c=.o)
 
 LIB_TORT     = src/libtort.a
+GEN_LIBS += $(LIB_TORT)
 
 export LIB_CFILES
 export LIB_HFILES
@@ -30,6 +32,7 @@ LIBEXT_HFILES = $(shell ls ext/include/tort/*.h)
 LIBEXT_OFILES = $(LIBEXT_CFILES:.c=.o)
 
 LIB_TORTEXT   = ext/src/libtortext.a
+GEN_LIBS += $(LIB_TORTEXT)
 
 export LIBEXT_CFILES
 export LIBEXT_HFILES
@@ -192,7 +195,8 @@ disasm : t/tort_test.exe
 #
 
 clean :
-	rm -f $(TEST_EXE_FILES) src/libtort.a src/*.o t/*.out include/tort/internal.h .stats/*
+	rm -f $(TEST_EXE_FILES) $(GEN_LIBS) {.,ext}/src/*.o {.,ext}/t/*.out include/tort/internal.h .stats/*
+	find . -name '*.dSYM' -type d -print0 | xargs -0 rm -rf
 
 very-clean : clean
 	cd $(GC) && make clean
