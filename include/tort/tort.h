@@ -7,6 +7,7 @@
 
 #include <stdlib.h>
 #include <stdarg.h>
+#include <stddef.h>
 #include <stdio.h>
 #include <string.h> /* memset() */
 
