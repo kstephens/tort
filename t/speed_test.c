@@ -35,9 +35,9 @@ int main(int argc, char **argv, char **environ)
   }
   t1 = tort_get_time();
   t1 = t1 - t0;
-  printf("%ld send/%ld sec = %.20g send/sec\n", 
+  printf("%ld send/%.20g sec = %.20g send/sec\n", 
 	 (long) n,
-	 (long) t1,
+	 (double) t1,
 	 (double) n / (double) t1);
 
   printf("\nDONE\n");
