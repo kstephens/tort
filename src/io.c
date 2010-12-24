@@ -1,6 +1,4 @@
 #include "tort/core.h"
-#include <printf.h>
-#include <libio.h>
 
 
 /********************************************************************/
@@ -10,10 +8,19 @@
 #define FP IO->fp
 
 
+#ifdef __LINUX__
+#include <printf.h>
+#include <libio.h>
 /* Use hidden slot in FILE* to point back to a tort_io object. */
 #define FP_TORT_OBJ(fp) *(((tort_v*)(((struct _IO_FILE *) fp) + 1)) - 4)
 // #define FP_TORT_OBJ(fp) *((tort_v*)(&((struct _IO_FILE *) fp)->_old_offset))
 // #define FP_TORT_OBJ(fp) (* (tort_v *) ((struct _IO_FILE *) (fp))->_unused2 )
+#endif
+
+#ifdef __APPLE__
+/* Use hidden slot in FILE* to point back to a tort_io object. */
+#define FP_TORT_OBJ(fp) *(((tort_v*)(((struct __sFILE *) fp) + 1)) - 1)
+#endif
 
 
 /********************************************************************/
@@ -156,6 +163,7 @@ tort_v _tort_io___finalize(tort_thread_param tort_v rcvr)
 /********************************************************************/
 
 
+#ifdef __LINUX__
 int 
 _tort_printf_object (FILE *stream,
 		     __const struct printf_info *info,
@@ -203,6 +211,7 @@ _tort_printf_extension_arginfo (
   }
   return 1;
 }
+#endif
 
 
 /********************************************************************/
@@ -216,6 +225,7 @@ void tort_runtime_initialize_io()
 
   _tort->_io_eos    = tort_allocate(0, 0, sizeof(tort_object), _tort->_mt_eos);
 
+#ifdef __LINUX__
   /* Register the print functions for tort_v.  */
   register_printf_specifier('T', 
 			    _tort_printf_object,
@@ -224,6 +234,6 @@ void tort_runtime_initialize_io()
   register_printf_specifier('O', 
 			    _tort_printf_object_lisp,
 			    _tort_printf_extension_arginfo);
-
+#endif
 }
 

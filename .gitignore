@@ -2,7 +2,7 @@ tort_test
 *.a
 *.o
 src/*.o
-gc-7.0
+gc-*/
 t/*.out
 t/*.exe
 .stats/*

@@ -17,6 +17,27 @@ tort_val _tort_mtable___import (tort_thread_param tort_v rcvr, tort_v sym)
 #endif
 
 
+static
+int _getline(char **linep, size_t *sizep, FILE *fp)
+{
+  int rtn = -1;
+  size_t size = 0;
+  char *line = 0;
+  if ( ! feof(fp) ) {
+    int c;
+    rtn = 1;
+    line = malloc(size + 1);
+    while ( (c = fgetc(fp)) != -1 ) {
+      line = realloc(line, size + 1);
+      line[size ++] = c;
+    }
+    line[size] = 0;
+  }
+  *linep = line;
+  *sizep = size;
+  return rtn;
+}
+
 void _tort_load_symtab()
 {
   FILE *fp;
@@ -30,8 +51,8 @@ void _tort_load_symtab()
   if ( (fp = popen(cmd, "r")) ) {
     char *line = 0;
     size_t line_size = 0;
-
-    while ( getline(&line, &line_size, fp) != -1 ) {
+    
+    while ( _getline(&line, &line_size, fp) != -1 ) {
       void *c_addr;
       char c_mode = 0;
       char c_name[128];
@@ -66,7 +87,7 @@ void _tort_load_symtab()
       }
       // fprintf(stderr, " c_tokens = %d\n", c_tokens);
 
-      // free(line);
+      free(line);
     }
 
     fclose(fp);

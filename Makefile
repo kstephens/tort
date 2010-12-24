@@ -1,7 +1,7 @@
-GC=gc-7.0
+GC=bdwgc-20101223-cvs
 
 CFLAGS_OPTIMIZE = -O2
-CFLAGS = -Iinclude -I$(GC)/include -Wall -Werror -g $(CFLAGS_OPTIMIZE)
+CFLAGS = -fnested-functions -Iinclude -I$(GC)/include -Wall -Werror -g $(CFLAGS_OPTIMIZE)
 LDFLAGS = -L$(GC)/.libs
 LIBS=-lgc
 
