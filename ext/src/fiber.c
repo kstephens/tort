@@ -113,12 +113,12 @@ tort_fiber_func_DECL(fiber_func)
   return (tort_v) tort_send(tort__s(value), (tort_v) data);
 }
 
-tort_v _tort_fiber_new(tort_thread_param tort_v rcvr, tort_v proc)
+tort_v _tort_m_fiber__new(tort_thread_param tort_v rcvr, tort_v proc)
 {
   return __tort_fiber_new((tort_fiber_t*) _tort_fiber, fiber_func, (void*) proc, 0);  
 }
 
-tort_v _tort_fiber_yield (tort_thread_param tort_v rcvr)
+tort_v _tort_m_fiber__yield (tort_thread_param tort_v rcvr)
 {
   return (tort_v) __tort_fiber_yield(_tort_fiber, tort_ref(tort_fiber_t, rcvr));
 }
@@ -127,8 +127,8 @@ tort_v tort_runtime_initialize_fiber()
 {
   tort_v _mt_fiber = tort_class_make("fiber", 0);
 
-  tort_add_method(_mt_fiber, "new", _tort_fiber_new);
-  tort_add_method(_mt_fiber, "yield", _tort_fiber_yield);
+  tort_add_method(_mt_fiber, "new", _tort_m_fiber__new);
+  tort_add_method(_mt_fiber, "yield", _tort_m_fiber__yield);
 
   return _mt_fiber;
 }

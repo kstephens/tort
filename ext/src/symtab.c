@@ -5,7 +5,7 @@
 
 
 #if 0
-tort_val _tort_mtable___import (tort_thread_param tort_v rcvr, tort_v sym)
+tort_val _tort_m_mtable____import (tort_thread_param tort_v rcvr, tort_v sym)
 {
   tort_val slot = tort_send(tort__s(get), _tort->_symtab, sym);
   if ( slot != tort_nil ) {

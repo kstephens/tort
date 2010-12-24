@@ -8,7 +8,7 @@
 #define printf(fmt, args...) tort_send(tort__s(printf), IO, fmt, ##args)
 
 
-tort_v _tort_object___message(tort_thread_param tort_v rcvr)
+tort_v _tort_m_object____message(tort_thread_param tort_v rcvr)
 {
   rcvr = _tort_message;
   // rcvr = tort_ref(tort_message, rcvr)->previous_message;
@@ -16,7 +16,7 @@ tort_v _tort_object___message(tort_thread_param tort_v rcvr)
 }
 
 
-tort_v _tort_message_backtrace(tort_thread_param tort_v rcvr)
+tort_v _tort_m_message__backtrace(tort_thread_param tort_v rcvr)
 {
   tort_v v, msg;
   size_t i = 0;
@@ -42,7 +42,7 @@ tort_v _tort_message_backtrace(tort_thread_param tort_v rcvr)
 }
 
 
-tort_v _tort_object___debugger(tort_thread_param tort_v rcvr)
+tort_v _tort_m_object____debugger(tort_thread_param tort_v rcvr)
 {
   tort_v bt;
 
@@ -186,7 +186,7 @@ const char *tort_object_name(tort_v val)
 #undef S
 
 
-tort_v _tort_object__name(tort_thread_param tort_v rcvr)
+tort_v _tort_m_object___name(tort_thread_param tort_v rcvr)
 {
   return tort_string_new_cstr(tort_object_name(rcvr));
 }

@@ -3,7 +3,7 @@
 /********************************************************************/
 
 
-tort_v _tort_map_initialize(tort_thread_param tort_v rcvr)
+tort_v _tort_m_map__initialize(tort_thread_param tort_v rcvr)
 {
   tort_map *map = tort_ref(tort_map, rcvr);
   map->entry_n = 0;
@@ -13,7 +13,7 @@ tort_v _tort_map_initialize(tort_thread_param tort_v rcvr)
 }
 
 
-tort_v _tort_map_add(tort_thread_param tort_v rcvr, tort_v key, tort_v value)
+tort_v _tort_m_map__add(tort_thread_param tort_v rcvr, tort_v key, tort_v value)
 {
   tort_map *map = tort_ref(tort_map, rcvr);
 
@@ -28,7 +28,7 @@ tort_v _tort_map_add(tort_thread_param tort_v rcvr, tort_v key, tort_v value)
   return rcvr;
 }
 
-tort_map_entry *_tort_map_get_entry(tort_thread_param tort_v rcvr, tort_v key)
+tort_map_entry *_tort_m_map__get_entry(tort_thread_param tort_v rcvr, tort_v key)
 {
   tort_map *map = tort_ref(tort_map, rcvr);
   tort_map_entry **x = map->entry, *entry;
@@ -43,7 +43,7 @@ tort_map_entry *_tort_map_get_entry(tort_thread_param tort_v rcvr, tort_v key)
 }
 
 
-tort_map_entry *_tort_map_get_entry_by_value(tort_thread_param tort_v rcvr, tort_v value)
+tort_map_entry *_tort_m_map__get_entry_by_value(tort_thread_param tort_v rcvr, tort_v value)
 {
   tort_map *map = tort_ref(tort_map, rcvr);
   tort_map_entry **x = map->entry, *entry;
@@ -58,7 +58,7 @@ tort_map_entry *_tort_map_get_entry_by_value(tort_thread_param tort_v rcvr, tort
 }
 
 
-tort_map_entry *_tort_map_get_entry_string(tort_thread_param tort_v rcvr, tort_v key)
+tort_map_entry *_tort_m_map__get_entry_string(tort_thread_param tort_v rcvr, tort_v key)
 {
   tort_map *map = tort_ref(tort_map, rcvr);
   tort_map_entry **x = map->entry, *entry;
@@ -73,7 +73,7 @@ tort_map_entry *_tort_map_get_entry_string(tort_thread_param tort_v rcvr, tort_v
 }
 
 
-tort_map_entry *_tort_map_get_entry_cstr(tort_thread_param tort_v rcvr, const char *key)
+tort_map_entry *_tort_m_map__get_entry_cstr(tort_thread_param tort_v rcvr, const char *key)
 {
   tort_map *map = tort_ref(tort_map, rcvr);
   tort_map_entry **x = map->entry, *entry;
@@ -88,32 +88,32 @@ tort_map_entry *_tort_map_get_entry_cstr(tort_thread_param tort_v rcvr, const ch
 }
 
 
-tort_v _tort_map_get(tort_thread_param tort_v rcvr, tort_v key)
+tort_v _tort_m_map__get(tort_thread_param tort_v rcvr, tort_v key)
 {
-  tort_map_entry *e = _tort_map_get_entry(tort_thread_arg rcvr, key);
+  tort_map_entry *e = _tort_m_map__get_entry(tort_thread_arg rcvr, key);
   return e ? e->value : tort_nil;
 }
 
 
-tort_v _tort_map_get_key(tort_thread_param tort_v rcvr, tort_v value)
+tort_v _tort_m_map__get_key(tort_thread_param tort_v rcvr, tort_v value)
 {
-  tort_map_entry *e = _tort_map_get_entry_by_value(tort_thread_arg rcvr, value);
+  tort_map_entry *e = _tort_m_map__get_entry_by_value(tort_thread_arg rcvr, value);
   return e ? e->key : tort_nil;
 }
 
 
-tort_v _tort_map_get_string(tort_thread_param tort_v rcvr, tort_v key)
+tort_v _tort_m_map__get_string(tort_thread_param tort_v rcvr, tort_v key)
 {
-  tort_map_entry *e = _tort_map_get_entry_string(tort_thread_arg rcvr, key);
+  tort_map_entry *e = _tort_m_map__get_entry_string(tort_thread_arg rcvr, key);
   return e ? e->value : tort_nil;
 }
 
 
-tort_v _tort_map_set(tort_thread_param tort_v rcvr, tort_v key, tort_v value)
+tort_v _tort_m_map__set(tort_thread_param tort_v rcvr, tort_v key, tort_v value)
 {
-  tort_map_entry *e = _tort_map_get_entry(tort_thread_arg rcvr, key);
+  tort_map_entry *e = _tort_m_map__get_entry(tort_thread_arg rcvr, key);
   if ( ! e ) {
-    _tort_map_add(tort_thread_arg rcvr, key, value);
+    _tort_m_map__add(tort_thread_arg rcvr, key, value);
   } else {
     e->value = value;
   }
@@ -121,7 +121,7 @@ tort_v _tort_map_set(tort_thread_param tort_v rcvr, tort_v key, tort_v value)
 }
 
 
-tort_v _tort_map_delete(tort_thread_param tort_v rcvr, tort_v key)
+tort_v _tort_m_map__delete(tort_thread_param tort_v rcvr, tort_v key)
 {
   tort_map *map = tort_ref(tort_map, rcvr);
   tort_map_entry **x = map->entry, *entry;
@@ -140,22 +140,22 @@ tort_v _tort_map_delete(tort_thread_param tort_v rcvr, tort_v key)
 }
 
 
-tort_v _tort_map_size(tort_thread_param tort_v rcvr)
+tort_v _tort_m_map__size(tort_thread_param tort_v rcvr)
 {
   return tort_i(tort_ref(tort_map, rcvr)->entry_n);
 }
 
 
-tort_v _tort_map_clone(tort_thread_param tort_v rcvr)
+tort_v _tort_m_map__clone(tort_thread_param tort_v rcvr)
 {
   tort_map *map = tort_ref(tort_map, rcvr);
-  tort_v new_map = _tort_object_clone(tort_thread_arg rcvr);
-  _tort_map_initialize(tort_thread_arg new_map);
+  tort_v new_map = _tort_m_object__clone(tort_thread_arg rcvr);
+  _tort_m_map__initialize(tort_thread_arg new_map);
   tort_map_entry **x = map->entry, *entry;
 
   while ( (entry = *(x ++)) ) {
     // fprintf(stderr, "  entry => { %s, %p }\n", tort_symbol_data(entry->key), (void*) entry->value);
-    _tort_map_add(tort_thread_arg new_map, entry->key, entry->value);
+    _tort_m_map__add(tort_thread_arg new_map, entry->key, entry->value);
   }
 
 #if 0
@@ -176,14 +176,14 @@ tort_v _tort_map_clone(tort_thread_param tort_v rcvr)
 tort_v tort_map_create()
 {
   tort_v val = tort_allocate(0, 0, sizeof(tort_map), _tort->_mt_map);
-  return _tort_map_initialize(0, val);
+  return _tort_m_map__initialize(0, val);
 }
 
 
 tort_v tort_mtable_create(tort_v delegate)
 {
   tort_v val = tort_allocate(0, 0, sizeof(tort_mtable), _tort->_mt_mtable);
-  _tort_map_initialize(0, val);
+  _tort_m_map__initialize(0, val);
   if ( delegate == 0 ) {
     delegate = tort_nil;
   }

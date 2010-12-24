@@ -50,7 +50,7 @@ void _tort_finalization_proc (void * obj, void * client_data)
 }
 
 
-tort_v _tort_object___register_finalizer(tort_thread_param tort_v rcvr)
+tort_v _tort_m_object____register_finalizer(tort_thread_param tort_v rcvr)
 {
   if ( _tort_gc_mode ) {
     // fprintf(stderr, "\n  _tort_object___register_finalizer @%p\n", (void*) rcvr);
@@ -90,7 +90,7 @@ tort_v tort_runtime_initialize_malloc()
 
 tort_v tort_runtime_initialize_gc()
 {
-  tort_add_method(tort__mt(object), "__finalize",  _tort_object_identity);
+  tort_add_method(tort__mt(object), "__finalize",  _tort_m_object__identity);
 
   atexit(tort_gc_atexit);
 

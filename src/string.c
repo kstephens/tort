@@ -4,29 +4,29 @@
 /********************************************************************/
 
 
-tort_v _tort_string_new(tort_thread_param tort_v rcvr, tort_v size)
+tort_v _tort_m_string__new(tort_thread_param tort_v rcvr, tort_v size)
 {
   return tort_string_new(0, tort_I(size));
 }
 
 
-tort_v _tort_string_clone (tort_thread_param tort_v rcvr)
+tort_v _tort_m_string__clone (tort_thread_param tort_v rcvr)
 {
-  tort_v val = _tort_object_clone(tort_thread_arg rcvr);
+  tort_v val = _tort_m_object__clone(tort_thread_arg rcvr);
   tort_string_data(val) = tort_malloc(sizeof(tort_string_data(val)[0]) * (tort_string_size(val) + 1));
   memcpy(tort_string_data(val), tort_string_data(rcvr), sizeof(tort_string_data(val)[0]) * (tort_string_size(val) + 1));
   return val;
 }
 
 
-tort_v _tort_string_get (tort_thread_param tort_v rcvr, tort_v _i)
+tort_v _tort_m_string__get (tort_thread_param tort_v rcvr, tort_v _i)
 {
   long i = tort_I(_i);
   return tort_i(tort_string_data(rcvr)[i]);
 }
 
 
-tort_v _tort_string_set (tort_thread_param tort_v rcvr, tort_v _i, tort_v _v)
+tort_v _tort_m_string__set (tort_thread_param tort_v rcvr, tort_v _i, tort_v _v)
 {
   long i = tort_I(_i);
   long v = tort_I(_v);

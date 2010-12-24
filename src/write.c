@@ -12,7 +12,7 @@
 /********************************************************************/
 
 
-tort_v _tort_object__inspect(tort_thread_param tort_v rcvr, tort_v io)
+tort_v _tort_m_object___inspect(tort_thread_param tort_v rcvr, tort_v io)
 {
   const char *str = tort_object_name_(rcvr);
   if ( str ) {
@@ -25,21 +25,21 @@ tort_v _tort_object__inspect(tort_thread_param tort_v rcvr, tort_v io)
 }
 
 
-tort_v _tort_tagged__inspect(tort_thread_param tort_v rcvr, tort_v io)
+tort_v _tort_m_tagged___inspect(tort_thread_param tort_v rcvr, tort_v io)
 {
   printf("%ld", (long) tort_tagged_data(rcvr));
   return tort_nil;
 }
 
 
-tort_v _tort_string__inspect(tort_thread_param tort_v rcvr, tort_v io)
+tort_v _tort_m_string___inspect(tort_thread_param tort_v rcvr, tort_v io)
 {
   printf("\"%s\"", (char *) tort_string_data(rcvr));
   return tort_nil;
 }
 
 
-tort_v _tort_vector__inspect(tort_thread_param tort_v rcvr, tort_v io)
+tort_v _tort_m_vector___inspect(tort_thread_param tort_v rcvr, tort_v io)
 {
   printf("@vector { ");
   tort_vector_loop(rcvr, obj) {
@@ -51,7 +51,7 @@ tort_v _tort_vector__inspect(tort_thread_param tort_v rcvr, tort_v io)
 }
 
 
-tort_v _tort_symbol__inspect(tort_thread_param tort_v rcvr, tort_v io)
+tort_v _tort_m_symbol___inspect(tort_thread_param tort_v rcvr, tort_v io)
 {
   if ( tort_ref(tort_symbol, rcvr)->name != tort_nil ) {
     printf("%s", (char *) tort_symbol_data(rcvr));
@@ -62,21 +62,21 @@ tort_v _tort_symbol__inspect(tort_thread_param tort_v rcvr, tort_v io)
 }
 
 
-tort_v _tort_nil__inspect(tort_thread_param tort_v rcvr, tort_v io)
+tort_v _tort_m_nil___inspect(tort_thread_param tort_v rcvr, tort_v io)
 {
   printf("nil");
   return tort_nil;
 }
 
 
-tort_v _tort_boolean__inspect(tort_thread_param tort_v rcvr, tort_v io)
+tort_v _tort_m_boolean___inspect(tort_thread_param tort_v rcvr, tort_v io)
 {
   printf(rcvr == tort_false ? "false" : "true");
   return tort_nil;
 }
 
 
-tort_v _tort_method__inspect(tort_thread_param tort_v rcvr, tort_v io)
+tort_v _tort_m_method___inspect(tort_thread_param tort_v rcvr, tort_v io)
 {
   tort_v meth_name = tort_ref(tort_method, rcvr)->name;
   const char *meth_cstr = meth_name ? tort_symbol_data(meth_name) : "#<unknown>";
@@ -85,7 +85,7 @@ tort_v _tort_method__inspect(tort_thread_param tort_v rcvr, tort_v io)
 }
 
 
-tort_v _tort_message__inspect(tort_thread_param tort_v rcvr, tort_v io)
+tort_v _tort_m_message___inspect(tort_thread_param tort_v rcvr, tort_v io)
 {
   tort_message *msg = tort_ref(tort_message, rcvr);
   printf("@message { ");
@@ -100,7 +100,7 @@ tort_v _tort_message__inspect(tort_thread_param tort_v rcvr, tort_v io)
 }
 
 
-tort_v _tort_map__inspect(tort_thread_param tort_v rcvr, tort_v io)
+tort_v _tort_m_map___inspect(tort_thread_param tort_v rcvr, tort_v io)
 {
   tort_map *map = tort_ref(tort_map, rcvr);
   tort_map_entry **x = map->entry, *entry;

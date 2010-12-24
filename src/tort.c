@@ -61,7 +61,7 @@ tort_v _tort_allocate (
 }
 
 
-tort_v _tort_object_clone (tort_thread_param tort_v rcvr)
+tort_v _tort_m_object__clone (tort_thread_param tort_v rcvr)
 {
   tort_v val;
   void *ptr;
@@ -80,7 +80,7 @@ tort_v _tort_object_clone (tort_thread_param tort_v rcvr)
 }
 
 
-tort_v _tort_object_identity (tort_thread_param tort_v rcvr)
+tort_v _tort_m_object__identity (tort_thread_param tort_v rcvr)
 {
   return rcvr;
 }
@@ -110,7 +110,7 @@ tort_lookup_decl(_tort_object_lookupf)
   
   do {
     meth =
-      _tort_map_get(_tort_message,
+      _tort_m_map__get(_tort_message,
 		    mtable, 
 		    tort_ref(tort_message, _tort_message)->selector);
 
@@ -162,11 +162,11 @@ tort_v tort_object_make()
 }
 
 
-tort_v _tort_mtable_add_method (tort_thread_param tort_v map, tort_v sym, tort_v func)
+tort_v _tort_m_mtable__add_method (tort_thread_param tort_v map, tort_v sym, tort_v func)
 {
   tort_v meth = tort_method_make((void*) tort_I(func));
   tort_ref(tort_method, meth)->name = sym;
-  _tort_map_set(0, map, sym, meth);
+  _tort_m_map__set(0, map, sym, meth);
   return meth;
 }
 
@@ -175,7 +175,7 @@ tort_v tort_add_method(tort_v map, const char *name, void *applyf)
 {
   tort_v sym = tort_symbol_make(name);
   tort_v meth = tort_i(applyf);
-  return _tort_mtable_add_method(tort_thread_arg map, sym, meth);
+  return _tort_m_mtable__add_method(tort_thread_arg map, sym, meth);
 }
 
 

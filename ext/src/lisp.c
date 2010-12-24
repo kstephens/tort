@@ -23,12 +23,12 @@ tort_v tort_cons(tort_v a, tort_v d)
 
 #define ACCESSOR(X)							\
   static								\
-  tort_v _tort_pair_##X(tort_thread_param tort_v rcvr)	\
+  tort_v _tort_m_pair__##X(tort_thread_param tort_v rcvr)	\
   {									\
     return tort_ref(tort_pair, rcvr)->X;				\
   }									\
   static								\
-  tort_v _tort_pair_set_##X##E(tort_thread_param tort_v rcvr,	\
+  tort_v _tort_m_pair__set_##X##E(tort_thread_param tort_v rcvr,	\
 			       tort_v val)				\
   {									\
     tort_ref(tort_pair, rcvr)->X = val;					\
@@ -41,7 +41,7 @@ ACCESSOR(cdr)
 #undef ACCESSOR
 
 
-tort_v _tort_list_size(tort_thread_param tort_v rcvr) /**/
+tort_v _tort_m_list__size(tort_thread_param tort_v rcvr) /**/
 {
   size_t i = 0;
 
@@ -58,7 +58,7 @@ tort_v _tort_list_size(tort_thread_param tort_v rcvr) /**/
 
 
 
-tort_v _tort_list_lisp_write(tort_thread_param tort_v rcvr, tort_v io) /**/
+tort_v _tort_m_list__lisp_write(tort_thread_param tort_v rcvr, tort_v io) /**/
 {
   tort_printf(io, "(");
   while ( rcvr != tort_nil ) {
@@ -80,7 +80,7 @@ tort_v _tort_list_lisp_write(tort_thread_param tort_v rcvr, tort_v io) /**/
 }
 
 
-tort_v _tort_list_list_TO_vector(tort_thread_param tort_v rcvr, tort_v io) /**/
+tort_v _tort_m_list__list_TO_vector(tort_thread_param tort_v rcvr, tort_v io) /**/
 {
   tort_v size = tort_send(tort__s(size), rcvr);
   tort_v vec = tort_vector_new(0, tort_I(size));
@@ -105,14 +105,14 @@ tort_v _tort_list_list_TO_vector(tort_thread_param tort_v rcvr, tort_v io) /**/
 #define printf(fmt, args...) tort_send(tort__s(printf), IO, fmt, ##args)
 
 
-tort_v _tort_object_lisp_write(tort_thread_param tort_v rcvr, tort_v io)
+tort_v _tort_m_object__lisp_write(tort_thread_param tort_v rcvr, tort_v io)
 {
   printf("(make <object> @%p)", (void *) rcvr);
   return tort_nil;
 }
 
 
-tort_v _tort_vector_lisp_write(tort_thread_param tort_v rcvr, tort_v io)
+tort_v _tort_m_vector__lisp_write(tort_thread_param tort_v rcvr, tort_v io)
 {
   printf("#(");
   tort_vector_loop(rcvr, obj) {
@@ -124,7 +124,7 @@ tort_v _tort_vector_lisp_write(tort_thread_param tort_v rcvr, tort_v io)
 }
 
 
-tort_v _tort_symbol_lisp_write(tort_thread_param tort_v rcvr, tort_v io)
+tort_v _tort_m_symbol__lisp_write(tort_thread_param tort_v rcvr, tort_v io)
 {
   if ( tort_ref(tort_symbol, rcvr)->name != tort_nil ) {
     printf("%s", (char *) tort_symbol_data(rcvr));
@@ -135,14 +135,14 @@ tort_v _tort_symbol_lisp_write(tort_thread_param tort_v rcvr, tort_v io)
 }
 
 
-tort_v _tort_boolean_lisp_write(tort_thread_param tort_v rcvr, tort_v io)
+tort_v _tort_m_boolean__lisp_write(tort_thread_param tort_v rcvr, tort_v io)
 {
   printf(rcvr == tort_false ? "#f" : "#t");
   return tort_nil;
 }
 
 
-tort_v _tort_map_lisp_write(tort_thread_param tort_v rcvr, tort_v io)
+tort_v _tort_m_map__lisp_write(tort_thread_param tort_v rcvr, tort_v io)
 {
   tort_map *map = tort_ref(tort_map, rcvr);
   tort_map_entry **x = map->entry, *entry;
@@ -161,7 +161,7 @@ tort_v _tort_map_lisp_write(tort_thread_param tort_v rcvr, tort_v io)
 }
 
 
-tort_v _tort_eos_lisp_write(tort_thread_param tort_v rcvr, tort_v io)
+tort_v _tort_m_eos__lisp_write(tort_thread_param tort_v rcvr, tort_v io)
 {
   printf("#e");
   return tort_nil;
@@ -175,13 +175,13 @@ tort_v _tort_eos_lisp_write(tort_thread_param tort_v rcvr, tort_v io)
 /********************************************************************/
 
 extern 
-tort_v _tort_io_lisp_read (tort_thread_param tort_v stream)
+tort_v _tort_m_io__lisp_read (tort_thread_param tort_v stream)
   ;
 
 #define FP(s) tort_ref(tort_io, s)->fp
 
 #define VALUE tort_v
-#define READ_DECL VALUE _tort_io_lisp_read (tort_thread_param tort_v stream)
+#define READ_DECL VALUE _tort_m_io__lisp_read (tort_thread_param tort_v stream)
 #define READ_CALL() tort_send(tort_symbol_make("lisp_read"), stream)
 #define MALLOC(s) tort_malloc(s)
 #define REALLOC(p, s) tort_realloc(p, s)
@@ -221,35 +221,35 @@ tort_v tort_runtime_initialize_lisp()
   _mt_pair = tort_class_make("pair", 0);
 
   /* Reused methods. */
-  tort_add_method(_tort->_mt_tagged, "lisp_write", _tort_tagged__inspect);
-  tort_add_method(_tort->_mt_string, "lisp_write", _tort_string__inspect);
-  tort_add_method(_tort->_mt_method, "lisp_write", _tort_method__inspect);
-  tort_add_method(_tort->_mt_message, "lisp_write", _tort_message__inspect);
-  tort_add_method(_tort->_mt_nil,    "lisp_write", _tort_nil__inspect);
+  tort_add_method(_tort->_mt_tagged, "lisp_write", _tort_m_tagged___inspect);
+  tort_add_method(_tort->_mt_string, "lisp_write", _tort_m_string___inspect);
+  tort_add_method(_tort->_mt_method, "lisp_write", _tort_m_method___inspect);
+  tort_add_method(_tort->_mt_message, "lisp_write", _tort_m_message___inspect);
+  tort_add_method(_tort->_mt_nil,    "lisp_write", _tort_m_nil___inspect);
 
-  tort_add_method(_mt_pair, "value", _tort_pair_car);
+  tort_add_method(_mt_pair, "value", _tort_m_pair__car);
 
   /* FIXME */
-  tort_add_method(_mt_pair, "car", _tort_pair_car);
-  tort_add_method(_mt_pair, "set-car!", _tort_pair_set_carE);
-  tort_add_method(_mt_pair, "cdr", _tort_pair_cdr);
-  tort_add_method(_mt_pair, "set-cdr!", _tort_pair_set_cdrE);
-  tort_add_method(_mt_pair, "lisp_write", _tort_list_lisp_write);
-  tort_add_method(_tort->_mt_nil,  "lisp_write", _tort_list_lisp_write);
-  tort_add_method(_mt_pair, "size", _tort_list_size);
-  tort_add_method(_tort->_mt_nil,  "size", _tort_list_size);
-  tort_add_method(_mt_pair, "list->vector", _tort_list_list_TO_vector);
-  tort_add_method(_tort->_mt_nil,  "list->vector", _tort_list_list_TO_vector);
+  tort_add_method(_mt_pair, "car", _tort_m_pair__car);
+  tort_add_method(_mt_pair, "set-car!", _tort_m_pair__set_carE);
+  tort_add_method(_mt_pair, "cdr", _tort_m_pair__cdr);
+  tort_add_method(_mt_pair, "set-cdr!", _tort_m_pair__set_cdrE);
+  tort_add_method(_mt_pair, "lisp_write", _tort_m_list__lisp_write);
+  tort_add_method(_tort->_mt_nil,  "lisp_write", _tort_m_list__lisp_write);
+  tort_add_method(_mt_pair, "size", _tort_m_list__size);
+  tort_add_method(_tort->_mt_nil,  "size", _tort_m_list__size);
+  tort_add_method(_mt_pair, "list->vector", _tort_m_list__list_TO_vector);
+  tort_add_method(_tort->_mt_nil,  "list->vector", _tort_m_list__list_TO_vector);
 
  
-  tort_add_method(_tort->_mt_io, "lisp_read", _tort_io_lisp_read);
+  tort_add_method(_tort->_mt_io, "lisp_read", _tort_m_io__lisp_read);
 
-  tort_add_method(_tort->_mt_boolean, "lisp_write", _tort_boolean_lisp_write);
-  tort_add_method(_tort->_mt_eos, "lisp_write", _tort_eos_lisp_write);
-  tort_add_method(_tort->_mt_map, "lisp_write", _tort_map_lisp_write);
-  tort_add_method(_tort->_mt_object, "lisp_write", _tort_object_lisp_write);
-  tort_add_method(_tort->_mt_symbol, "lisp_write", _tort_symbol_lisp_write);
-  tort_add_method(_tort->_mt_vector, "lisp_write", _tort_vector_lisp_write);
+  tort_add_method(_tort->_mt_boolean, "lisp_write", _tort_m_boolean__lisp_write);
+  tort_add_method(_tort->_mt_eos, "lisp_write", _tort_m_eos__lisp_write);
+  tort_add_method(_tort->_mt_map, "lisp_write", _tort_m_map__lisp_write);
+  tort_add_method(_tort->_mt_object, "lisp_write", _tort_m_object__lisp_write);
+  tort_add_method(_tort->_mt_symbol, "lisp_write", _tort_m_symbol__lisp_write);
+  tort_add_method(_tort->_mt_vector, "lisp_write", _tort_m_vector__lisp_write);
 
   return _mt_pair;
 }

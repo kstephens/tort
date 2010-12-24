@@ -34,8 +34,8 @@ tort_v tort_runtime_create_ (int *argcp, char ***argvp, char ***envp)
   _tort->message = tort_nil;
 
   /* Create the empty containers. */
-  tort_string_null = _tort_string_new(0, 0, 0);
-  tort_vector_null = _tort_vector_new(0, 0, 0);
+  tort_string_null = _tort_m_string__new(0, 0, 0);
+  tort_vector_null = _tort_m_vector__new(0, 0, 0);
 
   /* Create the symbol table. */
   _tort->symbols = tort_map_create();
@@ -47,25 +47,25 @@ tort_v tort_runtime_create_ (int *argcp, char ***argvp, char ***envp)
   tort_runtime_initialize_symbol();
 
   /* Uncloneable objects. */
-  tort_add_method(_tort->_mt_symbol,  "clone", _tort_object_identity);
-  tort_add_method(_tort->_mt_nil,     "clone", _tort_object_identity);
-  tort_add_method(_tort->_mt_tagged,  "clone", _tort_object_identity);
-  tort_add_method(_tort->_mt_boolean, "clone", _tort_object_identity);
+  tort_add_method(_tort->_mt_symbol,  "clone", _tort_m_object__identity);
+  tort_add_method(_tort->_mt_nil,     "clone", _tort_m_object__identity);
+  tort_add_method(_tort->_mt_tagged,  "clone", _tort_m_object__identity);
+  tort_add_method(_tort->_mt_boolean, "clone", _tort_m_object__identity);
 
   /* Basic object methods. */
 
   /* String methods shared with vector.. */
-  tort_add_method(_tort->_mt_string, "size", _tort_vector_size);
-  tort_add_method(_tort->_mt_string, "alloc_size", _tort_vector_alloc_size);
+  tort_add_method(_tort->_mt_string, "size", _tort_m_vector__size);
+  tort_add_method(_tort->_mt_string, "alloc_size", _tort_m_vector__alloc_size);
 
   /* Initialize system method table. */
   tort_h(_tort)->mtable = tort_mtable_create(_tort->_mt_object);
 
   /* Prepare special symbol table get method. */
   tort_h(_tort->symbols)->mtable = tort_mtable_create(tort_h_mtable(_tort->symbols));
-  tort_add_method(tort_h_mtable(_tort->symbols), "get", _tort_map_get_string);
-  tort_add_method(tort_h_mtable(_tort->symbols), "set", _tort_object_identity);
-  tort_add_method(tort_h_mtable(_tort->symbols), "delete", _tort_object_identity);
+  tort_add_method(tort_h_mtable(_tort->symbols), "get", _tort_m_map__get_string);
+  tort_add_method(tort_h_mtable(_tort->symbols), "set", _tort_m_object__identity);
+  tort_add_method(tort_h_mtable(_tort->symbols), "delete", _tort_m_object__identity);
 
   /* Subsystem initialization. */
   tort_runtime_initialize_gc();

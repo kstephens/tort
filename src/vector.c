@@ -26,29 +26,29 @@ tort_v tort_vector_new(const tort_v *vec, size_t size)
 }
 
 
-tort_v _tort_vector_new(tort_thread_param tort_v rcvr, tort_v _size)
+tort_v _tort_m_vector__new(tort_thread_param tort_v rcvr, tort_v _size)
 {
   return tort_vector_new(0, tort_I(_size));
 }
 
 
-tort_v _tort_vector_clone (tort_thread_param tort_v rcvr)
+tort_v _tort_m_vector__clone (tort_thread_param tort_v rcvr)
 {
-  tort_v val = _tort_object_clone(tort_thread_arg rcvr);
+  tort_v val = _tort_m_object__clone(tort_thread_arg rcvr);
   tort_vector_data(val) = tort_malloc(sizeof(tort_vector_data(val)[0]) * (tort_vector_size(rcvr)));
   memcpy(tort_vector_data(val), tort_vector_data(rcvr), sizeof(tort_vector_data(val)[0]) * (tort_vector_size(rcvr)));
   return val;
 }
 
 
-tort_v _tort_vector_get (tort_thread_param tort_v rcvr, tort_v _i)
+tort_v _tort_m_vector__get (tort_thread_param tort_v rcvr, tort_v _i)
 {
   long i = tort_I(_i);
   return tort_vector_data(rcvr)[i];
 }
 
 
-tort_v _tort_vector_set (tort_thread_param tort_v rcvr, tort_v _i, tort_v _v)
+tort_v _tort_m_vector__set (tort_thread_param tort_v rcvr, tort_v _i, tort_v _v)
 {
   long i = tort_I(_i);
   tort_vector_data(rcvr)[i] = _v;
@@ -56,19 +56,19 @@ tort_v _tort_vector_set (tort_thread_param tort_v rcvr, tort_v _i, tort_v _v)
 }
 
 
-tort_v _tort_vector_size (tort_thread_param tort_v rcvr)
+tort_v _tort_m_vector__size (tort_thread_param tort_v rcvr)
 {
   return tort_i(tort_vector_size(rcvr));
 }
 
 
-tort_v _tort_vector_alloc_size (tort_thread_param tort_v rcvr)
+tort_v _tort_m_vector__alloc_size (tort_thread_param tort_v rcvr)
 {
   return tort_i(tort_vector_alloc_size(rcvr));
 }
 
 
-tort_v _tort_vector_each (tort_thread_param tort_v rcvr, tort_v block)
+tort_v _tort_m_vector__each (tort_thread_param tort_v rcvr, tort_v block)
 {
   tort_vector_loop(rcvr, x) {
     tort_send(tort__s(value), block, x);
@@ -78,7 +78,7 @@ tort_v _tort_vector_each (tort_thread_param tort_v rcvr, tort_v block)
 }
 
 
-tort_v _tort_vector_map (tort_thread_param tort_v rcvr, tort_v block)
+tort_v _tort_m_vector__map (tort_thread_param tort_v rcvr, tort_v block)
 {
   tort_v new_vec = tort_send(tort__s(clone), rcvr);
   tort_vector_loop(rcvr, x) {

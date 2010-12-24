@@ -280,7 +280,7 @@ extern tort_v _tort_fiber;   /* catch for top-level messages. */
 void *tort_malloc(size_t size);
 void *tort_realloc(void *ptr, size_t size);
 
-tort_map_entry *_tort_map_get_entry(tort_thread_param tort_v rcvr, tort_v key);
+tort_map_entry *_tort_m_map__get_entry(tort_thread_param tort_v rcvr, tort_v key);
 tort_v tort_map_create();
 
 tort_v tort_mtable_create();

@@ -4,7 +4,7 @@ set -ex
 cat "$1.begin"
 cat ${LIB_CFILES} /dev/null | 
 perl -ne '
-if ( /^\s*tort_v\s+(_tort_([a-z0-9]+)_([a-z0-9_]+))\s*[(].*[)]\s*$/i ) { 
+if ( /^\s*tort_v\s+(_tort_m_([a-z0-9]+)__([a-z0-9_]+))\s*[(].*[)]\s*$/i ) { 
   print "  tort_add_method(_tort->_mt_", $2, ", \"", $3, "\", $1);\n";
 }' | sort -u # | tee /dev/tty
 cat "$1.end"
