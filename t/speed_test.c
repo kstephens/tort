@@ -1,13 +1,25 @@
 #include "tort/tort.h"
 
-#include <time.h>
+#include <sys/time.h>
+
+static
+double tort_get_time()
+{
+  struct timeval tv;
+  if ( gettimeofday(&tv, 0) == -1 ) {
+    return -1;
+  } else {
+    return (double) tv.tv_sec + (double) tv.tv_usec / 1000000.0;
+  }
+}
+
 
 int main(int argc, char **argv, char **environ)
 {
   tort_v io;
   tort_v v;
 
-  time_t t0, t1;
+  double t0, t1;
   size_t i;
   size_t n = 100000000;
 
@@ -17,13 +29,13 @@ int main(int argc, char **argv, char **environ)
 
   v = tort_send(tort__s(get), _tort->symbols, tort_string_new_cstr("size"));
 
-  t0 = time(0);
+  t0 = tort_get_time();
   for ( i = 0; i < n; ++ i ) {
     tort_send(tort__s(size), _tort->symbols);
   }
-  t1 = time(0);
+  t1 = tort_get_time();
   t1 = t1 - t0;
-  printf("%ld send/%ld sec = %g send/sec\n", 
+  printf("%ld send/%ld sec = %.20g send/sec\n", 
 	 (long) n,
 	 (long) t1,
 	 (double) n / (double) t1);
