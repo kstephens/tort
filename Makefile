@@ -1,9 +1,14 @@
 GC=gc-20101223-cvs
+USE_GC=0
 
 CFLAGS_OPTIMIZE = -O2
-CFLAGS = -fnested-functions -Iinclude -I$(GC)/include -Wall -Werror -g $(CFLAGS_OPTIMIZE)
-LDFLAGS = -L$(GC)/.libs
-LIBS=-lgc
+CFLAGS += -DUSE_GC=$(USE_GC) -fnested-functions -Iinclude -I$(GC)/include -Wall -Werror -g $(CFLAGS_OPTIMIZE)
+
+ifeq "$(USE_GC)" "0"
+else
+LDFLAGS += -L$(GC)/.libs #
+LIBS += -lgc #
+endif
 
 ######################################################################
 
@@ -83,12 +88,16 @@ src/lisp.o : src/lispread.c
 # libgc.a:
 #
 
+ifeq "$(USE_GC)" "0"
+gc :
+else
 gc : $(GC)/.libs/libgc.a
 
 $(GC)/.libs/libgc.a : $(GC).tar.gz
 	if [ ! -d $(GC) ]; then tar -zxvf $^; fi
 	cd $(GC) && if [ ! -f Makefile ]; then ./configure; fi
 	cd $(GC) && make
+endif
 
 ######################################################################
 # testing:

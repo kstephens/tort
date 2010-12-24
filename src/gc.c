@@ -105,28 +105,9 @@ void tort_gc_dump_stats()
 
   tort_flush(io);
   tort_printf(io, "\n");
-#define P(X) tort_printf(io, "tort gc stats: %24s = %16lu\n", #X, GC_##X())
-  P(get_heap_size);
-  P(get_free_bytes);
-  P(get_bytes_since_gc);
-  P(get_total_bytes);
-#undef P
-#define P(X) tort_printf(io, "tort gc stats: %24s = %16lu\n", #X, GC_##X)
-  P(gc_no);
-  P(parallel);
-  P(all_interior_pointers);
-  P(finalize_on_demand);
-  P(java_finalization);
-  P(dont_gc);
-  P(dont_expand);
-  P(use_entire_heap);
-  P(full_freq);
-  P(non_gc_bytes);
-  P(no_dls);
-  P(free_space_divisor);
-  P(max_retries);
-  P(dont_precollect);
-#undef P
+#define Pf(X) tort_printf(io, "tort gc stats: %24s = %16lu\n", #X, GC_##X())
+#define Pl(X) tort_printf(io, "tort gc stats: %24s = %16lu\n", #X, GC_##X)
+#include "gc_stats.h"
 
   tort_flush(io);
 }

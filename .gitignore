@@ -6,3 +6,4 @@ gc-*/
 t/*.out
 t/*.exe
 .stats/*
+*.dSYM/
