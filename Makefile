@@ -1,4 +1,4 @@
-GC=bdwgc-20101223-cvs
+GC=gc-20101223-cvs
 
 CFLAGS_OPTIMIZE = -O2
 CFLAGS = -fnested-functions -Iinclude -I$(GC)/include -Wall -Werror -g $(CFLAGS_OPTIMIZE)
