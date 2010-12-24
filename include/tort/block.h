@@ -4,7 +4,6 @@
 #include "tort/tort.h"
 
 /**
-
    Blocks respond to #value by returning themselves as
    the method in the lookupf, if the selector is 
    #value.
@@ -15,6 +14,8 @@
    This is done to avoid creating a new mtable for each block.
 
    The block is the receiver of the #value message.
+
+   This uses the GCC nested function feature; see gcc -fnested-functions.
 */
 typedef struct tort_block {
   int opaque;

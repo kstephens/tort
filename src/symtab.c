@@ -81,7 +81,7 @@ void _tort_load_symtab()
 		c_fileline);
 #endif
 	tort_v t_name = tort_symbol_make(c_name);
-	tort_v t_addr = tort_i((unsigned long) c_addr);
+	tort_v t_addr = tort_i((size_t) c_addr);
 	tort_send(tort__s(set), st, t_name, t_addr);
 	tort_send(tort__s(set), st, t_addr, t_name);
       }

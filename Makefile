@@ -19,11 +19,21 @@ LIB_CFILES = $(shell ls src/*.c) $(GEN_C_FILES)
 LIB_HFILES = $(shell ls include/tort/*.h) $(GEN_H_FILES)
 LIB_OFILES = $(LIB_CFILES:.c=.o)
 
+LIBTORT     = src/libtort.a
+
 export LIB_CFILES
 export LIB_HFILES
 export LIB_OFILES
 
-LIBTORT     = src/libtort.a
+LIBEXT_CFILES = $(shell ls ext/src/*.c)
+LIBEXT_HFILES = $(shell ls ext/include/tort/*.h)
+LIBEXT_OFILES = $(LIBEXT_CFILES:.c=.o)
+
+LIBTORTEXT   = ext/src/libtortext.a
+
+export LIBEXT_CFILES
+export LIBEXT_HFILES
+export LIBEXT_OFILES
 
 ######################################################################
 
@@ -36,7 +46,7 @@ TEST_OUT_FILES = $(TEST_C_FILES:.c=.out)
 # default:
 #
 
-all : gc $(GEN_H_FILES) $(GEN_C_FILES) $(LIBTORT) test stats
+all : gc $(GEN_H_FILES) $(GEN_C_FILES) $(LIBTORT) $(LIBTORTEXT) test stats
 
 
 ######################################################################
@@ -80,6 +90,10 @@ src/lisp.o : src/lispread.c
 
 $(LIBTORT) : $(LIB_OFILES)
 	$(AR) $(ARFLAGS) $@ $(LIB_OFILES)
+	ranlib $@ || true
+
+$(LIBTORTEXT) : $(LIBEXT_OFILES)
+	$(AR) $(ARFLAGS) $@ $(LIBEXT_OFILES)
 	ranlib $@ || true
 
 src/lisp.o : src/lispread.c
