@@ -4,6 +4,9 @@
 *.la
 gc-*/
 *.out
-*.exe
+*.t
+.libs/
 .stats
 *.dSYM/
+local/
+

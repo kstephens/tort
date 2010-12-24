@@ -54,7 +54,7 @@ export LIBEXT_OFILES
 ######################################################################
 
 TEST_C_FILES = $(shell ls t/*.c ext/t/*.c | sort -u)
-TEST_EXE_FILES = $(TEST_C_FILES:.c=.exe)
+TEST_T_FILES = $(TEST_C_FILES:.c=.t)
 TEST_FILES = $(TEST_C_FILES:.c=)
 TEST_OUT_FILES = $(TEST_C_FILES:.c=.out)
 
@@ -139,27 +139,27 @@ endif
 TEST_LIBS = $(LIB_TORTEXT) $(LIB_TORT)
 # TEST_LIBS = $(LIB_TORT)
 
-%.exe : %.c 
-	$(LIBTOOL) --mode=link $(CC) $(CFLAGS) $(LDFLAGS) $(@:.exe=.c) $(TEST_LIBS) $(LIBS) -o $@
+%.t : %.c 
+	$(LIBTOOL) --mode=link $(CC) $(CFLAGS) $(LDFLAGS) $(@:.t=.c) $(TEST_LIBS) $(LIBS) -o $@
 
-$(TEST_EXE_FILES) : $(TEST_LIBS)
+$(TEST_T_FILES) : $(TEST_LIBS)
 
-$(TEST_EXE_FILES) $(LIB_OFILES) : $(GEN_H_FILES) include/tort/*.h ext/include/tort/*.h
+$(TEST_T_FILES) $(LIB_OFILES) : $(GEN_H_FILES) include/tort/*.h ext/include/tort/*.h
 
-run-test : $(TEST_EXE_FILES)
-	@set -ex; for f in $(TEST_EXE_FILES); do \
+run-test : $(TEST_T_FILES)
+	@set -ex; for f in $(TEST_T_FILES); do \
 	  $$f ;\
 	done
 
-test : $(TEST_EXE_FILES)
+test : $(TEST_T_FILES)
 	@echo "Testing:"
 	@set -e ;\
 	errors=0 ;\
 	for f in $(TEST_FILES); do \
 	  in=/dev/null ;\
 	  if [ -f $$f.in ] ; then in=$$f.in ; fi ;\
-	  echo -n "  test $$f.exe < $$in: " ;\
-	  ($$f.exe <$$in || echo $$?) 2>&1 | t/filter-output > $$f.out ;\
+	  echo -n "  test $$f.t < $$in: " ;\
+	  ($$f.t <$$in || echo $$?) 2>&1 | t/filter-output > $$f.out ;\
 	  if ! diff -U 10 $$f.exp $$f.out ; then \
 	    echo "========== $$f.out ==========" 1>&2 ;\
 	    cat $$f.out ;\
@@ -172,26 +172,26 @@ test : $(TEST_EXE_FILES)
 	done ;\
 	exit $$errors
 
-valgrind : $(TEST_EXE_FILES)
+valgrind : $(TEST_T_FILES)
 	@echo "Valgrind:"
 	@set -e ;\
 	errors=0 ;\
 	for f in $(TEST_FILES); do \
 	  in=/dev/null ;\
 	  if [ -f $$f.in ] ; then in=$$f.in ; fi ;\
-	  echo -n "  valgrind $$f.exe < $$in: " ;\
-	  (TORT_GC=0 valgrind $$f.exe <$$in || echo $$?) 2>&1 | t/filter-output ;\
+	  echo -n "  valgrind $$f.t < $$in: " ;\
+	  (TORT_GC=0 valgrind $$f.t <$$in || echo $$?) 2>&1 | t/filter-output ;\
 	  echo "ok" ;\
 	done ;\
 	exit $$errors
 
-accept-test : $(TEST_EXE_FILES)
+accept-test : $(TEST_T_FILES)
 	@set -ex; for f in $(TEST_FILES); do \
 	  if [ ! -f $$f.exp ] ; then cp $$f.out $$f.exp ; fi ;\
 	done
 	git add t/*.c t/*.exp t/*.in
 
-accept-all-test : $(TEST_EXE_FILES)
+accept-all-test : $(TEST_T_FILES)
 	@set -ex; for f in $(TEST_FILES); do \
 	  if [ -f $$f.out ] ; then cp $$f.out $$f.exp ; fi ;\
 	done
@@ -201,18 +201,18 @@ accept-all-test : $(TEST_EXE_FILES)
 # debugging:
 #
 
-gdb : t/tort_test.exe
-	gdb --args t/tort_test.exe 
+gdb : t/tort_test.t
+	gdb --args t/tort_test.t 
 
-disasm : t/tort_test.exe
-	objdump -DS t/tort_test.exe | less "+/<main>"
+disasm : t/tort_test.t
+	objdump -DS t/tort_test.t | less "+/<main>"
 
 ######################################################################
 # maint:
 #
 
 clean :
-	rm -f $(TEST_EXE_FILES) $(GEN_LIBS) {.,ext}/src/*{.o,.lo,.la} {.,ext}/t/*.{exe,out} include/tort/internal.h .stats/*
+	rm -f $(TEST_T_FILES) $(GEN_LIBS) {.,ext}/src/*{.o,.lo,.la} {.,ext}/t/*.{t,out} include/tort/internal.h .stats/*
 	find . -name '*.dSYM' -type d -print0 | xargs -0 rm -rf
 
 very-clean : clean
