@@ -187,9 +187,6 @@ struct tort_runtime {
   tort_v _mt_io;
   tort_v _mt_eos;
   tort_v _mt_block;
-#if 0
-  tort_v _mt_pair;
-#endif
 
   tort_v _s_new;
   tort_v _s_clone;
@@ -234,9 +231,6 @@ struct tort_runtime {
   tort_v _io_stdout;
   tort_v _io_stderr;
   tort_v _io_eos;
-
-  /* symtab */
-  tort_v _symtab;
 
   /* globals */
   tort_v _m_class;

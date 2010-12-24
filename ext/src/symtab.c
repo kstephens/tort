@@ -110,7 +110,6 @@ tort_v tort_symtab_load_methods()
 tort_v tort_runtime_initialize_symtab()
 {
   tort_v st = _tort_load_symtab(_tort->_argv[0]);
-  _tort->_symtab = st;
   tort_send(tort__s(set), _tort->root, tort_s(symtab), st);
   // tort_add_method(tort__mt(mtable), "__import", _tort_mtable___import);
   return st;

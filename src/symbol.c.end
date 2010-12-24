@@ -1,4 +1,4 @@
 
-  return _tort->_symtab;
+  return _tort->symbols;
 }
 
