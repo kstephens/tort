@@ -120,7 +120,7 @@ endif
 # testing:
 #
 
-TEST_LIBS = $(LIB_TORT) $(LIB_TORTEXT)
+TEST_LIBS = $(GEN_LIBS)
 
 %.exe : %.c 
 	$(CC) $(CFLAGS) $(LDFLAGS) $(@:.exe=.c) $(TEST_LIBS) $(LIBS) -o $@
@@ -195,7 +195,7 @@ disasm : t/tort_test.exe
 #
 
 clean :
-	rm -f $(TEST_EXE_FILES) $(GEN_LIBS) {.,ext}/src/*.o {.,ext}/t/*.out include/tort/internal.h .stats/*
+	rm -f $(TEST_EXE_FILES) $(GEN_LIBS) {.,ext}/src/*.o {.,ext}/t/*.{exe,out} include/tort/internal.h .stats/*
 	find . -name '*.dSYM' -type d -print0 | xargs -0 rm -rf
 
 very-clean : clean
@@ -210,27 +210,27 @@ FIND_STAT_FILES= \
 stats :
 	mkdir -p .stats
 	@echo "core Generated LoC:"
-	find $(GEN_H_FILES) $(GEN_C_FILES) | \
+	@find $(GEN_H_FILES) $(GEN_C_FILES) | \
 	  sort -u > .stats/files_gen
-	xargs wc -l < .stats/files_gen
+	@xargs wc -l < .stats/files_gen
 	@echo "core Source LoC:"
-	find src include $(FIND_STAT_FILES) | \
+	@find src include $(FIND_STAT_FILES) | \
 	  sort -u > .stats/files.t
-	comm -3 .stats/files.t .stats/files_gen > .stats/files_src
-	xargs wc -l < .stats/files_src
+	@comm -23 .stats/files.t .stats/files_gen > .stats/files_src
+	@xargs wc -l < .stats/files_src
 	@echo "core Test LoC:"
-	find t $(FIND_STAT_FILES) | \
+	@find t $(FIND_STAT_FILES) | \
 	  sort -u > .stats/files.t
-	comm -3 .stats/files.t .stats/files_gen > .stats/files_t
-	xargs wc -l < .stats/files_t
+	@comm -23 .stats/files.t .stats/files_gen > .stats/files_t
+	@xargs wc -l < .stats/files_t
 	@echo "ext/ Source LoC:"
-	find ext/src ext/include $(FIND_STAT_FILES) | \
+	@find ext/src ext/include $(FIND_STAT_FILES) | \
 	  sort -u > .stats/files.t
-	comm -3 .stats/files.t .stats/files_gen > .stats/files_src
-	xargs wc -l < .stats/files_src
+	@comm -23 .stats/files.t .stats/files_gen > .stats/files_src
+	@xargs wc -l < .stats/files_src
 	@echo "ext/ Test LoC:"
-	find ext/t $(FIND_STAT_FILES) | \
+	@find ext/t $(FIND_STAT_FILES) | \
 	  sort -u > .stats/files.t
-	comm -3 .stats/files.t .stats/files_gen > .stats/files_t
-	xargs wc -l < .stats/files_t
+	@comm -23 .stats/files.t .stats/files_gen > .stats/files_t
+	@xargs wc -l < .stats/files_t
 
