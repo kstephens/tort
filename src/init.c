@@ -1,6 +1,7 @@
 #include "tort/tort.h"
 #include "tort/internal.h"
 #include "tort/init.h"
+#include "tort/symtab.h"
 
 
 tort_v tort_runtime_create_ (int *argcp, char ***argvp, char ***envp)
@@ -83,6 +84,9 @@ tort_v tort_runtime_create_ (int *argcp, char ***argvp, char ***envp)
   tort_runtime_initialize_mtable_class();
 
   _tort->_initialized = tort_true;
+
+  tort_runtime_initialize_symtab();
+  tort_runtime_initialize_dl();
 
   // fprintf(stderr, "\ntort: initialized\n");
 

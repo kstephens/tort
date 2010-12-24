@@ -21,6 +21,7 @@ tort_v tort_runtime_initialize_method()
   tort_add_method(_tort->_mt_io, "printf", _tort_m_io__printf);
   tort_add_method(_tort->_mt_io, "read", _tort_m_io__read);
   tort_add_method(_tort->_mt_map, "_inspect", _tort_m_map___inspect);
+  tort_add_method(_tort->_mt_map, "_load_symtab", _tort_m_map___load_symtab);
   tort_add_method(_tort->_mt_map, "add", _tort_m_map__add);
   tort_add_method(_tort->_mt_map, "clone", _tort_m_map__clone);
   tort_add_method(_tort->_mt_map, "delete", _tort_m_map__delete);
@@ -42,6 +43,7 @@ tort_v tort_runtime_initialize_method()
   tort_add_method(_tort->_mt_object, "_name", _tort_m_object___name);
   tort_add_method(_tort->_mt_object, "clone", _tort_m_object__clone);
   tort_add_method(_tort->_mt_object, "identity", _tort_m_object__identity);
+  tort_add_method(_tort->_mt_string, "_dlopen", _tort_m_string___dlopen);
   tort_add_method(_tort->_mt_string, "_inspect", _tort_m_string___inspect);
   tort_add_method(_tort->_mt_string, "clone", _tort_m_string__clone);
   tort_add_method(_tort->_mt_string, "get", _tort_m_string__get);

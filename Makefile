@@ -1,28 +1,35 @@
 GC=gc-20101223-cvs
-USE_GC=0
+USE_GC=1
 
-LIBTOOL=$(GC)/libtool#
+PREFIX:=$(shell mkdir -p local && cd local && /bin/pwd)#
+libdir=$(PREFIX)/lib#
+
+LIBTOOL=$(GC)/libtool #
 CC=gcc#
 COMPILE.c = $(LIBTOOL) --mode=compile $(CC) $(CFLAGS) $(CPPFLAGS) $(TARGET_ARCH) -c #
+CFLAGS += -shared -export-dynamic #
+LIB_FLAGS += -rpath $(libdir) #
 
 CFLAGS_OPTIMIZE = -O2
 CFLAGS_OPTIMIZE = 
+CFLAGS += -DLIB_DIR='"$(libdir)"' #
 CFLAGS += -DUSE_GC=$(USE_GC) -fnested-functions -Iinclude -Iext/include -I$(GC)/include -Wall -Werror -g $(CFLAGS_OPTIMIZE)
 
 ifeq "$(USE_GC)" "0"
 else
-LDFLAGS += -L$(GC)/.libs #
+LDFLAGS += -L$(PREFIX)/lib #
 LIBS += -lgc #
 endif
 
 ######################################################################
+
 GEN_LIBS = 
 
 GEN_H_FILES = include/tort/internal.h
 GEN_C_FILES = src/symbol.c src/method.c
 
-LIB_CFILES = $(shell ls src/*.c) $(GEN_C_FILES)
-LIB_HFILES = $(shell ls include/tort/*.h) $(GEN_H_FILES)
+LIB_CFILES := $(shell ls src/*.c $(GEN_C_FILES) | sort -u) 
+LIB_HFILES := $(shell ls include/tort/*.h $(GEN_H_FILES) | sort -u) 
 LIB_OFILES = $(LIB_CFILES:.c=.lo)
 
 LIB_TORT     = src/libtort.la
@@ -32,8 +39,8 @@ export LIB_CFILES
 export LIB_HFILES
 export LIB_OFILES
 
-LIBEXT_CFILES = $(shell ls ext/src/*.c)
-LIBEXT_HFILES = $(shell ls ext/include/tort/*.h)
+LIBEXT_CFILES := $(shell ls ext/src/*.c)
+LIBEXT_HFILES := $(shell ls ext/include/tort/*.h)
 LIBEXT_OFILES = $(LIBEXT_CFILES:.c=.lo)
 
 LIB_TORTEXT   = ext/src/libtortext.la
@@ -101,10 +108,12 @@ src/lisp.lo : src/lispread.c
 #
 
 $(LIB_TORT) : $(LIB_OFILES)
-	$(LIBTOOL) --mode=link $(CC) $(LDFLAGS) -o $@ $(LIB_OFILES)
+	$(LIBTOOL) --mode=link $(CC) $(LDFLAGS) $(LIB_FLAGS) -o $@ $(LIB_OFILES)
+	$(LIBTOOL) --mode=install cp $@ $(libdir)
 
 $(LIB_TORTEXT) : $(LIBEXT_OFILES) 
-	$(LIBTOOL) --mode=link $(CC) $(LDFLAGS) -o $@ $(LIBEXT_OFILES)
+	$(LIBTOOL) --mode=link $(CC) $(LDFLAGS) $(LIB_FLAGS) -o $@ $(LIBEXT_OFILES)
+	$(LIBTOOL) --mode=install cp $@ $(libdir)
 
 ext/src/lisp.o : ext/src/lispread.c
 
@@ -119,8 +128,8 @@ gc : $(GC)/.libs/libgc.a
 
 $(GC)/.libs/libgc.a : $(GC).tar.gz
 	if [ ! -d $(GC) ]; then tar -zxvf $^; fi
-	cd $(GC) && if [ ! -f Makefile ]; then ./configure; fi
-	cd $(GC) && make
+	cd $(GC) && if [ ! -f Makefile ]; then ./configure --enable-shared --prefix=$(PREFIX); fi
+	cd $(GC) && make && make install
 endif
 
 ######################################################################
@@ -128,6 +137,7 @@ endif
 #
 
 TEST_LIBS = $(LIB_TORTEXT) $(LIB_TORT)
+# TEST_LIBS = $(LIB_TORT)
 
 %.exe : %.c 
 	$(LIBTOOL) --mode=link $(CC) $(CFLAGS) $(LDFLAGS) $(@:.exe=.c) $(TEST_LIBS) $(LIBS) -o $@
@@ -202,7 +212,7 @@ disasm : t/tort_test.exe
 #
 
 clean :
-	rm -f $(TEST_EXE_FILES) $(GEN_LIBS) {.,ext}/src/*.o {.,ext}/t/*.{exe,out} include/tort/internal.h .stats/*
+	rm -f $(TEST_EXE_FILES) $(GEN_LIBS) {.,ext}/src/*{.o,.lo,.la} {.,ext}/t/*.{exe,out} include/tort/internal.h .stats/*
 	find . -name '*.dSYM' -type d -print0 | xargs -0 rm -rf
 
 very-clean : clean

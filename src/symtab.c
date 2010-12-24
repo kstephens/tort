@@ -40,17 +40,22 @@ int _getline(char **linep, size_t *sizep, FILE *fp)
 }
 
 
-tort_v _tort_load_symtab(const char *file, void *ptr_base)
+tort_v _tort_m_map___load_symtab(tort_thread_param tort_v st, const char *file, void *ptr_base)
 {
   FILE *fp;
   char cmd[1024];
-  tort_v st;
   
-  snprintf(cmd, sizeof(cmd), "nm -l %s 2>&1", file);
-  
-  st = tort_map_create();
-  
-  if ( (fp = popen(cmd, "r")) ) {
+  snprintf(cmd, sizeof(cmd), "nm '%s' > '%s.sym' 2>&1",
+	   file, file);
+  system(cmd);
+
+  snprintf(cmd, sizeof(cmd), "%s.sym", file);
+
+#if 0
+  fprintf(stderr, "  cmd => %s\n", cmd);
+#endif
+
+  if ( (fp = fopen(cmd, "r")) ) {
     char *line = 0;
     size_t line_size = 0;
     
@@ -62,7 +67,7 @@ tort_v _tort_load_symtab(const char *file, void *ptr_base)
       int  c_tokens = 0;
 
 #if 0
-      fprintf(stderr, "  line => %s\n", line);
+      fprintf(stderr, "  line => @%p '%s'\n", line, line);
 #endif
 
       c_name[0] = c_fileline[0] = 0;
@@ -77,6 +82,7 @@ tort_v _tort_load_symtab(const char *file, void *ptr_base)
 	   c_mode == 'T' && 
 	   ! strchr(c_name, '.')
 	   ) {
+	c_addr = ptr_base + (size_t) c_addr;
 #if 0
 	fprintf(stderr, "   => %p %c %s %s\n", 
 		c_addr,
@@ -84,16 +90,21 @@ tort_v _tort_load_symtab(const char *file, void *ptr_base)
 		c_name,
 		c_fileline);
 #endif
-	c_addr = ptr_base + (size_t) c_addr;
 	tort_v t_name = tort_symbol_make(c_name);
 	tort_v t_addr = tort_i((size_t) c_addr);
 	tort_send(tort__s(set), st, t_name, t_addr);
 	tort_send(tort__s(set), st, t_addr, t_name);
       }
-      // fprintf(stderr, " c_tokens = %d\n", c_tokens);
+#if 0
+      fprintf(stderr, " c_tokens = %d\n", c_tokens);
+#endif
 
       free(line);
     }
+
+#if 0
+    fprintf(stderr, "  DONE @%p\n", fp);
+#endif
 
     fclose(fp);
   }
@@ -102,45 +113,11 @@ tort_v _tort_load_symtab(const char *file, void *ptr_base)
 }
 
 
-tort_v tort_m_map___load_methods(tort_thread_param tort_v map)
-{
-  static const char prefix[] = "__tort_m_";
-  tort_map_EACH(map, e); {
-    if ( tort_h_mtable(e->key) != _tort->_mt_symbol ) continue;
-    char *name = tort_symbol_data(e->key);
-    // fprintf(stderr, "e = @%p \"%s\"\n", e, name);
-    if ( strncmp(name, prefix, strlen(prefix)) == 0 ) {
-      char *cls = name + strlen(prefix);
-      char *meth = cls;
-      while ( *meth ) {
-	if ( meth[0] == '_' && meth[1] == '_' ) {
-	  char cls_buf[meth - cls + 1];
-	  strncpy(cls_buf, cls, meth - cls);
-	  cls_buf[meth - cls] = 0;
-	  cls = cls_buf;
-	  meth += 2;
-	  void *ptr = (void*) tort_I(e->value);
-	  fprintf(stderr, "  %s.%s => @%p\n", cls, meth, ptr);
-#if 0
-	  tort_v cls_obj = tort_class_get(cls_buf);
-	  tort_add_method(cls_obj, meth, e->value);
-#endif
-	  break;
-	}
-	++ meth;
-      }
-    }
-  }
-  tort_map_EACH_END();
-  return 0;
-}
-
-
 tort_v tort_runtime_initialize_symtab()
 {
-  tort_v st = _tort_load_symtab(_tort->_argv[0], 0);
+  tort_v st = tort_map_create();
+  _tort_m_map___load_symtab(tort_thread_arg st, _tort->_argv[0], 0);
   tort_send(tort__s(set), _tort->root, tort_s(core_symtab), st);
-  tort_m_map___load_methods(tort_thread_arg st);
   // tort_add_method(tort__mt(mtable), "__import", _tort_mtable___import);
   return st;
 }

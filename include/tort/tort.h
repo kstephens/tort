@@ -304,7 +304,7 @@ tort_v _tort_allocate (tort_thread_param tort_v rcvr, size_t size, tort_v meth_t
 #define tort_allocate(_1, _2, _3, _4) _tort_allocate(_1, _2, _3, _4)
 #endif
 
-tort_v tort_symbol_make (const char *string);
+tort_v tort_symbol_make(const char *string);
 
 #define tort_s(X) tort_symbol_make(#X)
 #define tort__s(X) _tort->_s_##X

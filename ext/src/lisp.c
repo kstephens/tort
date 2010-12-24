@@ -22,12 +22,10 @@ tort_v tort_cons(tort_v a, tort_v d)
 
 
 #define ACCESSOR(X)							\
-  static								\
-  tort_v _tort_m_pair__##X(tort_thread_param tort_v rcvr)	\
+  tort_v _tort_m_pair__##X(tort_thread_param tort_v rcvr)		\
   {									\
     return tort_ref(tort_pair, rcvr)->X;				\
   }									\
-  static								\
   tort_v _tort_m_pair__set_##X##E(tort_thread_param tort_v rcvr,	\
 			       tort_v val)				\
   {									\
@@ -182,7 +180,7 @@ tort_v _tort_m_io__lisp_read (tort_thread_param tort_v stream)
 
 #define VALUE tort_v
 #define READ_DECL VALUE _tort_m_io__lisp_read (tort_thread_param tort_v stream)
-#define READ_CALL() tort_send(tort_symbol_make("lisp_read"), stream)
+#define READ_CALL() tort_send(tort_s(lisp_read), stream)
 #define MALLOC(s) tort_malloc(s)
 #define REALLOC(p, s) tort_realloc(p, s)
 #define GETC(s) fgetc(FP(s))
@@ -219,6 +217,7 @@ tort_v _tort_string_to_number(tort_v s, int radix) /**/
 tort_v tort_runtime_initialize_lisp()
 {
   _mt_pair = tort_class_make("pair", 0);
+  tort_class_make("list", 0);
 
   /* Reused methods. */
   tort_add_method(_tort->_mt_tagged, "lisp_write", _tort_m_tagged___inspect);
@@ -230,10 +229,13 @@ tort_v tort_runtime_initialize_lisp()
   tort_add_method(_mt_pair, "value", _tort_m_pair__car);
 
   /* FIXME */
+#if 0
   tort_add_method(_mt_pair, "car", _tort_m_pair__car);
   tort_add_method(_mt_pair, "set-car!", _tort_m_pair__set_carE);
   tort_add_method(_mt_pair, "cdr", _tort_m_pair__cdr);
   tort_add_method(_mt_pair, "set-cdr!", _tort_m_pair__set_cdrE);
+#endif
+
   tort_add_method(_mt_pair, "lisp_write", _tort_m_list__lisp_write);
   tort_add_method(_tort->_mt_nil,  "lisp_write", _tort_m_list__lisp_write);
   tort_add_method(_mt_pair, "size", _tort_m_list__size);
@@ -241,7 +243,7 @@ tort_v tort_runtime_initialize_lisp()
   tort_add_method(_mt_pair, "list->vector", _tort_m_list__list_TO_vector);
   tort_add_method(_tort->_mt_nil,  "list->vector", _tort_m_list__list_TO_vector);
 
- 
+#if 0
   tort_add_method(_tort->_mt_io, "lisp_read", _tort_m_io__lisp_read);
 
   tort_add_method(_tort->_mt_boolean, "lisp_write", _tort_m_boolean__lisp_write);
@@ -250,6 +252,7 @@ tort_v tort_runtime_initialize_lisp()
   tort_add_method(_tort->_mt_object, "lisp_write", _tort_m_object__lisp_write);
   tort_add_method(_tort->_mt_symbol, "lisp_write", _tort_m_symbol__lisp_write);
   tort_add_method(_tort->_mt_vector, "lisp_write", _tort_m_vector__lisp_write);
+#endif
 
   return _mt_pair;
 }
