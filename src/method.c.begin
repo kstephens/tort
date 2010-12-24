@@ -5,6 +5,6 @@
 
 
 
-void tort_runtime_initialize_method()
+tort_v tort_runtime_initialize_method()
 {
 

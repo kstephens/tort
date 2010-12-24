@@ -29,6 +29,6 @@ tort_v tort_symbol_make(const char *string)
 }
 
 
-void tort_runtime_initialize_symbol()
+tort_v tort_runtime_initialize_symbol()
 {
 

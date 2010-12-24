@@ -2,6 +2,7 @@ GC=gc-20101223-cvs
 USE_GC=0
 
 CFLAGS_OPTIMIZE = -O2
+CFLAGS_OPTIMIZE = 
 CFLAGS += -DUSE_GC=$(USE_GC) -fnested-functions -Iinclude -Iext/include -I$(GC)/include -Wall -Werror -g $(CFLAGS_OPTIMIZE)
 
 ifeq "$(USE_GC)" "0"
@@ -92,10 +93,12 @@ src/lisp.o : src/lispread.c
 #
 
 $(LIB_TORT) : $(LIB_OFILES)
+	rm -f $@
 	$(AR) $(ARFLAGS) $@ $(LIB_OFILES)
 	ranlib $@ || true
 
 $(LIB_TORTEXT) : $(LIBEXT_OFILES)
+	rm -f $@
 	$(AR) $(ARFLAGS) $@ $(LIBEXT_OFILES)
 	ranlib $@ || true
 

@@ -73,7 +73,7 @@ void tort_gc_atexit()
 }
 
 
-void tort_runtime_initialize_malloc()
+tort_v tort_runtime_initialize_malloc()
 {
   const char *var;
 
@@ -83,14 +83,18 @@ void tort_runtime_initialize_malloc()
     _tort_malloc = GC_malloc;
     _tort_realloc = GC_realloc;
   }
+
+  return 0;
 }
 
 
-void tort_runtime_initialize_gc()
+tort_v tort_runtime_initialize_gc()
 {
   tort_add_method(tort__mt(object), "__finalize",  _tort_object_identity);
 
   atexit(tort_gc_atexit);
+
+  return 0;
 }
 
 

@@ -123,13 +123,13 @@ tort_v _tort_fiber_yield (tort_thread_param tort_v rcvr)
   return (tort_v) __tort_fiber_yield(_tort_fiber, tort_ref(tort_fiber_t, rcvr));
 }
 
-void tort_runtime_initialize_fiber()
+tort_v tort_runtime_initialize_fiber()
 {
   tort_v _mt_fiber = tort_class_make("fiber", 0);
 
   tort_add_method(_mt_fiber, "new", _tort_fiber_new);
   tort_add_method(_mt_fiber, "yield", _tort_fiber_yield);
+
+  return _mt_fiber;
 }
-
-
 

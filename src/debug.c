@@ -195,7 +195,8 @@ tort_v _tort_object__name(tort_thread_param tort_v rcvr)
 /********************************************************************/
 
 
-void tort_runtime_initialize_debug()
+tort_v tort_runtime_initialize_debug()
 {
+  return 0;
 }
 

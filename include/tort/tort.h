@@ -229,15 +229,6 @@ struct tort_runtime {
   tort_v _s___finalize;
   tort_v _s___register_finalizer;
 
-#if 0
-  /* lisp */
-  tort_v _s_lisp_write;
-  tort_v _s_lisp_read;
-  tort_v _s_set_cdrE;
-  tort_v _s_list_TO_vector;
-  tort_v _s_DOT;
-#endif
-
   /* io */
   tort_v _io_stdin;
   tort_v _io_stdout;

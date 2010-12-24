@@ -29,6 +29,7 @@ int _getline(char **linep, size_t *sizep, FILE *fp)
     line = malloc(size + 1);
     while ( (c = fgetc(fp)) != -1 ) {
       line = realloc(line, size + 1);
+      if ( c == '\n' ) break;
       line[size ++] = c;
     }
     line[size] = 0;
@@ -38,15 +39,16 @@ int _getline(char **linep, size_t *sizep, FILE *fp)
   return rtn;
 }
 
-void _tort_load_symtab()
+
+tort_v _tort_load_symtab(const char *file)
 {
   FILE *fp;
   char cmd[1024];
   tort_v st;
   
-  snprintf(cmd, sizeof(cmd), "nm -l %s 2>&1", _tort->_argv[0]);
+  snprintf(cmd, sizeof(cmd), "nm -l %s 2>&1", file);
   
-  st = _tort->_symtab = tort_map_create();
+  st = tort_map_create();
   
   if ( (fp = popen(cmd, "r")) ) {
     char *line = 0;
@@ -59,7 +61,9 @@ void _tort_load_symtab()
       char c_fileline[1024];
       int  c_tokens = 0;
 
-      //      fprintf(stderr, "  line => %s\n", line);
+#if 0
+      fprintf(stderr, "  line => %s\n", line);
+#endif
 
       c_name[0] = c_fileline[0] = 0;
       // line[line_size] = '\0';
@@ -92,12 +96,23 @@ void _tort_load_symtab()
 
     fclose(fp);
   }
+
+  return st;
 }
 
 
-void tort_runtime_initialize_symtab()
+tort_v tort_symtab_load_methods()
 {
-  _tort_load_symtab();
+  return 0;
+}
+
+
+tort_v tort_runtime_initialize_symtab()
+{
+  tort_v st = _tort_load_symtab(_tort->_argv[0]);
+  _tort->_symtab = st;
+  tort_send(tort__s(set), _tort->root, tort_s(symtab), st);
   // tort_add_method(tort__mt(mtable), "__import", _tort_mtable___import);
+  return st;
 }
 

@@ -5,7 +5,7 @@
 
 
 
-void tort_runtime_initialize_method()
+tort_v tort_runtime_initialize_method()
 {
 
   tort_add_method(_tort->_mt_boolean, "_inspect", _tort_boolean__inspect);
@@ -59,5 +59,6 @@ void tort_runtime_initialize_method()
   tort_add_method(_tort->_mt_vector, "set", _tort_vector_set);
   tort_add_method(_tort->_mt_vector, "size", _tort_vector_size);
 
+  return 0;
 }
 

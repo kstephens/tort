@@ -131,7 +131,8 @@ tort_v _tort_map__inspect(tort_thread_param tort_v rcvr, tort_v io)
 /********************************************************************/
 
 
-void tort_runtime_initialize_write()
+tort_v tort_runtime_initialize_write()
 {
+  return tort__s(write);
 }
 

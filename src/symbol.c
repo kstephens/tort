@@ -29,7 +29,7 @@ tort_v tort_symbol_make(const char *string)
 }
 
 
-void tort_runtime_initialize_symbol()
+tort_v tort_runtime_initialize_symbol()
 {
 
   _tort->_s___create = tort_symbol_make("__create");
@@ -64,5 +64,6 @@ void tort_runtime_initialize_symbol()
   _tort->_s_value = tort_symbol_make("value");
   _tort->_s_write = tort_symbol_make("write");
 
+  return _tort->_symtab;
 }
 

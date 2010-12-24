@@ -217,7 +217,7 @@ _tort_printf_extension_arginfo (
 /********************************************************************/
 
 
-void tort_runtime_initialize_io()
+tort_v tort_runtime_initialize_io()
 {
   _tort->_io_stdin  = _tort_io___create(0, 0, stdin);
   _tort->_io_stdout = _tort_io___create(0, 0, stdout);
@@ -235,5 +235,7 @@ void tort_runtime_initialize_io()
 			    _tort_printf_object_lisp,
 			    _tort_printf_extension_arginfo);
 #endif
+
+  return _tort->_mt_io;
 }
 

@@ -216,7 +216,7 @@ tort_v _tort_string_to_number(tort_v s, int radix) /**/
 
 #include "lispread.c"
 
-void tort_runtime_initialize_lisp()
+tort_v tort_runtime_initialize_lisp()
 {
   _mt_pair = tort_class_make("pair", 0);
 
@@ -250,5 +250,7 @@ void tort_runtime_initialize_lisp()
   tort_add_method(_tort->_mt_object, "lisp_write", _tort_object_lisp_write);
   tort_add_method(_tort->_mt_symbol, "lisp_write", _tort_symbol_lisp_write);
   tort_add_method(_tort->_mt_vector, "lisp_write", _tort_vector_lisp_write);
+
+  return _mt_pair;
 }
 

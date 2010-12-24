@@ -44,4 +44,6 @@ typedef struct _tort_block {
 
 extern tort_apply_decl(_tort_block_lookupf);
 
+tort_v tort_runtime_initialize_block();
+
 #endif

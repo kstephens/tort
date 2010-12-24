@@ -11,6 +11,7 @@ int main(int argc, char **argv, char **environ)
   int i;
 
   tort_runtime_create();
+  tort_runtime_initialize_block();
 
   io = tort_stdout;
 

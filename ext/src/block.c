@@ -13,8 +13,10 @@ tort_apply_decl(_tort_block_lookupf)
 }
 
 
-void tort_runtime_initialize_block()
+tort_v tort_runtime_initialize_block()
 {
   _tort->_mt_block = tort_class_make("block", 0);
+  // tort_add_method(_tort->_mt_block, "value", );
+  return _tort->_mt_block;
 }
 

@@ -67,11 +67,13 @@ tort_v tort_error (const char *format, ...)
 }
 
 
-void tort_runtime_initialize_error()
+tort_v tort_runtime_initialize_error()
 {
   _tort->_in_error = 0;
   _tort->error = _tort_error;
   _tort->fatal = _tort_fatal;
+
+  return 0;
 }
 
 

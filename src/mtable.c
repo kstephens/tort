@@ -10,6 +10,7 @@ tort_v tort_class_get(const char *name)
   return mt;
 }
 
+
 tort_v tort_class_make(const char *name, tort_v parent)
 {
   tort_v sym = tort_symbol_make(name);
@@ -21,7 +22,8 @@ tort_v tort_class_make(const char *name, tort_v parent)
   return mt;
 }
 
-void tort_runtime_initialize_mtable()
+
+tort_v tort_runtime_initialize_mtable()
 {
   /* Create mtable method table. */
   _tort->_mt_mtable      = tort_mtable_create(0);
@@ -54,8 +56,28 @@ void tort_runtime_initialize_mtable()
   _tort->_mt_io     = tort_mtable_create(_tort->_mt_object);
   _tort->_mt_eos    = tort_mtable_create(_tort->_mt_object);
 
-#if 0
-  _tort->_mt_pair = tort_mtable_create(_tort->_mt_object);
-#endif
+  return _tort->_mt_mtable;
+}
+
+tort_v tort_runtime_initialize_mtable_class()
+{
+#define D(X) \
+  tort_send(tort__s(set), _tort->_m_class, tort_symbol_make(#X), _tort->_mt_##X);
+
+  D(mtable);
+  D(object);
+  D(map);
+  D(string);
+  D(vector);
+  D(symbol);
+  D(method);
+  D(message);
+  D(nil);
+  D(boolean);
+  D(tagged);
+  D(io);
+  D(eos);
+
+  return _tort->_m_class;
 }
 
