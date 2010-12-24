@@ -33,8 +33,8 @@ int main(int argc, char **argv, char **environ)
   for ( i = 0; i < n; ++ i ) {
     tort_send(tort__s(size), _tort->symbols);
   }
-  t1 = tort_get_time();
-  t1 = t1 - t0;
+  t1 = tort_get_time() - t0;
+
   printf("%ld send/%.20g sec = %.20g send/sec\n", 
 	 (long) n,
 	 (double) t1,

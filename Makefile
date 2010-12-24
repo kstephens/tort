@@ -11,7 +11,8 @@ CFLAGS += -shared -export-dynamic #
 LIB_FLAGS += -rpath $(libdir) #
 
 CFLAGS_OPTIMIZE = -O2
-CFLAGS_OPTIMIZE = 
+CFLAGS_OPTIMIZE = -O3
+#CFLAGS_OPTIMIZE = 
 CFLAGS += -DLIB_DIR='"$(libdir)"' #
 CFLAGS += -DUSE_GC=$(USE_GC) -fnested-functions -Iinclude -Iext/include -I$(GC)/include -Wall -Werror -g $(CFLAGS_OPTIMIZE)
 
@@ -62,7 +63,7 @@ TEST_OUT_FILES = $(TEST_C_FILES:.c=.out)
 # default:
 #
 
-all : gc $(GEN_H_FILES) $(GEN_C_FILES) $(GEN_LIBS) test stats
+all : gc $(GEN_H_FILES) $(GEN_C_FILES) $(GEN_LIBS) $(t)
 
 
 ######################################################################

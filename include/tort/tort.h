@@ -129,6 +129,7 @@ tort_v tort_vector_new(const tort_v *d, size_t s);
 typedef
 struct tort_symbol {
   tort_v name;
+  tort_v version;
 } tort_symbol;
 
 #define tort_symbol_data(X) tort_string_data(tort_ref(tort_symbol, X)->name)

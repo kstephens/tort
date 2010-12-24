@@ -15,6 +15,7 @@ tort_v tort_symbol_make(const char *string)
       key = tort_string_new_cstr(string);
       value = tort_allocate(0, 0, sizeof(tort_symbol), _tort->_mt_symbol);
       tort_ref(tort_symbol, value)->name = key;
+      tort_ref(tort_symbol, value)->version = tort_i(0);
       _tort_m_map__add(tort_thread_arg _tort->symbols, key, value);
       // fprintf(stderr, "\n new symbol = %s %p\n", tort_symbol_data(value), (void *) value);
       return value;
@@ -23,6 +24,7 @@ tort_v tort_symbol_make(const char *string)
     tort_v value;
     value = tort_allocate(0, 0, sizeof(tort_symbol), _tort->_mt_symbol);
     tort_ref(tort_symbol, value)->name = tort_nil;
+    tort_ref(tort_symbol, value)->version = tort_i(0);
     return value;
   }
 }

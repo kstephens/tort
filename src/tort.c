@@ -89,6 +89,24 @@ tort_v _tort_m_object__identity (tort_thread_param tort_v rcvr)
 /********************************************************************/
 
 
+#ifndef MCACHE
+#define MCACHE 1
+#endif
+
+#if MCACHE
+typedef struct tort_mcache_entry {
+  tort_v mt;
+  tort_v sel;
+  tort_v sel_version;
+  tort_v meth;
+} tort_mcache_entry;
+
+static
+tort_mcache_entry mcache[1021];
+
+#define MC_HASH(mt, sel) (((size_t) mt >> 7) ^ ((size_t) sel >> 3)) 
+#endif
+
 #ifndef TORT_LOOKUP_TRACE
 #define TORT_LOOKUP_TRACE 0
 #endif
@@ -96,37 +114,59 @@ tort_v _tort_m_object__identity (tort_thread_param tort_v rcvr)
 tort_lookup_decl(_tort_object_lookupf)
 {
   tort_v meth = tort_nil;
-  tort_v mtable;
+  tort_v mtable, sel;
   
   _tort->message = _tort_message;
+
+  mtable = tort_h_mtable(tort_ref(tort_message, _tort_message)->receiver);
+  sel = tort_ref(tort_message, _tort_message)->selector;
 
 #if TORT_LOOKUP_TRACE
   fprintf(stderr, "  tol: rcvr = %s, sel = %s\n", 
 	  tort_object_name(tort_ref(tort_message, _tort_message)->receiver), 
-	  tort_symbol_data(tort_ref(tort_message, _tort_message)->selector));
+	  tort_symbol_data(sel));
 #endif
 
-  mtable = tort_h_mtable(tort_ref(tort_message, _tort_message)->receiver);
-  
-  do {
-    meth =
-      _tort_m_map__get(_tort_message,
-		    mtable, 
-		    tort_ref(tort_message, _tort_message)->selector);
+#if MCACHE
+  tort_mcache_entry *mce;
+  int i = MC_HASH(mtable, sel) % (sizeof(mcache) / sizeof(mcache[0]));
+  mce = &mcache[i];
+  if ( mce->mt == mtable && 
+       mce->sel == sel && 
+       mce->sel_version == tort_ref(tort_symbol, sel)->version ) {
+    // fprintf(stderr, "+"); fflush(stderr);
+    meth = mce->meth;
+  } else {
+#endif
 
+    do {
+      meth =
+	_tort_m_map__get(_tort_message,
+			 mtable, 
+			 tort_ref(tort_message, _tort_message)->selector);
+      
 #if TORT_LOOKUP_TRACE
-    fprintf(stderr, "    tol: mtable = %s, meth = %s\n", 
-	    tort_object_name(mtable), 
-	    tort_object_name(meth));
+      fprintf(stderr, "    tol: mtable = %s, meth = %s\n", 
+	      tort_object_name(mtable), 
+	      tort_object_name(meth));
+#endif
+      
+      assert(meth);
+      if ( meth != tort_nil )
+	break;
+      
+      mtable = tort_ref(tort_mtable, mtable)->delegate;
+    } while ( mtable != tort_nil );
+
+#if MCACHE
+    // fprintf(stderr, "-");
+    mce->mt = mtable;
+    mce->sel = sel;
+    mce->sel_version = tort_ref(tort_symbol, mce->sel)->version;
+    mce->meth = meth;
+  }
 #endif
 
-    assert(meth);
-    if ( meth != tort_nil )
-      break;
-    
-    mtable = tort_ref(tort_mtable, mtable)->delegate;
- } while ( mtable != tort_nil );
-  
   tort_ref(tort_message, _tort_message)->method = meth;
 
   return _tort_message;
@@ -166,6 +206,7 @@ tort_v _tort_m_mtable__add_method (tort_thread_param tort_v map, tort_v sym, tor
 {
   tort_v meth = tort_method_make((void*) tort_I(func));
   tort_ref(tort_method, meth)->name = sym;
+  tort_ref(tort_symbol, sym)->version += 2;
   _tort_m_map__set(0, map, sym, meth);
   return meth;
 }

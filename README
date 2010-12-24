@@ -12,9 +12,9 @@ Supports:
 ** Symbols.
 ** Method table.
 ** Methods.
+** Messages (on C stack).
 * Dynamic message dispatch.
-** On OS X 64-bit 
-** 100000000 send/11.071671962738037109 sec = 9032059.5061479657888 send/sec
+** over 18,000,000 send/sec on OS X 64-bit.
 * Dynamic library loading with automatic initialization and method installation.
 
 Extensions are dynamically loaded:
