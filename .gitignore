@@ -1,11 +1,9 @@
-tort_test
-*.a
 *.o
-src/*.o
+*.lo
+*.a
+*.la
 gc-*/
-t/*.out
-t/*.exe
-ext/t/*.out
-ext/t/*.exe
-.stats/*
+*.out
+*.exe
+.stats
 *.dSYM/

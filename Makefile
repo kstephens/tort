@@ -1,6 +1,10 @@
 GC=gc-20101223-cvs
 USE_GC=0
 
+LIBTOOL=$(GC)/libtool#
+CC=gcc#
+COMPILE.c = $(LIBTOOL) --mode=compile $(CC) $(CFLAGS) $(CPPFLAGS) $(TARGET_ARCH) -c #
+
 CFLAGS_OPTIMIZE = -O2
 CFLAGS_OPTIMIZE = 
 CFLAGS += -DUSE_GC=$(USE_GC) -fnested-functions -Iinclude -Iext/include -I$(GC)/include -Wall -Werror -g $(CFLAGS_OPTIMIZE)
@@ -19,9 +23,9 @@ GEN_C_FILES = src/symbol.c src/method.c
 
 LIB_CFILES = $(shell ls src/*.c) $(GEN_C_FILES)
 LIB_HFILES = $(shell ls include/tort/*.h) $(GEN_H_FILES)
-LIB_OFILES = $(LIB_CFILES:.c=.o)
+LIB_OFILES = $(LIB_CFILES:.c=.lo)
 
-LIB_TORT     = src/libtort.a
+LIB_TORT     = src/libtort.la
 GEN_LIBS += $(LIB_TORT)
 
 export LIB_CFILES
@@ -30,10 +34,11 @@ export LIB_OFILES
 
 LIBEXT_CFILES = $(shell ls ext/src/*.c)
 LIBEXT_HFILES = $(shell ls ext/include/tort/*.h)
-LIBEXT_OFILES = $(LIBEXT_CFILES:.c=.o)
+LIBEXT_OFILES = $(LIBEXT_CFILES:.c=.lo)
 
-LIB_TORTEXT   = ext/src/libtortext.a
-GEN_LIBS += $(LIB_TORTEXT)
+LIB_TORTEXT   = ext/src/libtortext.la
+GEN_LIBS += $(LIB_TORTEXT) #
+GEN_LIBS += $(LIB_TORTEXT:.a=.so) #
 
 export LIBEXT_CFILES
 export LIBEXT_HFILES
@@ -50,7 +55,7 @@ TEST_OUT_FILES = $(TEST_C_FILES:.c=.out)
 # default:
 #
 
-all : gc $(GEN_H_FILES) $(GEN_C_FILES) $(LIB_TORT) $(LIB_TORTEXT) test stats
+all : gc $(GEN_H_FILES) $(GEN_C_FILES) $(GEN_LIBS) test stats
 
 
 ######################################################################
@@ -85,7 +90,10 @@ $(GEN_C_FILES) $(GEN_H_FILES) : Makefile
 # object:
 #
 
-src/lisp.o : src/lispread.c
+%.lo : %.c
+	$(COMPILE.c) -o $@ $<
+
+src/lisp.lo : src/lispread.c
 
 
 ######################################################################
@@ -93,14 +101,10 @@ src/lisp.o : src/lispread.c
 #
 
 $(LIB_TORT) : $(LIB_OFILES)
-	rm -f $@
-	$(AR) $(ARFLAGS) $@ $(LIB_OFILES)
-	ranlib $@ || true
+	$(LIBTOOL) --mode=link $(CC) $(LDFLAGS) -o $@ $(LIB_OFILES)
 
-$(LIB_TORTEXT) : $(LIBEXT_OFILES)
-	rm -f $@
-	$(AR) $(ARFLAGS) $@ $(LIBEXT_OFILES)
-	ranlib $@ || true
+$(LIB_TORTEXT) : $(LIBEXT_OFILES) 
+	$(LIBTOOL) --mode=link $(CC) $(LDFLAGS) -o $@ $(LIBEXT_OFILES)
 
 ext/src/lisp.o : ext/src/lispread.c
 
@@ -123,10 +127,10 @@ endif
 # testing:
 #
 
-TEST_LIBS = $(GEN_LIBS)
+TEST_LIBS = $(LIB_TORTEXT) $(LIB_TORT)
 
 %.exe : %.c 
-	$(CC) $(CFLAGS) $(LDFLAGS) $(@:.exe=.c) $(TEST_LIBS) $(LIBS) -o $@
+	$(LIBTOOL) --mode=link $(CC) $(CFLAGS) $(LDFLAGS) $(@:.exe=.c) $(TEST_LIBS) $(LIBS) -o $@
 
 $(TEST_EXE_FILES) : $(TEST_LIBS)
 

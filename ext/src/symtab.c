@@ -40,7 +40,7 @@ int _getline(char **linep, size_t *sizep, FILE *fp)
 }
 
 
-tort_v _tort_load_symtab(const char *file)
+tort_v _tort_load_symtab(const char *file, void *ptr_base)
 {
   FILE *fp;
   char cmd[1024];
@@ -84,6 +84,7 @@ tort_v _tort_load_symtab(const char *file)
 		c_name,
 		c_fileline);
 #endif
+	c_addr = ptr_base + (size_t) c_addr;
 	tort_v t_name = tort_symbol_make(c_name);
 	tort_v t_addr = tort_i((size_t) c_addr);
 	tort_send(tort__s(set), st, t_name, t_addr);
@@ -137,7 +138,7 @@ tort_v tort_m_map___load_methods(tort_thread_param tort_v map)
 
 tort_v tort_runtime_initialize_symtab()
 {
-  tort_v st = _tort_load_symtab(_tort->_argv[0]);
+  tort_v st = _tort_load_symtab(_tort->_argv[0], 0);
   tort_send(tort__s(set), _tort->root, tort_s(core_symtab), st);
   tort_m_map___load_methods(tort_thread_arg st);
   // tort_add_method(tort__mt(mtable), "__import", _tort_mtable___import);
