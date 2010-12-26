@@ -12,11 +12,11 @@ int main(int argc, char **argv, char **environ)
 
   io = tort_stdout;
 
-  printf("\nclass:");
-  tort_send(tort_s(_inspect), _tort->_m_class, io);
+  printf("\nmtable:");
+  tort_send(tort_s(_inspect), tort_(m_mtable), io);
 
   printf("\nroot:");
-  tort_send(tort_s(_inspect), _tort->root, io);
+  tort_send(tort_s(_inspect), tort_(root), io);
 
   printf("\nDONE\n");
 

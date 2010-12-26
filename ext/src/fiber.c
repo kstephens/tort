@@ -125,7 +125,7 @@ tort_v _tort_m_fiber__yield (tort_thread_param tort_v rcvr)
 
 tort_v tort_runtime_initialize_fiber()
 {
-  tort_v _mt_fiber = tort_class_make("fiber", 0);
+  tort_v _mt_fiber = tort_mtable_make("fiber", 0);
 
   tort_add_method(_mt_fiber, "new", _tort_m_fiber__new);
   tort_add_method(_mt_fiber, "yield", _tort_m_fiber__yield);

@@ -27,15 +27,15 @@ int main(int argc, char **argv, char **environ)
 
   io = tort_stdout;
 
-  v = tort_send(tort__s(get), _tort->symbols, tort_string_new_cstr("size"));
+  v = tort_send(tort__s(get), tort_(symbols), tort_string_new_cstr("size"));
 
   t0 = tort_get_time();
   for ( i = 0; i < n; ++ i ) {
-    tort_send(tort__s(size), _tort->symbols);
+    tort_send(tort__s(size), tort_(symbols));
   }
   t1 = tort_get_time() - t0;
 
-  printf("%ld send/%.20g sec = %.20g send/sec\n", 
+  printf("%ld send/%.20g sec = %.12g send/sec\n", 
 	 (long) n,
 	 (double) t1,
 	 (double) n / (double) t1);

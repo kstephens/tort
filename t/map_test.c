@@ -13,7 +13,7 @@ int main(int argc, char **argv, char **environ)
 
   io = tort_stdout;
 
-  tort_printf(io, "\n  _mt_map => %T\n", _tort->_mt_map);
+  tort_printf(io, "\n  _mt_map => %T\n", tort__mt(map));
 
   o = tort_map_create();
   tort_printf(io, "o => %T\n", o);

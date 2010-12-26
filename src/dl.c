@@ -63,8 +63,8 @@ tort_v tort_m_map___run_initializers(tort_thread_param tort_v map)
 {
   static const char prefix[] = "_tort_runtime_initialize_";
   tort_map_EACH(map, e); {
-    if ( tort_h_mtable(e->key) != _tort->_mt_symbol ) continue;
-    char *name = tort_symbol_data(e->key);
+    if ( tort_h_mtable(e->key) != tort__mt(symbol) ) continue;
+    const char *name = tort_symbol_data(e->key);
     // fprintf(stderr, "e = @%p \"%s\"\n", e, name);
     if ( strncmp(name, prefix, strlen(prefix)) == 0 ) {
       void *ptr = (void*) tort_I(e->value);
@@ -83,12 +83,12 @@ tort_v tort_m_map___load_methods(tort_thread_param tort_v map)
 {
   static const char prefix[] = "__tort_m_";
   tort_map_EACH(map, e); {
-    if ( tort_h_mtable(e->key) != _tort->_mt_symbol ) continue;
-    char *name = tort_symbol_data(e->key);
+    if ( tort_h_mtable(e->key) != tort__mt(symbol) ) continue;
+    const char *name = tort_symbol_data(e->key);
     // fprintf(stderr, "e = @%p \"%s\"\n", e, name);
     if ( strncmp(name, prefix, strlen(prefix)) == 0 ) {
-      char *cls = name + strlen(prefix);
-      char *meth = cls;
+      const char *cls = name + strlen(prefix);
+      const char *meth = cls;
       while ( *meth ) {
 	if ( meth[0] == '_' && meth[1] == '_' ) {
 	  char cls_buf[meth - cls + 1];
@@ -98,8 +98,8 @@ tort_v tort_m_map___load_methods(tort_thread_param tort_v map)
 	  meth += 2;
 	  void *ptr = (void*) tort_I(e->value);
 	  // fprintf(stderr, "  %s.%s => @%p\n", cls, meth, ptr);
-	  tort_v cls_obj = tort_class_get(cls_buf);
-	  tort_add_method(cls_obj, meth, ptr);
+	  tort_v mtable = tort_mtable_get(cls_buf);
+	  tort_add_method(mtable, meth, ptr);
 	  break;
 	}
 	++ meth;
@@ -112,9 +112,9 @@ tort_v tort_m_map___load_methods(tort_thread_param tort_v map)
 
 tort_v tort_runtime_initialize_dl()
 {
-  tort_add_method(_tort->_mt_string, "_dlopen", _tort_m_string___dlopen);
-  tort_add_method(_tort->_mt_map, "_run_initializers", tort_m_map___run_initializers);
-  tort_add_method(_tort->_mt_map, "_load_methods", tort_m_map___load_methods);
+  tort_add_method(tort__mt(string), "_dlopen", _tort_m_string___dlopen);
+  tort_add_method(tort__mt(map), "_run_initializers", tort_m_map___run_initializers);
+  tort_add_method(tort__mt(map), "_load_methods", tort_m_map___load_methods);
   return 0;
 }
 

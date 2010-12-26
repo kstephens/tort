@@ -91,10 +91,10 @@ const char *tort_object_name_(tort_v val)
   else if ( tort_taggedQ(val) ) {
     snprintf(str = buf, S, "%ld", (long) tort_I(val));
   }
-  else if ( tort_h_mtable(val) == _tort->_mt_string ) {
+  else if ( tort_h_mtable(val) == tort__mt(string) ) {
     snprintf(str = buf, S, "\"%s\"", tort_string_data(val));
   }
-  else if ( tort_h_mtable(val) == _tort->_mt_symbol ) {
+  else if ( tort_h_mtable(val) == tort__mt(symbol) ) {
     if ( tort_ref(tort_symbol, val)->name != tort_nil ) {
       snprintf(str = buf, S, "%s", tort_symbol_data(val));
     } else {
@@ -104,25 +104,11 @@ const char *tort_object_name_(tort_v val)
   else if ( val == _tort ) {
     snprintf(str = buf, S, "@tort");
   }
-  else if ( val == _tort->root ) {
+  else if ( val == tort_(root) ) {
     snprintf(str = buf, S, "@root");
   }
-#define mt(N) else if ( val == _tort->_mt_##N ) { snprintf(str = buf, S, "@mtable %s", #N); }
-  mt(mtable)
-    mt(object)
-    mt(map)
-    mt(string)
-    mt(vector)
-    mt(symbol)
-    mt(method)
-    mt(message)
-    mt(nil)
-    mt(boolean)
-    mt(tagged)
-    mt(io)
-    mt(eos)
-#undef mt
-
+#define tort_d_mt(N) else if ( val == tort__mt(N) ) { snprintf(str = buf, S, "@mtable %s", #N); }
+#include "tort/d_mt.h"
   else {
     return 0;
   }
@@ -143,7 +129,6 @@ const char *tort_object_name(tort_v val)
   char *str = (char*) tort_object_name_(val);
   if ( ! str ) {
     static int bufi = 0;
-#define S 63
     static char bufa[16][S + 1];
     char *buf = bufa[bufi = (bufi + 1) % 16];
     
@@ -151,22 +136,8 @@ const char *tort_object_name(tort_v val)
     
     if ( 0 ) {
     }
-#define mt(N) else if ( tort_h_mtable(val) == _tort->_mt_##N ) { snprintf(str = buf, S, "!%s @%p", #N, (void*) val); }
-    mt(mtable)
-      mt(object)
-      mt(map)
-      mt(string)
-      mt(vector)
-      mt(symbol)
-      mt(method)
-      mt(message)
-      mt(nil)
-      mt(boolean)
-      mt(tagged)
-      mt(io)
-      mt(eos)
-#undef mt
-      
+#define tort_d_mt(N) else if ( tort_h_mtable(val) == tort__mt(N) ) { snprintf(str = buf, S, "!%s @%p", #N, (void*) val); }
+#include "tort/d_mt.h"
     else {
       snprintf(str = buf, S, "@? @%p", (void*) val);
     }

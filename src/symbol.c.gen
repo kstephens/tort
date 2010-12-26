@@ -4,8 +4,8 @@ set -ex
 cat "$1.begin"
 cat ${LIB_HFILES} /dev/null | 
 perl -ne '
-if ( /^\s*tort_v\s+(_s_([a-z0-9_]+))\s*;\s*$/i ) { 
-  print "  _tort->", $1, " = tort_symbol_make(\"", $2, "\");\n";
+if ( /^\s*tort_v\s+_s_([a-z0-9_]+)\s*;\s*$/i ) { 
+  print "  tort__s(", $1, ") = tort_symbol_make(\"", $1, "\");\n";
 }' | sort -u # | tee /dev/tty
 cat "$1.end"
 ) > "$1"

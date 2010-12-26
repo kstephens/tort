@@ -63,7 +63,9 @@ TEST_OUT_FILES = $(TEST_C_FILES:.c=.out)
 # default:
 #
 
-all : gc $(GEN_H_FILES) $(GEN_C_FILES) $(GEN_LIBS) $(t)
+all : $(GEN_H_FILES) $(GEN_C_FILES) libs tests
+
+libs : gc $(GEN_LIBS)
 
 
 ######################################################################
@@ -143,16 +145,18 @@ TEST_LIBS = $(LIB_TORTEXT) $(LIB_TORT)
 %.t : %.c 
 	$(LIBTOOL) --mode=link $(CC) $(CFLAGS) $(LDFLAGS) $(@:.t=.c) $(TEST_LIBS) $(LIBS) -o $@
 
+tests : $(TEST_T_FILES) 
+
 $(TEST_T_FILES) : $(TEST_LIBS)
 
 $(TEST_T_FILES) $(LIB_OFILES) : $(GEN_H_FILES) include/tort/*.h ext/include/tort/*.h
 
-run-test : $(TEST_T_FILES)
+run-test : tests
 	@set -ex; for f in $(TEST_T_FILES); do \
 	  $$f ;\
 	done
 
-test : $(TEST_T_FILES)
+test : tests
 	@echo "Testing:"
 	@set -e ;\
 	errors=0 ;\

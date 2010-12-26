@@ -7,7 +7,7 @@
 tort_v tort_vector_new(const tort_v *vec, size_t size)
 {
   size_t alloc_size;
-  tort_v val = tort_allocate(0, 0, sizeof(tort_vector), _tort->_mt_vector);
+  tort_v val = tort_allocate(0, 0, sizeof(tort_vector), tort__mt(vector));
   alloc_size = sizeof(tort_ref(tort_vector, val)->data[0]) * (size);
   tort_ref(tort_vector, val)->size = 
   tort_ref(tort_vector, val)->alloc_size = 

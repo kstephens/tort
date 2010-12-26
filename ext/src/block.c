@@ -15,8 +15,8 @@ tort_apply_decl(_tort_block_lookupf)
 
 tort_v tort_runtime_initialize_block()
 {
-  _tort->_mt_block = tort_class_make("block", 0);
-  // tort_add_method(_tort->_mt_block, "value", );
-  return _tort->_mt_block;
+  tort__mt(block) = tort_mtable_make("block", 0);
+  // tort_add_method(tort_mt(block), "value", );
+  return tort__mt(block);
 }
 

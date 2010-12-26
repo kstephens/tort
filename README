@@ -14,7 +14,7 @@ Supports:
 ** Methods.
 ** Messages (on C stack).
 * Dynamic message dispatch.
-** over 18,000,000 send/sec on OS X 64-bit.
+** over 27,000,000 send/sec on OS X 64-bit using a global method cache.
 * Dynamic library loading with automatic initialization and method installation.
 
 Extensions are dynamically loaded:

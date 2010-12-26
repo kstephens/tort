@@ -7,7 +7,7 @@
 #if 0
 tort_val _tort_m_mtable____import (tort_thread_param tort_v rcvr, tort_v sym)
 {
-  tort_val slot = tort_send(tort__s(get), _tort->_symtab, sym);
+  tort_val slot = tort_send(tort__s(get), tort_(_symtab), sym);
   if ( slot != tort_nil ) {
     _tort_mtable_add_method(tort_thread_arg rcvr, sym, slot);
   } else {
@@ -34,6 +34,9 @@ int _getline(char **linep, size_t *sizep, FILE *fp)
     }
     line[size] = 0;
   }
+#if 0
+  fprintf(stderr, "  '%s'\n", line);
+#endif
   *linep = line;
   *sizep = size;
   return rtn;
@@ -116,8 +119,8 @@ tort_v _tort_m_map___load_symtab(tort_thread_param tort_v st, const char *file, 
 tort_v tort_runtime_initialize_symtab()
 {
   tort_v st = tort_map_create();
-  _tort_m_map___load_symtab(tort_thread_arg st, _tort->_argv[0], 0);
-  tort_send(tort__s(set), _tort->root, tort_s(core_symtab), st);
+  _tort_m_map___load_symtab(tort_thread_arg st, tort_(_argv)[0], 0);
+  tort_send(tort__s(set), tort_(root), tort_s(core_symtab), st);
   // tort_add_method(tort__mt(mtable), "__import", _tort_mtable___import);
   return st;
 }

@@ -13,12 +13,12 @@ int main(int argc, char **argv, char **environ)
 
   io = tort_stdout;
 
-  v = tort_send(tort__s(get), _tort->symbols, tort_string_new_cstr("size"));
+  v = tort_send(tort__s(get), tort_(symbols), tort_string_new_cstr("size"));
 
   tort_printf(io, "  v = %T\n", v);
 
   tort_printf(io, "  (size symbols) => %T\n", 
-	      tort_send(tort__s(size), _tort->symbols));
+	      tort_send(tort__s(size), tort_(symbols)));
 
   printf("\nDONE\n");
 

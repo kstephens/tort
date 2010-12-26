@@ -175,14 +175,14 @@ tort_v _tort_m_map__clone(tort_thread_param tort_v rcvr)
 
 tort_v tort_map_create()
 {
-  tort_v val = tort_allocate(0, 0, sizeof(tort_map), _tort->_mt_map);
+  tort_v val = tort_allocate(0, 0, sizeof(tort_map), tort__mt(map));
   return _tort_m_map__initialize(0, val);
 }
 
 
 tort_v tort_mtable_create(tort_v delegate)
 {
-  tort_v val = tort_allocate(0, 0, sizeof(tort_mtable), _tort->_mt_mtable);
+  tort_v val = tort_allocate(0, 0, sizeof(tort_mtable), tort__mt(mtable));
   _tort_m_map__initialize(0, val);
   if ( delegate == 0 ) {
     delegate = tort_nil;

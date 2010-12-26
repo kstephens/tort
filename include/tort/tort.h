@@ -12,6 +12,8 @@
 #include <string.h> /* memset() */
 
 
+#include "tort/config.h"
+
 typedef void* tort_v;
 
 #define tort_ref(T, X)      ((struct T *)(X))
@@ -32,10 +34,6 @@ typedef void* tort_v;
 #define tort_lookup_decl(X) tort_v X (tort_thread_param tort_v rcvr, ...)
 #define tort_apply_decl(X)  tort_v X (tort_thread_param tort_v rcvr, ...)
 
-#ifndef TORT_ALLOC_DEBUG
-#define TORT_ALLOC_DEBUG 0
-#endif
-
 typedef
 struct tort_header {
 #if TORT_ALLOC_DEBUG
@@ -49,13 +47,23 @@ struct tort_header {
   tort_v mtable; /** The object's method table. */
 } tort_header;
 
+#define tort_h_nil(X)    &tort_(nil_header)
+#define tort_h_tagged(X) &tort_(tagged_header)
 #define tort_h_ref(X)    (((struct tort_header*) tort_ref(tort_object, X)) - 1)
-#define tort_h_tagged(X) &_tort->_tagged_header
-#define tort_h(X)        ( tort_taggedQ(X) ? tort_h_tagged(X) : tort_h_ref(X) )
 
-#define tort_h_applyf(X) tort_h(X)->applyf
+#if TORT_NIL_IS_ZERO
+#define tort_nil ((tort_v) 0)
+#define tort_nilQ(X) ((X) == 0)
+#define tort_h(X)        ( tort_nilQ(X) ? tort_h_nil(X) : tort_taggedQ(X) ? tort_h_tagged(X) : tort_h_ref(X) )
+#else
+#define tort_nil tort_(nil)
+#define tort_nilQ(X) ((X) == tort_nil)
+#define tort_h(X)        ( tort_taggedQ(X) ? tort_h_tagged(X) : tort_h_ref(X) )
+#endif
+
+#define tort_h_applyf(X)  tort_h(X)->applyf
 #define tort_h_lookupf(X) tort_h(X)->lookupf
-#define tort_h_mtable(X) tort_h(X)->mtable
+#define tort_h_mtable(X)  tort_h(X)->mtable
 
 typedef
 struct tort_object {
@@ -132,7 +140,14 @@ struct tort_symbol {
   tort_v version;
 } tort_symbol;
 
+static inline 
+const char *tort_symbol_data(tort_v sym) 
+{ 
+  return tort_string_data(tort_ref(tort_symbol, sym)->name);
+}
+#if 0
 #define tort_symbol_data(X) tort_string_data(tort_ref(tort_symbol, X)->name)
+#endif
 
 typedef
 struct tort_method {
@@ -164,7 +179,9 @@ struct tort_io {
 
 typedef
 struct tort_runtime {
+#if ! TORT_NIL_IS_ZERO
   tort_v nil;
+#endif
   tort_v string_null, vector_null;
   tort_v b_true, b_false;
   tort_v symbols;
@@ -176,7 +193,8 @@ struct tort_runtime {
   tort_error_decl((*error));
   tort_error_decl((*fatal));
 
-  tort_header _tagged_header;
+  tort_header nil_header;
+  tort_header tagged_header;
 
   int _argc;
   char **_argv;
@@ -212,6 +230,12 @@ struct tort_runtime {
   tort_v _s_map;
   tort_v _s_each;
 
+  /* mtable */
+  tort_v _s_delegate;
+  tort_v _s_set_delegate;
+  tort_v _s__delegate_changed;
+  tort_v _s__method_changed;
+
   /* io */
   tort_v _s_create;
   tort_v _s___create;
@@ -242,16 +266,23 @@ struct tort_runtime {
   tort_v _io_eos;
 
   /* globals */
-  tort_v _m_class;
+  tort_v m_mtable; /* map of symbol to mtable. */
 
   tort_v _initialized;
 } tort_runtime;
 
+extern tort_runtime *_tort;
+#if TORT_MULTIPLICITY
+#define tort_(X) _tort->X
+#else
+extern tort_runtime __tort;
+#define tort_(X) __tort.X
+#endif
 
-#define tort_stdin  (_tort->_io_stdin)
-#define tort_stdout (_tort->_io_stdout)
-#define tort_stderr (_tort->_io_stderr)
-#define tort_eos    (_tort->_io_eos)
+#define tort_stdin  tort_(_io_stdin)
+#define tort_stdout tort_(_io_stdout)
+#define tort_stderr tort_(_io_stderr)
+#define tort_eos    tort_(_io_eos)
 
 #define tort_write(io, str) tort_send(tort__s(__write), io, str)
 #define tort_inspect(io, obj) tort_send(tort__s(_inspect), obj, io)
@@ -264,7 +295,7 @@ struct tort_runtime {
 #define _tort_send(SEL, RCVR_AND_ARGS...)				\
   ({									\
     _tort_message_data __tort_msg = {					\
-      { sizeof(tort_message), _tort_object_lookupf, _tort_object_applyf, _tort->_mt_message }, \
+      { sizeof(tort_message), _tort_object_lookupf, _tort_object_applyf, tort_(_mt_message) }, \
       { (SEL), _tort_send_RCVR(RCVR_AND_ARGS), tort_nil, _tort_message, _tort_fiber } \
     };									\
     tort_v __tort_msg_val = tort_ref_box(&__tort_msg._msg);			\
@@ -275,16 +306,14 @@ struct tort_runtime {
   })
 #define tort_send(SEL, RCVR_AND_ARGS...)_tort_send(SEL, RCVR_AND_ARGS)
 
-extern tort_runtime *_tort;
 extern tort_v _tort_message; /* catch for top-level messages. */
 extern tort_v _tort_fiber;   /* catch for top-level messages. */
 
-#define tort_nil _tort->nil
-#define tort_string_null _tort->string_null
-#define tort_vector_null _tort->vector_null
+#define tort_string_null tort_(string_null)
+#define tort_vector_null tort_(vector_null)
 
-#define tort_true  _tort->b_true
-#define tort_false _tort->b_false
+#define tort_true  tort_(b_true)
+#define tort_false tort_(b_false)
 
 void *tort_malloc(size_t size);
 void *tort_realloc(void *ptr, size_t size);
@@ -308,14 +337,15 @@ tort_v _tort_allocate (tort_thread_param tort_v rcvr, size_t size, tort_v meth_t
 tort_v tort_symbol_make(const char *string);
 
 #define tort_s(X) tort_symbol_make(#X)
-#define tort__s(X) _tort->_s_##X
+#define tort__s(X) tort_(_s_##X)
 
-#define tort__mt(X) _tort->_mt_##X
+#define tort__mt(X) tort_(_mt_##X)
 
 tort_v tort_object_make ();
 
-tort_v tort_class_get (const char *string);
-tort_v tort_class_make (const char *string, tort_v parent);
+tort_v tort_mtable_get (const char *string);
+tort_v tort_mtable_set (const char *string, tort_v mtable);
+tort_v tort_mtable_make (const char *string, tort_v parent);
 
 tort_v tort_method_make (tort_apply_decl((*applyf)));
 

@@ -1,0 +1,53 @@
+
+-*- outline-mode -*-
+
+* Problem
+** Copying stack buffers between continuations/fibers can be expensive.
+* Issues
+** C compilers generate code where stack grows top-down.
+** OS maps new stack pages on demand.
+** Anonymous mmap() tends to map pages bottom-up.
+* Solution
+** mmap() new stack buffers.
+** Use alloc() to manipulate %sp into new stack buffers.
+** Use setjmp()/longjump() to switch between stack contexts.
+* Problem
+** Once %sp moves below stack buffer, SEGV.
+** Could use a mprotect() guard on small segment on to mmap() more pages below current stack_buffer.
+** Difficult to insure that mmap() hasn't mapped pages below it for some other purpose, including other stack buffers.
+** Difficult to know apriori how big a continuations/fiber should be beforehand.
+** Do not want to map more memory than necessary.
+* Solution
+** Recursive process spaces.
+** Typical process memory layout:
+
+|<-                        process                                  ->
++--------------------------------------------------------------------+
+| code/data |                                               | stack0 |
++--------------------------------------------------------------------+
+            ^                                                 ^
+            mmap()?                                           %sp0
+
+** When forking a new contination/fiber:
+*** Split the process space in half.
+*** Allocate new stack buffer in the top of the lower half.
+*** The lower part of the new half can be used for heap allocations.
+
+
+|<-        region1              ->|<-         region0              ->|
++--------------------------------------------------------------------+
+| code/data |            | stack1 |                         | stack0 |
++--------------------------------------------------------------------+
+             ^              ^      ^                          ^
+             mmap()?        %sp1   mmap()?                    %sp0
+
+** There are now two regions different regions to allocate data or stack buffers.
+** When a third stack buffer is needed, split a region:
+
+|<-        region1              ->|<- region01 ->|<- region00      ->|
++--------------------------------------------------------------------+
+| code/data |            | stack1 |     | stack2 |          | stack0 |
++--------------------------------------------------------------------+
+             ^              ^      ^                          ^
+             mmap()?        %sp1   mmap()?                    %sp0
+

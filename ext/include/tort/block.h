@@ -32,7 +32,7 @@ typedef struct _tort_block {
     { sizeof(tort_block),			\
       _tort_block_lookupf,			\
       _tort_object_applyf,			\
-      _tort->_mt_block				\
+      tort__mt(block)				\
     },						\
   };						\
   tort_v _blk_f (tort_v _blk_msg, tort_v _blk_obj, ##args)

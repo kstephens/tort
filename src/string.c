@@ -41,7 +41,7 @@ tort_v _tort_m_string__set (tort_thread_param tort_v rcvr, tort_v _i, tort_v _v)
 tort_v tort_string_new(const char *string, size_t size)
 {
   size_t alloc_size;
-  tort_v val = tort_allocate(0, 0, sizeof(tort_string), _tort->_mt_string);
+  tort_v val = tort_allocate(0, 0, sizeof(tort_string), tort__mt(string));
   alloc_size = sizeof(tort_ref(tort_string, val)->data[0]) * (size + 1);
   tort_ref(tort_string, val)->size = 
   tort_ref(tort_string, val)->alloc_size = 
