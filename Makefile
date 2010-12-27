@@ -219,6 +219,7 @@ disasm : t/tort_test.t
 clean :
 	rm -f $(TEST_T_FILES) $(GEN_LIBS) {.,ext}/src/*{.o,.lo,.la} {.,ext}/t/*.{t,out} include/tort/internal.h .stats/*
 	find . -name '*.dSYM' -type d -print0 | xargs -0 rm -rf
+	find src ext -name '.libs' -type d -print0 | xargs -0 rm -rf
 
 very-clean : clean
 	cd $(GC) && make clean

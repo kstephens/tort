@@ -36,14 +36,14 @@ typedef void* tort_v;
 
 typedef
 struct tort_header {
+  size_t alloc_size; /** allocated size, not including this header */
+  tort_lookup_decl((*lookupf));
+  tort_apply_decl((*applyf));
 #if TORT_ALLOC_DEBUG
   const char *alloc_file;
   int alloc_line;
   size_t alloc_id;
 #endif
-  size_t alloc_size; /** allocated size, not including this header */
-  tort_lookup_decl((*lookupf));
-  tort_apply_decl((*applyf));
   tort_v mtable; /** The object's method table. */
 } tort_header;
 
@@ -145,9 +145,6 @@ const char *tort_symbol_data(tort_v sym)
 { 
   return tort_string_data(tort_ref(tort_symbol, sym)->name);
 }
-#if 0
-#define tort_symbol_data(X) tort_string_data(tort_ref(tort_symbol, X)->name)
-#endif
 
 typedef
 struct tort_method {
@@ -271,12 +268,17 @@ struct tort_runtime {
   tort_v _initialized;
 } tort_runtime;
 
+typedef struct _tort_runtime_data {
+  struct tort_header _hdr;
+  struct tort_runtime _runtime;
+} _tort_runtime_data;
+
 extern tort_runtime *_tort;
 #if TORT_MULTIPLICITY
 #define tort_(X) _tort->X
 #else
-extern tort_runtime __tort;
-#define tort_(X) __tort.X
+extern _tort_runtime_data __tort;
+#define tort_(X) __tort._runtime.X
 #endif
 
 #define tort_stdin  tort_(_io_stdin)

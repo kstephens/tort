@@ -7,8 +7,8 @@
 #if TORT_MULTIPLICITY
 tort_runtime *_tort;
 #else
-tort_runtime __tort;
-tort_runtime *_tort = &__tort;
+_tort_runtime_data __tort = { { sizeof(tort_runtime), _tort_object_lookupf, _tort_object_applyf, 0 } };
+tort_runtime *_tort = &__tort._runtime;
 #endif
 
 tort_v tort_runtime_create_ (int *argcp, char ***argvp, char ***envp)
@@ -17,8 +17,12 @@ tort_v tort_runtime_create_ (int *argcp, char ***argvp, char ***envp)
 
   /* Create runtime object. */
 #if TORT_MULTIPLICITY
-  _tort = tort_ref(tort_runtime, tort_allocate(0, 0, sizeof(tort_runtime), 0));
+  _tort = 
+#else
+    (void)
 #endif
+    tort_ref(tort_runtime, tort_allocate(0, 0, sizeof(tort_runtime), 0));
+
   tort_runtime_initialize_error();
 
   /* Setup environment from main. */
