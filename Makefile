@@ -129,7 +129,7 @@ gc :
 else
 gc : $(GC)/.libs/libgc.a
 
-$(GC)/.libs/libgc.a : $(GC).tar.gz
+$(GC)/.libs/libgc.a : archive/$(GC).tar.gz
 	if [ ! -d $(GC) ]; then tar -zxvf $^; fi
 	cd $(GC) && if [ ! -f Makefile ]; then ./configure --enable-shared --prefix=$(PREFIX); fi
 	cd $(GC) && make && make install
