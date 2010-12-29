@@ -6,7 +6,7 @@ set -e
 if ( ! /^#/ && /\btort__?mt[(]([a-z0-9_]+?)[)]/ ) { 
   print "tort_d_mt($1)\n";
 }
-' ${LIB_CFILES} ${EXTLIB_CFILES} /dev/null |
+' src/*.c /dev/null |
     sort -u # | tee /dev/tty
     cat "$1.end"
 ) > "$1"

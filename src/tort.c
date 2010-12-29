@@ -39,7 +39,13 @@ tort_v _tort_allocate(tort_thread_param tort_v mtable, size_t size
   return val;
 }
 
-tort_v _tort_m_mtable___allocate (tort_thread_param tort_v mtable, size_t size)
+
+tort_v _tort_m_mtable__allocate (tort_tp tort_mtable *mtable)
+{
+  return _tort_m_mtable___allocate(tort_ta mtable, mtable->instance_size);
+}
+
+tort_v _tort_m_mtable___allocate (tort_thread_param tort_mtable *mtable, size_t size)
 {
   tort_v val;
   void *ptr;
@@ -47,6 +53,11 @@ tort_v _tort_m_mtable___allocate (tort_thread_param tort_v mtable, size_t size)
 
   assert(size);
   assert(alloc_size > size);
+
+  /* HACK: save the instance size in the mtable. */
+  if ( mtable && ! mtable->instance_size ) {
+    mtable->instance_size = size;
+  }
 
   ptr = tort_malloc(alloc_size);
   ptr += sizeof(tort_header);

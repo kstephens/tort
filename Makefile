@@ -91,10 +91,10 @@ include/tort/internal.h : include/tort/internal.h.* ${LIB_CFILES} ${GEN_C_FILES}
 include/tort/d_m.h  : include/tort/d_m.h.* ${LIB_CFILES} ${GEN_C_FILES} include/tort/integer.h include/tort/internal.h
 	$@.gen $@
 
-include/tort/d_mt.h : include/tort/d_mt.h.* $(LIB_CFILES) $(GEN_C_FILES) $(LIBEXT_CFILES) include/tort/d_m.h
+include/tort/d_mt.h : include/tort/d_mt.h.* $(LIB_CFILES) $(GEN_C_FILES) include/tort/d_m.h
 	$@.gen $@
 
-include/tort/d_s.h : include/tort/d_s.h.* $(LIB_CFILES) $(GEN_C_FILES) $(LIBEXT_CFILES) include/tort/d_m.h
+include/tort/d_s.h : include/tort/d_s.h.* $(LIB_CFILES) $(GEN_C_FILES) include/tort/d_m.h
 	$@.gen $@
 
 ######################################################################
@@ -158,7 +158,7 @@ TEST_LIBS = $(LIB_TORTEXT) $(LIB_TORT)
 %.t : %.c 
 	$(LIBTOOL) --mode=link $(CC) $(CFLAGS) $(LDFLAGS) $(@:.t=.c) $(TEST_LIBS) $(LIBS) -o $@
 
-tests : $(TEST_T_FILES) 
+tests : all $(TEST_T_FILES) 
 
 $(TEST_T_FILES) : $(TEST_LIBS)
 
@@ -173,7 +173,9 @@ test : tests
 	@echo "Testing:"
 	@set -e ;\
 	errors=0 ;\
+	tests=0 ;\
 	for f in $(TEST_FILES); do \
+	  tests=`expr $$tests + 1` ;\
 	  in=/dev/null ;\
 	  if [ -f $$f.in ] ; then in=$$f.in ; fi ;\
 	  echo "========= test $$f.t < $$in: " ;\
@@ -184,10 +186,11 @@ test : tests
 	    echo "========== To accept, run: " 1>&2 ;\
 	    echo "  rm -f $$f.exp; make accept-test TEST_FILES=$$f;" ;\
 	    echo "  # OR make accept-all-test;" ;\
-	    errors=1 ;\
+	    errors=`expr $$errors + 1` ;\
 	  fi ;\
 	  echo "ok" ;\
 	done ;\
+	echo "DONE: errors/tests $$errors/$$tests" ;\
 	exit $$errors
 
 valgrind : $(TEST_T_FILES)

@@ -35,9 +35,10 @@ typedef
 struct tort_message {
   tort_symbol *selector;
   tort_v receiver;
-  tort_v method;
   tort_v previous_message;
   tort_v fiber;
+  tort_v method;
+  tort_mtable *impl;
 } tort_message;
 
 #define tort_thread_param tort_message *_tort_message,
@@ -50,7 +51,7 @@ struct tort_message {
 
 typedef
 struct tort_header {
-  size_t alloc_size; /** allocated size, not including this header */
+  size_t alloc_size; /** allocated object size, not including this header */
   tort_lookup_decl((*lookupf));
   tort_apply_decl((*applyf));
 #if TORT_ALLOC_DEBUG
@@ -102,7 +103,7 @@ struct tort_vector_base { /* Same layout as tort_vector, tort_string. */
 tort_v tort_vector_base_new(tort_v mtable, const void *d, size_t s, size_t element_size);
 
 typedef
-struct tort_vector { 
+struct tort_vector { /* Same layout as tort_vector_base. */
   tort_v *data;
   size_t size;
   size_t alloc_size;
@@ -163,6 +164,7 @@ tort_v tort_string_new_cstr(const char *str);
 struct tort_mtable {
   tort_map _map;
   tort_mtable* delegate;
+  size_t instance_size;
 };
 
 struct tort_symbol {
@@ -208,7 +210,7 @@ struct tort_runtime {
   tort_v symbols;
   tort_v root;
 
-  tort_v message;
+  tort_v message; /* Current message: not thread/fiber-safe. */
 
   tort_v _in_error;
   tort_error_decl((*error));
@@ -274,7 +276,6 @@ extern _tort_runtime_data __tort;
 	tort__mt(message) },						\
       { (SEL),								\
 	_tort_send_RCVR(RCVR_AND_ARGS),					\
-	tort_nil,							\
 	_tort_message,							\
 	_tort_message ? _tort_message->fiber : _tort_fiber		\
       }									\
@@ -284,7 +285,7 @@ extern _tort_runtime_data __tort;
   })
 #define tort_send(SEL, RCVR_AND_ARGS...)_tort_send(SEL, RCVR_AND_ARGS)
 
-/* catch for top-level messages: DO NOT MODIFY! */
+/* catch for top-level messages: DO NOT MODIFY THESE VARS! */
 extern tort_message *_tort_message; 
 extern tort_v _tort_fiber;
 
