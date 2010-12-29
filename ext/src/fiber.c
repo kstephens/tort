@@ -58,10 +58,6 @@ tort_v tort_runtime_initialize_fiber()
 
   __tort_fiber_allocate = allocate;
 
-  tort_add_method(tort_mt(message), "fiber", _tort_m_message__fiber);
-  tort_add_method(tort_mt(object), "_fiber_new", _tort_m_object___fiber_new);
-  tort_add_method(_mt_fiber, "yield", _tort_m_fiber__yield);
-
   return _mt_fiber;
 }
 
