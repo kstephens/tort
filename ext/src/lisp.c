@@ -142,18 +142,15 @@ tort_v _tort_m_boolean__lisp_write(tort_thread_param tort_v rcvr, tort_v io)
 
 tort_v _tort_m_map__lisp_write(tort_thread_param tort_v rcvr, tort_v io)
 {
-  tort_map *map = tort_ref(tort_map, rcvr);
-  tort_map_entry **x = map->entry, *entry;
   size_t entry_i = 0;
-
   printf("(make <map> ");
-  while ( (entry = *(x ++)) ) {
+  tort_map_EACH(rcvr, entry) {
     if ( entry_i > 0 ) printf(" ");
     tort_send(tort_symbol_make("lisp_write"), entry->key, IO);
     printf(" ");
     tort_send(tort_symbol_make("lisp_write"), entry->value, IO);
     entry_i ++;
-  }
+  } tort_map_EACH_END();
   printf(")");
   return tort_nil;
 }

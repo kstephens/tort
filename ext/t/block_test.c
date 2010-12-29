@@ -23,9 +23,10 @@ int main(int argc, char **argv, char **environ)
     return tort_i(i ++);
   }
   tort_block_end();
+  // tort_debug_stop_at();
   v = tort_send(tort_s(map), v, b);
-  tort_printf(io, "v = %T\n", v);
-  
+  tort_printf(io, "\nv = ", v);
+  tort_inspect(io, v);
   
   i = 0;
   b = tort_block_(tort_v obj) {

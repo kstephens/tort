@@ -26,20 +26,20 @@ typedef struct _tort_block {
   tort_block _;
 } _tort_block;
 
-#define tort_block_(args...)			\
-  ({						\
-  _tort_block _blk = {				\
-    { sizeof(tort_block),			\
-      _tort_block_lookupf,			\
-      _tort_object_applyf,			\
-      tort__mt(block)				\
-    },						\
-  };						\
+#define tort_block_(args...)					\
+  ({								\
+  _tort_block _blk = {						\
+    { sizeof(tort_block),					\
+      _tort_block_lookupf,					\
+      _tort_object_applyf,					\
+      tort__mt(block)						\
+    },								\
+  };								\
   tort_v _blk_f (tort_v _blk_msg, tort_v _blk_obj, ##args)
 
-#define tort_block_end()			\
-  _blk._h.applyf = (void*) _blk_f;		\
-  tort_ref_box(&_blk._);			\
+#define tort_block_end()				\
+  _blk._h.applyf = (void*) _blk_f;			\
+  tort_send(tort__s(clone), tort_ref_box(&_blk._));	\
   })
 
 extern tort_apply_decl(_tort_block_lookupf);

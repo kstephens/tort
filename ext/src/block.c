@@ -4,7 +4,6 @@
 tort_apply_decl(_tort_block_lookupf)
 {
   if ( tort_ref(tort_message, _tort_message)->selector == tort__s(value) ) {
-    
     return tort_ref(tort_message, _tort_message)->method = 
       tort_ref(tort_message, _tort_message)->receiver;
   } else {
