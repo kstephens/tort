@@ -32,14 +32,14 @@ int main(int argc, char **argv, char **environ)
       if ( fiber_b ) {
 	tort_send(tort_s(yield), fiber_b);
       } else {
-	tort_send(tort_s(_fiber_new), tort_mt(fiber), block_b); 
+	tort_send(tort_s(new), tort_mt(fiber), block_b); 
       }
     }
     return 0;
   } tort_block_END(block_a);
 
   i = 20;
-  tort_send(tort_s(_fiber_new), tort_mt(fiber), block_a);
+  tort_send(tort_s(new), tort_mt(fiber), block_a);
 
   printf("\nDONE\n");
 

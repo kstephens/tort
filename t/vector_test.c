@@ -13,7 +13,7 @@ int main(int argc, char **argv, char **environ)
 
   io = tort_stdout;
 
-  v = tort_vector_new(0, 10);
+  v = tort_send(tort__s(_new), tort__mt(vector), 0, 10);
 
   tort_printf(io, "v => %T\n", v);
   tort_printf(io, "(size v) => %T\n", tort_send(tort__s(size), v));
