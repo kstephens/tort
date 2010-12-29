@@ -124,7 +124,7 @@ tort_v _tort_m_map__clone(tort_thread_param tort_map *rcvr)
 
 tort_v tort_map_create()
 {
-  tort_v val = tort_allocate(0, 0, sizeof(tort_map), tort__mt(map));
+  tort_v val = tort_allocate(tort__mt(map), sizeof(tort_map));
   return _tort_m_map__initialize(tort_thread_arg val);
 }
 

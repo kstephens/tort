@@ -5,7 +5,7 @@
 
 tort_v tort_mtable_create(tort_v delegate)
 {
-  tort_v val = tort_allocate(0, 0, sizeof(tort_mtable), tort__mt(mtable));
+  tort_v val = tort_allocate(tort__mt(mtable), sizeof(tort_mtable));
   _tort_m_map__initialize(0, val);
   if ( delegate == 0 ) {
     delegate = tort_nil;

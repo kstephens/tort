@@ -30,7 +30,7 @@ size_t _tort_io_open_count, _tort_io_close_count;
 
 tort_v _tort_m_io____create(tort_thread_param tort_v rcvr, FILE *fp)
 {
-  rcvr = _tort_allocate(tort_thread_arg rcvr, sizeof(tort_io), tort__mt(io));
+  rcvr = _tort_allocate(tort_thread_arg tort__mt(io), sizeof(tort_io));
   FP = fp;
   if ( FP ) {
     FP_TORT_OBJ(FP) = rcvr;
@@ -219,11 +219,11 @@ _tort_printf_extension_arginfo (
 
 tort_v tort_runtime_initialize_io()
 {
-  tort_stdin  = _tort_m_io____create(0, 0, stdin);
-  tort_stdout = _tort_m_io____create(0, 0, stdout);
-  tort_stderr = _tort_m_io____create(0, 0, stderr);
+  tort_stdin  = _tort_m_io____create(tort_thread_arg 0, stdin);
+  tort_stdout = _tort_m_io____create(tort_thread_arg 0, stdout);
+  tort_stderr = _tort_m_io____create(tort_thread_arg 0, stderr);
 
-  tort_eos    = tort_allocate(0, 0, sizeof(tort_object), tort__mt(eos));
+  tort_eos    = tort_allocate(tort__mt(eos), sizeof(tort_object));
 
 #ifdef __LINUX__
   /* Register the print functions for tort_v.  */

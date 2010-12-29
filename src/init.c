@@ -21,7 +21,7 @@ tort_v tort_runtime_create_ (int *argcp, char ***argvp, char ***envp)
 #else
     (void)
 #endif
-    tort_ref(tort_runtime, tort_allocate(0, 0, sizeof(tort_runtime), 0));
+    tort_ref(tort_runtime, tort_allocate(0, sizeof(tort_runtime)));
 
   tort_runtime_initialize_error();
 
@@ -33,14 +33,16 @@ tort_v tort_runtime_create_ (int *argcp, char ***argvp, char ***envp)
   /* Allocate and initialize mtables */
   tort_runtime_initialize_mtable();
 
+  tort_h_mtable(_tort) = tort__mt(runtime);
+
 #if ! TORT_NIL_IS_ZERO
   /* Create the nil object. */
-  tort_nil = tort_allocate(0, 0, sizeof(tort_object), tort__mt(nil));
+  tort_nil = tort_allocate(tort__mt(nil), sizeof(tort_object));
 #endif
 
   /* Create the boolean objects. */
-  tort_true = tort_allocate(0, 0, sizeof(tort_object), tort__mt(boolean));
-  tort_false = tort_allocate(0, 0, sizeof(tort_object), tort__mt(boolean));
+  tort_true = tort_allocate(tort__mt(boolean), sizeof(tort_object));
+  tort_false = tort_allocate(tort__mt(boolean), sizeof(tort_object));
 
   /* Backpatch object delegate as nil. */
   tort_ref(tort_mtable, tort__mt(object))->delegate = tort_nil;

@@ -215,68 +215,11 @@ struct tort_runtime {
   char **_argv;
   char **_env;
 
-  tort_v _mt_object;
-  tort_v _mt_vector_base;
-  tort_v _mt_vector;
-  tort_v _mt_string;
-  tort_v _mt_map;
-  tort_v _mt_mtable;
-  tort_v _mt_symbol;
-  tort_v _mt_method;
-  tort_v _mt_message;
-  tort_v _mt_nil;
-  tort_v _mt_tagged;
-  tort_v _mt_boolean;
-  tort_v _mt_io;
-  tort_v _mt_eos;
-  tort_v _mt_block;
+#define tort_d_mt(N) tort_v _mt_##N;
+#include "tort/d_mt.h"
 
-  tort_v _s_new;
-  tort_v _s_clone;
-  tort_v _s_lookup;
-  tort_v _s_apply;
-  tort_v _s_get;
-  tort_v _s_get_key;
-  tort_v _s_set;
-  tort_v _s_value;
-  tort_v _s_true;
-  tort_v _s_false;
-  tort_v _s_size;
-  tort_v _s_alloc_size;
-  tort_v _s_element_size;
-  tort_v _s__data;
-  tort_v _s_append;
-  tort_v _s_map;
-  tort_v _s_each;
-
-  /* mtable */
-  tort_v _s_delegate;
-  tort_v _s_set_delegate;
-  tort_v _s__delegate_changed;
-  tort_v _s__method_changed;
-
-  /* io */
-  tort_v _s_create;
-  tort_v _s___create;
-  tort_v _s_open;
-  tort_v _s_popen;
-  tort_v _s_close;
-  tort_v _s_read;
-  tort_v _s___write;
-  tort_v _s_write;
-  tort_v _s_printf;
-  tort_v _s_eof;
-  tort_v _s_error;
-  tort_v _s__inspect;
-
-  tort_v _s_backtrace;
-  tort_v _s_backtrace_size;
-
-  tort_v _s_format;
-
-  /* gc */
-  tort_v _s___finalize;
-  tort_v _s___register_finalizer;
+#define tort_d_s(N) tort_v _s_##N;
+#include "tort/d_s.h"
 
   /* io */
   tort_v _io_stdin;
@@ -350,11 +293,11 @@ tort_lookup_decl(_tort_object_lookupf);
 tort_apply_decl(_tort_object_applyf);
 
 #if TORT_ALLOC_DEBUG
-tort_v _tort_allocate (const char *alloc_file, int alloc_line, tort_thread_param tort_v rcvr, size_t size, tort_v meth_table);
-#define tort_allocate(_1, _2, _3, _4) _tort_allocate(__FILE__, __LINE__, _1, _2, _3, _4)
+tort_v _tort_allocate (tort_thread_param tort_v meth_table, size_t size, const char *alloc_file, int alloc_line, );
+#define tort_allocate(_1, _2) _tort_allocate(tort_thread_arg _1, _2, __FILE__, __LINE__)
 #else
-tort_v _tort_allocate (tort_thread_param tort_v rcvr, size_t size, tort_v meth_table);
-#define tort_allocate(_1, _2, _3, _4) _tort_allocate(_1, _2, _3, _4)
+tort_v _tort_allocate (tort_thread_param tort_v meth_table, size_t size);
+#define tort_allocate(_1, _2) _tort_allocate(tort_thread_arg _1, _2)
 #endif
 
 tort_v tort_symbol_make(const char *string);

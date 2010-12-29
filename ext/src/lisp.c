@@ -10,11 +10,10 @@ typedef struct tort_pair {
 
 
 /********************************************************************/
-static tort_v _mt_pair;
 
 tort_v tort_cons(tort_v a, tort_v d)
 {
-  tort_v val = tort_allocate(0, 0, sizeof(tort_pair), _mt_pair);
+  tort_v val = tort_allocate(tort_mt(pair), sizeof(tort_pair));
   tort_ref(tort_pair, val)->car = a;
   tort_ref(tort_pair, val)->cdr = d;
   return val;
@@ -213,7 +212,7 @@ tort_v _tort_string_to_number(tort_v s, int radix) /**/
 
 tort_v tort_runtime_initialize_lisp()
 {
-  _mt_pair = tort_mtable_make("pair", 0);
+  tort_v _mt_pair = tort_mtable_make("pair", 0);
   tort_mtable_make("list", 0);
 
   /* Reused methods. */

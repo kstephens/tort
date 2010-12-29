@@ -1,0 +1,8 @@
+#!/bin/sh
+set -e
+(
+    cat "$1.begin"
+    perl -ne 'print "extern ", $_, ";\n" if ( ! /^\s*static\b/ && /^\s*[a-z0-9]+.*?\s+_tort_[a-z0-9_]+\s*[(].*[)]\s	*$/ ); ' ${LIB_CFILES} /dev/null
+    cat "$1.end"
+) > "$1"
+

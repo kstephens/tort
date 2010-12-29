@@ -4,7 +4,7 @@
 
 tort_v tort_vector_base_new(tort_v mtable, const void *data, size_t size, size_t element_size)
 {
-  tort_vector_base *v = tort_allocate(0, 0, sizeof(tort_vector_base), mtable);
+  tort_vector_base *v = tort_allocate(mtable, sizeof(tort_vector_base));
   _tort_m_vector_base___initialize(tort_thread_arg v, size, element_size);
   if ( data ) {
     memcpy(v->data, data, v->element_size * v->size);

@@ -26,8 +26,9 @@ endif
 
 GEN_LIBS = 
 
-GEN_H_FILES = include/tort/internal.h # include/tort/methods.h
-GEN_C_FILES = src/symbol.c src/method.c
+GEN_H_GEN_FILES = $(shell ls include/tort/*.gen | sort -u)
+GEN_H_FILES = $(GEN_H_GEN_FILES:%.gen=%)
+GEN_C_FILES = #
 
 LIB_CFILES := $(shell ls src/*.c $(GEN_C_FILES) | sort -u) 
 LIB_HFILES := $(shell ls include/tort/*.h $(GEN_H_FILES) | sort -u) 
@@ -72,15 +73,19 @@ libs : gc $(GEN_LIBS)
 # include:
 #
 
-
 includes : $(GEN_H_FILES)
 
 include/tort/internal.h : include/tort/internal.h.* $(LIB_CFILES)
-	( set -e; \
-	cat $@.begin; \
-	cat $(LIB_CFILES) | perl -ne 'print "extern ", $$_, ";\n" if ( ! /^\s*static\b/ && /^\s*[a-z0-9]+.*?\s+_tort_[a-z0-9_]+\s*[(].*[)]\s*$$/ ); ' ; \
-	cat $@.end; \
-	) > $@
+	$@.gen $@
+
+include/tort/d_m.h  : include/tort/d_m.h.* $(LIB_CFILES)
+	$@.gen $@
+
+include/tort/d_mt.h : include/tort/d_mt.h.* $(LIB_CFILES) $(LIBEXT_CFILES)
+	$@.gen $@
+
+include/tort/d_s.h : include/tort/d_s.h.* $(LIB_CFILES) $(LIBEXT_CFILES) include/tort/d_m.h
+	$@.gen $@
 
 ######################################################################
 # src:
@@ -88,13 +93,7 @@ include/tort/internal.h : include/tort/internal.h.* $(LIB_CFILES)
 
 srcs : $(GEN_C_FILES)
 
-src/symbol.c : src/symbol.c.* include/tort/tort.h
-	$@.gen $@
-
-src/method.c : src/method.c.* ${LIB_CFILES}
-	$@.gen $@
-
-$(GEN_C_FILES) $(GEN_H_FILES) : Makefile
+# $(GEN_C_FILES) $(GEN_H_FILES) : Makefile
 
 ######################################################################
 # object:
@@ -217,7 +216,7 @@ disasm : t/tort_test.t
 #
 
 clean :
-	rm -f $(TEST_T_FILES) $(GEN_LIBS) {.,ext}/src/*{.o,.lo,.la} {.,ext}/t/*.{t,out} include/tort/internal.h .stats/*
+	rm -f $(TEST_T_FILES) $(GEN_LIBS) {.,ext}/src/*{.o,.lo,.la} {.,ext}/t/*.{t,out} $(GEN_C_FILES) $(GEN_H_FILES) .stats/*
 	find . -name '*.dSYM' -type d -print0 | xargs -0 rm -rf
 	find src ext -name '.libs' -type d -print0 | xargs -0 rm -rf
 
