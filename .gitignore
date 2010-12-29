@@ -9,4 +9,5 @@ gc-*/
 .stats
 *.dSYM/
 local/
+src/integer.c
 
