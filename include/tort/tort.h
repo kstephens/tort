@@ -359,9 +359,14 @@ tort_v _tort_allocate (tort_thread_param tort_v rcvr, size_t size, tort_v meth_t
 
 tort_v tort_symbol_make(const char *string);
 
+#if TORT_MULTIPLICITY
 #define tort_s(X) tort_symbol_make(#X)
+#define tort_mt(X) tort_mtable_get(#X)
+#else
+#define tort_s(X)  ({ static tort_v _s_##X;  _s_##X ?  _s_##X :  (_s_##X  = tort_symbol_make(#X)); })
+#define tort_mt(X) ({ static tort_v _mt_##X; _mt_##X ? _mt_##X : (_mt_##X = tort_mtable_get(#X)); })
+#endif
 #define tort__s(X) tort_(_s_##X)
-
 #define tort__mt(X) tort_(_mt_##X)
 
 tort_v tort_object_make ();

@@ -45,7 +45,7 @@ tort_v _tort_m_list__size(tort_thread_param tort_v rcvr) /**/
 
   while ( rcvr != tort_nil )  {
     ++ i;
-    if ( tort_h_mtable(rcvr) == tort_mtable_get("pair") ) {
+    if ( tort_h_mtable(rcvr) == tort_mt(pair) ) {
       rcvr = tort_ref(tort_pair, rcvr)->cdr;
     } else {
       break;
@@ -60,15 +60,15 @@ tort_v _tort_m_list__lisp_write(tort_thread_param tort_v rcvr, tort_v io) /**/
 {
   tort_printf(io, "(");
   while ( rcvr != tort_nil ) {
-    if ( tort_h_mtable(rcvr) == tort_mtable_get("pair") ) {
-      tort_send(tort_symbol_make("lisp_write"), tort_ref(tort_pair, rcvr)->car, io);
+    if ( tort_h_mtable(rcvr) == tort_mt(pair) ) {
+      tort_send(tort_s(lisp_write), tort_ref(tort_pair, rcvr)->car, io);
       rcvr = tort_ref(tort_pair, rcvr)->cdr;
       if ( rcvr == tort_nil ) {
 	break;
       }
     } else {
       tort_printf(io, ". ");
-      tort_send(tort_symbol_make("lisp_write"), rcvr, io);
+      tort_send(tort_s(lisp_write), rcvr, io);
       break;
     }
     tort_printf(io, " "); 
@@ -84,7 +84,7 @@ tort_v _tort_m_list__list_TO_vector(tort_thread_param tort_v rcvr, tort_v io) /*
   tort_v vec = tort_vector_new(0, tort_I(size));
   size_t i = 0;
   while ( rcvr != tort_nil ) {
-    if ( tort_h_mtable(rcvr) == tort_mtable_get("pair") ) {
+    if ( tort_h_mtable(rcvr) == tort_mt(pair) ) {
       tort_vector_data(vec)[i ++] = tort_ref(tort_pair, rcvr)->car;
       rcvr = tort_ref(tort_pair, rcvr)->cdr;
     } else {
@@ -115,7 +115,7 @@ tort_v _tort_m_vector__lisp_write(tort_thread_param tort_v rcvr, tort_v io)
   printf("#(");
   tort_vector_loop(rcvr, obj) {
     if ( obj_i > 0 ) printf(" ");
-    tort_send(tort_symbol_make("lisp_write"), obj, IO);
+    tort_send(tort_s(lisp_write), obj, IO);
   } tort_vector_loop_end(rcvr);
   printf(")");
   return tort_nil;
@@ -146,9 +146,9 @@ tort_v _tort_m_map__lisp_write(tort_thread_param tort_v rcvr, tort_v io)
   printf("(make <map> ");
   tort_map_EACH(rcvr, entry) {
     if ( entry_i > 0 ) printf(" ");
-    tort_send(tort_symbol_make("lisp_write"), entry->key, IO);
+    tort_send(tort_s(lisp_write), entry->key, IO);
     printf(" ");
-    tort_send(tort_symbol_make("lisp_write"), entry->value, IO);
+    tort_send(tort_s(lisp_write), entry->value, IO);
     entry_i ++;
   } tort_map_EACH_END();
   printf(")");
@@ -184,11 +184,11 @@ tort_v _tort_m_io__lisp_read (tort_thread_param tort_v stream)
 #define UNGETC(s, c) ungetc(c, FP(s))
 #define EOS tort_eos
 #define CONS(x,y) tort_cons(x, y)
-#define SET_CDR(CONS,V) tort_send(tort_symbol_make("set-cdr!"), CONS, V)
+#define SET_CDR(CONS,V) tort_send(tort_s(set_cdrE), CONS, V)
 #define MAKE_CHAR(I) tort_i(I)
 #define STRING(b, l) tort_string_new(b, l)
-#define LIST_2_VECTOR(X) tort_send(tort_symbol_make("list->vector"), X)
-#define SYMBOL_DOT tort_symbol_make(".")
+#define LIST_2_VECTOR(X) tort_send(tort_s(list__vector), X)
+#define SYMBOL_DOT tort_s(DOT)
 #define SYMBOL(NAME) tort_s(NAME)
 #define STRING_2_NUMBER(s, radix) _tort_string_to_number(s, radix)
 #define STRING_2_SYMBOL(s) tort_symbol_make(tort_string_data(s))
