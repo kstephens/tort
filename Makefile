@@ -26,7 +26,7 @@ endif
 
 GEN_LIBS = 
 
-GEN_H_FILES = include/tort/internal.h
+GEN_H_FILES = include/tort/internal.h # include/tort/methods.h
 GEN_C_FILES = src/symbol.c src/method.c
 
 LIB_CFILES := $(shell ls src/*.c $(GEN_C_FILES) | sort -u) 
@@ -78,7 +78,7 @@ includes : $(GEN_H_FILES)
 include/tort/internal.h : include/tort/internal.h.* $(LIB_CFILES)
 	( set -e; \
 	cat $@.begin; \
-	cat $(LIB_CFILES) | perl -ne 'print "extern ", $$_, ";\n" if ( /^tort_v\s+_tort_[a-z0-9_]+\s*[(].*[)]\s*$$/ ); ' ; \
+	cat $(LIB_CFILES) | perl -ne 'print "extern ", $$_, ";\n" if ( ! /^\s*static\b/ && /^\s*[a-z0-9]+.*?\s+_tort_[a-z0-9_]+\s*[(].*[)]\s*$$/ ); ' ; \
 	cat $@.end; \
 	) > $@
 

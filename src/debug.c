@@ -3,6 +3,11 @@
 
 /********************************************************************/
 
+void tort_debug_stop_at()
+{
+  /* NOTHING */
+}
+
 
 #define IO tort_stderr
 #define printf(fmt, args...) tort_send(tort__s(printf), IO, fmt, ##args)
@@ -76,11 +81,11 @@ const char *tort_object_name_(tort_v val)
 
   buf[S] = '\0';
 
-  if ( val == 0 ) {
-    snprintf(str = buf, S, "#<NULL>");
-  }
-  else if ( val == tort_nil ) {
+  if ( val == tort_nil ) {
     snprintf(str = buf, S, "nil");
+  }
+  else if ( val == 0 ) {
+    snprintf(str = buf, S, "#<NULL>");
   }
   else if ( val == tort_true ) {
     snprintf(str = buf, S, "true");
@@ -108,6 +113,8 @@ const char *tort_object_name_(tort_v val)
     snprintf(str = buf, S, "@root");
   }
 #define tort_d_mt(N) else if ( val == tort__mt(N) ) { snprintf(str = buf, S, "@mtable %s", #N); }
+#include "tort/d_mt.h"
+#define tort_d_mt(N) else if ( tort_h_mtable(val) == tort__mt(N) ) { snprintf(str = buf, S, "@%s @%p", #N, (void*) val); }
 #include "tort/d_mt.h"
   else {
     return 0;

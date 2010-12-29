@@ -70,9 +70,9 @@ tort_v tort_runtime_create_ (int *argcp, char ***argvp, char ***envp)
 
   /* Basic object methods. */
 
-  /* String methods shared with vector.. */
-  tort_add_method(tort__mt(string), "size", _tort_m_vector__size);
-  tort_add_method(tort__mt(string), "alloc_size", _tort_m_vector__alloc_size);
+  /* Methods shared with vector_base. */
+  tort_add_method(tort__mt(vector_base), "size", _tort_m_vector_base__size);
+  tort_add_method(tort__mt(vector_base), "alloc_size", _tort_m_vector_base__alloc_size);
 
   /* Initialize system method table. */
   tort_h(_tort)->mtable = tort_mtable_create(tort__mt(object));
@@ -96,7 +96,7 @@ tort_v tort_runtime_create_ (int *argcp, char ***argvp, char ***envp)
 
   tort_send(tort__s(set), tort_(root), tort_symbol_make("mtable"), tort_(m_mtable));
 #define tort_d_mt(X) \
-  tort_send(tort__s(set), tort_(m_mtable), tort_symbol_make(#X), tort__mt(X));
+  if ( tort__mt(X) ) tort_send(tort__s(set), tort_(m_mtable), tort_symbol_make(#X), tort__mt(X));
 #include "tort/d_mt.h"
 
   tort_(_initialized) = tort_true;

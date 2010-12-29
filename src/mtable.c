@@ -3,6 +3,18 @@
 
 /********************************************************************/
 
+tort_v tort_mtable_create(tort_v delegate)
+{
+  tort_v val = tort_allocate(0, 0, sizeof(tort_mtable), tort__mt(mtable));
+  _tort_m_map__initialize(0, val);
+  if ( delegate == 0 ) {
+    delegate = tort_nil;
+  }
+  tort_ref(tort_mtable, val)->delegate = delegate;
+  return val;
+}
+
+
 tort_v tort_mtable_get(const char *name)
 {
   tort_v sym = tort_symbol_make(name);
@@ -38,6 +50,10 @@ tort_v tort_runtime_initialize_mtable()
   /* Backpatch mtable to map delegation. */
   tort_ref(tort_mtable, tort__mt(mtable))->delegate = tort__mt(map);
 
+  /* Backpatch map to vector_base delegation. */
+  tort__mt(vector_base) = tort_mtable_create(tort__mt(object));
+  tort_ref(tort_mtable, tort__mt(map))->delegate = tort__mt(vector_base);
+
   /* Initialize nil object header. */
   tort__mt(nil)         = tort_mtable_create(tort__mt(object));
   tort_(nil_header).alloc_size = 0;
@@ -53,8 +69,8 @@ tort_v tort_runtime_initialize_mtable()
   tort_(tagged_header).mtable  = tort__mt(tagged);
 
   /* Other core. */
-  tort__mt(string)      = tort_mtable_create(tort__mt(object));
-  tort__mt(vector)      = tort_mtable_create(tort__mt(object));
+  tort__mt(string)      = tort_mtable_create(tort__mt(vector_base));
+  tort__mt(vector)      = tort_mtable_create(tort__mt(vector_base));
   tort__mt(symbol)      = tort_mtable_create(tort__mt(object));
   tort__mt(method)      = tort_mtable_create(tort__mt(object));
   tort__mt(message)     = tort_mtable_create(tort__mt(object));

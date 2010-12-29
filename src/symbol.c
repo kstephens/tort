@@ -3,6 +3,19 @@
 
 /********************************************************************/
 
+const char *_tort_symbol_data(tort_v sym) 
+{ 
+  return tort_string_data(tort_ref(tort_symbol, sym)->name);
+}
+
+tort_symbol* _tort_m_symbol___create(tort_thread_param tort_v name)
+{
+  tort_symbol *value = tort_allocate(0, 0, sizeof(tort_symbol), tort__mt(symbol));
+  value->name = name;
+  value->version = tort_i(0);
+  return value;
+}
+
 tort_v tort_symbol_make(const char *string)
 {
   if ( string ) {
@@ -11,21 +24,14 @@ tort_v tort_symbol_make(const char *string)
       // fprintf(stderr, "\n old symbol = %s %p\n", tort_symbol_data(e->value), (void *) e->value);
       return e->value;
     } else {
-      tort_v key, value;
-      key = tort_string_new_cstr(string);
-      value = tort_allocate(0, 0, sizeof(tort_symbol), tort__mt(symbol));
-      tort_ref(tort_symbol, value)->name = key;
-      tort_ref(tort_symbol, value)->version = tort_i(0);
-      _tort_m_map__add(tort_thread_arg tort_(symbols), key, value);
+      tort_string *name = tort_string_new_cstr(string);
+      tort_symbol *sym = _tort_m_symbol___create(tort_thread_arg name);
+      _tort_m_map__add(tort_thread_arg tort_(symbols), name, sym);
       // fprintf(stderr, "\n new symbol = %s %p\n", tort_symbol_data(value), (void *) value);
-      return value;
-    } 
+      return sym;
+    }
   } else {
-    tort_v value;
-    value = tort_allocate(0, 0, sizeof(tort_symbol), tort__mt(symbol));
-    tort_ref(tort_symbol, value)->name = tort_nil;
-    tort_ref(tort_symbol, value)->version = tort_i(0);
-    return value;
+    return _tort_m_symbol___create(tort_thread_arg tort_nil);
   }
 }
 
@@ -37,10 +43,12 @@ tort_v tort_runtime_initialize_symbol()
   tort__s(__finalize) = tort_symbol_make("__finalize");
   tort__s(__register_finalizer) = tort_symbol_make("__register_finalizer");
   tort__s(__write) = tort_symbol_make("__write");
+  tort__s(_data) = tort_symbol_make("_data");
   tort__s(_delegate_changed) = tort_symbol_make("_delegate_changed");
   tort__s(_inspect) = tort_symbol_make("_inspect");
   tort__s(_method_changed) = tort_symbol_make("_method_changed");
   tort__s(alloc_size) = tort_symbol_make("alloc_size");
+  tort__s(append) = tort_symbol_make("append");
   tort__s(apply) = tort_symbol_make("apply");
   tort__s(backtrace) = tort_symbol_make("backtrace");
   tort__s(backtrace_size) = tort_symbol_make("backtrace_size");
@@ -49,6 +57,7 @@ tort_v tort_runtime_initialize_symbol()
   tort__s(create) = tort_symbol_make("create");
   tort__s(delegate) = tort_symbol_make("delegate");
   tort__s(each) = tort_symbol_make("each");
+  tort__s(element_size) = tort_symbol_make("element_size");
   tort__s(eof) = tort_symbol_make("eof");
   tort__s(error) = tort_symbol_make("error");
   tort__s(false) = tort_symbol_make("false");

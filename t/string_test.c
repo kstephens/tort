@@ -7,7 +7,7 @@
 int main(int argc, char **argv, char **environ)
 {
   tort_v io;
-  tort_v v, c;
+  tort_v v, c, a, b;
 
   tort_runtime_create();
 
@@ -30,6 +30,18 @@ int main(int argc, char **argv, char **environ)
 
   printf("\n  (set v 2 +1) => ");
   tort_inspect(io, tort_send(tort__s(set), v, tort_i(1), tort_i(tort_I(c) + 1)));
+
+  printf("\n  (a = \"abc\") => ");
+  tort_inspect(io, a = tort_string_new_cstr("abc"));
+  
+  printf("\n  (b = \"123\") => ");
+  tort_inspect(io, b = tort_string_new_cstr("123"));
+  
+  printf("\n  (append a b) => ");
+  tort_inspect(io, v = tort_send(tort__s(append), a, b));
+
+  printf("\n  (clone v) => ");
+  tort_inspect(io, tort_send(tort__s(clone), v));
 
   printf("\nDONE\n");
 

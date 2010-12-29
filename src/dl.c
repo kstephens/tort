@@ -15,8 +15,8 @@ tort_v _tort_m_string___dlopen(tort_thread_param tort_v rcvr)
   st = tort_map_create();
   _tort_m_map___load_symtab(tort_thread_arg st, file, 0);
 
-  base_sym = tort_symbol_data(tort_ref(tort_map, st)->entry[0]->key);
-  base_ptr = (void*) tort_I(tort_ref(tort_map, st)->entry[0]->value);
+  base_sym = tort_symbol_data(tort_map_data(st)[0]->key);
+  base_ptr = (void*) tort_I(tort_map_data(st)[0]->value);
 #if 0
   fprintf(stderr, "base_sym = '%s'\n", base_sym);
   fprintf(stderr, "base_ptr = %p\n", base_ptr);
@@ -62,7 +62,7 @@ tort_v _tort_m_string___dlopen(tort_thread_param tort_v rcvr)
 tort_v tort_m_map___run_initializers(tort_thread_param tort_v map)
 {
   static const char prefix[] = "_tort_runtime_initialize_";
-  tort_map_EACH(map, e); {
+  tort_map_EACH(map, e) {
     if ( tort_h_mtable(e->key) != tort__mt(symbol) ) continue;
     const char *name = tort_symbol_data(e->key);
     // fprintf(stderr, "e = @%p \"%s\"\n", e, name);
@@ -82,7 +82,7 @@ tort_v tort_m_map___run_initializers(tort_thread_param tort_v map)
 tort_v tort_m_map___load_methods(tort_thread_param tort_v map)
 {
   static const char prefix[] = "__tort_m_";
-  tort_map_EACH(map, e); {
+  tort_map_EACH(map, e) {
     if ( tort_h_mtable(e->key) != tort__mt(symbol) ) continue;
     const char *name = tort_symbol_data(e->key);
     // fprintf(stderr, "e = @%p \"%s\"\n", e, name);

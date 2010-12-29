@@ -108,8 +108,7 @@ static struct {
     lookup_n;
 } mcache_stats;
 
-static
-void _tort_mcache_stats()
+static void _tort_mcache_stats()
 {
   fprintf(stderr, "tort: mache: %lu hit / %lu lookup = %.8g\n",
 	  (unsigned long) mcache_stats.hit_n,

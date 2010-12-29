@@ -73,54 +73,31 @@ struct tort_object {
 } tort_object;
 
 typedef 
-struct tort_map_entry {
-  tort_v key;
-  tort_v value;
-} tort_map_entry;
-
-typedef
-struct tort_map {
-  tort_map_entry **entry;
-  size_t entry_n;
-} tort_map;
-
-#define tort_map_EACH(m, me)					\
-  {								\
-  int me##i = 0;						\
-  while ( me##i < tort_ref(tort_map, m)->entry_n ) {		\
-    tort_map_entry *me = tort_ref(tort_map, m)->entry[me##i ++]
-#define tort_map_EACH_END() }}
-
-typedef
-struct tort_mtable {
-  tort_map _map;
-  tort_v delegate;
-} tort_mtable;
-
-typedef
-struct tort_string { /* Same layout as tort_vector. */
-  char *data;
+struct tort_vector_base { /* Same layout as tort_vector, tort_string. */
+  void *data;
   size_t size;
   size_t alloc_size;
-} tort_string;
+  size_t element_size;
+} tort_vector_base;
 
-#define tort_string_data(X) tort_ref(tort_string, X)->data
-#define tort_string_size(X) tort_ref(tort_string, X)->size
-#define tort_string_alloc_size(X) tort_ref(tort_string, X)->alloc_size
+#define tort_vector_base_data(X) tort_ref(tort_vector_base, X)->data
+#define tort_vector_base_size(X) tort_ref(tort_vector_base, X)->size
+#define tort_vector_base_alloc_size(X) tort_ref(tort_vector_base, X)->alloc_size
+#define tort_vector_base_element_size(X) tort_ref(tort_vector_base, X)->element_size
 
-tort_v tort_string_new(const char *d, size_t s);
-tort_v tort_string_new_cstr(const char *str);
+tort_v tort_vector_base_new(tort_v mtable, const void *d, size_t s, size_t element_size);
 
 typedef
-struct tort_vector { /* Same layout as tort_string. */
+struct tort_vector { 
   tort_v *data;
   size_t size;
   size_t alloc_size;
+  size_t element_size; /* sizeof(tort_v) */
 } tort_vector;
 
-#define tort_vector_data(X) tort_ref(tort_vector, X)->data
-#define tort_vector_size(X) tort_ref(tort_vector, X)->size
-#define tort_vector_alloc_size(X) tort_ref(tort_vector, X)->alloc_size
+#define tort_vector_data(X) ((tort_v*)tort_vector_base_data(X))
+#define tort_vector_size(X) tort_vector_base_size(X)
+#define tort_vector_alloc_size(X) tort_vector_base_alloc_size(X)
 
 #define tort_vector_loop(X, V) \
   do {									\
@@ -133,6 +110,47 @@ struct tort_vector { /* Same layout as tort_string. */
     } while ( 0 )
 
 tort_v tort_vector_new(const tort_v *d, size_t s);
+
+typedef 
+struct tort_map_entry {
+  tort_v key;
+  tort_v value;
+} tort_map_entry;
+
+typedef
+struct tort_map { /* Same layout as tort_vector_base. */
+  tort_vector_base _vector_base;
+} tort_map;
+
+#define tort_map_data(X) ((tort_map_entry**)tort_vector_base_data(X))
+#define tort_map_size(X) tort_vector_base_size(X)
+
+#define tort_map_EACH(m, me)					\
+  {								\
+  tort_map_entry **me##p = tort_map_data(m), *me;		\
+  while ( (me = *(me##p ++)) ) {
+#define tort_map_EACH_END() }}
+
+typedef
+struct tort_string { /* Same layout as tort_vector_base. */
+  char *data;
+  size_t size;
+  size_t alloc_size;
+  size_t element_size; /* sizeof(char) */
+} tort_string;
+
+#define tort_string_data(X) ((char*)tort_vector_base_data(X))
+#define tort_string_size(X) tort_vector_base_size(X)
+#define tort_string_alloc_size(X) tort_vector_base_alloc_size(X)
+
+tort_v tort_string_new(const char *d, size_t s);
+tort_v tort_string_new_cstr(const char *str);
+
+typedef
+struct tort_mtable {
+  tort_map _map;
+  tort_v delegate;
+} tort_mtable;
 
 typedef
 struct tort_symbol {
@@ -198,8 +216,9 @@ struct tort_runtime {
   char **_env;
 
   tort_v _mt_object;
-  tort_v _mt_string;
+  tort_v _mt_vector_base;
   tort_v _mt_vector;
+  tort_v _mt_string;
   tort_v _mt_map;
   tort_v _mt_mtable;
   tort_v _mt_symbol;
@@ -224,6 +243,9 @@ struct tort_runtime {
   tort_v _s_false;
   tort_v _s_size;
   tort_v _s_alloc_size;
+  tort_v _s_element_size;
+  tort_v _s__data;
+  tort_v _s_append;
   tort_v _s_map;
   tort_v _s_each;
 
@@ -320,7 +342,6 @@ extern tort_v _tort_fiber;   /* catch for top-level messages. */
 void *tort_malloc(size_t size);
 void *tort_realloc(void *ptr, size_t size);
 
-tort_map_entry *_tort_m_map__get_entry(tort_thread_param tort_v rcvr, tort_v key);
 tort_v tort_map_create();
 
 tort_v tort_mtable_create();
@@ -360,6 +381,7 @@ tort_v tort_fatal (const char *format, ...);
 tort_v tort_error (const char *format, ...);
 tort_v tort_error_message(const char *format, ...);
 
+void tort_debug_stop_at();
 const char *tort_object_name_(tort_v val);
 const char *tort_object_name(tort_v val);
 

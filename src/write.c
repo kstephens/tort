@@ -102,8 +102,7 @@ tort_v _tort_m_message___inspect(tort_thread_param tort_v rcvr, tort_v io)
 
 tort_v _tort_m_map___inspect(tort_thread_param tort_v rcvr, tort_v io)
 {
-  tort_map *map = tort_ref(tort_map, rcvr);
-  tort_map_entry **x = map->entry, *entry;
+  tort_map_entry **x = tort_map_data(rcvr), *entry;
   size_t entry_i = 0;
 
   const char *str = tort_object_name_(rcvr);

@@ -41,8 +41,7 @@ void *tort_realloc(void *ptr, size_t size)
 
 
 
-static
-void _tort_finalization_proc (void * obj, void * client_data)
+static void _tort_finalization_proc (void * obj, void * client_data)
 {
   if ( ! _tort_gc_mode ) return;
   _tort_gc_finalize_count ++;

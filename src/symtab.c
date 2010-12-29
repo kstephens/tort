@@ -1,22 +1,5 @@
 #include "tort/core.h"
 
-
-/********************************************************************/
-
-
-#if 0
-tort_val _tort_m_mtable____import (tort_thread_param tort_v rcvr, tort_v sym)
-{
-  tort_val slot = tort_send(tort__s(get), tort_(_symtab), sym);
-  if ( slot != tort_nil ) {
-    _tort_mtable_add_method(tort_thread_arg rcvr, sym, slot);
-  } else {
-    return tort_nil;
-  }
-}
-#endif
-
-
 static
 int _getline(char **linep, size_t *sizep, FILE *fp)
 {

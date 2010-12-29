@@ -3,6 +3,19 @@
 
 /********************************************************************/
 
+const char *_tort_symbol_data(tort_v sym) 
+{ 
+  return tort_string_data(tort_ref(tort_symbol, sym)->name);
+}
+
+tort_symbol* _tort_m_symbol___create(tort_thread_param tort_v name)
+{
+  tort_symbol *value = tort_allocate(0, 0, sizeof(tort_symbol), tort__mt(symbol));
+  value->name = name;
+  value->version = tort_i(0);
+  return value;
+}
+
 tort_v tort_symbol_make(const char *string)
 {
   if ( string ) {
@@ -11,21 +24,14 @@ tort_v tort_symbol_make(const char *string)
       // fprintf(stderr, "\n old symbol = %s %p\n", tort_symbol_data(e->value), (void *) e->value);
       return e->value;
     } else {
-      tort_v key, value;
-      key = tort_string_new_cstr(string);
-      value = tort_allocate(0, 0, sizeof(tort_symbol), tort__mt(symbol));
-      tort_ref(tort_symbol, value)->name = key;
-      tort_ref(tort_symbol, value)->version = tort_i(0);
-      _tort_m_map__add(tort_thread_arg tort_(symbols), key, value);
+      tort_string *name = tort_string_new_cstr(string);
+      tort_symbol *sym = _tort_m_symbol___create(tort_thread_arg name);
+      _tort_m_map__add(tort_thread_arg tort_(symbols), name, sym);
       // fprintf(stderr, "\n new symbol = %s %p\n", tort_symbol_data(value), (void *) value);
-      return value;
-    } 
+      return sym;
+    }
   } else {
-    tort_v value;
-    value = tort_allocate(0, 0, sizeof(tort_symbol), tort__mt(symbol));
-    tort_ref(tort_symbol, value)->name = tort_nil;
-    tort_ref(tort_symbol, value)->version = tort_i(0);
-    return value;
+    return _tort_m_symbol___create(tort_thread_arg tort_nil);
   }
 }
 
