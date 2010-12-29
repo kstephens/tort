@@ -3,9 +3,8 @@
 
 tort_apply_decl(_tort_block_lookupf)
 {
-  if ( tort_ref(tort_message, _tort_message)->selector == tort__s(value) ) {
-    return tort_ref(tort_message, _tort_message)->method = 
-      tort_ref(tort_message, _tort_message)->receiver;
+  if ( _tort_message->selector == tort__s(value) ) {
+    return _tort_message->method = _tort_message->receiver;
   } else {
     return _tort_object_lookupf(tort_thread_arg rcvr);
   }

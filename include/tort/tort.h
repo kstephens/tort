@@ -28,7 +28,16 @@ typedef void* tort_v;
 
 #define tort_error_decl(X)  tort_v X (const char *format, va_list vap)
 
-#define tort_thread_param tort_v _tort_message,
+typedef
+struct tort_message {
+  tort_v selector;
+  tort_v receiver;
+  tort_v method;
+  tort_v previous_message;
+  tort_v fiber;
+} tort_message;
+
+#define tort_thread_param tort_message *_tort_message,
 #define tort_thread_arg          _tort_message,
 
 #define tort_lookup_decl(X) tort_v X (tort_thread_param tort_v rcvr, ...)
@@ -170,15 +179,6 @@ struct tort_method {
   tort_v data;
 } tort_method;
 
-typedef
-struct tort_message {
-  tort_v selector;
-  tort_v receiver;
-  tort_v method;
-  tort_v previous_message;
-  tort_v fiber;
-} tort_message;
-
 typedef struct _tort_message_data {
   struct tort_header _hdr;
   struct tort_message _msg;
@@ -262,14 +262,11 @@ extern _tort_runtime_data __tort;
 #define _tort_send(SEL, RCVR_AND_ARGS...)				\
   ({									\
     _tort_message_data __tort_msg = {					\
-      { sizeof(tort_message), _tort_object_lookupf, _tort_object_applyf, tort_(_mt_message) }, \
+      { sizeof(tort_message), _tort_object_lookupf, _tort_object_applyf, tort__mt(message) }, \
       { (SEL), _tort_send_RCVR(RCVR_AND_ARGS), tort_nil, _tort_message, _tort_fiber } \
     };									\
-    tort_v __tort_msg_val = tort_ref_box(&__tort_msg._msg);			\
-    tort_h_lookupf(__tort_msg._msg.receiver)(__tort_msg_val, __tort_msg._msg.receiver); \
-    __tort_msg_val = tort_h_applyf(__tort_msg._msg.method)(__tort_msg_val, _tort_send_RCVR_ARGS(__tort_msg._msg.receiver, RCVR_AND_ARGS)); \
-    memset(&__tort_msg, 0, sizeof(__tort_msg)); \
-    __tort_msg_val; \
+    tort_h_lookupf(__tort_msg._msg.receiver)(&__tort_msg._msg, __tort_msg._msg.receiver); \
+    tort_h_applyf(__tort_msg._msg.method)(&__tort_msg._msg, _tort_send_RCVR_ARGS(__tort_msg._msg.receiver, RCVR_AND_ARGS)); \
   })
 #define tort_send(SEL, RCVR_AND_ARGS...)_tort_send(SEL, RCVR_AND_ARGS)
 

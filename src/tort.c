@@ -193,6 +193,8 @@ tort_lookup_decl(_tort_object_lookupf)
   tort_v mtable, sel;
   
   tort_(message) = _tort_message;
+  tort_ref(tort_message, _tort_message)->fiber = _tort_fiber;
+  // tort_(fiber) = _tort_fiber;
 
   mtable = tort_h_mtable(tort_ref(tort_message, _tort_message)->receiver);
   sel = tort_ref(tort_message, _tort_message)->selector;
