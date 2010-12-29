@@ -127,7 +127,7 @@ tort_v _tort_m_io__read(tort_thread_param tort_v rcvr, tort_v buf)
   count = 
     fread(tort_string_data(buf), 
 	  sizeof(tort_string_data(buf)[0]), 
-	  tort_string_alloc_size(buf), 
+	  tort_string_alloc_size(buf) - 1, 
 	  FP);
 
   tort_string_size(buf) = count;
