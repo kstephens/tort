@@ -11,7 +11,7 @@
 
 /********************************************************************/
 
-tort_v _tort_message;
+tort_message *_tort_message;
 tort_v _tort_fiber;
 
 /********************************************************************/
@@ -191,13 +191,13 @@ tort_lookup_decl(_tort_object_lookupf)
 {
   tort_v meth = tort_nil;
   tort_v mtable, sel;
-  
-  tort_(message) = _tort_message;
-  tort_ref(tort_message, _tort_message)->fiber = _tort_fiber;
-  // tort_(fiber) = _tort_fiber;
 
-  mtable = tort_h_mtable(tort_ref(tort_message, _tort_message)->receiver);
-  sel = tort_ref(tort_message, _tort_message)->selector;
+#if 0
+  tort_(message) = _tort_message;
+#endif
+
+  mtable = tort_h_mtable(_tort_message->receiver);
+  sel = _tort_message->selector;
 
 #ifndef TORT_MCACHE_STAT
 #define TORT_MCACHE_STAT(X) 1
@@ -235,7 +235,7 @@ tort_lookup_decl(_tort_object_lookupf)
       meth =
 	_tort_m_map__get(tort_thread_arg
 			 mtable, 
-			 tort_ref(tort_message, _tort_message)->selector);
+			 sel);
       
 #if TORT_LOOKUP_TRACE
       fprintf(stderr, "    tol: mtable = %s, meth = %s\n", 
@@ -262,7 +262,7 @@ tort_lookup_decl(_tort_object_lookupf)
   }
 #endif
 
-  tort_ref(tort_message, _tort_message)->method = meth;
+  _tort_message->method = meth;
 
   return _tort_message;
 }

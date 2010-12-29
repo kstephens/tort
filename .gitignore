@@ -9,5 +9,6 @@ gc-*/
 .stats
 *.dSYM/
 local/
-src/integer.c
+boot/
+include/tort/integer.h
 

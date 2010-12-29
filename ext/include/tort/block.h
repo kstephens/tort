@@ -24,25 +24,23 @@ typedef struct tort_block {
 
 typedef struct _tort_block {
   tort_header _h;
-  tort_block _;
+  tort_block _block;
 } _tort_block;
 
-#define tort_block_(args...)					\
-  ({								\
-  _tort_block _blk = {						\
-    { sizeof(tort_block),					\
-      _tort_block_lookupf,					\
-      _tort_object_applyf,					\
-      tort__mt(block)						\
-    },								\
-    { _tort_message, 0 },					\
-  };								\
-  tort_v _blk_f (tort_thread_param tort_block *_blk_obj, ##args)
+#define tort_block_(BLK,PARAMS...)					\
+  _tort_block BLK##_ = {						\
+    { sizeof(tort_block),						\
+      _tort_block_lookupf,						\
+      _tort_object_applyf,						\
+      tort__mt(block)							\
+    },									\
+    { _tort_message, 0 },						\
+  };									\
+  tort_block *BLK = &BLK##_._block;					\
+  tort_v BLK##_f (tort_thread_param tort_block *_block, ##PARAMS)
 
-#define tort_block_end()				\
-  _blk._h.applyf = (void*) _blk_f;			\
-  tort_send(tort__s(clone), tort_ref_box(&_blk._));	\
-  })
+#define tort_block_END(BLK)			\
+  BLK##_._h.applyf = (void*) BLK##_f;
 
 extern tort_apply_decl(_tort_block_lookupf);
 

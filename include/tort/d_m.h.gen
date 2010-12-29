@@ -5,7 +5,7 @@ set -e
     perl -ne '
 if ( ! /^\s*static\b/ && /^\s*[a-z0-9_]+?.*?\s+(_tort_m_([a-z0-9_]+?)__([a-z0-9_]+))\s*[(].*?[)]\s*(;|$)/i ) { 
   print "tort_d_m(tort__mt(", $2, "), tort__s(", $3, "), $1)\n";
-}' ${LIB_CFILES} | 
+}' src/*.c include/tort/*.h | 
     sort -u # | tee /dev/tty
     cat "$1.end"
 ) > "$1"

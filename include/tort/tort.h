@@ -1,5 +1,5 @@
 #ifndef _tort_tort_h
-#define _tort_tort_h
+#define _tort_tort_h 1
 
 /*
  * tort - tiny object run-time
@@ -28,9 +28,11 @@ typedef void* tort_v;
 
 #define tort_error_decl(X)  tort_v X (const char *format, va_list vap)
 
+typedef struct tort_symbol tort_symbol;
+
 typedef
 struct tort_message {
-  tort_v selector;
+  tort_symbol *selector;
   tort_v receiver;
   tort_v method;
   tort_v previous_message;
@@ -161,11 +163,10 @@ struct tort_mtable {
   tort_v delegate;
 } tort_mtable;
 
-typedef
 struct tort_symbol {
-  tort_v name;
+  tort_string *name;
   tort_v version;
-} tort_symbol;
+};
 
 static inline 
 const char *tort_symbol_data(tort_v sym) 
@@ -265,16 +266,25 @@ extern _tort_runtime_data __tort;
 #define _tort_send(SEL, RCVR_AND_ARGS...)				\
   ({									\
     _tort_message_data __tort_msg = {					\
-      { sizeof(tort_message), _tort_object_lookupf, _tort_object_applyf, tort__mt(message) }, \
-      { (SEL), _tort_send_RCVR(RCVR_AND_ARGS), tort_nil, _tort_message, _tort_fiber } \
+      { sizeof(tort_message),						\
+	_tort_object_lookupf,						\
+	_tort_object_applyf,						\
+	tort__mt(message) },						\
+      { (SEL),								\
+	_tort_send_RCVR(RCVR_AND_ARGS),					\
+	tort_nil,							\
+	_tort_message,							\
+	_tort_message ? _tort_message->fiber : _tort_fiber		\
+      }									\
     };									\
     tort_h_lookupf(__tort_msg._msg.receiver)(&__tort_msg._msg, __tort_msg._msg.receiver); \
     tort_h_applyf(__tort_msg._msg.method)(&__tort_msg._msg, _tort_send_RCVR_ARGS(__tort_msg._msg.receiver, RCVR_AND_ARGS)); \
   })
 #define tort_send(SEL, RCVR_AND_ARGS...)_tort_send(SEL, RCVR_AND_ARGS)
 
-extern tort_v _tort_message; /* catch for top-level messages. */
-extern tort_v _tort_fiber;   /* catch for top-level messages. */
+/* catch for top-level messages: DO NOT MODIFY! */
+extern tort_message *_tort_message; 
+extern tort_v _tort_fiber;
 
 #define tort_string_null tort_(string_null)
 #define tort_vector_null tort_(vector_null)
@@ -294,7 +304,7 @@ tort_lookup_decl(_tort_object_lookupf);
 tort_apply_decl(_tort_object_applyf);
 
 #if TORT_ALLOC_DEBUG
-tort_v _tort_allocate (tort_thread_param tort_v meth_table, size_t size, const char *alloc_file, int alloc_line, );
+tort_v _tort_allocate (tort_thread_param tort_v meth_table, size_t size, const char *alloc_file, int alloc_line);
 #define tort_allocate(_1, _2) _tort_allocate(tort_thread_arg _1, _2, __FILE__, __LINE__)
 #else
 tort_v _tort_allocate (tort_thread_param tort_v meth_table, size_t size);

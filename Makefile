@@ -14,7 +14,7 @@ CFLAGS_OPTIMIZE = -O2
 CFLAGS_OPTIMIZE = -O3
 #CFLAGS_OPTIMIZE = 
 CFLAGS += -DLIB_DIR='"$(libdir)"' #
-CFLAGS += -DUSE_GC=$(USE_GC) -fnested-functions -Iinclude -Iext/include -I$(GC)/include -Wall -Werror -g $(CFLAGS_OPTIMIZE)
+CFLAGS += -DUSE_GC=$(USE_GC) -fnested-functions -Iinclude -Iext/include -Iboot/include -I$(GC)/include -Wall -Werror -g $(CFLAGS_OPTIMIZE)
 
 ifeq "$(USE_GC)" "0"
 else
@@ -26,11 +26,11 @@ endif
 
 GEN_LIBS = 
 
-GEN_H_GEN_FILES = $(shell ls include/tort/*.gen | sort -u)
+GEN_H_GEN_FILES = $(shell ls include/tort/*.gen | sort -u) include/tort/integer.h
 GEN_H_FILES = $(GEN_H_GEN_FILES:%.gen=%)
-GEN_C_FILES = src/integer.c #
+GEN_C_FILES = #
 
-LIB_CFILES := $(shell ls src/*.c $(GEN_C_FILES) | sort -u) 
+LIB_CFILES := $(shell ls src/*.c $(GEN_C_FILES) | sort -u)
 LIB_HFILES := $(shell ls include/tort/*.h $(GEN_H_FILES) | sort -u) 
 LIB_OFILES = $(LIB_CFILES:.c=.lo)
 
@@ -64,10 +64,16 @@ TEST_OUT_FILES = $(TEST_C_FILES:.c=.out)
 # default:
 #
 
-all : $(GEN_H_FILES) $(GEN_C_FILES) libs tests
+all : early-headers $(GEN_H_FILES) $(GEN_C_FILES) libs tests
 
 libs : gc $(GEN_LIBS)
 
+early-headers:
+	set -ex; for f in $(GEN_H_FILES); do \
+	  dst="boot/$$f" ;\
+	  mkdir -p `dirname $$dst` ;\
+	  cat $$f.begin $$f.end > $$dst ;\
+	done 
 
 ######################################################################
 # include:
@@ -75,16 +81,16 @@ libs : gc $(GEN_LIBS)
 
 includes : $(GEN_H_FILES)
 
-include/tort/internal.h : include/tort/internal.h.* $(LIB_CFILES)
+include/tort/internal.h : include/tort/internal.h.* ${LIB_CFILES} ${GEN_C_FILES} include/tort/integer.h
 	$@.gen $@
 
-include/tort/d_m.h  : include/tort/d_m.h.* $(LIB_CFILES) $(GEN_C_FILES)
+include/tort/d_m.h  : include/tort/d_m.h.* ${LIB_CFILES} ${GEN_C_FILES} include/tort/integer.h include/tort/internal.h
 	$@.gen $@
 
-include/tort/d_mt.h : include/tort/d_mt.h.* $(LIB_CFILES) $(LIBEXT_CFILES)
+include/tort/d_mt.h : include/tort/d_mt.h.* $(LIB_CFILES) $(GEN_C_FILES) $(LIBEXT_CFILES) include/tort/d_m.h
 	$@.gen $@
 
-include/tort/d_s.h : include/tort/d_s.h.* $(LIB_CFILES) $(LIBEXT_CFILES) include/tort/d_m.h
+include/tort/d_s.h : include/tort/d_s.h.* $(LIB_CFILES) $(GEN_C_FILES) $(LIBEXT_CFILES) include/tort/d_m.h
 	$@.gen $@
 
 ######################################################################
@@ -93,8 +99,8 @@ include/tort/d_s.h : include/tort/d_s.h.* $(LIB_CFILES) $(LIBEXT_CFILES) include
 
 srcs : $(GEN_C_FILES)
 
-src/integer.c : src/integer.c.cpp
-	$(CC) $(CFLAGS) -E $< -o $@
+include/tort/integer.h : src/integer.c
+	$(CC) $(CFLAGS) -D_tort_tort_h=2 -E - -o $@ < $<
 
 ######################################################################
 # object:
@@ -219,6 +225,7 @@ disasm : t/tort_test.t
 
 clean :
 	rm -f $(TEST_T_FILES) $(GEN_LIBS) {.,ext}/src/*{.o,.lo,.la} {.,ext}/t/*.{t,out} $(GEN_C_FILES) $(GEN_H_FILES) .stats/*
+	rm -rf boot/include
 	find . -name '*.dSYM' -type d -print0 | xargs -0 rm -rf
 	find src ext -name '.libs' -type d -print0 | xargs -0 rm -rf
 

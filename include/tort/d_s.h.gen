@@ -6,7 +6,7 @@ set -e
 if ( ! /^#/ && /\btort__?s[(]([a-zA-Z0-9_]+?)[)]/ ) { 
   print "tort_d_s($1)\n";
 }
-' ${LIB_CFILES} ${EXTLIB_CFILES} include/tort/d_m.h /dev/null | 
+' {.,ext}/src/*.c {.,ext}/include/tort/*.h /dev/null | 
     sort -u # | tee /dev/tty
     cat "$1.end"
 ) > "$1"
