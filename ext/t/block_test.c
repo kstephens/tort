@@ -11,7 +11,7 @@ int main(int argc, char **argv, char **environ)
   int i;
 
   tort_runtime_create();
-  tort_runtime_initialize_block();
+  tort_send(tort_s(_dlopen), tort_string_new_cstr(LIB_DIR "/libtortext.dylib"));
 
   io = tort_stdout;
 
@@ -25,13 +25,14 @@ int main(int argc, char **argv, char **environ)
   v = tort_send(tort_s(map), v, b);
   tort_printf(io, "\nv = ", v);
   tort_inspect(io, v);
+  tort_printf(io, "\n");
   
   i = 0;
   tort_block_(c, tort_v obj) {
     tort_printf(io,
-		"  in each [%d] => %T\n", 
-		i ++, 
-		obj);
+		"  in each [%d] => %lld\n", 
+		i ++,
+		(long long) tort_I(obj));
     return obj;
   } tort_block_END(c);
   tort_send(tort_s(each), v, c);

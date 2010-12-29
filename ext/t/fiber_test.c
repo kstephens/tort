@@ -11,8 +11,7 @@ int main(int argc, char **argv, char **environ)
   int i;
 
   tort_runtime_create();
-  tort_runtime_initialize_block();
-  tort_runtime_initialize_fiber();
+  tort_send(tort_s(_dlopen), tort_string_new_cstr(LIB_DIR "/libtortext.dylib"));
 
   io = tort_stdout;
 
