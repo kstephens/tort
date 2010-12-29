@@ -119,6 +119,9 @@ $(LIB_TORTEXT) : $(LIBEXT_OFILES)
 
 ext/src/lisp.o : ext/src/lispread.c
 
+$(LIB_OFILES) : $(LIB_HFILES)
+$(EXTLIB_OFILES) : $(LIB_HFILES) $(EXTLIB_HFILES)
+
 ######################################################################
 # libgc.a:
 #
