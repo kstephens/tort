@@ -29,6 +29,7 @@ typedef void* tort_v;
 #define tort_error_decl(X)  tort_v X (const char *format, va_list vap)
 
 typedef struct tort_symbol tort_symbol;
+typedef struct tort_mtable tort_mtable;
 
 typedef
 struct tort_message {
@@ -55,7 +56,7 @@ struct tort_header {
   int alloc_line;
   size_t alloc_id;
 #endif
-  tort_v mtable; /** The object's method table. */
+  tort_mtable *mtable; /** The object's method table. */
 } tort_header;
 
 #define tort_h_nil(X)    &tort_(nil_header)
@@ -157,11 +158,10 @@ struct tort_string { /* Same layout as tort_vector_base. */
 tort_v tort_string_new(const char *d, size_t s);
 tort_v tort_string_new_cstr(const char *str);
 
-typedef
 struct tort_mtable {
   tort_map _map;
-  tort_v delegate;
-} tort_mtable;
+  tort_mtable* delegate;
+};
 
 struct tort_symbol {
   tort_string *name;
@@ -219,10 +219,10 @@ struct tort_runtime {
   char **_argv;
   char **_env;
 
-#define tort_d_mt(N) tort_v _mt_##N;
+#define tort_d_mt(N) tort_mtable *_mt_##N;
 #include "tort/d_mt.h"
 
-#define tort_d_s(N) tort_v _s_##N;
+#define tort_d_s(N) tort_symbol *_s_##N;
 #include "tort/d_s.h"
 
   /* io */
@@ -298,8 +298,6 @@ void *tort_realloc(void *ptr, size_t size);
 
 tort_v tort_map_create();
 
-tort_v tort_mtable_create();
-
 tort_lookup_decl(_tort_object_lookupf);
 tort_apply_decl(_tort_object_applyf);
 
@@ -323,9 +321,10 @@ tort_v _tort_allocate (tort_thread_param tort_v meth_table, size_t size);
 
 tort_v tort_object_make ();
 
-tort_v tort_mtable_get (const char *string);
-tort_v tort_mtable_set (const char *string, tort_v mtable);
-tort_v tort_mtable_make (const char *string, tort_v parent);
+tort_mtable* tort_mtable_create();
+tort_mtable* tort_mtable_get (const char *string);
+tort_mtable* tort_mtable_set (const char *string, tort_v mtable);
+tort_mtable* tort_mtable_make (const char *string, tort_v parent);
 
 tort_v tort_method_make (tort_apply_decl((*applyf)));
 

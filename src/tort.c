@@ -213,7 +213,7 @@ tort_lookup_decl(_tort_object_lookupf)
   (void) TORT_MCACHE_STAT(mcache_stats.lookup_n ++);
   size_t i = 
     (
-     ((((size_t) mtable) + (size_t) sel) << 7) ^
+     ((((size_t) mtable) + (size_t) sel) << 5) ^
      (((size_t) sel) << 3) ^
      ((size_t) mtable) ^
      ((size_t) sel)

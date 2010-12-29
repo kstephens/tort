@@ -3,7 +3,7 @@
 
 /********************************************************************/
 
-tort_v tort_mtable_create(tort_v delegate)
+tort_mtable* tort_mtable_create(tort_v delegate)
 {
   tort_mtable *obj_mt = tort_allocate(tort__mt(mtable), sizeof(tort_mtable));
   _tort_m_map__initialize(tort_thread_arg (tort_v) obj_mt);
@@ -23,7 +23,7 @@ tort_v tort_mtable_create(tort_v delegate)
 }
 
 
-tort_v tort_mtable_get(const char *name)
+tort_mtable* tort_mtable_get(const char *name)
 {
   tort_v sym = tort_symbol_make(name);
   tort_v mt = tort_send(tort__s(get), tort_(m_mtable), sym);
@@ -31,7 +31,7 @@ tort_v tort_mtable_get(const char *name)
 }
 
 
-tort_v tort_mtable_make(const char *name, tort_v parent)
+tort_mtable* tort_mtable_make(const char *name, tort_v parent)
 {
   tort_v sym = tort_symbol_make(name);
   tort_v mt = tort_send(tort__s(get), tort_(m_mtable), sym);
@@ -56,6 +56,8 @@ tort_v tort_runtime_initialize_mtable()
 
   /* Backpatch mtable method table as object. */
   tort_h_ref(tort__mt(mtable))->mtable = tort__mt(mtable);
+  tort_ref(tort_mtable, tort_h_ref(tort__mt(mtable))->mtable)->delegate = 
+    tort_h_ref(tort__mt(object))->mtable;
 
   tort__mt(map)         = tort_mtable_create(tort__mt(object));
   /* Backpatch mtable to map delegation. */
