@@ -38,7 +38,7 @@ tort_v tort_symbol_make(const char *string)
 
 tort_v tort_runtime_initialize_symbol()
 {
-#define tort_d_s(N) tort__s(N) = tort_symbol_make(#N);
+#define tort_d_s(N) tort__s(N) = tort_symbol_make(tort_symbol_encode(#N));
 #include "tort/d_s.h"
   return tort_(symbols);
 }

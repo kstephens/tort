@@ -173,6 +173,9 @@ const char *tort_symbol_data(tort_v sym)
   return tort_string_data(tort_ref(tort_symbol, sym)->name);
 }
 
+tort_v tort_symbol_make(const char *string);
+const char *tort_symbol_encode(const char *in);
+
 typedef
 struct tort_method {
   tort_v name;
@@ -280,6 +283,7 @@ extern tort_v _tort_fiber;   /* catch for top-level messages. */
 #define tort_false tort_(b_false)
 
 void *tort_malloc(size_t size);
+void  tort_free(void *ptr);
 void *tort_realloc(void *ptr, size_t size);
 
 tort_v tort_map_create();
@@ -297,13 +301,11 @@ tort_v _tort_allocate (tort_thread_param tort_v meth_table, size_t size);
 #define tort_allocate(_1, _2) _tort_allocate(tort_thread_arg _1, _2)
 #endif
 
-tort_v tort_symbol_make(const char *string);
-
 #if TORT_MULTIPLICITY
-#define tort_s(X) tort_symbol_make(#X)
+#define tort_s(X) tort_symbol_make(tort_symbol_encode(#X))
 #define tort_mt(X) tort_mtable_get(#X)
 #else
-#define tort_s(X)  ({ static tort_v _s_##X;  _s_##X ?  _s_##X :  (_s_##X  = tort_symbol_make(#X)); })
+#define tort_s(X)  ({ static tort_v _s_##X;  _s_##X ?  _s_##X :  (_s_##X  = tort_symbol_make(tort_symbol_encode(#X))); })
 #define tort_mt(X) ({ static tort_v _mt_##X; _mt_##X ? _mt_##X : (_mt_##X = tort_mtable_get(#X)); })
 #endif
 #define tort__s(X) tort_(_s_##X)

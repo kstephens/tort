@@ -16,6 +16,9 @@ static
 void *(*_tort_malloc)(size_t size) = malloc;
 
 static
+void (*_tort_free)(void *ptr) = free;
+
+static
 void *(*_tort_realloc)(void *ptr, size_t size) = realloc;
 
 
@@ -25,8 +28,19 @@ void *tort_malloc(size_t size)
   if ( ! ptr ) {
     tort_fatal("tort_malloc(%lu): failed", (unsigned long) size);
   }
-  memset(ptr, 0, size);
+  if ( ! _tort_gc_mode ) {
+    memset(ptr, 0, size);
+  }
   return ptr;
+}
+
+
+void tort_free(void *ptr)
+{
+  if ( ! ptr ) {
+    tort_fatal("tort_free(%p): free null", ptr);
+  }
+  _tort_free(ptr);
 }
 
 
@@ -38,7 +52,6 @@ void *tort_realloc(void *ptr, size_t size)
   }
   return new_ptr;
 }
-
 
 
 static void _tort_finalization_proc (void * obj, void * client_data)
@@ -79,7 +92,8 @@ tort_v tort_runtime_initialize_malloc()
   _tort_gc_mode = atoi((var = getenv("TORT_GC")) ? var : "1");
   if ( _tort_gc_mode > 0 ) {
     GC_finalize_on_demand = 1;
-    _tort_malloc = GC_malloc;
+    _tort_malloc  = GC_malloc;
+    _tort_free    = GC_free;
     _tort_realloc = GC_realloc;
   }
 

@@ -28,7 +28,7 @@ GEN_LIBS =
 
 GEN_H_GEN_FILES = $(shell ls include/tort/*.gen | sort -u)
 GEN_H_FILES = $(GEN_H_GEN_FILES:%.gen=%)
-GEN_C_FILES = #
+GEN_C_FILES = src/integer.c #
 
 LIB_CFILES := $(shell ls src/*.c $(GEN_C_FILES) | sort -u) 
 LIB_HFILES := $(shell ls include/tort/*.h $(GEN_H_FILES) | sort -u) 
@@ -78,7 +78,7 @@ includes : $(GEN_H_FILES)
 include/tort/internal.h : include/tort/internal.h.* $(LIB_CFILES)
 	$@.gen $@
 
-include/tort/d_m.h  : include/tort/d_m.h.* $(LIB_CFILES)
+include/tort/d_m.h  : include/tort/d_m.h.* $(LIB_CFILES) $(GEN_C_FILES)
 	$@.gen $@
 
 include/tort/d_mt.h : include/tort/d_mt.h.* $(LIB_CFILES) $(LIBEXT_CFILES)
@@ -93,7 +93,8 @@ include/tort/d_s.h : include/tort/d_s.h.* $(LIB_CFILES) $(LIBEXT_CFILES) include
 
 srcs : $(GEN_C_FILES)
 
-# $(GEN_C_FILES) $(GEN_H_FILES) : Makefile
+src/integer.c : src/integer.c.cpp
+	$(CC) $(CFLAGS) -E $< -o $@
 
 ######################################################################
 # object:
