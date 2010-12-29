@@ -102,13 +102,17 @@ typedef struct tort_mcache_entry {
 static
 tort_mcache_entry mcache[mcache_size];
 
-static struct {
+struct {
   unsigned long 
   hit_n, hit_mtable_n, hit_sel_n, hit_sel_version_n, 
     lookup_n;
 } mcache_stats;
 
-static void _tort_mcache_stats()
+#if TORT_GLOBAL_MCACHE_STATS
+#define TORT_MCACHE_STAT(X) ((X), 1)
+#endif
+
+void _tort_mcache_stats()
 {
   fprintf(stderr, "tort: mache: %lu hit / %lu lookup = %.8g\n",
 	  (unsigned long) mcache_stats.hit_n,
@@ -179,6 +183,10 @@ tort_lookup_decl(_tort_object_lookupf)
   mtable = tort_h_mtable(tort_ref(tort_message, _tort_message)->receiver);
   sel = tort_ref(tort_message, _tort_message)->selector;
 
+#ifndef TORT_MCACHE_STAT
+#define TORT_MCACHE_STAT(X) 1
+#endif
+
 #if TORT_LOOKUP_TRACE
   fprintf(stderr, "  tol: rcvr = %s, sel = %s\n", 
 	  tort_object_name(tort_ref(tort_message, _tort_message)->receiver), 
@@ -186,7 +194,7 @@ tort_lookup_decl(_tort_object_lookupf)
 #endif
 
 #if TORT_GLOBAL_MCACHE
-  mcache_stats.lookup_n ++;
+  (void) TORT_MCACHE_STAT(mcache_stats.lookup_n ++);
   size_t i = 
     (
      ((((size_t) mtable) + (size_t) sel) << 7) ^
@@ -195,13 +203,13 @@ tort_lookup_decl(_tort_object_lookupf)
      ((size_t) sel)
      );
   tort_mcache_entry *mce = &mcache[i % mcache_size];
-  if (    mce->mt == mtable && (++ mcache_stats.hit_mtable_n)
-       && mce->sel == sel && (++ mcache_stats.hit_sel_n)
+  if (    mce->mt == mtable && TORT_MCACHE_STAT(++ mcache_stats.hit_mtable_n)
+       && mce->sel == sel && TORT_MCACHE_STAT(++ mcache_stats.hit_sel_n)
 #if TORT_MCACHE_USE_SYMBOL_VERSION
-       && mce->sel_version == tort_ref(tort_symbol, sel)->version && (++ mcache_stats.hit_sel_version_n)
+       && mce->sel_version == tort_ref(tort_symbol, sel)->version && TORT_MCACHE_STAT(++ mcache_stats.hit_sel_version_n)
 #endif
        ) {
-    mcache_stats.hit_n ++;
+    (void) TORT_MCACHE_STAT(mcache_stats.hit_n ++);
     // fprintf(stderr, "+"); fflush(stderr);
     meth = mce->meth;
   } else {
@@ -306,7 +314,7 @@ tort_v tort_method_make(tort_apply_decl((*applyf)))
 
 tort_v tort_runtime_initialize_tort()
 {
-#if TORT_GLOBAL_MCACHE
+#if TORT_GLOBAL_MCACHE && TORT_GLOBAL_MCACHE_STATS
   atexit(_tort_mcache_stats);
 #endif
   return 0;

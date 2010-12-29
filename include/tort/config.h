@@ -9,6 +9,10 @@
 #define TORT_GLOBAL_MCACHE 1 /* if true, use a global method cache. */
 #endif
 
+#ifndef TORT_GLOBAL_MCACHE_STATS
+#define TORT_GLOBAL_MCACHE_STATS 0 /* if true, capture global method cache stats. */
+#endif
+
 #ifndef TORT_MCACHE_USE_SYMBOL_VERSION
 #define TORT_MCACHE_USE_SYMBOL_VERSION 1 /* if true, use symbol versioning instead of flusing the entire global method caches when a new method is added. */
 #endif
