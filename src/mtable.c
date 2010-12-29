@@ -5,13 +5,21 @@
 
 tort_v tort_mtable_create(tort_v delegate)
 {
-  tort_v val = tort_allocate(tort__mt(mtable), sizeof(tort_mtable));
-  _tort_m_map__initialize(0, val);
-  if ( delegate == 0 ) {
+  tort_mtable *obj_mt = tort_allocate(tort__mt(mtable), sizeof(tort_mtable));
+  _tort_m_map__initialize(tort_thread_arg (tort_v) obj_mt);
+
+  if ( delegate == 0 && tort_nil != 0 ) {
     delegate = tort_nil;
   }
-  tort_ref(tort_mtable, val)->delegate = delegate;
-  return val;
+  obj_mt->delegate = delegate;
+
+  tort_mtable *cls_mt = tort_allocate(tort__mt(mtable), sizeof(tort_mtable));
+  _tort_m_map__initialize(tort_thread_arg (tort_v) cls_mt);
+
+  cls_mt->delegate = delegate ? tort_h_ref(delegate)->mtable : tort_nil;
+  tort_h_ref(obj_mt)->mtable = cls_mt;
+
+  return obj_mt;
 }
 
 
@@ -42,6 +50,9 @@ tort_v tort_runtime_initialize_mtable()
 
   /* Create core method tables. */
   tort__mt(object)      = tort_mtable_create(0);
+
+  /* Backpatch mtable delegate as object. */
+  tort_ref(tort_mtable, tort__mt(mtable))->delegate = tort__mt(object);
 
   /* Backpatch mtable method table as object. */
   tort_h_ref(tort__mt(mtable))->mtable = tort__mt(mtable);

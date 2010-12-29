@@ -20,6 +20,12 @@ tort_v tort_cons(tort_v a, tort_v d)
 }
 
 
+tort_v _tort_M_pair__new(tort_thread_param tort_v pair_mt, tort_v a, tort_v d)
+{
+  return tort_cons(a, d);
+}
+
+
 #define ACCESSOR(X)							\
   tort_v _tort_m_pair__##X(tort_thread_param tort_v rcvr)		\
   {									\

@@ -8,6 +8,7 @@ int main(int argc, char **argv, char **environ)
 {
   tort_v io;
   tort_v st;
+  tort_v v;
 
   tort_runtime_create();
 
@@ -16,7 +17,6 @@ int main(int argc, char **argv, char **environ)
   st = tort_send(tort_s(_dlopen), tort_string_new_cstr(LIB_DIR "/libtortext.dylib"));
 
   // tort_send(tort_s(_inspect), st, io);
-
   tort_send(tort_s(lisp_write), tort_nil, io);
   tort_printf(io, "\n");
 
@@ -24,6 +24,10 @@ int main(int argc, char **argv, char **environ)
   tort_printf(io, "\n");
 
   tort_send(tort_s(lisp_write), tort_false, io);
+  tort_printf(io, "\n");
+
+  v = tort_send(tort_s(new), tort_mt(pair), tort_true, tort_false);
+  tort_send(tort_s(lisp_write), v, io);
   tort_printf(io, "\n");
 
   tort_printf(io, "\nDONE\n");

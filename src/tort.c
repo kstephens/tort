@@ -308,13 +308,17 @@ tort_v _tort_m_mtable__add_method (tort_thread_param tort_v map, tort_v sym, tor
 }
 
 
-tort_v tort_add_method(tort_v map, const char *name, void *applyf)
+tort_v tort_add_method(tort_v mtable, const char *name, void *applyf)
 {
   tort_v sym = tort_symbol_make(name);
   tort_v meth = tort_i(applyf);
-  return _tort_m_mtable__add_method(tort_thread_arg map, sym, meth);
+  return _tort_m_mtable__add_method(tort_thread_arg mtable, sym, meth);
 }
 
+tort_v tort_add_class_method(tort_v mtable, const char *name, void *applyf)
+{
+  return tort_add_method(tort_h_ref(mtable)->mtable, name, applyf);
+}
 
 tort_v tort_method_make(tort_apply_decl((*applyf)))
 {

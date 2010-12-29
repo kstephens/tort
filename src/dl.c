@@ -79,32 +79,42 @@ tort_v tort_m_map___run_initializers(tort_thread_param tort_v map)
 }
 
 
+static int process_method(int cmeth, const char *prefix, tort_map_entry *e)
+{
+  const char *name = tort_symbol_data(e->key);
+  if ( strncmp(name, prefix, strlen(prefix)) == 0 ) {
+    const char *cls = name + strlen(prefix);
+    const char *meth = cls;
+    while ( *meth ) {
+      if ( meth[0] == '_' && meth[1] == '_' ) {
+	char cls_buf[meth - cls + 1];
+	strncpy(cls_buf, cls, meth - cls);
+	cls_buf[meth - cls] = 0;
+	cls = cls_buf;
+	meth += 2;
+	void *ptr = (void*) tort_I(e->value);
+	// fprintf(stderr, "  %s.%s => @%p\n", cls, meth, ptr);
+	tort_v mtable = tort_mtable_get(cls_buf);
+	if ( cmeth ) {
+	  mtable = tort_h_ref(mtable)->mtable;
+	}
+	tort_add_method(mtable, meth, ptr);
+	return 1;
+      }
+      ++ meth;
+    }
+  }
+  return 0;
+}
+
 tort_v tort_m_map___load_methods(tort_thread_param tort_v map)
 {
-  static const char prefix[] = "__tort_m_";
+  static const char obj_prefix[] = "__tort_m_";
+  static const char cls_prefix[] = "__tort_M_";
   tort_map_EACH(map, e) {
     if ( tort_h_mtable(e->key) != tort__mt(symbol) ) continue;
-    const char *name = tort_symbol_data(e->key);
     // fprintf(stderr, "e = @%p \"%s\"\n", e, name);
-    if ( strncmp(name, prefix, strlen(prefix)) == 0 ) {
-      const char *cls = name + strlen(prefix);
-      const char *meth = cls;
-      while ( *meth ) {
-	if ( meth[0] == '_' && meth[1] == '_' ) {
-	  char cls_buf[meth - cls + 1];
-	  strncpy(cls_buf, cls, meth - cls);
-	  cls_buf[meth - cls] = 0;
-	  cls = cls_buf;
-	  meth += 2;
-	  void *ptr = (void*) tort_I(e->value);
-	  // fprintf(stderr, "  %s.%s => @%p\n", cls, meth, ptr);
-	  tort_v mtable = tort_mtable_get(cls_buf);
-	  tort_add_method(mtable, meth, ptr);
-	  break;
-	}
-	++ meth;
-      }
-    }
+    (void) (process_method(0, obj_prefix, e) || process_method(1, cls_prefix, e));
   }
   tort_map_EACH_END();
   return 0;

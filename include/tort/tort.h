@@ -330,6 +330,7 @@ tort_v tort_mtable_make (const char *string, tort_v parent);
 tort_v tort_method_make (tort_apply_decl((*applyf)));
 
 tort_v tort_add_method(tort_v map, const char *name, void *applyf);
+tort_v tort_add_class_method(tort_v map, const char *name, void *applyf);
 
 tort_v tort_runtime_create_ (int *argcp, char ***argvp, char ***envp);
 #define tort_runtime_create() tort_runtime_create_(&argc, &argv, &environ)
