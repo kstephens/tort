@@ -48,7 +48,7 @@ tort_v _tort_m_io__open(tort_thread_param tort_v rcvr, tort_v name, tort_v mode)
     FP_TORT_OBJ(FP) = rcvr;
     IO->name = name;
     IO->mode = mode;
-    IO->flags = 1;
+    IO->flags |= 1;
     tort_send(tort__s(__register_finalizer), rcvr);
   }
   return rcvr;
@@ -57,12 +57,12 @@ tort_v _tort_m_io__open(tort_thread_param tort_v rcvr, tort_v name, tort_v mode)
 
 tort_v _tort_m_io__popen(tort_thread_param tort_v rcvr, tort_v name, tort_v mode)
 {
-  if ( (FP = FP = popen(tort_string_data(name), tort_string_data(mode))) ) {
+  if ( (FP = popen(tort_string_data(name), tort_string_data(mode))) ) {
     ++ _tort_io_open_count;
     FP_TORT_OBJ(FP) = rcvr;
     IO->name = name;
     IO->mode = mode;
-    IO->flags = 3;
+    IO->flags |= 3;
     tort_send(tort__s(__register_finalizer), rcvr);
   }
   return rcvr;
@@ -74,6 +74,7 @@ tort_v _tort_m_io__close(tort_thread_param tort_v rcvr)
   if ( FP ) {
     // fprintf(stderr, "\n  _tort_io_close @%p\n", (void*) rcvr);
     if ( IO->flags & 2 ) {
+      IO->flags &= ~ 2;
       pclose(FP);
     } else {
       fclose(FP);
@@ -153,7 +154,7 @@ tort_v _tort_m_io____finalize(tort_thread_param tort_v rcvr)
 {
   if ( FP && (IO->flags & 1) ) {
     // fprintf(stderr, "\n  _tort_io___finalize @%p\n", (void*) rcvr);
-    IO->flags &= ~1;
+    IO->flags &= ~ 1;
     _tort_m_io__close(tort_thread_arg rcvr);
   }
   return tort_nil;
