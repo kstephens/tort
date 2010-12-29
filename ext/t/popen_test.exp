@@ -3,14 +3,16 @@ read up to 64 chars from popen("echo 12345", "r") => "12345
 "
   (eof o) => 1
   (size v) => 6
-  (alloc_size v) => 64
+  (alloc_size v) => 65
+  (_alloc_size v) => 32
 
 
 read up to 64 chars from popen("echo 12345", "r") => "12345
 "
   (eof o) => 1
   (size v) => 6
-  (alloc_size v) => 64
+  (alloc_size v) => 65
+  (_alloc_size v) => 32
 
 
 DONE

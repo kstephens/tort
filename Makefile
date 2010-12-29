@@ -166,7 +166,7 @@ test : tests
 	for f in $(TEST_FILES); do \
 	  in=/dev/null ;\
 	  if [ -f $$f.in ] ; then in=$$f.in ; fi ;\
-	  echo -n "  test $$f.t < $$in: " ;\
+	  echo "========= test $$f.t < $$in: " ;\
 	  ($$f.t <$$in || echo $$?) 2>&1 | t/filter-output > $$f.out ;\
 	  if ! diff -U 10 $$f.exp $$f.out ; then \
 	    echo "========== $$f.out ==========" 1>&2 ;\
