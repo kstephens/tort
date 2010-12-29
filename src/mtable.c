@@ -3,22 +3,33 @@
 
 /********************************************************************/
 
-tort_mtable* tort_mtable_create(tort_v delegate)
+tort_mtable* tort_mtable_set_delegate(tort_mtable *obj_mt, tort_v delegate)
 {
-  tort_mtable *obj_mt = tort_allocate(tort__mt(mtable), sizeof(tort_mtable));
-  _tort_m_map__initialize(tort_thread_arg (tort_v) obj_mt);
+  tort_mtable *cls_mt;
 
   if ( delegate == 0 && tort_nil != 0 ) {
     delegate = tort_nil;
   }
   obj_mt->delegate = delegate;
 
+  cls_mt = tort_h_ref(obj_mt)->mtable;
+  cls_mt->delegate = delegate ? tort_h_ref(delegate)->mtable : tort__mt(mtable);
+
+  return obj_mt;
+}
+
+tort_mtable* tort_mtable_create(tort_v delegate)
+{
+  tort_mtable *obj_mt = tort_allocate(tort__mt(mtable), sizeof(tort_mtable));
+  _tort_m_map__initialize(tort_thread_arg (tort_v) obj_mt);
+
   tort_mtable *cls_mt = tort_allocate(tort__mt(mtable), sizeof(tort_mtable));
   _tort_m_map__initialize(tort_thread_arg (tort_v) cls_mt);
 
-  cls_mt->delegate = delegate ? tort_h_ref(delegate)->mtable : tort_nil;
   tort_h_ref(obj_mt)->mtable = cls_mt;
 
+  tort_mtable_set_delegate(obj_mt, delegate);
+ 
   return obj_mt;
 }
 
@@ -51,21 +62,14 @@ tort_v tort_runtime_initialize_mtable()
   /* Create core method tables. */
   tort__mt(object)      = tort_mtable_create(0);
 
-  /* Backpatch mtable delegate as object. */
-  tort_ref(tort_mtable, tort__mt(mtable))->delegate = tort__mt(object);
-
-  /* Backpatch mtable method table as object. */
-  tort_h_ref(tort__mt(mtable))->mtable = tort__mt(mtable);
-  tort_ref(tort_mtable, tort_h_ref(tort__mt(mtable))->mtable)->delegate = 
-    tort_h_ref(tort__mt(object))->mtable;
-
-  tort__mt(map)         = tort_mtable_create(tort__mt(object));
-  /* Backpatch mtable to map delegation. */
-  tort_ref(tort_mtable, tort__mt(mtable))->delegate = tort__mt(map);
-
-  /* Backpatch map to vector_base delegation. */
+  /* Create vector base. */
   tort__mt(vector_base) = tort_mtable_create(tort__mt(object));
-  tort_ref(tort_mtable, tort__mt(map))->delegate = tort__mt(vector_base);
+
+  /* Create map mtable. */
+  tort__mt(map)         = tort_mtable_create(tort__mt(vector_base));
+
+  /* Back patch mtable -> map. */
+  tort_mtable_set_delegate(tort__mt(mtable), tort__mt(map));
 
   /* Initialize nil object header. */
   tort__mt(nil)         = tort_mtable_create(tort__mt(object));
