@@ -172,7 +172,7 @@ test : tests
 	    echo "========== $$f.out ==========" 1>&2 ;\
 	    cat $$f.out ;\
 	    echo "========== To accept, run: " 1>&2 ;\
-	    echo "  rm -f $$f.exp; make accept-test;" ;\
+	    echo "  rm -f $$f.exp; make accept-test TEST_FILES=$$f;" ;\
 	    echo "  # OR make accept-all-test;" ;\
 	    errors=1 ;\
 	  fi ;\
@@ -195,15 +195,13 @@ valgrind : $(TEST_T_FILES)
 
 accept-test : $(TEST_T_FILES)
 	@set -ex; for f in $(TEST_FILES); do \
-	  if [ ! -f $$f.exp ] ; then cp $$f.out $$f.exp ; fi ;\
+	  if [ ! -f $$f.exp ] ; then cp $$f.out $$f.exp ; git add `ls $$f.{c,exp,in}`; fi ;\
 	done
-	git add $(shell ls {.,ext}/t/*.{c,exp,in})
 
 accept-all-test : $(TEST_T_FILES)
 	@set -ex; for f in $(TEST_FILES); do \
-	  if [ -f $$f.out ] ; then cp $$f.out $$f.exp ; fi ;\
+	  if [ -f $$f.out ] ; then cp $$f.out $$f.exp ; git add `ls $$f.{c,exp,in}`; fi ;\
 	done
-	git add $(shell ls {.,ext}/t/*.{c,exp,in})
 
 ######################################################################
 # debugging:

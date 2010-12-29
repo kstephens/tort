@@ -10,8 +10,8 @@ int main(int argc, char **argv, char **environ)
 
   io = tort_stdout;
 
-  tort_printf(io, "  123 => obj %lld\n", (long long) (v = tort_i(123)));
-  tort_printf(io, "  123 => int %lld\n", (long long) tort_I(v));
+  tort_printf(io, "  tort_i(123) => %lld\n", (long long) (v = tort_i(123)));
+  tort_printf(io, "  tort_I(%lld) => %lld\n", (long long) v, (long long) tort_I(v));
 
   printf("\nDONE\n");
 
