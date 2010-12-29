@@ -18,7 +18,16 @@ typedef struct tort_fiber_t tort_fiber_t;
 
 typedef tort_fiber_func_DECL((*tort_fiber_func));
 
+typedef 
+enum tort_fiber_status_t {
+  CREATED = 0,
+  RUNNING,
+  PAUSED,
+  TERMINATED
+} tort_fiber_status_t;
+
 struct tort_fiber_t {
+  tort_fiber_status_t status;
   jmp_buf _jb;
 #define _tort_setjmp(F) setjmp((F)->_jb)
 #define _tort_longjmp(F, V) longjmp((F)->_jb, (V))
@@ -33,9 +42,12 @@ struct tort_fiber_t {
 };
 
 extern size_t _tort_fiber_default_stack_size;
+extern void *(*__tort_fiber_allocate)(size_t size);
 
 void *__tort_fiber_new(tort_fiber_t *fiber_parent, tort_fiber_func func, void *func_data, size_t size);
 
 void *__tort_fiber_yield(TORT_FIBER_VOLATILE tort_fiber_t *fiber, TORT_FIBER_VOLATILE tort_fiber_t *other_fiber);
+
+tort_v tort_runtime_initialize_fiber();
 
 #endif
