@@ -19,19 +19,24 @@ tort_v _tort_m_pair__lisp_eval(tort_thread_param tort_pair *obj, tort_v env)
     return tort_send(tort_s(car), obj->cdr);
   }
   else if ( obj->car == tort_s(if) ) {
-    val = tort_send(tort_s(lisp_eval), obj->car, env);
+    val = tort_send(tort_s(lisp_eval), tort_car(obj->cdr), env);
     if ( val == tort_false ) {
-      return tort_cadr(obj->cdr);
+      return tort_caddr(obj->cdr);
     } else {
-      return tort_car(obj->cdr);
+      return tort_cadr(obj->cdr);
     }
   }
   else {
-    val = tort_send(tort_s(lisp_eval), obj->car, env);
+    val = tort_send(tort_s(lisp_eval_car), obj->car, env);
     tort_v args = tort_send(tort_s(lisp_eval_args), obj->cdr, env);
     return tort_send(tort_s(lisp_apply), val, args, env);
   }
 
+  return obj;
+}
+
+tort_v _tort_m_object__lisp_eval_car(tort_thread_param tort_v obj, tort_v env)
+{
   return obj;
 }
 

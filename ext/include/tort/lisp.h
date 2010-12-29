@@ -14,5 +14,6 @@ tort_v tort_caar(tort_v x);
 tort_v tort_cdar(tort_v x);
 tort_v tort_cadr(tort_v x);
 tort_v tort_cddr(tort_v x);
+tort_v tort_caddr(tort_v x);
 
 #endif
