@@ -68,12 +68,16 @@ all : early-headers $(GEN_H_FILES) $(GEN_C_FILES) libs tests
 
 libs : gc $(GEN_LIBS)
 
-early-headers:
+early-headers: boot/include/.touch
+
+boot/include/.touch :
 	set -ex; for f in $(GEN_H_FILES); do \
 	  dst="boot/$$f" ;\
 	  mkdir -p `dirname $$dst` ;\
 	  cat $$f.begin $$f.end > $$dst ;\
-	done 
+	done
+	touch $@
+
 
 ######################################################################
 # include:
