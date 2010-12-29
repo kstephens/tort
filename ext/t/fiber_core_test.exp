@@ -1,0 +1,24 @@
+main() @x1
+fiber_a = @x2
+a(from main()) @x2 @x3: n = 9
+fiber_b = @x4
+b(from a()) @ @x4 @x5: n = 9
+a(from main()) @x2 @x3: n = 8
+b(from a()) @ @x4 @x5: n = 8
+a(from main()) @x2 @x3: n = 7
+b(from a()) @ @x4 @x5: n = 7
+a(from main()) @x2 @x3: n = 6
+b(from a()) @ @x4 @x5: n = 6
+a(from main()) @x2 @x3: n = 5
+b(from a()) @ @x4 @x5: n = 5
+a(from main()) @x2 @x3: n = 4
+b(from a()) @ @x4 @x5: n = 4
+a(from main()) @x2 @x3: n = 3
+b(from a()) @ @x4 @x5: n = 3
+a(from main()) @x2 @x3: n = 2
+b(from a()) @ @x4 @x5: n = 2
+a(from main()) @x2 @x3: n = 1
+b(from a()) @ @x4 @x5: n = 1
+a(from main()) @x2 @x3: n = 0
+b(from a()) @ @x4 @x5: n = 0
+  => a return

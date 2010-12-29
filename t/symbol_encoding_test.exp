@@ -1,0 +1,12 @@
+_ => _
+ADDADD => ++
+DOT => .
+MOD => %
+NEG => -
+SUB => -
+NOT => !
+set_carE => set_car!
+asdfasd => asdfasd
+string_TO_symbol => string->symbol
+__fooE => __foo!
+PPfooQ => %%foo?

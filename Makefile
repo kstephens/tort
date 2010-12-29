@@ -197,13 +197,13 @@ accept-test : $(TEST_T_FILES)
 	@set -ex; for f in $(TEST_FILES); do \
 	  if [ ! -f $$f.exp ] ; then cp $$f.out $$f.exp ; fi ;\
 	done
-	git add t/*.c t/*.exp t/*.in
+	git add $(shell ls {.,ext}/t/*.{c,exp,in})
 
 accept-all-test : $(TEST_T_FILES)
 	@set -ex; for f in $(TEST_FILES); do \
 	  if [ -f $$f.out ] ; then cp $$f.out $$f.exp ; fi ;\
 	done
-	git add t/*.c t/*.exp t/*.in
+	git add $(shell ls {.,ext}/t/*.{c,exp,in})
 
 ######################################################################
 # debugging:
