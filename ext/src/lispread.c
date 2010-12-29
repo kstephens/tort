@@ -15,7 +15,8 @@ The following synactic structures can be read:
 
 Comments      ;...\n, #!...\n
 Quote         'x
-Lists         (a b ...), (a b ... '.' c)
+Lists         (a b ...)
+Conses        (a . d)
 Vectors       #(a b ...)
 Characters    #\b (#\space and #\newline are not IMPLEMENTED)
 False         #f, #F
@@ -186,9 +187,7 @@ READ_DECL
       break;
 
     case '(': {
-      VALUE l, lc;
-
-      l = lc = NIL;
+      VALUE l = NIL, lc = NIL;
       while ( (c = eat_whitespace_peekchar(stream)) != EOF ) {
         VALUE x;
         
