@@ -18,7 +18,8 @@
    This uses the GCC nested function feature; see gcc -fnested-functions.
 */
 typedef struct tort_block {
-  int opaque;
+  tort_message *scope;
+  void *data;
 } tort_block;
 
 typedef struct _tort_block {
@@ -34,8 +35,9 @@ typedef struct _tort_block {
       _tort_object_applyf,					\
       tort__mt(block)						\
     },								\
+    { _tort_message, 0 },					\
   };								\
-  tort_v _blk_f (tort_v _blk_msg, tort_v _blk_obj, ##args)
+  tort_v _blk_f (tort_thread_param tort_block *_blk_obj, ##args)
 
 #define tort_block_end()				\
   _blk._h.applyf = (void*) _blk_f;			\
