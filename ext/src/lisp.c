@@ -1,8 +1,4 @@
-#include "tort/core.h"
-
-typedef struct tort_pair {
-  tort_v car, cdr;
-} tort_pair;
+#include "tort/lisp.h"
 
 /********************************************************************/
 
@@ -26,6 +22,9 @@ tort_v _tort_M_pair__new(tort_thread_param tort_v pair_mt, tort_v a, tort_v d)
   {									\
     return tort_ref(tort_pair, rcvr)->X;				\
   }									\
+  tort_v tort_##X(tort_v rcvr) {					\
+    return tort_send(tort_s(X), rcvr);					\
+  }									\
   tort_v _tort_m_pair__set_##X##E(tort_thread_param tort_v rcvr,	\
 			       tort_v val)				\
   {									\
@@ -37,6 +36,23 @@ ACCESSOR(car)
 ACCESSOR(cdr)
 
 #undef ACCESSOR
+
+tort_v tort_caar(tort_v v) 
+{
+  return tort_car(tort_car(v));
+}
+tort_v tort_cdar(tort_v v) 
+{
+  return tort_cdr(tort_car(v));
+}
+tort_v tort_cadr(tort_v v) 
+{
+  return tort_car(tort_cdr(v));
+}
+tort_v tort_cddr(tort_v v) 
+{
+  return tort_cdr(tort_cdr(v));
+}
 
 
 tort_v _tort_m_list__size(tort_thread_param tort_v rcvr) /**/
