@@ -41,10 +41,12 @@ struct tort_message {
 } tort_message;
 
 #define tort_thread_param tort_message *_tort_message,
-#define tort_thread_arg          _tort_message,
+#define tort_tp tort_thread_param
+#define tort_thread_arg                 _tort_message,
+#define tort_ta tort_thread_arg
 
-#define tort_lookup_decl(X) tort_v X (tort_thread_param tort_v rcvr, ...)
-#define tort_apply_decl(X)  tort_v X (tort_thread_param tort_v rcvr, ...)
+#define tort_lookup_decl(X) tort_v X (tort_tp tort_v rcvr, ...)
+#define tort_apply_decl(X)  tort_v X (tort_tp tort_v rcvr, ...)
 
 typedef
 struct tort_header {
@@ -302,11 +304,11 @@ tort_lookup_decl(_tort_object_lookupf);
 tort_apply_decl(_tort_object_applyf);
 
 #if TORT_ALLOC_DEBUG
-tort_v _tort_allocate (tort_thread_param tort_v meth_table, size_t size, const char *alloc_file, int alloc_line);
-#define tort_allocate(_1, _2) _tort_allocate(tort_thread_arg _1, _2, __FILE__, __LINE__)
+tort_v _tort_allocate (tort_tp tort_v meth_table, size_t size, const char *alloc_file, int alloc_line);
+#define tort_allocate(_1, _2) _tort_allocate(tort_ta _1, _2, __FILE__, __LINE__)
 #else
-tort_v _tort_allocate (tort_thread_param tort_v meth_table, size_t size);
-#define tort_allocate(_1, _2) _tort_allocate(tort_thread_arg _1, _2)
+tort_v _tort_allocate (tort_tp tort_v meth_table, size_t size);
+#define tort_allocate(_1, _2) _tort_allocate(tort_ta _1, _2)
 #endif
 
 #if TORT_MULTIPLICITY
