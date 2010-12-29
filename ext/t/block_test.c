@@ -15,7 +15,16 @@ int main(int argc, char **argv, char **environ)
 
   io = tort_stdout;
 
-  v = tort_vector_new(0, 10);
+  tort_block_(a, tort_v obj) {
+    printf("  block a obj = %lld\n", (long long) tort_I(obj));
+    return tort_i(tort_I(obj) << 2);
+  } tort_block_END(a);
+  v = tort_send(tort_s(value), a, tort_i(5));
+  tort_printf(io, "\nv = ", v);
+  tort_inspect(io, v);
+  tort_printf(io, "\n\n");
+
+  v = tort_send(tort_s(_new), tort_mt(vector), 0, 10);
   
   i = 0;
   tort_block_(b, tort_v obj) {
