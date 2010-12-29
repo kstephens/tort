@@ -27,6 +27,7 @@ enum tort_fiber_status_t {
 } tort_fiber_status_t;
 
 struct tort_fiber_t {
+  void *data;
   tort_fiber_status_t status;
   jmp_buf _jb;
 #define _tort_setjmp(F) setjmp((F)->_jb)
