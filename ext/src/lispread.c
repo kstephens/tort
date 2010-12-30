@@ -97,8 +97,14 @@ ERROR(format,...)   Raise an error using the printf() format.
   ({ int _pc = GETC(stream); if ( _pc != EOF ) UNGETC(stream, _pc); _pc; })
 #endif
 
-#ifndef READ_DEBUG_WHITESPACE
-#define READ_DEBUG_WHITESPACE 0
+#ifndef READ_DEBUG
+#ifdef READ_DEBUG_WHITESPACE
+#define READ_DEBUG 1
+#endif
+#endif
+
+#ifndef READ_DEBUG
+#define READ_DEBUG 0
 #endif
 
 static
@@ -108,31 +114,31 @@ int eat_whitespace_peekchar(VALUE stream)
 
  more_whitespace:
   while ( (c = PEEKC(stream)) != EOF && isspace(c) ) {
-#if READ_DEBUG_WHITESPACE
-    fprintf(stderr, "  read: eat_whitespace_peekchar(): whitespace '%c'\n", (int) c);
-    fflush(stderr);
-#endif
+    if ( READ_DEBUG > 1 ) {
+      fprintf(stderr, "  read: eat_whitespace_peekchar(): whitespace '%c'\n", (int) c);
+      fflush(stderr);
+    }
     GETC(stream);
   }
   if ( c == ';' ) {
-#if READ_DEBUG_WHITESPACE
-    fprintf(stderr, "  read: eat_whitespace_peekchar(): comment start '%c'\n", (int) c);
-    fflush(stderr);
-#endif
-    while ( (c = PEEKC(stream)) != EOF && c != '\n' ) {
-#if READ_DEBUG_WHITESPACE
-      fprintf(stderr, "  read: eat_whitespace_peekchar(): comment in '%c'\n", (int) c);
+    if ( READ_DEBUG > 0 ) {
+      fprintf(stderr, "  read: eat_whitespace_peekchar(): comment start '%c'\n", (int) c);
       fflush(stderr);
-#endif
+    }
+    while ( (c = PEEKC(stream)) != EOF && c != '\n' ) {
+      if ( READ_DEBUG > 1 ) {
+	fprintf(stderr, "  read: eat_whitespace_peekchar(): comment in '%c'\n", (int) c);
+	fflush(stderr);
+      }
       GETC(stream);
     }
     goto more_whitespace;
   }
 
-#if READ_DEBUG_WHITESPACE
-  fprintf(stderr, "  read: eat_whitespace_peekchar(): done '%c'\n", (int) c);
-  fflush(stderr);
-#endif
+  if ( READ_DEBUG > 0 ) {
+    fprintf(stderr, "  read: eat_whitespace_peekchar(): done '%c'\n", (int) c);
+    fflush(stderr);
+  }
 
   return(c);
 }
