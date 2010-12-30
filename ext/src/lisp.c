@@ -2,18 +2,12 @@
 
 /********************************************************************/
 
-tort_v tort_cons(tort_v a, tort_v d)
-{
-  tort_v val = tort_allocate(tort_mt(pair), sizeof(tort_pair));
-  tort_ref(tort_pair, val)->car = a;
-  tort_ref(tort_pair, val)->cdr = d;
-  return val;
-}
-
-
 tort_v _tort_M_pair__new(tort_thread_param tort_v pair_mt, tort_v a, tort_v d)
 {
-  return tort_cons(a, d);
+  tort_pair *pair = tort_send(tort__s(_allocate), pair_mt, sizeof(*pair));
+  pair->car = a;
+  pair->cdr = d;
+  return pair;
 }
 
 
@@ -83,9 +77,7 @@ tort_v _tort_m_list__lisp_write(tort_thread_param tort_v rcvr, tort_v io) /**/
     if ( tort_h_mtable(rcvr) == tort_mt(pair) ) {
       tort_send(tort_s(lisp_write), tort_ref(tort_pair, rcvr)->car, io);
       rcvr = tort_ref(tort_pair, rcvr)->cdr;
-      if ( rcvr == tort_nil ) {
-	break;
-      }
+      if ( rcvr == tort_nil ) break;
     } else {
       tort_printf(io, ". ");
       tort_send(tort_s(lisp_write), rcvr, io);
@@ -203,7 +195,7 @@ tort_v _tort_m_io__lisp_read (tort_thread_param tort_v stream)
 #define GETC(s) fgetc(FP(s))
 #define UNGETC(s, c) ungetc(c, FP(s))
 #define EOS tort_eos
-#define CONS(x,y) tort_cons(x, y)
+#define CONS(x,y) tort_send(tort_s(new), tort_mt(pair), x, y)
 #define SET_CDR(CONS,V) tort_send(tort_s(set_cdrE), CONS, V)
 #define MAKE_CHAR(I) tort_i(I)
 #define STRING(b, l) tort_string_new(b, l)

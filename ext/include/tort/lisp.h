@@ -7,7 +7,7 @@ typedef struct tort_pair {
   tort_v car, cdr;
 } tort_pair;
 
-tort_v tort_cons(tort_v a, tort_v b);
+#define tort_cons(A,R) tort_send(tort__s(new), tort_mt(pair), A, R)
 tort_v tort_car(tort_v x);
 tort_v tort_cdr(tort_v x);
 tort_v tort_caar(tort_v x);
