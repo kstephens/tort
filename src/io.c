@@ -87,14 +87,23 @@ tort_v _tort_m_io__close(tort_thread_param tort_v rcvr)
 }
 
 
-tort_v _tort_m_io____write(tort_thread_param tort_v rcvr, tort_v str)
+tort_v _tort_m_io____write(tort_thread_param tort_v rcvr, void *data, size_t size)
 {
-  size_t size =
-    fwrite(tort_string_data(str), 
-	   sizeof(tort_string_data(str)[0]),
-	   tort_string_size(str), 
+  size =
+    fwrite(data, 
+	   1,
+	   size,
 	   FP);
   return tort_i(size);
+}
+
+tort_v _tort_m_io___write(tort_thread_param tort_v rcvr, tort_v str)
+{
+  return 
+    tort_send(tort_s(__write), 
+	      rcvr, 
+	      tort_string_data(str),
+	      tort_string_size(str));
 }
 
 
@@ -103,16 +112,6 @@ tort_v _tort_m_io__flush(tort_thread_param tort_v rcvr)
   if ( FP ) {
     fflush(FP);
   }
-  return rcvr;
-}
-
-
-tort_v _tort_m_io__printf(tort_thread_param tort_v rcvr, const char *fmt, ...)
-{
-  va_list vap;
-  va_start(vap, fmt);
-  vfprintf(FP, fmt, vap);
-  va_end(vap);
   return rcvr;
 }
 
@@ -163,61 +162,7 @@ tort_v _tort_m_io____finalize(tort_thread_param tort_v rcvr)
 
 /********************************************************************/
 
-
-#ifdef __LINUX__
-int 
-_tort_printf_object (FILE *stream,
-		     __const struct printf_info *info,
-		     __const void *__const *args
-		     )
-{
-  tort_v v;
-  int len = 128; /* ??? */
-
-  v = *(tort_v*) args[0];
-  v = tort_inspect(FP_TORT_OBJ(stream), v);
-
-  return len;
-}
-
-
-static
-int 
-_tort_printf_object_lisp (FILE *stream,
-		     __const struct printf_info *info,
-		     __const void *__const *args
-		     )
-{
-  tort_v v;
-  int len = 128; /* ??? */
-
-  v = *(tort_v*) args[0];
-  v = tort_send(tort__s(lisp_write), v, FP_TORT_OBJ(stream));
-
-  return len;
-}
-
-
-static int
-_tort_printf_extension_arginfo (
-				    const struct printf_info *info, 
-				    size_t n,
-				    int *argtypes, 
-				    int *size
-				    )
-{
-  if (n > 0) {
-    argtypes[0] = PA_POINTER;
-    size[0] = sizeof(tort_v);
-  }
-  return 1;
-}
-#endif
-
-
-/********************************************************************/
-
-
+extern tort_v tort_runtime_initialize_printf();
 tort_v tort_runtime_initialize_io()
 {
   tort_stdin  = _tort_m_io____create(tort_thread_arg 0, stdin);
@@ -226,16 +171,7 @@ tort_v tort_runtime_initialize_io()
 
   tort_eos    = tort_allocate(tort__mt(eos), sizeof(tort_object));
 
-#ifdef __LINUX__
-  /* Register the print functions for tort_v.  */
-  register_printf_specifier('T', 
-			    _tort_printf_object,
-			    _tort_printf_extension_arginfo);
-
-  register_printf_specifier('O', 
-			    _tort_printf_object_lisp,
-			    _tort_printf_extension_arginfo);
-#endif
+  tort_runtime_initialize_printf();
 
   return tort__mt(io);
 }

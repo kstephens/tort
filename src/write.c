@@ -27,7 +27,11 @@ tort_v _tort_m_object___inspect(tort_thread_param tort_v rcvr, tort_v io)
 
 tort_v _tort_m_tagged___inspect(tort_thread_param tort_v rcvr, tort_v io)
 {
-  printf("%ld", (long) tort_tagged_data(rcvr));
+  if ( sizeof(tort_v) == sizeof(long long) ) {
+    printf("%lld", (long long) tort_tagged_data(rcvr));
+  } else {
+    printf("%ld", (long) tort_tagged_data(rcvr));
+  }
   return tort_nil;
 }
 
@@ -51,9 +55,9 @@ tort_v _tort_m_vector___inspect(tort_thread_param tort_v rcvr, tort_v io)
 }
 
 
-tort_v _tort_m_symbol___inspect(tort_thread_param tort_v rcvr, tort_v io)
+tort_v _tort_m_symbol___inspect(tort_tp tort_symbol *rcvr, tort_v io)
 {
-  if ( tort_ref(tort_symbol, rcvr)->name != tort_nil ) {
+  if ( rcvr->name != tort_nil ) {
     printf("%s", (char *) tort_symbol_data(rcvr));
   } else {
     printf("@symbol @%p", (void*) rcvr);
@@ -76,24 +80,25 @@ tort_v _tort_m_boolean___inspect(tort_thread_param tort_v rcvr, tort_v io)
 }
 
 
-tort_v _tort_m_method___inspect(tort_thread_param tort_v rcvr, tort_v io)
+tort_v _tort_m_method___inspect(tort_tp tort_method *meth, tort_v io)
 {
-  tort_v meth_name = tort_ref(tort_method, rcvr)->name;
+  tort_v meth_name = meth->name;
   const char *meth_cstr = meth_name ? tort_symbol_data(meth_name) : "#<unknown>";
-  printf("@method %s @%p", meth_cstr, (void *) tort_h_applyf(rcvr));
+  printf("@method %s @%p", meth_cstr, (void *) tort_h_applyf(meth));
   return tort_nil;
 }
 
 
-tort_v _tort_m_message___inspect(tort_thread_param tort_v rcvr, tort_v io)
+tort_v _tort_m_message___inspect(tort_tp tort_message *msg, tort_v io)
 {
-  tort_message *msg = tort_ref(tort_message, rcvr);
   printf("@message { ");
   tort_inspect(IO, msg->selector);
-  printf(" ");
+  printf(", ");
   tort_inspect(IO, msg->receiver);
-  printf(" ");
+  printf(", ");
   tort_inspect(IO, msg->method);
+  printf(", ");
+  tort_inspect(IO, msg->mtable);
   printf("}");
  
   return tort_nil;
@@ -102,23 +107,17 @@ tort_v _tort_m_message___inspect(tort_thread_param tort_v rcvr, tort_v io)
 
 tort_v _tort_m_map___inspect(tort_thread_param tort_v rcvr, tort_v io)
 {
-  tort_map_entry **x = tort_map_data(rcvr), *entry;
   size_t entry_i = 0;
+  printf("@map { \n  ");
+  tort_map_EACH(rcvr, entry) {
+    if ( entry_i > 0 ) printf(",\n  ");
+    tort_inspect(IO, entry->key);
+    printf(" => ");
+    tort_inspect(IO, entry->value);
+    entry_i ++;
+  } tort_map_EACH_END();
+  printf("  }");
 
-  const char *str = tort_object_name_(rcvr);
-  if ( str ) {
-    printf("%s", str);
-  } else {
-    printf("@map { ");
-    while ( (entry = *(x ++)) ) {
-      if ( entry_i > 0 ) printf(", ");
-      tort_inspect(IO, entry->key);
-      printf(" => ");
-      tort_inspect(IO, entry->value);
-      entry_i ++;
-    }
-    printf(" }");
-  }
   return tort_nil;
 }
 

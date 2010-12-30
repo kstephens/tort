@@ -1,7 +1,17 @@
 
 tort debugger:
 rcvr = @io @x1
-backtrace =   @message { __debugger @io @x1 @method __debugger @x2}
+backtrace =   @message { __debugger, @io @x1, @method __debugger @x2, @map { 
+  __finalize => @method __finalize @x3,
+  __debugger => @method __debugger @x2,
+  __message => @method __message @x4,
+  __register_finalizer => @method __register_finalizer @x5,
+  _alloc_size => @method _alloc_size @x6,
+  _inspect => @method _inspect @x7,
+  _mtable => @method _mtable @x8,
+  _name => @method _name @x9,
+  clone => @method clone @x10,
+  identity => @method identity @x3  }}
 
 HELLO!
 

@@ -4,16 +4,6 @@ v[1] = nil
 v => @vector { nil, 1, nil, nil, nil, nil, nil, nil, nil, nil }
 v[1] => 1
 v => @vector { nil, 1, nil, nil, nil, nil, nil, nil, nil, nil }
-  in each @x1[1] => nil
-  in each @x1[2] => 1
-  in each @x1[3] => nil
-  in each @x1[4] => nil
-  in each @x1[5] => nil
-  in each @x1[6] => nil
-  in each @x1[7] => nil
-  in each @x1[8] => nil
-  in each @x1[9] => nil
-  in each @x1[10] => nil
-v = @vector { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 }
 
+  (clone v) => @vector { nil, 1, nil, nil, nil, nil, nil, nil, nil, nil }
 DONE

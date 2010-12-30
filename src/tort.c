@@ -56,12 +56,13 @@ tort_v _tort_m_object__identity (tort_thread_param tort_v rcvr)
 #if TORT_GLOBAL_MCACHE
 
 typedef struct tort_mcache_entry {
-  tort_v mt;
+  tort_v mt; /* The starting mtable. */
   tort_v sel;
 #if TORT_MCACHE_USE_SYMBOL_VERSION
   tort_v sel_version;
 #endif
-  tort_v meth;
+  tort_v method; /* The method if found. */
+  tort_mtable *mtable; /* The mtable the method was found in. */
 } tort_mcache_entry;
 
 #define mcache_size 1021
@@ -94,7 +95,7 @@ void _tort_mcache_stats()
 #endif
 
 
-tort_v _tort_m_mtable___delegate_changed(tort_thread_param tort_v rcvr)
+tort_v _tort_m_mtable___delegate_changed(tort_tp tort_mtable *rcvr)
 {
 #if TORT_GLOBAL_MCACHE
   memset(&mcache, 0, sizeof(mcache));
@@ -102,21 +103,21 @@ tort_v _tort_m_mtable___delegate_changed(tort_thread_param tort_v rcvr)
   return rcvr;
 }
 
-tort_v _tort_m_mtable__delegate(tort_thread_param tort_v rcvr)
+tort_v _tort_m_mtable__delegate(tort_tp tort_mtable *rcvr)
 {
-  return tort_ref(tort_mtable, rcvr)->delegate;
+  return rcvr->delegate;
 }
 
-tort_v _tort_m_mtable__set_delegate(tort_thread_param tort_v rcvr, tort_v delegate)
+tort_v _tort_m_mtable__set_delegate(tort_tp tort_mtable *rcvr, tort_v delegate)
 {
-  if ( tort_ref(tort_mtable, rcvr)->delegate != delegate ) {
-    tort_ref(tort_mtable, rcvr)->delegate = delegate;
+  if ( rcvr->delegate != delegate ) {
+    rcvr->delegate = delegate;
     tort_send(tort__s(_delegate_changed), rcvr);
   }
   return rcvr;
 }
 
-tort_v _tort_m_mtable___method_changed(tort_thread_param tort_v rcvr, tort_v sym, tort_v meth)
+tort_v _tort_m_mtable___method_changed(tort_tp tort_mtable *rcvr, tort_v sym, tort_v meth)
 {
 #if TORT_GLOBAL_MCACHE
 #if TORT_MCACHE_USE_SYMBOL_VERSION
@@ -140,8 +141,8 @@ tort_v _tort_m_mtable___method_changed(tort_thread_param tort_v rcvr, tort_v sym
 
 tort_lookup_decl(_tort_object_lookupf)
 {
-  tort_v meth = tort_nil;
-  tort_v mtable, sel;
+  tort_v method = tort_nil, sel;
+  tort_mtable *mtable;
 
 #if 0
   tort_(message) = _tort_message;
@@ -170,22 +171,24 @@ tort_lookup_decl(_tort_object_lookupf)
      ((size_t) sel)
      );
   tort_mcache_entry *mce = &mcache[i % mcache_size];
-  if (    mce->mt == mtable && TORT_MCACHE_STAT(++ mcache_stats.hit_mtable_n)
-       && mce->sel == sel && TORT_MCACHE_STAT(++ mcache_stats.hit_sel_n)
+  if (    mce->mt  == mtable && TORT_MCACHE_STAT(++ mcache_stats.hit_mtable_n)
+       && mce->sel == sel    && TORT_MCACHE_STAT(++ mcache_stats.hit_sel_n)
 #if TORT_MCACHE_USE_SYMBOL_VERSION
        && mce->sel_version == tort_ref(tort_symbol, sel)->version && TORT_MCACHE_STAT(++ mcache_stats.hit_sel_version_n)
 #endif
        ) {
     (void) TORT_MCACHE_STAT(mcache_stats.hit_n ++);
     // fprintf(stderr, "+"); fflush(stderr);
-    meth = mce->meth;
+    /* Use mcache entry. */
+    method = mce->method;
+    mtable = mce->mtable;
   } else {
 #endif
 
     do {
-      meth =
+      method =
 	_tort_m_map__get(tort_thread_arg
-			 mtable, 
+			 (tort_v) mtable, 
 			 sel);
       
 #if TORT_LOOKUP_TRACE
@@ -194,26 +197,29 @@ tort_lookup_decl(_tort_object_lookupf)
 	      tort_object_name(meth));
 #endif
       
-      if ( meth != tort_nil )
+      if ( method != tort_nil )
 	break;
 
-      assert(! meth);
+      assert(! method);
       
-      mtable = tort_ref(tort_mtable, mtable)->delegate;
+      mtable = mtable->delegate;
     } while ( mtable != tort_nil );
 
 #if TORT_GLOBAL_MCACHE
+    /* fill mcache entry. */
     // fprintf(stderr, "-");
-    mce->mt = tort_h_mtable(tort_ref(tort_message, _tort_message)->receiver);
+    mce->mt  = tort_h_mtable(_tort_message->receiver);
     mce->sel = sel;
 #if TORT_MCACHE_USE_SYMBOL_VERSION
     mce->sel_version = tort_ref(tort_symbol, mce->sel)->version;
 #endif
-    mce->meth = meth;
+    mce->method = method;
+    mce->mtable = mtable;
   }
 #endif
 
-  _tort_message->method = meth;
+  _tort_message->method = method;
+  _tort_message->mtable = mtable;
 
   return _tort_message;
 }

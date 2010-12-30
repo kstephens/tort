@@ -36,9 +36,9 @@ struct tort_message {
   tort_symbol *selector;
   tort_v receiver;
   tort_v previous_message;
-  tort_v fiber;
-  tort_v method;
-  tort_mtable *impl;
+  tort_v fiber; /* the sending fiber */
+  tort_v method; /* the found method. */
+  tort_mtable *mtable; /* the mtable where the method was found. */
 } tort_message;
 
 #define tort_thread_param tort_message *_tort_message,

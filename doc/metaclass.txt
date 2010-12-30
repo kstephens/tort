@@ -1,0 +1,18 @@
+
+
+object mtable relationships with class mtable.
+
+
+                                                +-----------------+
+                        +-----------------------+    ___________  |
+       _______________  |    _________________  |  / mtable mt |  | 
+     / cls_mt        |  |  / delegate cls mt |  |  | mtable    |--+
+     | mtable        |--+  | mtable          |--+->| delegate  |----> ? 
+  +->| delegate      |--+->| delegate        |      -----------
+  |   _______________   |   _________________
+  |   _______________   |   _________________
+  |  / obj_mt        |  |  / delegate mt     | 
+  +--| mtable        |  +--| mtable          |
+     | delegate      |---->| delegate        |----> ?
+      ---------------       -----------------
+
