@@ -16,6 +16,7 @@ static tort_symbol_mapping mappings[] =
 #define BOP(N,OP) { #N, #OP },
 #define ROP(N,OP) { #N, #OP },
 #include "tort/ops.h"
+    { "D",    "-" },
     { "P",    "%" },
     { "E",    "!" },
     { "Q",    "?" },

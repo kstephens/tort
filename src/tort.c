@@ -15,65 +15,6 @@ tort_message *_tort_message;
 tort_v _tort_fiber;
 
 /********************************************************************/
-
-
-unsigned long _tort_alloc_id = 0;
-
-tort_v _tort_allocate(tort_thread_param tort_v mtable, size_t size
-#if TORT_ALLOC_DEBUG
-		      ,const char *alloc_file, int alloc_line, 
-#endif
-)
-{
-  tort_v val = _tort_m_mtable___allocate(tort_thread_arg mtable, size);
-#if TORT_ALLOC_DEBUG
-  tort_h_ref(val)->alloc_file = alloc_file;
-  tort_h_ref(val)->alloc_line = alloc_line;
-  tort_h_ref(val)->alloc_id   = _tort_alloc_id;
-
-  if ( _tort_alloc_id == 0 ) {
-    fprintf(stderr, "\nSTOP AT ALLOC ID = %lu\n", _tort_alloc_id);
-    abort();
-  }
-#endif
-  return val;
-}
-
-
-tort_v _tort_m_mtable__allocate (tort_tp tort_mtable *mtable)
-{
-  return _tort_m_mtable___allocate(tort_ta mtable, mtable->instance_size);
-}
-
-tort_v _tort_m_mtable___allocate (tort_thread_param tort_mtable *mtable, size_t size)
-{
-  tort_v val;
-  void *ptr;
-  size_t alloc_size = sizeof(tort_header) + size;
-
-  assert(size);
-  assert(alloc_size > size);
-
-  /* HACK: save the instance size in the mtable. */
-  if ( mtable && ! mtable->instance_size ) {
-    mtable->instance_size = size;
-  }
-
-  ptr = tort_malloc(alloc_size);
-  ptr += sizeof(tort_header);
-  val = tort_ref_box(ptr);
-
-  tort_h_ref(val)->alloc_size = size;
-  tort_h_ref(val)->lookupf = _tort_object_lookupf;
-  tort_h_ref(val)->applyf  = _tort_object_applyf;
-  tort_h_ref(val)->mtable  = mtable;
-
-  ++ _tort_alloc_id;
-
-  return val;
-}
-
-
 tort_v _tort_m_object___mtable (tort_thread_param tort_v rcvr)
 {
   return tort_i(tort_h_ref(rcvr)->mtable);
@@ -174,7 +115,6 @@ tort_v _tort_m_mtable__set_delegate(tort_thread_param tort_v rcvr, tort_v delega
   }
   return rcvr;
 }
-
 
 tort_v _tort_m_mtable___method_changed(tort_thread_param tort_v rcvr, tort_v sym, tort_v meth)
 {
@@ -306,41 +246,6 @@ tort_v tort_object_make()
   tort_v obj = tort_allocate(tort__mt(object), sizeof(tort_object));
   return obj;
 }
-
-
-tort_v _tort_m_mtable__add_method (tort_thread_param tort_v map, tort_v sym, tort_v func)
-{
-  tort_v meth = tort_method_make((void*) tort_I(func));
-  tort_ref(tort_method, meth)->name = sym;
-  tort_ref(tort_symbol, sym)->version += 2;
-  _tort_m_map__set(tort_thread_arg map, sym, meth);
-  _tort_m_mtable___method_changed(tort_thread_arg map, sym, meth);
-  return meth;
-}
-
-
-tort_v tort_add_method(tort_v mtable, const char *name, void *applyf)
-{
-  tort_v sym = tort_symbol_make(name);
-  tort_v meth = tort_i(applyf);
-  return _tort_m_mtable__add_method(tort_thread_arg mtable, sym, meth);
-}
-
-tort_v tort_add_class_method(tort_v mtable, const char *name, void *applyf)
-{
-  return tort_add_method(tort_h_ref(mtable)->mtable, name, applyf);
-}
-
-tort_v tort_method_make(tort_apply_decl((*applyf)))
-{
-  tort_v val = tort_allocate(tort__mt(method), sizeof(tort_method));
-  tort_method *meth = tort_ref(tort_method, val);
-  meth->name = 0;
-  val = tort_ref_box(meth);
-  tort_h_ref(val)->applyf = applyf;
-  return val;
-}
-
 
 
 tort_v tort_runtime_initialize_tort()
