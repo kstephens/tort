@@ -4,7 +4,7 @@
 /********************************************************************/
 
 
-tort_v _tort_m_string___dlopen(tort_thread_param tort_v rcvr)
+tort_v _tort_m_string___dlopen(tort_tp tort_string *rcvr)
 {
   const char *file = tort_string_data(rcvr);
   void *dl;
@@ -13,7 +13,7 @@ tort_v _tort_m_string___dlopen(tort_thread_param tort_v rcvr)
   void *base_ptr;
  
   st = tort_map_create();
-  _tort_m_map___load_symtab(tort_thread_arg st, file, 0);
+  tort_send(tort_s(_load_symtab), st, file, 0);
 
   base_sym = tort_symbol_data(tort_map_data(st)[0]->key);
   base_ptr = (void*) tort_I(tort_map_data(st)[0]->value);
@@ -45,7 +45,7 @@ tort_v _tort_m_string___dlopen(tort_thread_param tort_v rcvr)
     }
 
     st = tort_map_create();
-    _tort_m_map___load_symtab(tort_thread_arg st, file, base_ptr);
+    tort_send(tort_s(_load_symtab), st, file, base_ptr);
     
     tort_send(tort_s(_run_initializers), st);
     tort_send(tort_s(_load_methods), st);
@@ -59,6 +59,8 @@ tort_v _tort_m_string___dlopen(tort_thread_param tort_v rcvr)
 }
 
 
+int _tort_dl_debug = 0;
+
 tort_v tort_m_map___run_initializers(tort_thread_param tort_v map)
 {
   static const char prefix[] = "_tort_runtime_initialize_";
@@ -70,7 +72,8 @@ tort_v tort_m_map___run_initializers(tort_thread_param tort_v map)
       void *ptr = (void*) tort_I(e->value);
       tort_v (*func)();
       func = ptr;
-      // fprintf(stderr, "  init %s => @%p\n", name,  ptr);
+      if ( _tort_dl_debug ) 
+	fprintf(stderr, "  init %s => @%p\n", name,  ptr);
       func();
      }
   }
@@ -93,7 +96,8 @@ static int process_method(int cmeth, const char *prefix, tort_map_entry *e)
 	cls = cls_buf;
 	meth += 2;
 	void *ptr = (void*) tort_I(e->value);
-	// fprintf(stderr, "  %s.%s => @%p\n", cls, meth, ptr);
+	if ( _tort_dl_debug ) 
+	  fprintf(stderr, "  method %s%c%s => @%p\n", cls, cmeth ? '.' : '#', meth, ptr);
 	tort_v mtable = tort_mtable_get(cls_buf);
 	if ( cmeth ) {
 	  mtable = tort_h_ref(mtable)->mtable;
@@ -122,9 +126,6 @@ tort_v tort_m_map___load_methods(tort_thread_param tort_v map)
 
 tort_v tort_runtime_initialize_dl()
 {
-  tort_add_method(tort__mt(string), "_dlopen", _tort_m_string___dlopen);
-  tort_add_method(tort__mt(map), "_run_initializers", tort_m_map___run_initializers);
-  tort_add_method(tort__mt(map), "_load_methods", tort_m_map___load_methods);
   return 0;
 }
 
