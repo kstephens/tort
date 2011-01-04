@@ -53,21 +53,19 @@ tort_v tort_caddr(tort_v v)
 }
 
 
-tort_v _tort_m_list__size(tort_thread_param tort_v rcvr) /**/
+tort_v _tort_m_list__size(tort_tp tort_pair *rcvr) /**/
 {
   size_t i = 0;
-
   while ( rcvr != tort_nil )  {
     ++ i;
     if ( tort_h_mtable(rcvr) == tort_mt(pair) ) {
-      rcvr = tort_ref(tort_pair, rcvr)->cdr;
+      rcvr = rcvr->cdr;
     } else {
       break;
     }
   }
   return tort_i(i);
 }
-
 
 
 tort_v _tort_m_list__lisp_write(tort_thread_param tort_v rcvr, tort_v io) /**/
@@ -122,7 +120,7 @@ tort_v _tort_m_object__lisp_write(tort_thread_param tort_v rcvr, tort_v io)
 }
 
 
-tort_v _tort_m_vector__lisp_write(tort_thread_param tort_v rcvr, tort_v io)
+tort_v _tort_m_vector__lisp_write(tort_tp tort_vector *rcvr, tort_v io)
 {
   printf("#(");
   tort_vector_loop(rcvr, obj) {
@@ -134,9 +132,9 @@ tort_v _tort_m_vector__lisp_write(tort_thread_param tort_v rcvr, tort_v io)
 }
 
 
-tort_v _tort_m_symbol__lisp_write(tort_thread_param tort_v rcvr, tort_v io)
+tort_v _tort_m_symbol__lisp_write(tort_tp tort_symbol *rcvr, tort_v io)
 {
-  if ( tort_ref(tort_symbol, rcvr)->name != tort_nil ) {
+  if ( rcvr->name != tort_nil ) {
     printf("%s", (char *) tort_symbol_data(rcvr));
   } else {
     printf("(make <symbol> @%p)", (void*) rcvr);
