@@ -19,7 +19,7 @@ tort_v _tort_M_pair__new(tort_thread_param tort_v pair_mt, tort_v a, tort_v d)
   tort_v tort_##X(tort_v rcvr) {					\
     return tort_send(tort_s(X), rcvr);					\
   }									\
-  tort_v _tort_m_pair__set_##X##E(tort_thread_param tort_v rcvr,	\
+  tort_v _tort_m_pair__setD##X##E(tort_thread_param tort_v rcvr,	\
 			       tort_v val)				\
   {									\
     tort_ref(tort_pair, rcvr)->X = val;					\
@@ -194,10 +194,10 @@ tort_v _tort_m_io__lisp_read (tort_thread_param tort_v stream)
 #define UNGETC(s, c) ungetc(c, FP(s))
 #define EOS tort_eos
 #define CONS(x,y) tort_send(tort_s(new), tort_mt(pair), x, y)
-#define SET_CDR(CONS,V) tort_send(tort_s(set_cdrE), CONS, V)
+#define SET_CDR(CONS,V) tort_send(tort_s(setDcdrE), CONS, V)
 #define MAKE_CHAR(I) tort_i(I)
 #define STRING(b, l) tort_string_new(b, l)
-#define LIST_2_VECTOR(X) tort_send(tort_s(list_TO__vector), X)
+#define LIST_2_VECTOR(X) tort_send(tort_s(list_TO_vector), X)
 #define SYMBOL_DOT tort_s(DOT)
 #define SYMBOL(NAME) tort_s(NAME)
 #define STRING_2_NUMBER(s, radix) _tort_string_to_number(s, radix)
