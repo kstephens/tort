@@ -10,7 +10,8 @@ int main(int argc, char **argv, char **environ)
   tort_v v;
  
   tort_runtime_create();
-  tort_send(tort_s(_dlopen), tort_string_new_cstr(LIB_DIR "/libtortext.dylib"));
+  // { extern int _tort_dl_debug; _tort_dl_debug = 1; }
+  tort_send(tort_s(_dlopen), tort_string_new_cstr("libtortext"));
 
   io = tort_stdout;
 

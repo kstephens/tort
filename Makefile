@@ -13,7 +13,7 @@ LIB_FLAGS += -rpath $(libdir) #
 CFLAGS_OPTIMIZE = -O2
 CFLAGS_OPTIMIZE = -O3
 #CFLAGS_OPTIMIZE = 
-CFLAGS += -DLIB_DIR='"$(libdir)"' #
+CFLAGS += -DTORT_DLIB_DIR='"$(libdir)"' -DTORT_DLIB_SUFFIX='".dylib"' #
 CFLAGS += -DUSE_GC=$(USE_GC) -fnested-functions -Iinclude -Iext/include -Iboot/include -I$(GC)/include -Wall -Werror -g $(CFLAGS_OPTIMIZE)
 
 ifeq "$(USE_GC)" "0"

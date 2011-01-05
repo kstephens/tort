@@ -14,7 +14,7 @@ int main(int argc, char **argv, char **environ)
 
   io = tort_stdout;
 
-  st = tort_send(tort_s(_dlopen), tort_string_new_cstr(LIB_DIR "/libtortext.dylib"));
+  st = tort_send(tort_s(_dlopen), tort_string_new_cstr("libtortext"));
 
   // tort_send(tort_s(_inspect), st, io);
   tort_send(tort_s(lisp_write), tort_nil, io);
