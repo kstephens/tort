@@ -1,0 +1,4 @@
+#!/bin/sh
+set -e
+${CC} ${CFLAGS} -D_tort_tort_h=2 -E - -o "$2" < src/integer.c
+

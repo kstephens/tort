@@ -11,4 +11,5 @@ gc-*/
 local/
 boot/
 include/tort/integer.h
+include/tort/*.new
 

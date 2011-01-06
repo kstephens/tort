@@ -24,10 +24,13 @@ endif
 
 ######################################################################
 
+GEN_FILES = 
+
 GEN_LIBS = 
 
-GEN_H_GEN_FILES = $(shell ls include/tort/*.gen | sort -u) include/tort/integer.h
+GEN_H_GEN_FILES = $(shell ls include/tort/*.h.gen | sort -u)
 GEN_H_FILES = $(GEN_H_GEN_FILES:%.gen=%)
+GEN_FILES += $(GEN_H_FILES)
 GEN_C_FILES = #
 
 LIB_CFILES := $(shell ls src/*.c $(GEN_C_FILES) | sort -u)
@@ -53,6 +56,9 @@ export LIBEXT_CFILES
 export LIBEXT_HFILES
 export LIBEXT_OFILES
 
+export CC
+export CFLAGS
+
 ######################################################################
 
 TEST_C_FILES = $(shell ls t/*.c ext/t/*.c | sort -u)
@@ -64,11 +70,24 @@ TEST_OUT_FILES = $(TEST_C_FILES:.c=.out)
 # default:
 #
 
-all : early-headers $(GEN_H_FILES) $(GEN_C_FILES) libs tests
+all : components tests
+
+components : early $(GEN_H_FILES) $(GEN_C_FILES) libs 
 
 libs : gc $(GEN_LIBS)
 
+early : early-headers early-files check-gen-new
+
 early-headers: boot/include/.touch
+
+GEN_FILES_NEW=$(GEN_FILES:%.gen=%.new)#
+
+check-gen-new : $(GEN_FILES_NEW)
+	@set -e ;\
+	for f in $(GEN_FILES_NEW:%.new=%) ;\
+	do \
+	  cmp -s "$$f.new" "$$f" || cp -p "$$f.new" "$$f" ;\
+	done
 
 boot/include/.touch :
 	set -ex; for f in $(GEN_H_FILES); do \
@@ -85,26 +104,21 @@ boot/include/.touch :
 
 includes : $(GEN_H_FILES)
 
-include/tort/internal.h : include/tort/internal.h.* ${LIB_CFILES} ${GEN_C_FILES} include/tort/integer.h
-	$@.gen $@
+early-files: $(GEN_H_FILES:%=%.new)
 
-include/tort/d_m.h  : include/tort/d_m.h.* ${LIB_CFILES} ${GEN_C_FILES} include/tort/integer.h include/tort/internal.h
-	$@.gen $@
+include/tort/internal.h.new : include/tort/internal.h.gen ${LIB_CFILES} ${GEN_C_FILES} include/tort/integer.h
+include/tort/d_m.h.new  : include/tort/d_m.h.gen ${LIB_CFILES} ${GEN_C_FILES} include/tort/integer.h include/tort/internal.h
+include/tort/d_mt.h.new : include/tort/d_mt.h.gen $(LIB_CFILES) $(GEN_C_FILES) include/tort/d_m.h
+include/tort/d_s.h.new : include/tort/d_s.h.gen $(LIB_CFILES) $(GEN_C_FILES) include/tort/d_m.h
 
-include/tort/d_mt.h : include/tort/d_mt.h.* $(LIB_CFILES) $(GEN_C_FILES) include/tort/d_m.h
-	$@.gen $@
-
-include/tort/d_s.h : include/tort/d_s.h.* $(LIB_CFILES) $(GEN_C_FILES) include/tort/d_m.h
-	$@.gen $@
+%.new : %.gen
+	$(@:.new=).gen $(@:.new=) $@
 
 ######################################################################
 # src:
 #
 
 srcs : $(GEN_C_FILES)
-
-include/tort/integer.h : src/integer.c
-	$(CC) $(CFLAGS) -D_tort_tort_h=2 -E - -o $@ < $<
 
 ######################################################################
 # object:
@@ -158,7 +172,7 @@ TEST_LIBS = $(LIB_TORTEXT) $(LIB_TORT)
 %.t : %.c 
 	$(LIBTOOL) --mode=link $(CC) $(CFLAGS) $(LDFLAGS) $(@:.t=.c) $(TEST_LIBS) $(LIBS) -o $@
 
-tests : all $(TEST_T_FILES) 
+tests : components $(TEST_T_FILES) 
 
 $(TEST_T_FILES) : $(TEST_LIBS)
 
