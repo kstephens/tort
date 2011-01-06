@@ -1,18 +1,18 @@
 #include "tort/core.h"
 
-#define IO io
-#define FP IO->fp
+#define FP io->fp
 
-tort_v _tort_m_io__printfv(tort_tp tort_io* io, const char *format, va_list *vapp)
+tort_v _tort_m_io___printfv(tort_tp tort_io* io, const char *format, size_t format_size, va_list *vapp)
 {
 #define vap (*vapp)
   const char *b = format, *e;
+  const char *fe = format + format_size;
 
-  while ( *b ) {
+  while ( b < fe ) {
     size_t size;
 
     e = b;
-    while ( *e && *e != '%' )
+    while ( e < fe && *e != '%' )
       ++ e;
 
     if ( (size = e - b) ) {
@@ -20,7 +20,7 @@ tort_v _tort_m_io__printfv(tort_tp tort_io* io, const char *format, va_list *vap
     }
 
     b = e;
-    if ( ! *b ) break;
+    if ( b >= fe ) break;
 
     if ( *b == '%' ) {
       int l = 0;
@@ -30,16 +30,15 @@ tort_v _tort_m_io__printfv(tort_tp tort_io* io, const char *format, va_list *vap
 #define FMT (*fp = 0, fmt)
       do {
 	if ( fp >= fmt + sizeof(fmt) ) abort();
+	if ( ! (b < fe) ) break; 
 	switch ( (*(fp ++) = *(b ++)) ) {
 	case 0:
 	  abort();
-	case '0': case '1': case '2': case '3': case '4':
-	case '5': case '6': case '7': case '8': case '9':
 	  break;
 	case 'l':
 	  ++ l;
 	  break;
-	case 'c': case 'd': case 'u': case 'o': case 'x': case 'X':
+	case 'c': case 'd': case 'i': case 'u': case 'o': case 'x': case 'X':
 	  switch ( l ) {
 	  case 0:
 	    fprintf(FP, FMT, va_arg(vap, int));
@@ -55,22 +54,34 @@ tort_v _tort_m_io__printfv(tort_tp tort_io* io, const char *format, va_list *vap
 	    break;
 	  }
 	  done = 1; break;
+	case 'g': case 'G': case 'f': case 'F': case 'a': case 'A':
+	  switch ( l ) {
+	  case 0:
+	    fprintf(FP, FMT, va_arg(vap, double));
+	    break;
+	  case 1:
+	    fprintf(FP, FMT, va_arg(vap, long double));
+	    break;
+	  default:
+	    abort();
+	    break;
+	  }
+	  done = 1; break;
 	case 'p':
 	  *fp = 0;
 	  fprintf(FP, FMT, va_arg(vap, void*));
 	  done = 1; break;
-	case 's':
+	case 's': case 'b':
 	  *fp = 0;
 	  fprintf(FP, FMT, va_arg(vap, char*));
 	  done = 1; break;
 	case 'T':
-	  tort_send(tort_s(_inspect), va_arg(vap, tort_v), IO);
+	  tort_send(tort_s(_inspect), va_arg(vap, tort_v), io);
 	  done = 1; break;
 	case 'O':
-	  tort_send(tort_s(lisp_write), va_arg(vap, tort_v), IO);
+	  tort_send(tort_s(lisp_write), va_arg(vap, tort_v), io);
 	  done = 1; break;
 	default:
-	  abort();
 	  break;
 	}
       } while ( ! done );
@@ -85,7 +96,7 @@ tort_v _tort_m_io__printf(tort_tp tort_io* io, const char *fmt, ...)
 {
   va_list vap;
   va_start(vap, fmt);
-  tort_send(tort_s(printfv), io, fmt, &vap);
+  tort_send(tort_s(_printfv), io, fmt, strlen(fmt), &vap);
   va_end(vap);
   return io;
 }
