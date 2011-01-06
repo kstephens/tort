@@ -28,9 +28,8 @@ tort_v _tort_m_mtable__allocate (tort_tp tort_mtable *mtable)
   return _tort_m_mtable___allocate(tort_ta mtable, mtable->instance_size);
 }
 
-tort_v _tort_m_mtable___allocate (tort_thread_param tort_mtable *mtable, size_t size)
+tort_v _tort_m_mtable___allocate (tort_tp tort_mtable *mtable, size_t size)
 {
-  tort_v val;
   void *ptr;
   size_t alloc_size = sizeof(tort_header) + size;
 
@@ -44,16 +43,15 @@ tort_v _tort_m_mtable___allocate (tort_thread_param tort_mtable *mtable, size_t 
 
   ptr = tort_malloc(alloc_size);
   ptr += sizeof(tort_header);
-  val = tort_ref_box(ptr);
 
-  tort_h_ref(val)->alloc_size = size;
-  tort_h_ref(val)->lookupf = _tort_object_lookupf;
-  tort_h_ref(val)->applyf  = _tort_object_applyf;
-  tort_h_ref(val)->mtable  = mtable;
+  tort_h_ref(ptr)->alloc_size = size;
+  tort_h_ref(ptr)->lookupf = _tort_object_lookupf;
+  tort_h_ref(ptr)->applyf  = _tort_object_applyf;
+  tort_h_ref(ptr)->mtable  = mtable;
 
   ++ _tort_alloc_id;
 
-  return val;
+  return ptr;
 }
 
 tort_v _tort_m_mtable__add_method (tort_thread_param tort_v map, tort_v sym, tort_v func)
