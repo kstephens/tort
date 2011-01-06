@@ -16,6 +16,12 @@ tort_symbol* _tort_M_symbol___create(tort_tp tort_mtable *mtable, tort_v name)
   return value;
 }
 
+tort_symbol* _tort_M_symbol__new(tort_tp tort_mtable *mtable, tort_v name)
+{
+  return tort_symbol_make(name != tort_nil ? tort_string_data(name) : 0);
+}
+
+
 tort_v tort_symbol_make(const char *string)
 {
   if ( string ) {
