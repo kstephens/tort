@@ -53,18 +53,15 @@ tort_v tort_runtime_create_ (int *argcp, char ***argvp, char ***envp)
   _tort_message = tort_nil;
   tort_(message) = tort_nil;
 
+  /* Create the core symbols. */
+  tort_runtime_initialize_symbol();
+
   /* Create the empty containers. */
   tort_string_null = _tort_m_string__new(0, 0, 0);
   tort_vector_null = _tort_m_vector__new(0, 0, 0);
 
-  /* Create the symbol table. */
-  tort_(symbols) = tort_map_create();
-  
   /* Create the root table. */
   tort_(root) = tort_map_create();
-
-  /* Create the core symbols. */
-  tort_runtime_initialize_symbol();
 
   /* Uncloneable objects. */
   tort_add_method(tort__mt(symbol),  "clone", _tort_m_object__identity);
