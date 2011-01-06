@@ -72,20 +72,8 @@ tort_v tort_runtime_create_ (int *argcp, char ***argvp, char ***envp)
   tort_add_method(tort__mt(tagged),  "clone", _tort_m_object__identity);
   tort_add_method(tort__mt(boolean), "clone", _tort_m_object__identity);
 
-  /* Basic object methods. */
-
-  /* Methods shared with vector_base. */
-  tort_add_method(tort__mt(vector_base), "size", _tort_m_vector_base__size);
-  tort_add_method(tort__mt(vector_base), "alloc_size", _tort_m_vector_base__alloc_size);
-
   /* Initialize system method table. */
   tort_h(_tort)->mtable = tort_mtable_create(tort__mt(object));
-
-  /* Prepare special symbol table get method. */
-  tort_h(tort_(symbols))->mtable = tort_mtable_create(tort_h_mtable(tort_(symbols)));
-  tort_add_method(tort_h_mtable(tort_(symbols)), "get", _tort_m_map__get_string);
-  tort_add_method(tort_h_mtable(tort_(symbols)), "set", _tort_m_object__identity);
-  tort_add_method(tort_h_mtable(tort_(symbols)), "delete", _tort_m_object__identity);
 
   /* Subsystem initialization. */
   tort_runtime_initialize_gc();
