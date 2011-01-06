@@ -21,6 +21,10 @@
 #define TORT_NIL_IS_ZERO 1 /* if true, use (tort_v) 0 as nil */
 #endif
 
+#ifndef TORT_FALSE_IS_NIL
+#define TORT_FALSE_IS_NIL 0 /* if true, tort_false = tort_nil */
+#endif
+
 #ifndef TORT_ALLOC_DEBUG
 #define TORT_ALLOC_DEBUG 0
 #endif

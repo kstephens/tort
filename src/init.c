@@ -42,7 +42,9 @@ tort_v tort_runtime_create_ (int *argcp, char ***argvp, char ***envp)
 
   /* Create the boolean objects. */
   tort_true = tort_allocate(tort__mt(boolean), sizeof(tort_object));
+#if ! TORT_FALSE_IS_NIL
   tort_false = tort_allocate(tort__mt(boolean), sizeof(tort_object));
+#endif
 
   /* Backpatch object delegate as nil. */
   tort_ref(tort_mtable, tort__mt(object))->delegate = tort_nil;

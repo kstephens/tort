@@ -293,7 +293,11 @@ extern tort_v _tort_fiber;
 #define tort_vector_null tort_(vector_null)
 
 #define tort_true  tort_(b_true)
+#if TORT_FALSE_IS_NIL
+#define tort_false tort_nil
+#else
 #define tort_false tort_(b_false)
+#endif
 
 void *tort_malloc(size_t size);
 void  tort_free(void *ptr);
