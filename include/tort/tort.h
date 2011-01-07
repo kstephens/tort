@@ -30,16 +30,7 @@ typedef void* tort_v;
 
 typedef struct tort_symbol tort_symbol;
 typedef struct tort_mtable tort_mtable;
-
-typedef
-struct tort_message {
-  tort_symbol *selector;
-  tort_v receiver;
-  tort_v previous_message;
-  tort_v fiber; /* the sending fiber */
-  tort_v method; /* the found method. */
-  tort_mtable *mtable; /* the mtable where the method was found. */
-} tort_message;
+typedef struct tort_message tort_message;
 
 #define tort_thread_param tort_message *_tort_message,
 #define tort_tp tort_thread_param
@@ -61,34 +52,49 @@ struct tort_header {
 #endif
   tort_mtable *mtable; /** The object's method table. */
 } tort_header;
+#define tort_H tort_header _h[0]
 
-#define tort_h_nil(X)    &tort_(nil_header)
-#define tort_h_tagged(X) &tort_(tagged_header)
-#define tort_h_ref(X)    (((struct tort_header*) tort_ref(tort_object, X)) - 1)
+#define tort_h_ref(X)    (((struct tort_header*) (X))-1)
+#define tort_h_tagged(X) (tort_taggedQ(X) ? &tort_(tagged_header) : tort_h_ref(X))
 
 #if TORT_NIL_IS_ZERO
-#define tort_nil ((tort_v) 0)
-#define tort_nilQ(X) ((X) == 0)
-#define tort_h(X)        ( tort_nilQ(X) ? tort_h_nil(X) : tort_taggedQ(X) ? tort_h_tagged(X) : tort_h_ref(X) )
+#define tort_h_nil(X)    &tort_(nil_header)
+#define tort_nil         ((tort_v) 0)
+#define tort_nilQ(X)     ((X) == 0)
+#define tort_h(X)        ( tort_nilQ(X) ? tort_h_nil(X) : tort_h_tagged(X) )
 #else
-#define tort_nil tort_(nil)
-#define tort_nilQ(X) ((X) == tort_nil)
-#define tort_h(X)        ( tort_taggedQ(X) ? tort_h_tagged(X) : tort_h_ref(X) )
+#define tort_nil         tort_(nil)
+#define tort_nilQ(X)     ((X) == tort_nil)
+#define tort_h(X)        tort_h_tagged(X)
 #endif
 
 #define tort_h_applyf(X)  tort_h(X)->applyf
 #define tort_h_lookupf(X) tort_h(X)->lookupf
 #define tort_h_mtable(X)  tort_h(X)->mtable
 
+struct tort_message { tort_H;
+  tort_symbol *selector;
+  tort_v receiver;
+  tort_v previous_message;
+  tort_v fiber; /* the sending fiber */
+  tort_v method; /* the found method. */
+  tort_mtable *mtable; /* the mtable where the method was found. */
+};
+
+typedef struct tort_message_ {
+  struct tort_header _h;
+  struct tort_message _msg;
+} tort_message_;
+
 typedef
-struct tort_object {
+struct tort_object { tort_H;
   tort_v *slots;
   size_t nslots;
   tort_v cmp;
 } tort_object;
 
 typedef 
-struct tort_vector_base { /* Same layout as tort_vector, tort_string. */
+struct tort_vector_base { tort_H; /* Same layout as tort_vector, tort_string. */
   void *data;
   size_t size;
   size_t alloc_size;
@@ -103,7 +109,7 @@ struct tort_vector_base { /* Same layout as tort_vector, tort_string. */
 tort_v tort_vector_base_new(tort_v mtable, const void *d, size_t s, size_t element_size);
 
 typedef
-struct tort_vector { /* Same layout as tort_vector_base. */
+struct tort_vector { tort_H; /* Same layout as tort_vector_base. */
   tort_v *data;
   size_t size;
   size_t alloc_size;
@@ -127,13 +133,13 @@ struct tort_vector { /* Same layout as tort_vector_base. */
 tort_v tort_vector_new(const tort_v *d, size_t s);
 
 typedef 
-struct tort_map_entry {
+struct tort_map_entry { tort_H;
   tort_v key;
   tort_v value;
 } tort_map_entry;
 
 typedef
-struct tort_map { /* Same layout as tort_vector_base. */
+struct tort_map { tort_H; /* Same layout as tort_vector_base. */
   tort_vector_base _vector_base;
 } tort_map;
 
@@ -147,7 +153,7 @@ struct tort_map { /* Same layout as tort_vector_base. */
 #define tort_map_EACH_END() }}
 
 typedef
-struct tort_string { /* Same layout as tort_vector_base. */
+struct tort_string { tort_H; /* Same layout as tort_vector_base. */
   char *data;
   size_t size;
   size_t alloc_size;
@@ -161,13 +167,13 @@ struct tort_string { /* Same layout as tort_vector_base. */
 tort_v tort_string_new(const char *d, size_t s);
 tort_v tort_string_new_cstr(const char *str);
 
-struct tort_mtable {
+struct tort_mtable { tort_H;
   tort_map _map;
   tort_mtable* delegate;
   size_t instance_size;
 };
 
-struct tort_symbol {
+struct tort_symbol { tort_H;
   tort_string *name;
   tort_v version;
 };
@@ -178,22 +184,17 @@ const char *tort_symbol_data(tort_v sym)
   return tort_string_data(tort_ref(tort_symbol, sym)->name);
 }
 
-tort_v tort_symbol_make(const char *string);
+tort_symbol* tort_symbol_make(const char *string);
 const char *tort_symbol_encode(const char *in);
 
 typedef
-struct tort_method {
+struct tort_method { tort_H;
   tort_v name;
   tort_v data;
 } tort_method;
 
-typedef struct _tort_message_data {
-  struct tort_header _hdr;
-  struct tort_message _msg;
-} _tort_message_data;
-
 typedef
-struct tort_io {
+struct tort_io { tort_H;
   FILE *fp;
   tort_v name;
   tort_v mode;
@@ -201,7 +202,7 @@ struct tort_io {
 } tort_io;
 
 typedef
-struct tort_runtime {
+struct tort_runtime { tort_H;
 #if ! TORT_NIL_IS_ZERO
   tort_v nil;
 #endif
@@ -241,16 +242,16 @@ struct tort_runtime {
   tort_v _initialized;
 } tort_runtime;
 
-typedef struct _tort_runtime_data {
-  struct tort_header _hdr;
+typedef struct tort_runtime_ {
+  struct tort_header _h;
   struct tort_runtime _runtime;
-} _tort_runtime_data;
+} tort_runtime_;
 
 extern tort_runtime *_tort;
 #if TORT_MULTIPLICITY
 #define tort_(X) _tort->X
 #else
-extern _tort_runtime_data __tort;
+extern tort_runtime_ __tort;
 #define tort_(X) __tort._runtime.X
 #endif
 
@@ -269,12 +270,12 @@ extern _tort_runtime_data __tort;
 #define _tort_send_RCVR_ARGS(RCVR, EATEN, ARGS...)RCVR, ##ARGS
 #define _tort_send(SEL, RCVR_AND_ARGS...)				\
   ({									\
-    _tort_message_data __tort_msg = {					\
+    tort_message_ __tort_msg = {					\
       { sizeof(tort_message),						\
 	_tort_object_lookupf,						\
 	_tort_object_applyf,						\
 	tort__mt(message) },						\
-      { (SEL),								\
+      { { }, (SEL),							\
 	_tort_send_RCVR(RCVR_AND_ARGS),					\
 	_tort_message,							\
 	_tort_message ? _tort_message->fiber : _tort_fiber		\

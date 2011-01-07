@@ -7,7 +7,7 @@
 #if TORT_MULTIPLICITY
 tort_runtime *_tort;
 #else
-_tort_runtime_data __tort = { { sizeof(tort_runtime), _tort_object_lookupf, _tort_object_applyf, 0 } };
+tort_runtime_ __tort = { { sizeof(tort_runtime), _tort_object_lookupf, _tort_object_applyf, 0 } };
 tort_runtime *_tort = &__tort._runtime;
 #endif
 

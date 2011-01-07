@@ -3,7 +3,7 @@
 
 #include "tort/core.h"
 
-typedef struct tort_pair {
+typedef struct tort_pair { tort_H;
   tort_v car, cdr;
 } tort_pair;
 

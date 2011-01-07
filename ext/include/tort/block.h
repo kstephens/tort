@@ -17,24 +17,24 @@
 
    This uses the GCC nested function feature; see gcc -fnested-functions.
 */
-typedef struct tort_block {
+typedef struct tort_block { tort_H;
   tort_message *scope;
   void *data;
 } tort_block;
 
-typedef struct _tort_block {
+typedef struct tort_block_ {
   tort_header _h;
   tort_block _block;
-} _tort_block;
+} tort_block_;
 
 #define tort_block_(BLK,PARAMS...)					\
-  _tort_block BLK##_ = {						\
+  tort_block_ BLK##_ = {						\
     { sizeof(tort_block),						\
       _tort_block_lookupf,						\
       _tort_object_applyf,						\
       tort__mt(block)							\
     },									\
-    { _tort_message, 0 },						\
+    { { }, _tort_message, 0 },						\
   };									\
   tort_block *BLK = &BLK##_._block;					\
   tort_v BLK##_f (tort_thread_param tort_block *_block, ##PARAMS)
