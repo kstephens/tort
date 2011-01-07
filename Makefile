@@ -191,18 +191,9 @@ test : tests
 	@echo "Testing:"
 	tool/t run $(TEST_FILES)
 
-valgrind : test
+valgrind : tests
 	@echo "Valgrind:"
-	@set -e ;\
-	errors=0 ;\
-	for f in $(TEST_FILES); do \
-	  in=/dev/null ;\
-	  if [ -f $$f.in ] ; then in=$$f.in ; fi ;\
-	  echo -n "  valgrind $$f.t < $$in: " ;\
-	  (TORT_GC=0 valgrind $$f.t <$$in || echo $$?) 2>&1 | t/filter-output ;\
-	  echo "ok" ;\
-	done ;\
-	exit $$errors
+	tool/t valgrind $(TEST_FILES)
 
 accept-test : $(TEST_T_FILES)
 	@set -ex; for f in $(TEST_FILES); do \
