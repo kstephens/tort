@@ -89,11 +89,14 @@ check-gen-new : $(GEN_FILES_NEW)
 	  cmp -s "$$f.new" "$$f" || cp -p "$$f.new" "$$f" ;\
 	done
 
+boot: boot/include/.touch
+
 boot/include/.touch :
 	set -ex; for f in $(GEN_H_FILES); do \
 	  dst="boot/$$f" ;\
 	  mkdir -p `dirname $$dst` ;\
 	  cat $$f.begin $$f.end > $$dst ;\
+	  cp "$$dst" "$$f" ;\
 	done
 	touch $@
 
@@ -106,10 +109,11 @@ includes : $(GEN_H_FILES)
 
 early-files: $(GEN_H_FILES:%=%.new)
 
-include/tort/internal.h.new : include/tort/internal.h.gen ${LIB_CFILES} ${GEN_C_FILES} include/tort/integer.h
-include/tort/d_m.h.new  : include/tort/d_m.h.gen ${LIB_CFILES} ${GEN_C_FILES} include/tort/integer.h include/tort/internal.h
-include/tort/d_mt.h.new : include/tort/d_mt.h.gen $(LIB_CFILES) $(GEN_C_FILES) include/tort/d_m.h
-include/tort/d_s.h.new : include/tort/d_s.h.gen $(LIB_CFILES) $(GEN_C_FILES) include/tort/d_m.h
+include/tort/internal.h.new : include/tort/internal.h.gen ${LIB_CFILES} ${GEN_C_FILES} $(shell ls include/tort/integer.h)
+include/tort/d_m.h.new  : include/tort/d_m.h.gen ${LIB_CFILES} ${GEN_C_FILES} $(shell ls include/tort/integer.h include/tort/internal.h)
+include/tort/d_mt.h.new : include/tort/d_mt.h.gen $(LIB_CFILES) $(GEN_C_FILES) $(shell ls include/tort/d_m.h)
+include/tort/d_s.h.new : include/tort/d_s.h.gen $(LIB_CFILES) $(GEN_C_FILES) $(shell ls include/tort/d_m.h)
+include/tort/integer.h.new : include/tort/integer.h.gen src/integer.c
 
 %.new : %.gen
 	$(@:.new=).gen $(@:.new=) $@
