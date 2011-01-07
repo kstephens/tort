@@ -189,9 +189,9 @@ run-test : tests
 
 test : tests
 	@echo "Testing:"
-	tool/t-run $(TEST_FILES)
+	tool/t run $(TEST_FILES)
 
-valgrind : $(TEST_T_FILES)
+valgrind : test
 	@echo "Valgrind:"
 	@set -e ;\
 	errors=0 ;\

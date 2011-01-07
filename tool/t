@@ -1,8 +1,12 @@
 #!/bin/bash
 errors=0
 tests=0
+action="$1"; shift
 for f in "$@"
 do
+  case "$action"
+  in
+    run)
     tests=`expr $tests + 1`
     in=/dev/null
     if [ -f $f.in ] ; then in=$f.in ; fi
@@ -18,7 +22,14 @@ do
 	grep '/bin/sh: line 1: ' $f.out && set -x && gdb --args `dirname $f`/.libs/`basename $f`.t
 	set +x 2>/dev/null
     fi 
-    echo "ok" 
-done 
-echo "DONE: errors/tests $errors/$tests" 
+    echo "ok"
+    ;;
+  esac 
+done
+case "$action"
+in
+  run)
+    echo "DONE: errors/tests $errors/$tests"
+  ;;
+esac 
 exit $errors
