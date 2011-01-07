@@ -31,6 +31,7 @@ typedef void* tort_v;
 typedef struct tort_symbol tort_symbol;
 typedef struct tort_mtable tort_mtable;
 typedef struct tort_message tort_message;
+typedef struct tort_method tort_method;
 
 #define tort_thread_param tort_message *_tort_message,
 #define tort_tp tort_thread_param
@@ -75,9 +76,9 @@ struct tort_header {
 struct tort_message { tort_H;
   tort_symbol *selector;
   tort_v receiver;
-  tort_v previous_message;
+  tort_message *previous_message;
   tort_v fiber; /* the sending fiber */
-  tort_v method; /* the found method. */
+  tort_method *method; /* the found method. */
   tort_mtable *mtable; /* the mtable where the method was found. */
 };
 
@@ -90,7 +91,7 @@ typedef
 struct tort_object { tort_H;
   tort_v *slots;
   size_t nslots;
-  tort_v cmp;
+  tort_v cmp; /* ??? */
 } tort_object;
 
 typedef 
@@ -187,11 +188,10 @@ const char *tort_symbol_data(tort_v sym)
 tort_symbol* tort_symbol_make(const char *string);
 const char *tort_symbol_encode(const char *in);
 
-typedef
 struct tort_method { tort_H;
   tort_v name;
   tort_v data;
-} tort_method;
+};
 
 typedef
 struct tort_io { tort_H;
