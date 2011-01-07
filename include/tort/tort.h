@@ -26,7 +26,7 @@ typedef void* tort_v;
 #define tort_i(V) tort_tagged_box(V)
 #define tort_I(X) tort_tagged_data(X)
 
-#define tort_error_decl(X)  tort_v X (const char *format, va_list vap)
+#define tort_error_decl(X)  tort_v X (const char *format, va_list *vapp)
 
 typedef struct tort_symbol tort_symbol;
 typedef struct tort_mtable tort_mtable;
@@ -262,7 +262,8 @@ extern tort_runtime_ __tort;
 
 #define tort_write(io, str) tort_send(tort__s(__write), io, str)
 #define tort_inspect(io, obj) tort_send(tort__s(_inspect), obj, io)
-#define tort_printf(io, fmt, args...) tort_send(tort__s(printf), io, fmt, ## args)
+#define tort_printf(io, fmt, args...) tort_send(tort__s(__printf), io, fmt, ## args)
+#define tort_printfv(io, fmt, vapp) tort_send(tort__s(__printfv), io, fmt, vapp)
 #define tort_flush(io) tort_send(tort_s(flush), io)
 
 #define _tort_send_RCVR(RCVR, ARGS...)(RCVR)

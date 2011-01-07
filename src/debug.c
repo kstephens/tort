@@ -10,7 +10,7 @@ void tort_debug_stop_at()
 
 
 #define IO tort_stderr
-#define printf(fmt, args...) tort_send(tort__s(printf), IO, fmt, ##args)
+#define printf(fmt, args...) tort_printf(IO, fmt, ##args)
 
 
 tort_v _tort_m_object____message(tort_thread_param tort_v rcvr)

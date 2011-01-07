@@ -1,16 +1,7 @@
 #include "tort/core.h"
 
-
-/********************************************************************/
-
-
 #define IO (io ? io : tort_stdout)
-
-#define printf(fmt, args...) tort_send(tort__s(printf), IO, fmt, ##args)
-
-
-/********************************************************************/
-
+#define printf(fmt, args...) tort_printf(IO, fmt, ##args)
 
 tort_v _tort_m_object___inspect(tort_thread_param tort_v rcvr, tort_v io)
 {

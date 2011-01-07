@@ -106,11 +106,8 @@ tort_v _tort_m_list__list_TO_vector(tort_thread_param tort_v rcvr, tort_v io) /*
 }
 
 
-/********************************************************************/
-
 #define IO (io ? io : tort_stdout)
-
-#define printf(fmt, args...) tort_send(tort__s(printf), IO, fmt, ##args)
+#define printf(fmt, args...) tort_printf(IO, fmt, ##args)
 
 
 tort_v _tort_m_object__lisp_write(tort_thread_param tort_v rcvr, tort_v io)

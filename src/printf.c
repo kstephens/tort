@@ -2,11 +2,10 @@
 
 #define FP io->fp
 
-tort_v _tort_m_io___printfv(tort_tp tort_io* io, const char *format, size_t format_size, va_list *vapp)
+tort_v _tort_m_io___printfv(tort_tp tort_io* io, const char *format, const char *fe, va_list *vapp)
 {
 #define vap (*vapp)
   const char *b = format, *e;
-  const char *fe = format + format_size;
 
   while ( b < fe ) {
     size_t size;
@@ -92,11 +91,16 @@ tort_v _tort_m_io___printfv(tort_tp tort_io* io, const char *format, size_t form
   return io;
 }
 
-tort_v _tort_m_io__printf(tort_tp tort_io* io, const char *fmt, ...)
+tort_v _tort_m_io____printfv(tort_tp tort_io* io, const char *fmt, va_list *vapp)
+{
+  return tort_send(tort_s(_printfv), io, fmt, strchr(fmt, 0), vapp);
+}
+
+tort_v _tort_m_io____printf(tort_tp tort_io* io, const char *fmt, ...)
 {
   va_list vap;
   va_start(vap, fmt);
-  tort_send(tort_s(_printfv), io, fmt, strlen(fmt), &vap);
+  io = _tort_m_io____printfv(tort_ta io, fmt, &vap);
   va_end(vap);
   return io;
 }
