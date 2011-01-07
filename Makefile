@@ -189,27 +189,7 @@ run-test : tests
 
 test : tests
 	@echo "Testing:"
-	@set -e ;\
-	errors=0 ;\
-	tests=0 ;\
-	for f in $(TEST_FILES); do \
-	  tests=`expr $$tests + 1` ;\
-	  in=/dev/null ;\
-	  if [ -f $$f.in ] ; then in=$$f.in ; fi ;\
-	  echo "========= test $$f.t < $$in: " ;\
-	  ($$f.t <$$in || echo $$?) 2>&1 | t/filter-output > $$f.out ;\
-	  if ! diff -U 10 $$f.exp $$f.out ; then \
-	    echo "========== $$f.out ==========" 1>&2 ;\
-	    cat $$f.out ;\
-	    echo "========== To accept, run: " 1>&2 ;\
-	    echo "  rm -f $$f.exp; make accept-test TEST_FILES=$$f;" ;\
-	    echo "  # OR make accept-all-test;" ;\
-	    errors=`expr $$errors + 1` ;\
-	  fi ;\
-	  echo "ok" ;\
-	done ;\
-	echo "DONE: errors/tests $$errors/$$tests" ;\
-	exit $$errors
+	tool/t-run $(TEST_FILES)
 
 valgrind : $(TEST_T_FILES)
 	@echo "Valgrind:"
