@@ -45,12 +45,12 @@ struct tort_header {
   size_t alloc_size; /** allocated object size, not including this header */
   tort_lookup_decl((*lookupf));
   tort_apply_decl((*applyf));
+  tort_mtable *mtable; /** The object's method table. */
 #if TORT_ALLOC_DEBUG
   const char *alloc_file;
   int alloc_line;
   size_t alloc_id;
 #endif
-  tort_mtable *mtable; /** The object's method table. */
 } tort_header;
 #define tort_H tort_header _h[0]
 
