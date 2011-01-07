@@ -6,11 +6,17 @@ for f in "$@"
 do
   case "$action"
   in
-    run)
+    run|valgrind)
     tests=`expr $tests + 1`
     in=/dev/null
     if [ -f $f.in ] ; then in=$f.in ; fi
-    echo "========= test $f.t < $in: " 
+    echo "========= test $f.t < $in: "
+    case "$action"
+    in
+      valgrind)
+        (TORT_GC=0 valgrind $f.t <$in || echo $?) 2>&1 | t/filter-output
+      ;;
+      *)
     ($f.t <$in || echo $?) 2>&1 | t/filter-output > $f.out 
     if ! diff -U 10 $f.exp $f.out ; then 
 	echo "========== $f.out ==========" 1>&2 
@@ -21,7 +27,9 @@ do
 	errors=`expr $errors + 1` 
 	grep '/bin/sh: line 1: ' $f.out && set -x && gdb --args `dirname $f`/.libs/`basename $f`.t
 	set +x 2>/dev/null
-    fi 
+    fi
+      ;;
+    esac
     echo "ok"
     ;;
   esac 
