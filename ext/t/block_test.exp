@@ -1,28 +1,28 @@
-  0
-  1
-  2
-  3
-  4
-  5
-  6
-  7
-  8
-  9
   block a obj = 5
 
 v = 20
 
+  block a obj = 0
+  block a obj = 0
+  block a obj = 0
+  block a obj = 0
+  block a obj = 0
+  block a obj = 0
+  block a obj = 0
+  block a obj = 0
+  block a obj = 0
+  block a obj = 0
 
-v = @vector { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 }
-  in each [0] => 0
-  in each [1] => 1
-  in each [2] => 2
-  in each [3] => 3
-  in each [4] => 4
-  in each [5] => 5
-  in each [6] => 6
-  in each [7] => 7
-  in each [8] => 8
-  in each [9] => 9
+v = @vector( 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 )
+  block a obj = 0
+  block a obj = 0
+  block a obj = 0
+  block a obj = 0
+  block a obj = 0
+  block a obj = 0
+  block a obj = 0
+  block a obj = 0
+  block a obj = 0
+  block a obj = 0
 
 DONE

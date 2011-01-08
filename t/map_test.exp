@@ -1,36 +1,36 @@
 
-  _mt_map => @map { 
-  _inspect => @method _inspect @x1,
-  _load_symtab => @method _load_symtab @x2,
-  add => @method add @x3,
-  clone => @method clone @x4,
-  delete => @method delete @x5,
-  get => @method get @x6,
-  get_entry => @method get_entry @x7,
-  get_entry_by_value => @method get_entry_by_value @x8,
-  get_entry_cstr => @method get_entry_cstr @x9,
-  get_entry_string => @method get_entry_string @x10,
-  get_key => @method get_key @x11,
-  get_string => @method get_string @x12,
-  initialize => @method initialize @x13,
-  set => @method set @x14,
-  _run_initializers => @method _run_initializers @x15,
-  _load_methods => @method _load_methods @x16  }
-o => @map { 
-    }
+  _mt_map => @map( 
+  _inspect => @method(_inspect,@x1),
+  _load_symtab => @method(_load_symtab,@x2),
+  add => @method(add,@x3),
+  clone => @method(clone,@x4),
+  delete => @method(delete,@x5),
+  get => @method(get,@x6),
+  get_entry => @method(get_entry,@x7),
+  get_entry_by_value => @method(get_entry_by_value,@x8),
+  get_entry_cstr => @method(get_entry_cstr,@x9),
+  get_entry_string => @method(get_entry_string,@x10),
+  get_key => @method(get_key,@x11),
+  get_string => @method(get_string,@x12),
+  initialize => @method(initialize,@x13),
+  set => @method(set,@x14),
+  _run_initializers => @method(_run_initializers,@x15),
+  _load_methods => @method(_load_methods,@x16)  )
+o => @map( 
+    )
 (size o) => 0
-o => @map { 
-  1 => 2  }
+o => @map( 
+  1 => 2  )
 (size o) => 1
-o => @map { 
-  1 => 3  }
+o => @map( 
+  1 => 3  )
 (size o) => 1
-o => @map { 
+o => @map( 
   1 => 3,
-  3 => 4  }
+  3 => 4  )
 (size o) => 2
-o => @map { 
-  3 => 4  }
+o => @map( 
+  3 => 4  )
 (size o) => 1
 
 DONE
