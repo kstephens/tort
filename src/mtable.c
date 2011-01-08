@@ -4,7 +4,7 @@ unsigned long _tort_alloc_id = 0;
 
 tort_v _tort_allocate(tort_thread_param tort_v mtable, size_t size
 #if TORT_ALLOC_DEBUG
-		      ,const char *alloc_file, int alloc_line, 
+		      ,const char *alloc_file, int alloc_line
 #endif
 )
 {
@@ -81,14 +81,19 @@ tort_v tort_add_class_method(tort_v mtable, const char *name, void *applyf)
 tort_mtable* tort_mtable_set_delegate(tort_mtable *obj_mt, tort_v delegate)
 {
   tort_mtable *cls_mt;
-
+  tort_v cls_delegate;
   if ( delegate == 0 && tort_nil != 0 ) {
     delegate = tort_nil;
   }
-  obj_mt->delegate = delegate;
-
   cls_mt = tort_h_ref(obj_mt)->mtable;
-  cls_mt->delegate = delegate ? tort_h_ref(delegate)->mtable : tort__mt(mtable);
+  cls_delegate = delegate != tort_nil ? tort_h_ref(delegate)->mtable : tort__mt(mtable);
+  if ( 0 && tort_(_initialized) ) {
+    _tort_m_mtable__set_delegate(tort_ta obj_mt, delegate);
+    _tort_m_mtable__set_delegate(tort_ta cls_mt, cls_delegate);
+  } else {
+    obj_mt->delegate = delegate;
+    cls_mt->delegate = cls_delegate;
+  }
 
   return obj_mt;
 }
