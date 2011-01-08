@@ -195,12 +195,12 @@ valgrind : tests
 	@echo "Valgrind:"
 	tool/t valgrind $(TEST_FILES)
 
-accept-test : $(TEST_T_FILES)
+accept-test : tests
 	@set -ex; for f in $(TEST_FILES); do \
 	  if [ ! -f $$f.exp ] ; then cp $$f.out $$f.exp ; git add `ls $$f.{c,exp,in}`; fi ;\
 	done
 
-accept-all-test : $(TEST_T_FILES)
+accept-all-test : tests
 	@set -ex; for f in $(TEST_FILES); do \
 	  if [ -f $$f.out ] ; then cp $$f.out $$f.exp ; git add `ls $$f.{c,exp,in}`; fi ;\
 	done
