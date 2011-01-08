@@ -33,8 +33,7 @@ tort_v _tort_m_mtable___allocate (tort_tp tort_mtable *mtable, size_t size)
   void *ptr;
   size_t alloc_size = sizeof(tort_header) + size;
 
-  assert(size);
-  assert(alloc_size > size);
+  assert(alloc_size >= size);
 
   /* HACK: save the instance size in the mtable. */
   if ( mtable && ! mtable->instance_size ) {

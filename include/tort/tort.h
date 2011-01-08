@@ -60,9 +60,6 @@ struct tort_header {
 
 typedef
 struct tort_object { tort_H;
-  tort_v *slots;
-  size_t nslots;
-  tort_v cmp; /* ??? */
 } tort_object;
 
 #if TORT_NIL_IS_ZERO
