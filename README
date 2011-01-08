@@ -13,9 +13,10 @@ Supports:
 ** Method table.
 ** Methods.
 * Dynamic message dispatch.
-** ~74,000,000 send/sec on OS X 64-bit using a global method cache.
+** ~50,000,000 send/sec on OS X 64-bit using a global method cache.
 * Meta-send protocol:
 ** Decomposed into lookup(message, rcvr, ...), apply(message, rcvr, ...).
+** Fully recursive lookup() delegation.
 ** Message objects allocated on C stack.
 
 Extensions are dynamically loaded:
@@ -26,5 +27,5 @@ Extensions are dynamically loaded:
 *** pair.
 *** lisp reader.
 *** lisp writer.
-** Blocks.
+** Blocks using nested functions.
 ** Fibers.
