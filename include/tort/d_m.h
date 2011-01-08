@@ -37,6 +37,7 @@ tort_d_m(tort__mt(mtable), tort__s(_method_changed), _tort_m_mtable___method_cha
 tort_d_m(tort__mt(mtable), tort__s(add_method), _tort_m_mtable__add_method)
 tort_d_m(tort__mt(mtable), tort__s(allocate), _tort_m_mtable__allocate)
 tort_d_m(tort__mt(mtable), tort__s(delegate), _tort_m_mtable__delegate)
+tort_d_m(tort__mt(mtable), tort__s(lookup), _tort_m_mtable__lookup)
 tort_d_m(tort__mt(mtable), tort__s(set_delegate), _tort_m_mtable__set_delegate)
 tort_d_m(tort__mt(nil), tort__s(_inspect), _tort_m_nil___inspect)
 tort_d_m(tort__mt(object), tort__s(__debugger), _tort_m_object____debugger)

@@ -45,7 +45,6 @@ tort_v _tort_m_mtable___allocate (tort_tp tort_mtable *mtable, size_t size)
   ptr += sizeof(tort_header);
 
   tort_h_ref(ptr)->alloc_size = size;
-  tort_h_ref(ptr)->lookupf = _tort_object_lookupf;
   tort_h_ref(ptr)->applyf  = _tort_object_applyf;
   tort_h_ref(ptr)->mtable  = mtable;
 
@@ -54,14 +53,16 @@ tort_v _tort_m_mtable___allocate (tort_tp tort_mtable *mtable, size_t size)
   return ptr;
 }
 
-tort_v _tort_m_mtable__add_method (tort_thread_param tort_v map, tort_v sym, tort_v func)
+tort_v _tort_m_mtable__add_method (tort_tp tort_mtable *mtable, tort_symbol *symbol, tort_method *method)
 {
-  tort_v meth = tort_method_make((void*) tort_I(func));
-  tort_ref(tort_method, meth)->name = sym;
-  tort_ref(tort_symbol, sym)->version += 2;
-  _tort_m_map__set(tort_thread_arg map, sym, meth);
-  _tort_m_mtable___method_changed(tort_thread_arg map, sym, meth);
-  return meth;
+  // fprintf(stderr, "  add_method %s %s %p\n", tort_object_name(mtable), tort_object_name(symbol), method->applyf);
+  if ( method->name == tort_nil || method->name == 0 ) {
+    method->name = symbol;
+  }
+  symbol->version += 2;
+  _tort_m_map__set(tort_ta (tort_v) mtable, symbol, method);
+  _tort_m_mtable___method_changed(tort_ta mtable, symbol, method);
+  return method;
 }
 
 /********************************************************************/
@@ -69,7 +70,7 @@ tort_v _tort_m_mtable__add_method (tort_thread_param tort_v map, tort_v sym, tor
 tort_v tort_add_method(tort_v mtable, const char *name, void *applyf)
 {
   tort_v sym = tort_symbol_make(name);
-  tort_v meth = tort_i(applyf);
+  tort_v meth = tort_method_make(applyf);
   return _tort_m_mtable__add_method(tort_thread_arg mtable, sym, meth);
 }
 
@@ -86,7 +87,7 @@ tort_mtable* tort_mtable_set_delegate(tort_mtable *obj_mt, tort_v delegate)
     delegate = tort_nil;
   }
   cls_mt = tort_h_ref(obj_mt)->mtable;
-  cls_delegate = delegate != tort_nil ? tort_h_ref(delegate)->mtable : tort__mt(mtable);
+  cls_delegate = delegate != tort_nil ? tort_h_ref(delegate)->mtable : tort_nil;
   if ( 0 && tort_(_initialized) ) {
     _tort_m_mtable__set_delegate(tort_ta obj_mt, delegate);
     _tort_m_mtable__set_delegate(tort_ta cls_mt, cls_delegate);
@@ -98,16 +99,20 @@ tort_mtable* tort_mtable_set_delegate(tort_mtable *obj_mt, tort_v delegate)
   return obj_mt;
 }
 
+
+static tort_mtable * tort_mtable_create_0(tort_v delegate)
+{
+  tort_mtable *mt = tort_allocate(tort__mt(mtable), sizeof(tort_mtable));
+  _tort_m_map__initialize(tort_ta (tort_v) mt);
+  mt->delegate = delegate;
+  return mt;
+}
+
 tort_mtable* tort_mtable_create(tort_v delegate)
 {
-  tort_mtable *obj_mt = tort_allocate(tort__mt(mtable), sizeof(tort_mtable));
-  _tort_m_map__initialize(tort_thread_arg (tort_v) obj_mt);
-
-  tort_mtable *cls_mt = tort_allocate(tort__mt(mtable), sizeof(tort_mtable));
-  _tort_m_map__initialize(tort_thread_arg (tort_v) cls_mt);
-
+  tort_mtable *obj_mt = tort_mtable_create_0(delegate);
+  tort_mtable *cls_mt = tort_mtable_create_0(0);
   tort_h_ref(obj_mt)->mtable = cls_mt;
-
   tort_mtable_set_delegate(obj_mt, delegate);
  
   return obj_mt;
@@ -137,10 +142,15 @@ tort_mtable* tort_mtable_make(const char *name, tort_v parent)
 tort_v tort_runtime_initialize_mtable()
 {
   /* Create mtable method table. */
-  tort__mt(mtable)      = tort_mtable_create(0);
+  tort__mt(mtable)      = tort_mtable_create_0(0);
+  tort_h(tort__mt(mtable))->mtable = tort__mt(mtable);
 
+  /* Create object method table. */
+  tort__mt(object)      = tort_mtable_create_0(0);
+  tort_h(tort__mt(object))->mtable = tort__mt(mtable);
+  
+  /*************************************************/
   /* Create core method tables. */
-  tort__mt(object)      = tort_mtable_create(0);
 
   /* Create vector base. */
   tort__mt(vector_base) = tort_mtable_create(tort__mt(object));
@@ -149,19 +159,18 @@ tort_v tort_runtime_initialize_mtable()
   tort__mt(map)         = tort_mtable_create(tort__mt(vector_base));
 
   /* Back patch mtable -> map. */
-  tort_mtable_set_delegate(tort__mt(mtable), tort__mt(map));
+  tort__mt(mtable)->delegate = tort__mt(map);
+  // tort_mtable_set_delegate(tort__mt(mtable), tort__mt(map));
 
   /* Initialize nil object header. */
   tort__mt(nil)         = tort_mtable_create(tort__mt(object));
   tort_(nil_header).alloc_size = 0;
-  tort_(nil_header).lookupf = _tort_object_lookupf;
   tort_(nil_header).applyf  = _tort_object_applyf;
   tort_(nil_header).mtable  = tort__mt(nil);
 
   /* Initialize tagged object header. */
   tort__mt(tagged)      = tort_mtable_create(tort__mt(object));
   tort_(tagged_header).alloc_size = 0;
-  tort_(tagged_header).lookupf = _tort_object_lookupf;
   tort_(tagged_header).applyf  = _tort_object_applyf;
   tort_(tagged_header).mtable  = tort__mt(tagged);
 

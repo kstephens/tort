@@ -43,9 +43,6 @@ tort_symbol* tort_symbol_make(const char *string)
 
 tort_v tort_runtime_initialize_symbol()
 {
-  /* Create the symbol table. */
-  tort_(symbols) = tort_map_create();
-  
 #define tort_d_s(N) tort__s(N) = tort_symbol_make(tort_symbol_encode(#N));
 #include "tort/d_s.h"
 

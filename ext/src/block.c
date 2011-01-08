@@ -1,12 +1,14 @@
 #include "tort/core.h"
 #include "tort/block.h"
 
-tort_apply_decl(_tort_block_lookupf)
+tort_lookup_decl(_tort_M_block__lookup)
 {
-  if ( _tort_message->selector == tort__s(value) ) {
-    return _tort_message->method = _tort_message->receiver;
+  if ( message->selector == tort__s(value) ) {
+    message->mtable = mtable;
+    message->method = (tort_v) message->receiver;
+    return message;
   } else {
-    return _tort_object_lookupf(tort_thread_arg rcvr);
+    return tort_send(tort__s(lookup), message);
   }
 }
 

@@ -8,16 +8,19 @@
 #include <assert.h>
 #include "gc.h"
 
+#if 0
+#undef TORT_LOOKUP_TRACE
+#define TORT_LOOKUP_TRACE 1
+#endif
 
-/********************************************************************/
+int _tort_lookup_trace_level = 0;
 
 tort_message *_tort_message;
 tort_v _tort_fiber;
 
-/********************************************************************/
 tort_v _tort_m_object___mtable (tort_thread_param tort_v rcvr)
 {
-  return tort_i(tort_h_ref(rcvr)->mtable);
+  return tort_h_ref(rcvr)->mtable;
 }
 
 tort_v _tort_m_object___alloc_size (tort_thread_param tort_v rcvr)
@@ -140,27 +143,61 @@ tort_v _tort_m_mtable___method_changed(tort_tp tort_mtable *rcvr, tort_v sym, to
 }
 
 
-tort_lookup_decl(_tort_object_lookupf)
+tort_lookup_decl(_tort_m_mtable__lookup)
 {
-  tort_v method = tort_nil, sel;
-  tort_mtable *mtable;
+  tort_v method = tort_nil, sel = message->selector;
 
-#if 0
-  tort_(message) = _tort_message;
-#endif
+  if ( TORT_LOOKUP_TRACE ) 
+    _tort_lookup_trace_level ++;
 
-  mtable = tort_h_mtable(_tort_message->receiver);
-  sel = _tort_message->selector;
+  do {
+    method =
+      _tort_m_map__get(tort_thread_arg
+		       (tort_v) mtable, 
+		       sel);
+
+    if ( TORT_LOOKUP_TRACE ) {
+      fprintf(stderr, "  %p %*s_tort_m_mtable__lookup: mtable = %s, sel = %s, meth = %s\n", 
+	      message,
+	      _tort_lookup_trace_level, "",
+	      tort_object_name(mtable), 
+	      tort_symbol_data(sel),
+	      tort_object_name(method));
+    }
+    
+    if ( method != tort_nil ) {
+      message->method = method;
+      message->mtable = mtable;
+      break;
+    }
+    assert(! method);
+    
+    mtable = mtable->delegate;
+  } while ( mtable != tort_nil );
+
+  if ( TORT_LOOKUP_TRACE ) 
+    _tort_lookup_trace_level --;
+
+  return message;
+}
+
+
+tort_lookup_decl(_tort_lookup)
+{
+  tort_v sel = message->selector;
 
 #ifndef TORT_MCACHE_STAT
 #define TORT_MCACHE_STAT(X) 1
 #endif
 
-#if TORT_LOOKUP_TRACE
-  fprintf(stderr, "  tol: rcvr = %s, sel = %s\n", 
-	  tort_object_name(tort_ref(tort_message, _tort_message)->receiver), 
-	  tort_symbol_data(sel));
-#endif
+  if ( TORT_LOOKUP_TRACE )  {
+    _tort_lookup_trace_level ++;
+    fprintf(stderr, "  %p %*s_tort_lookup: rcvr = %s, sel = %s\n",
+	    message,
+	    _tort_lookup_trace_level, "",
+	    tort_object_name(message->receiver), 
+	    tort_symbol_data(sel));
+  }
 
 #if TORT_GLOBAL_MCACHE
   (void) TORT_MCACHE_STAT(mcache_stats.lookup_n ++);
@@ -179,55 +216,41 @@ tort_lookup_decl(_tort_object_lookupf)
     (void) TORT_MCACHE_STAT(mcache_stats.hit_n ++);
     // fprintf(stderr, "+"); fflush(stderr);
     /* Use mcache entry. */
-    method = mce->method;
-    mtable = mce->mtable;
+    message->method = mce->method;
+    message->mtable = mce->mtable;
   } else {
 #endif
 
-    do {
-      method =
-	_tort_m_map__get(tort_thread_arg
-			 (tort_v) mtable, 
-			 sel);
-      
-#if TORT_LOOKUP_TRACE
-      fprintf(stderr, "    tol: mtable = %s, meth = %s\n", 
-	      tort_object_name(mtable), 
-	      tort_object_name(meth));
-#endif
-      
-      if ( method != tort_nil )
-	break;
-
-      assert(! method);
-      
-      mtable = mtable->delegate;
-    } while ( mtable != tort_nil );
+    if ( sel == tort__s(lookup) && message->receiver == (tort_v) tort__mt(mtable) ) {
+      message = _tort_m_mtable__lookup(tort_ta mtable, message);
+    } else {
+      message = tort_send(tort__s(lookup), mtable, message);
+    }
 
 #if TORT_GLOBAL_MCACHE
     /* fill mcache entry. */
     // fprintf(stderr, "-");
-    mce->mt  = tort_h_mtable(_tort_message->receiver);
+    mce->mt  = tort_h_mtable(message->receiver);
     mce->sel = sel;
 #if TORT_MCACHE_USE_SYMBOL_VERSION
     mce->sel_version = tort_ref(tort_symbol, mce->sel)->version;
 #endif
-    mce->method = method;
-    mce->mtable = mtable;
+    mce->method = message->method;
+    mce->mtable = message->mtable;
   }
 #endif
 
-  _tort_message->method = method;
-  _tort_message->mtable = mtable;
+  if ( TORT_LOOKUP_TRACE )
+    _tort_lookup_trace_level --;
 
-  return _tort_message;
+  return message;
 }
 
 
 tort_apply_decl(_tort_object_applyf) 
 {
   tort_error_message("cannot apply selector %s to", 
-		     (char *) tort_object_name(tort_ref(tort_message, _tort_message)->selector)
+		     (char *) tort_object_name(_tort_message->selector)
 		     );
   tort_error_message("  receiver %s", tort_object_name(rcvr));
 #if TORT_ALLOC_DEBUG

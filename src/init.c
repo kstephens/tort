@@ -7,8 +7,8 @@
 #if TORT_MULTIPLICITY
 tort_runtime *_tort;
 #else
-tort_runtime_ __tort = { { sizeof(tort_runtime), _tort_object_lookupf, _tort_object_applyf, 0 } };
-tort_runtime *_tort = &__tort._runtime;
+tort_runtime_ __tort = { { sizeof(tort_runtime), _tort_object_applyf, 0 } };
+tort_runtime *_tort = &__tort._;
 #endif
 
 tort_v tort_runtime_create_ (int *argcp, char ***argvp, char ***envp)
@@ -53,8 +53,30 @@ tort_v tort_runtime_create_ (int *argcp, char ***argvp, char ***envp)
   _tort_message = tort_nil;
   tort_(message) = tort_nil;
 
+  tort_runtime_initialize_tort();
+  
+  /*******************************************************/
+  /* Messaging Boot strap. */
+
+  /* Create the symbol table. */
+  tort_(symbols) = tort_map_create();
+  
+  tort__s(lookup) = tort_symbol_make("lookup");
+  tort_add_method(tort__mt(mtable), "lookup", _tort_m_mtable__lookup);
+
+  tort__s(add_method) = tort_symbol_make("add_method");
+  tort_add_method(tort__mt(mtable), "add_method", _tort_m_mtable__add_method);
+
+  tort__s(allocate) = tort_symbol_make("allocate");
+  tort_send(tort__s(add_method), tort__mt(mtable), tort__s(allocate), tort_method_make(_tort_m_mtable__allocate));
+
+  /******************************************************/
+
   /* Create the core symbols. */
   tort_runtime_initialize_symbol();
+
+  /* Install core methods. */
+  tort_runtime_initialize_method();
 
   /* Create the empty containers. */
   tort_string_null = _tort_m_string__new(0, 0, 0);
@@ -78,11 +100,6 @@ tort_v tort_runtime_create_ (int *argcp, char ***argvp, char ***envp)
   /* Create the mtable map. */
   tort_(m_mtable) = tort_map_create();
   
-  tort_runtime_initialize_io();
-  tort_runtime_initialize_write();
-  tort_runtime_initialize_debug();
-  tort_runtime_initialize_method();
-
   /* Setup the root namespace. */
   // tort_send(tort__s(set), tort_(root), tort_symbol_make("root"), tort_(root));
   tort_send(tort__s(set), tort_(root), tort_symbol_make("nil"), tort_nil);
@@ -97,14 +114,17 @@ tort_v tort_runtime_create_ (int *argcp, char ***argvp, char ***envp)
   if ( tort__mt(X) ) tort_send(tort__s(set), tort_(m_mtable), tort_symbol_make(#X), tort__mt(X));
 #include "tort/d_mt.h"
 
+  tort_runtime_initialize_io();
+  tort_runtime_initialize_write();
+  tort_runtime_initialize_debug();
+
   tort_runtime_initialize_symtab();
 
   tort_(_initialized) = tort_true;
 
-  tort_runtime_initialize_dl();
-  tort_runtime_initialize_tort();
-
   // fprintf(stderr, "\ntort: initialized\n");
+
+  tort_runtime_initialize_dl();
 
   return tort_ref_box(_tort);
 }

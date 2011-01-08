@@ -36,12 +36,12 @@ tort_v _tort_m_string___inspect(tort_thread_param tort_v rcvr, tort_v io)
 
 tort_v _tort_m_vector___inspect(tort_thread_param tort_v rcvr, tort_v io)
 {
-  printf("@vector { ");
+  printf("@vector( ");
   tort_vector_loop(rcvr, obj) {
     if ( obj_i > 0 ) printf(", ");
     tort_inspect(IO, obj);
   } tort_vector_loop_end(rcvr);
-  printf(" }");
+  printf(" )");
   return tort_nil;
 }
 
@@ -51,7 +51,7 @@ tort_v _tort_m_symbol___inspect(tort_tp tort_symbol *rcvr, tort_v io)
   if ( rcvr->name != tort_nil ) {
     printf("%s", (char *) tort_symbol_data(rcvr));
   } else {
-    printf("@symbol @%p", (void*) rcvr);
+    printf("@symbol(@%p)", (void*) rcvr);
   }
   return tort_nil;
 }
@@ -75,14 +75,14 @@ tort_v _tort_m_method___inspect(tort_tp tort_method *meth, tort_v io)
 {
   tort_v meth_name = meth->name;
   const char *meth_cstr = meth_name ? tort_symbol_data(meth_name) : "#<unknown>";
-  printf("@method %s @%p", meth_cstr, (void *) tort_h_applyf(meth));
+  printf("@method(%s,@%p)", meth_cstr, (void *) tort_h_applyf(meth));
   return tort_nil;
 }
 
 
 tort_v _tort_m_message___inspect(tort_tp tort_message *msg, tort_v io)
 {
-  printf("@message { ");
+  printf("@message( ");
   tort_inspect(IO, msg->selector);
   printf(", ");
   tort_inspect(IO, msg->receiver);
@@ -90,7 +90,7 @@ tort_v _tort_m_message___inspect(tort_tp tort_message *msg, tort_v io)
   tort_inspect(IO, msg->method);
   printf(", ");
   tort_inspect(IO, msg->mtable);
-  printf("}");
+  printf(")");
  
   return tort_nil;
 }
@@ -99,7 +99,7 @@ tort_v _tort_m_message___inspect(tort_tp tort_message *msg, tort_v io)
 tort_v _tort_m_map___inspect(tort_thread_param tort_v rcvr, tort_v io)
 {
   size_t entry_i = 0;
-  printf("@map { \n  ");
+  printf("@map( \n  ");
   tort_map_EACH(rcvr, entry) {
     if ( entry_i > 0 ) printf(",\n  ");
     tort_inspect(IO, entry->key);
@@ -107,7 +107,7 @@ tort_v _tort_m_map___inspect(tort_thread_param tort_v rcvr, tort_v io)
     tort_inspect(IO, entry->value);
     entry_i ++;
   } tort_map_EACH_END();
-  printf("  }");
+  printf("  )");
 
   return tort_nil;
 }

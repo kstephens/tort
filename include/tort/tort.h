@@ -38,13 +38,12 @@ typedef struct tort_method tort_method;
 #define tort_thread_arg                 _tort_message,
 #define tort_ta tort_thread_arg
 
-#define tort_lookup_decl(X) tort_v X (tort_tp tort_v rcvr, ...)
+#define tort_lookup_decl(X) tort_message* X (tort_tp tort_mtable *mtable, tort_message *message)
 #define tort_apply_decl(X)  tort_v X (tort_tp tort_v rcvr, ...)
 
 typedef
 struct tort_header {
   size_t alloc_size; /** allocated object size, not including this header */
-  tort_lookup_decl((*lookupf));
   tort_apply_decl((*applyf));
   tort_mtable *mtable; /** The object's method table. */
 #if TORT_ALLOC_DEBUG
@@ -55,8 +54,17 @@ struct tort_header {
 } tort_header;
 #define tort_H tort_header _h[0]
 
+#define tort_h_struct(X) typedef struct X##_ { tort_header _h; X _; } X##_
+
 #define tort_h_ref(X)    (((struct tort_header*) (X))-1)
 #define tort_h_tagged(X) (tort_taggedQ(X) ? &tort_(tagged_header) : tort_h_ref(X))
+
+typedef
+struct tort_object { tort_H;
+  tort_v *slots;
+  size_t nslots;
+  tort_v cmp; /* ??? */
+} tort_object;
 
 #if TORT_NIL_IS_ZERO
 #define tort_h_nil(X)    &tort_(nil_header)
@@ -70,29 +78,17 @@ struct tort_header {
 #endif
 
 #define tort_h_applyf(X)  tort_h(X)->applyf
-#define tort_h_lookupf(X) tort_h(X)->lookupf
 #define tort_h_mtable(X)  tort_h(X)->mtable
 
 struct tort_message { tort_H;
-  tort_symbol *selector;
-  tort_v receiver;
+  tort_symbol  *selector;
+  tort_object  *receiver;
   tort_message *previous_message;
-  tort_v fiber; /* the sending fiber */
-  tort_method *method; /* the found method. */
-  tort_mtable *mtable; /* the mtable where the method was found. */
+  tort_v       fiber; /* the sending fiber */
+  tort_method  *method; /* the found method. */
+  tort_mtable  *mtable; /* the mtable where the method was found. */
 };
-
-typedef struct tort_message_ {
-  struct tort_header _h;
-  struct tort_message _msg;
-} tort_message_;
-
-typedef
-struct tort_object { tort_H;
-  tort_v *slots;
-  size_t nslots;
-  tort_v cmp; /* ??? */
-} tort_object;
+tort_h_struct(tort_message);
 
 typedef 
 struct tort_vector_base { tort_H; /* Same layout as tort_vector, tort_string. */
@@ -189,9 +185,11 @@ tort_symbol* tort_symbol_make(const char *string);
 const char *tort_symbol_encode(const char *in);
 
 struct tort_method { tort_H;
+  tort_apply_decl((*applyf));
   tort_v name;
   tort_v data;
 };
+tort_h_struct(tort_method);
 
 typedef
 struct tort_io { tort_H;
@@ -242,17 +240,14 @@ struct tort_runtime { tort_H;
   tort_v _initialized;
 } tort_runtime;
 
-typedef struct tort_runtime_ {
-  struct tort_header _h;
-  struct tort_runtime _runtime;
-} tort_runtime_;
+tort_h_struct(tort_runtime);
 
 extern tort_runtime *_tort;
 #if TORT_MULTIPLICITY
 #define tort_(X) _tort->X
 #else
 extern tort_runtime_ __tort;
-#define tort_(X) __tort._runtime.X
+#define tort_(X) __tort._.X
 #endif
 
 #define tort_stdin  tort_(_io_stdin)
@@ -266,6 +261,9 @@ extern tort_runtime_ __tort;
 #define tort_printfv(io, fmt, vapp) tort_send(tort__s(__printfv), io, fmt, vapp)
 #define tort_flush(io) tort_send(tort_s(flush), io)
 
+tort_lookup_decl(_tort_lookup);
+tort_lookup_decl(_tort_m_mtable__lookup);
+
 #define _tort_send_RCVR(RCVR, ARGS...)(RCVR)
 #define _tort_send_ARGS(RCVR, ARGS...)ARGS
 #define _tort_send_RCVR_ARGS(RCVR, EATEN, ARGS...)RCVR, ##ARGS
@@ -273,17 +271,16 @@ extern tort_runtime_ __tort;
   ({									\
     tort_message_ __tort_msg = {					\
       { sizeof(tort_message),						\
-	_tort_object_lookupf,						\
 	_tort_object_applyf,						\
 	tort__mt(message) },						\
       { { }, (SEL),							\
-	_tort_send_RCVR(RCVR_AND_ARGS),					\
+	(tort_v) _tort_send_RCVR(RCVR_AND_ARGS),				\
 	_tort_message,							\
 	_tort_message ? _tort_message->fiber : _tort_fiber		\
       }									\
     };									\
-    tort_h_lookupf(__tort_msg._msg.receiver)(&__tort_msg._msg, __tort_msg._msg.receiver); \
-    tort_h_applyf(__tort_msg._msg.method)(&__tort_msg._msg, _tort_send_RCVR_ARGS(__tort_msg._msg.receiver, RCVR_AND_ARGS)); \
+    _tort_lookup(_tort_message, tort_h_mtable(__tort_msg._.receiver), &__tort_msg._); \
+    tort_h_applyf(__tort_msg._.method)(&__tort_msg._, _tort_send_RCVR_ARGS(__tort_msg._.receiver, RCVR_AND_ARGS)); \
   })
 #define tort_send(SEL, RCVR_AND_ARGS...)_tort_send(SEL, RCVR_AND_ARGS)
 
@@ -307,7 +304,6 @@ void *tort_realloc(void *ptr, size_t size);
 
 tort_v tort_map_create();
 
-tort_lookup_decl(_tort_object_lookupf);
 tort_apply_decl(_tort_object_applyf);
 
 #if TORT_ALLOC_DEBUG
@@ -335,7 +331,7 @@ tort_mtable* tort_mtable_get (const char *string);
 tort_mtable* tort_mtable_set (const char *string, tort_v mtable);
 tort_mtable* tort_mtable_make (const char *string, tort_v parent);
 
-tort_method* tort_method_make (tort_apply_decl((*applyf)));
+tort_method* tort_method_make (void *applyf);
 
 tort_v tort_add_method(tort_v map, const char *name, void *applyf);
 tort_v tort_add_class_method(tort_v map, const char *name, void *applyf);

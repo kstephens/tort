@@ -94,7 +94,7 @@ const char *tort_object_name_(tort_v val)
     snprintf(str = buf, S, "false");
   }
   else if ( tort_taggedQ(val) ) {
-    snprintf(str = buf, S, "%ld", (long) tort_I(val));
+    snprintf(str = buf, S, "%lld", (long long) tort_I(val));
   }
   else if ( tort_h_mtable(val) == tort__mt(string) ) {
     snprintf(str = buf, S, "\"%s\"", tort_string_data(val));
@@ -103,7 +103,15 @@ const char *tort_object_name_(tort_v val)
     if ( tort_ref(tort_symbol, val)->name != tort_nil ) {
       snprintf(str = buf, S, "%s", tort_symbol_data(val));
     } else {
-      snprintf(str = buf, S, "@symbol @%p", (void*) val);
+      snprintf(str = buf, S, "@symbol(@%p)", (void*) val);
+    }
+  }
+  else if ( tort_h_mtable(val) == tort__mt(method) ) {
+    tort_v name;
+    if ( (name = tort_ref(tort_method, val)->name) != tort_nil ) {
+      snprintf(str = buf, S, "@method(%s)", tort_object_name_(name));
+    } else {
+      snprintf(str = buf, S, "@method(@%p)", (void*) val);
     }
   }
   else if ( val == _tort ) {
@@ -112,9 +120,9 @@ const char *tort_object_name_(tort_v val)
   else if ( val == tort_(root) ) {
     snprintf(str = buf, S, "@root");
   }
-#define tort_d_mt(N) else if ( val == tort__mt(N) ) { snprintf(str = buf, S, "@mtable %s", #N); }
+#define tort_d_mt(N) else if ( val == tort__mt(N) ) { snprintf(str = buf, S, "@mtable(%s)", #N); }
 #include "tort/d_mt.h"
-#define tort_d_mt(N) else if ( tort_h_mtable(val) == tort__mt(N) ) { snprintf(str = buf, S, "@%s @%p", #N, (void*) val); }
+#define tort_d_mt(N) else if ( tort_h_mtable(val) == tort__mt(N) ) { snprintf(str = buf, S, "@%s(@%p)", #N, (void*) val); }
 #include "tort/d_mt.h"
   else {
     return 0;
@@ -143,10 +151,10 @@ const char *tort_object_name(tort_v val)
     
     if ( 0 ) {
     }
-#define tort_d_mt(N) else if ( tort_h_mtable(val) == tort__mt(N) ) { snprintf(str = buf, S, "!%s @%p", #N, (void*) val); }
+#define tort_d_mt(N) else if ( tort_h_mtable(val) == tort__mt(N) ) { snprintf(str = buf, S, "!%s(@%p)", #N, (void*) val); }
 #include "tort/d_mt.h"
     else {
-      snprintf(str = buf, S, "@? @%p", (void*) val);
+      snprintf(str = buf, S, "@?(@%p)", (void*) val);
     }
 
     if ( buf[S] != '\0' ) {
