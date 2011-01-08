@@ -188,10 +188,10 @@
   stdout => nil,
   stderr => nil,
   core_symtab => @map( 
-  _main => 4294973296,
-  4294973296 => _main,
-  start => 4294973232,
-  4294973232 => start  )  )
+  _main => 4294970976,
+  4294970976 => _main,
+  start => 4294970912,
+  4294970912 => start  )  )
   tort_h_mtable(tort_(root)) => @map( 
   _inspect => @method(_inspect,@x50),
   _load_symtab => @method(_load_symtab,@x51),
