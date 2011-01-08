@@ -150,31 +150,28 @@ tort_lookup_decl(_tort_m_mtable__lookup)
   if ( TORT_LOOKUP_TRACE ) 
     _tort_lookup_trace_level ++;
 
-  do {
-    method =
-      _tort_m_map__get(tort_thread_arg
-		       (tort_v) mtable, 
-		       sel);
+  method =
+    _tort_m_map__get(tort_thread_arg
+		     (tort_v) mtable, 
+		     sel);
 
-    if ( TORT_LOOKUP_TRACE ) {
-      fprintf(stderr, "  %p %*s_tort_m_mtable__lookup: mtable = %s, sel = %s, meth = %s\n", 
-	      message,
-	      _tort_lookup_trace_level, "",
-	      tort_object_name(mtable), 
-	      tort_symbol_data(sel),
-	      tort_object_name(method));
-    }
-    
-    if ( method != tort_nil ) {
-      message->method = method;
-      message->mtable = mtable;
-      break;
-    }
-    assert(! method);
-    
-    mtable = mtable->delegate;
-  } while ( mtable != tort_nil );
-
+  if ( TORT_LOOKUP_TRACE ) {
+    fprintf(stderr, "  %p %*s_tort_m_mtable__lookup: mtable = %s, sel = %s, meth = %s\n", 
+	    message,
+	    _tort_lookup_trace_level, "",
+	    tort_object_name(mtable), 
+	    tort_symbol_data(sel),
+	    tort_object_name(method));
+  }
+  
+  if ( method != tort_nil ) {
+    message->method = method;
+    message->mtable = mtable;
+  }
+  else if ( (mtable = mtable->delegate) != tort_nil ) {
+    message = tort_send(tort_s(lookup), mtable, message);
+  }
+  
   if ( TORT_LOOKUP_TRACE ) 
     _tort_lookup_trace_level --;
 
