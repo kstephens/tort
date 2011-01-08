@@ -295,10 +295,10 @@ void init(void)
   s_allocate = symbol_intern(0, "allocate");
   send(vtable_vt, s_addMethod, s_allocate, closure_new((method_t) vtable_allocate, 0));
 
+  symbol = send(symbol_vt, s_allocate, sizeof(struct symbol));
+
   s_setParent = symbol_intern(0, "setParent");
   send(vtable_vt, s_addMethod, s_setParent, closure_new((method_t) vtable_setParent, 0));
-
-  symbol = send(symbol_vt, s_allocate, sizeof(struct symbol));
 
   s_intern = symbol_intern(0, "intern");
   send(symbol_vt, s_addMethod, s_intern, closure_new((method_t) symbol_intern, 0));
