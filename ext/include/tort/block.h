@@ -18,6 +18,7 @@
    This uses the GCC nested function feature; see gcc -fnested-functions.
 */
 typedef struct tort_block { tort_H;
+  tort_method _;
   tort_message *scope;
   void *data;
 } tort_block;
@@ -26,16 +27,15 @@ tort_h_struct(tort_block);
 #define tort_block_(BLK,PARAMS...)					\
   tort_block_ BLK##_ = {						\
     { sizeof(tort_block),						\
-      _tort_object_applyf,						\
       tort__mt(block)							\
     },									\
-    { { }, _tort_message, 0 },						\
+    { { }, { }, _tort_message, 0 },					\
   };									\
   tort_block *BLK = &BLK##_._;						\
   tort_v BLK##_f (tort_thread_param tort_block *_block, ##PARAMS)
 
 #define tort_block_END(BLK)			\
-  BLK##_._h.applyf = (void*) BLK##_f;
+  BLK##_._._.applyf = (void*) BLK##_f;
 
 tort_v tort_runtime_initialize_block();
 

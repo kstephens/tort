@@ -6,7 +6,6 @@ tort_method* tort_method_make(void *applyf)
   meth->applyf = applyf;
   meth->data = 0;
   meth->name = 0;
-  tort_h_ref(meth)->applyf = applyf;
   return meth;
 }
 

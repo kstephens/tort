@@ -44,7 +44,6 @@ typedef struct tort_method tort_method;
 typedef
 struct tort_header {
   size_t alloc_size; /** allocated object size, not including this header */
-  tort_apply_decl((*applyf));
   tort_mtable *mtable; /** The object's method table. */
 #if TORT_ALLOC_DEBUG
   const char *alloc_file;
@@ -77,7 +76,6 @@ struct tort_object { tort_H;
 #define tort_h(X)        tort_h_tagged(X)
 #endif
 
-#define tort_h_applyf(X)  tort_h(X)->applyf
 #define tort_h_mtable(X)  tort_h(X)->mtable
 
 struct tort_message { tort_H;
@@ -271,16 +269,15 @@ tort_lookup_decl(_tort_m_mtable__lookup);
   ({									\
     tort_message_ __tort_msg = {					\
       { sizeof(tort_message),						\
-	_tort_object_applyf,						\
 	tort__mt(message) },						\
       { { }, (SEL),							\
-	(tort_v) _tort_send_RCVR(RCVR_AND_ARGS),				\
+	(tort_v) _tort_send_RCVR(RCVR_AND_ARGS),			\
 	_tort_message,							\
 	_tort_message ? _tort_message->fiber : _tort_fiber		\
       }									\
     };									\
-    _tort_lookup(_tort_message, tort_h_mtable(__tort_msg._.receiver), &__tort_msg._); \
-    tort_h_applyf(__tort_msg._.method)(&__tort_msg._, _tort_send_RCVR_ARGS(__tort_msg._.receiver, RCVR_AND_ARGS)); \
+    _tort_lookup(_tort_message, tort_h_mtable(__tort_msg._.receiver), &__tort_msg._)-> \
+      method->applyf(&__tort_msg._, _tort_send_RCVR_ARGS(__tort_msg._.receiver, RCVR_AND_ARGS)); \
   })
 #define tort_send(SEL, RCVR_AND_ARGS...)_tort_send(SEL, RCVR_AND_ARGS)
 
@@ -304,7 +301,7 @@ void *tort_realloc(void *ptr, size_t size);
 
 tort_v tort_map_create();
 
-tort_apply_decl(_tort_object_applyf);
+tort_apply_decl(_tort_m_mtable___method_not_found);
 
 #if TORT_ALLOC_DEBUG
 tort_v _tort_allocate (tort_tp tort_v meth_table, size_t size, const char *alloc_file, int alloc_line);

@@ -45,7 +45,6 @@ tort_v _tort_m_mtable___allocate (tort_tp tort_mtable *mtable, size_t size)
   ptr += sizeof(tort_header);
 
   tort_h_ref(ptr)->alloc_size = size;
-  tort_h_ref(ptr)->applyf  = _tort_object_applyf;
   tort_h_ref(ptr)->mtable  = mtable;
 
   ++ _tort_alloc_id;
@@ -165,13 +164,11 @@ tort_v tort_runtime_initialize_mtable()
   /* Initialize nil object header. */
   tort__mt(nil)         = tort_mtable_create(tort__mt(object));
   tort_(nil_header).alloc_size = 0;
-  tort_(nil_header).applyf  = _tort_object_applyf;
   tort_(nil_header).mtable  = tort__mt(nil);
 
   /* Initialize tagged object header. */
   tort__mt(tagged)      = tort_mtable_create(tort__mt(object));
   tort_(tagged_header).alloc_size = 0;
-  tort_(tagged_header).applyf  = _tort_object_applyf;
   tort_(tagged_header).mtable  = tort__mt(tagged);
 
   /* Other core. */

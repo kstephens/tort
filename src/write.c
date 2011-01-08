@@ -75,7 +75,7 @@ tort_v _tort_m_method___inspect(tort_tp tort_method *meth, tort_v io)
 {
   tort_v meth_name = meth->name;
   const char *meth_cstr = meth_name ? tort_symbol_data(meth_name) : "#<unknown>";
-  printf("@method(%s,@%p)", meth_cstr, (void *) tort_h_applyf(meth));
+  printf("@method(%s,@%p)", meth_cstr, (void *) meth->applyf);
   return tort_nil;
 }
 
