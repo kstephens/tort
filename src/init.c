@@ -97,9 +97,10 @@ tort_v tort_runtime_create_ (int *argcp, char ***argvp, char ***envp)
   if ( tort__mt(X) ) tort_send(tort__s(set), tort_(m_mtable), tort_symbol_make(#X), tort__mt(X));
 #include "tort/d_mt.h"
 
+  tort_runtime_initialize_symtab();
+
   tort_(_initialized) = tort_true;
 
-  tort_runtime_initialize_symtab();
   tort_runtime_initialize_dl();
   tort_runtime_initialize_tort();
 
