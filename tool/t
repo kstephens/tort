@@ -25,7 +25,7 @@ do
 	echo "  rm -f $f.exp; make accept-test TEST_FILES=$f;" 
 	echo "  # OR make accept-all-test;" 
 	errors=`expr $errors + 1` 
-	grep '/bin/sh: line 1: ' $f.out && set -x && gdb --args `dirname $f`/.libs/`basename $f`.t
+	egrep -e ': line .* (Segmentation|Abort)' $f.out && set -x && gdb --args `dirname $f`/.libs/`basename $f`.t
 	set +x 2>/dev/null
     fi
       ;;
