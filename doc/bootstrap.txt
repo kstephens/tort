@@ -1,0 +1,17 @@
+* Create mtable mtable.
+* Set mtable->mtable = mtable.
+* Create object mtable.
+* Set object->mtable = mtable.
+* Set mtable->delegate = object.
+* Create symbol mtable w/ delegate to object.
+* Create symbol table.
+* Create method mtable w/ delegate to object.
+* Create lookup symbol.
+* _addMethod(mtable, lookup, mtable_lookup).
+* Create addMethod symbol.
+* _addMethod(mtable, addMethod, mtable_addMethod).
+** send() is now operational.
+* send(mtable, addMethod, sym("allocate"), mtable_allocate).
+** send(allocate,...) is now operational.
+* send(mtable, addMethod, sym("set_delegate"), mtable_set_delegate).
+** send
