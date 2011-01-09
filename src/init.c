@@ -53,6 +53,7 @@ tort_v tort_runtime_create_ (int *argcp, char ***argvp, char ***envp)
   _tort_message = tort_nil;
   tort_(message) = tort_nil;
 
+  /* Initialize lookup(). */
   tort_runtime_initialize_tort();
   
   /*******************************************************/

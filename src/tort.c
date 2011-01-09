@@ -217,6 +217,8 @@ tort_lookup_decl(_tort_lookup)
 {
   tort_v sel = message->selector;
 
+  message->method = tort_nil;
+
 #ifndef TORT_MCACHE_STAT
 #define TORT_MCACHE_STAT(X) 1
 #endif
@@ -257,6 +259,19 @@ tort_lookup_decl(_tort_lookup)
     } else {
       message = tort_send(tort__s(lookup), mtable, message);
     }
+    
+    if ( message->method == tort_nil ) {
+      if ( TORT_LOOKUP_TRACE )  {
+	fprintf(stderr, "  %p %*s_tort_lookup: method_not_found: %s, %s\n", 
+		message,
+		_tort_lookup_trace_level, "",
+		tort_object_name(message->receiver), 
+		tort_symbol_data(sel));
+      }
+
+      message->mtable = mtable;
+      message->method = tort_(_m_method_not_found);
+    }
 
 #if TORT_GLOBAL_MCACHE
     /* fill mcache entry. */
@@ -274,11 +289,12 @@ tort_lookup_decl(_tort_lookup)
   if ( TORT_LOOKUP_TRACE )
     _tort_lookup_trace_level --;
 
+
   return message;
 }
 
 
-tort_apply_decl(_tort_object_applyf) 
+tort_apply_decl(_tort_m_object___method_not_found) 
 {
   tort_error_message("cannot apply selector %s to", 
 		     (char *) tort_object_name(_tort_message->selector)
@@ -309,6 +325,8 @@ tort_v tort_object_make()
 
 tort_v tort_runtime_initialize_tort()
 {
+  tort_(_m_method_not_found) = tort_method_make(_tort_m_object___method_not_found);
+
 #if TORT_GLOBAL_MCACHE && TORT_GLOBAL_MCACHE_STATS
   if ( getenv("TORT_MCACHE_STATS") ) {
     atexit(_tort_mcache_stats);

@@ -205,6 +205,7 @@ struct tort_runtime { tort_H;
   tort_v root;
 
   tort_v message; /* Current message: not thread/fiber-safe. */
+  tort_v _m_method_not_found; /** method called if method cannot be found. */
 
   tort_v _in_error;
   tort_error_decl((*error));
