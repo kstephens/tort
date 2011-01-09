@@ -10,6 +10,7 @@ tort_v tort_runtime_initialize_io();
 tort_v tort_runtime_initialize_write();
 tort_v tort_runtime_initialize_debug();
 tort_v tort_runtime_initialize_method();
+tort_v tort_runtime_initialize_lookup();
 tort_v tort_runtime_initialize_tort();
 
 #endif
