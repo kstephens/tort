@@ -43,7 +43,7 @@ typedef struct tort_method tort_method;
 
 typedef
 struct tort_header {
-  size_t alloc_size; /** allocated object size, not including this header */
+  size_t alloc_size;   /** allocated object size, not including this header */
   tort_mtable *mtable; /** The object's method table. */
 #if TORT_ALLOC_DEBUG
   const char *alloc_file;

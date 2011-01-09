@@ -74,34 +74,58 @@ tort_mcache_entry mcache[mcache_size];
 
 struct {
   unsigned long 
-  hit_n, hit_mtable_n, hit_sel_n, hit_sel_version_n, 
-    lookup_n;
+     hit_n
+    ,hit_mtable_n
+    ,hit_sel_n
+    ,hit_sel_version_n 
+    ,lookup_n
+    ,method_change_n
+    ,lookup_change_n
+    ,delegate_change_n
+    ,flush_all_n
+    ,flush_symbol_n
+    ,symbol_version_change_n
+    ;
 } mcache_stats;
 
 #if TORT_GLOBAL_MCACHE_STATS
 #define TORT_MCACHE_STAT(X) ((X), 1)
+#else
+#define TORT_MCACHE_STAT(X) (1)
 #endif
 
 void _tort_mcache_stats()
 {
-  fprintf(stderr, "tort: mache: %lu hit / %lu lookup = %.8g\n",
+  fprintf(stderr, "tort: mcache: %lu hit / %lu lookup = %.8g\n",
 	  (unsigned long) mcache_stats.hit_n,
 	  (unsigned long) mcache_stats.lookup_n,
 	  (double) mcache_stats.hit_n / (double) mcache_stats.lookup_n);
 
-  fprintf(stderr, "tort: mache: %lu hit mt, %lu hit sel, %lu hit sel_version.\n",
-	  (unsigned long) mcache_stats.hit_mtable_n,
-	  (unsigned long) mcache_stats.hit_sel_n,
-	  (unsigned long) mcache_stats.hit_sel_version_n);
+#define S(N) \
+  fprintf(stderr, "tort: mcache: %26s = %16lu\n", #N, (unsigned long) mcache_stats.N)
+  S(method_change_n);
+  S(lookup_change_n);
+  S(delegate_change_n);
+  S(symbol_version_change_n);
+  S(flush_all_n);
+  S(flush_symbol_n);
+#undef S
+}
+
+
+static void mcache_flush_all()
+{
+  (void) TORT_MCACHE_STAT(++ mcache_stats.flush_all_n);
+  memset(&mcache, 0, sizeof(mcache));
 }
 
 #endif
 
-
 tort_v _tort_m_mtable___delegate_changed(tort_tp tort_mtable *rcvr)
 {
 #if TORT_GLOBAL_MCACHE
-  memset(&mcache, 0, sizeof(mcache));
+  (void) TORT_MCACHE_STAT(++ mcache_stats.delegate_change_n);
+  mcache_flush_all();
 #endif
   return rcvr;
 }
@@ -115,8 +139,7 @@ tort_v _tort_m_mtable__set_delegate(tort_tp tort_mtable *rcvr, tort_v delegate)
 {
   if ( rcvr->delegate != delegate ) {
     rcvr->delegate = delegate;
-    if ( tort_(_initialized) )
-    tort_send(tort__s(_delegate_changed), rcvr);
+    _tort_m_mtable___delegate_changed(tort_ta rcvr);
   }
   return rcvr;
 }
@@ -124,22 +147,33 @@ tort_v _tort_m_mtable__set_delegate(tort_tp tort_mtable *rcvr, tort_v delegate)
 tort_v _tort_m_mtable___method_changed(tort_tp tort_mtable *rcvr, tort_v sym, tort_v meth)
 {
 #if TORT_GLOBAL_MCACHE
+  (void) TORT_MCACHE_STAT(++ mcache_stats.method_change_n);
 #if TORT_MCACHE_USE_SYMBOL_VERSION
   if ( sym == tort__s(lookup) ) {
-    memset(&mcache, 0, sizeof(mcache));
+    (void) TORT_MCACHE_STAT(++ mcache_stats.lookup_change_n);
+    mcache_flush_all();
   } else {
     int i;
     for ( i = 0; i < mcache_size; ++ i ) {
       if ( mcache[i].sel == sym ) {
+	(void) TORT_MCACHE_STAT(++ mcache_stats.flush_symbol_n);
 	memset(&mcache[i], 0, sizeof(mcache[i]));
       }
     }
   }
 #else
-  memset(&mcache, 0, sizeof(mcache));
+  mcache_flush_all();
 #endif
 #endif
   return rcvr;
+}
+
+
+tort_v _tort_m_symbol___version_change(tort_tp tort_symbol *sym)
+{
+  (void) TORT_MCACHE_STAT(++ mcache_stats.symbol_version_change_n);
+  sym->version += 2;
+  return sym;
 }
 
 
@@ -276,7 +310,9 @@ tort_v tort_object_make()
 tort_v tort_runtime_initialize_tort()
 {
 #if TORT_GLOBAL_MCACHE && TORT_GLOBAL_MCACHE_STATS
-  atexit(_tort_mcache_stats);
+  if ( getenv("TORT_MCACHE_STATS") ) {
+    atexit(_tort_mcache_stats);
+  }
 #endif
   return 0;
 }

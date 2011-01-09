@@ -10,7 +10,7 @@
 #endif
 
 #ifndef TORT_GLOBAL_MCACHE_STATS
-#define TORT_GLOBAL_MCACHE_STATS 0 /* if true, capture global method cache stats. */
+#define TORT_GLOBAL_MCACHE_STATS 1 /* if true, capture global method cache stats. */
 #endif
 
 #ifndef TORT_MCACHE_USE_SYMBOL_VERSION

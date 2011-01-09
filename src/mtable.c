@@ -57,7 +57,7 @@ tort_v _tort_m_mtable__add_method (tort_tp tort_mtable *mtable, tort_symbol *sym
   if ( method->name == tort_nil || method->name == 0 ) {
     method->name = symbol;
   }
-  symbol->version += 2;
+  _tort_m_symbol___version_change(tort_ta symbol);
   _tort_m_map__set(tort_ta (tort_v) mtable, symbol, method);
   _tort_m_mtable___method_changed(tort_ta mtable, symbol, method);
   return method;
@@ -86,14 +86,10 @@ tort_mtable* tort_mtable_set_delegate(tort_mtable *obj_mt, tort_v delegate)
   }
   cls_mt = tort_h_ref(obj_mt)->mtable;
   cls_delegate = delegate != tort_nil ? tort_h_ref(delegate)->mtable : tort_nil;
-  if ( 0 && tort_(_initialized) ) {
-    _tort_m_mtable__set_delegate(tort_ta obj_mt, delegate);
-    _tort_m_mtable__set_delegate(tort_ta cls_mt, cls_delegate);
-  } else {
-    obj_mt->delegate = delegate;
-    cls_mt->delegate = cls_delegate;
-  }
 
+  _tort_m_mtable__set_delegate(tort_ta obj_mt, delegate);
+  _tort_m_mtable__set_delegate(tort_ta cls_mt, cls_delegate);
+  
   return obj_mt;
 }
 
@@ -157,8 +153,7 @@ tort_v tort_runtime_initialize_mtable()
   tort__mt(map)         = tort_mtable_create(tort__mt(vector_base));
 
   /* Back patch mtable -> map. */
-  tort__mt(mtable)->delegate = tort__mt(map);
-  // tort_mtable_set_delegate(tort__mt(mtable), tort__mt(map));
+  _tort_m_mtable__set_delegate(tort_ta tort__mt(mtable), tort__mt(map));
 
   /* Initialize nil object header. */
   tort__mt(nil)         = tort_mtable_create(tort__mt(object));
