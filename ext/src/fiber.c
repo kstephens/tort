@@ -24,6 +24,7 @@ tort_fiber_func_DECL(fiber_func)
   tort_v _tort_fiber = (tort_v) _tort_fiber_ptr;
   struct tort_fiber_data *d = data;
   tort_message *_tort_message = d->message;
+  assert(d);
   assert(_tort_message);
   _tort_message->fiber = _tort_fiber;
   return (tort_v) tort_send(tort__s(value), d->block);
@@ -35,8 +36,9 @@ tort_v _tort_M_fiber__new(tort_thread_param tort_v rcvr, tort_v block)
     _tort_message,
     block,
   };
-  assert(_tort_message);
   tort_v _tort_fiber = _tort_message->fiber;
+  assert(_tort_message);
+  assert(block);
   return __tort_fiber_new((tort_fiber_t*) _tort_fiber, fiber_func, &d, 0);  
 }
 
@@ -54,7 +56,7 @@ static void *allocate(size_t size)
 
 tort_v tort_runtime_initialize_fiber()
 {
-  tort_v _mt_fiber = tort_mtable_make("fiber", 0);
+  tort_v _mt_fiber = tort_mtable_make("fiber", tort_mt(object));
 
   __tort_fiber_allocate = allocate;
 
