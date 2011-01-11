@@ -7,11 +7,12 @@ backtrace =   @message( __debugger, @io(@x1), @method(__debugger,@x2), @map(
   __register_finalizer => @method(__register_finalizer,@x4),
   _alloc_size => @method(_alloc_size,@x5),
   _inspect => @method(_inspect,@x6),
-  _mtable => @method(_mtable,@x7),
-  _name => @method(_name,@x8),
-  clone => @method(clone,@x9),
-  identity => @method(identity,@x10),
-  __finalize => @method(__finalize,@x10)  ))
+  _method_not_found => @method(_method_not_found,@x7),
+  _mtable => @method(_mtable,@x8),
+  _name => @method(_name,@x9),
+  clone => @method(clone,@x10),
+  identity => @method(identity,@x11),
+  __finalize => @method(__finalize,@x11)  ))
 
 HELLO!
 
