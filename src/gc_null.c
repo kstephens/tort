@@ -1,6 +1,6 @@
 #include <stdlib.h>
 
-#if ! USE_GC
+#if ! TORT_GC
 
 void *GC_malloc(size_t size)
 {

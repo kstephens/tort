@@ -1,5 +1,5 @@
 GC=gc-20101223-cvs
-USE_GC=1
+TORT_GC=1
 
 PREFIX:=$(shell mkdir -p local && cd local && /bin/pwd)#
 libdir=$(PREFIX)/lib#
@@ -14,9 +14,9 @@ CFLAGS_OPTIMIZE = -O2
 CFLAGS_OPTIMIZE = -O3
 #CFLAGS_OPTIMIZE = 
 CFLAGS += -DTORT_DLIB_DIR='"$(libdir)"' -DTORT_DLIB_SUFFIX='".dylib"' #
-CFLAGS += -DUSE_GC=$(USE_GC) -fnested-functions -Iinclude -Iext/include -Iboot/include -I$(GC)/include -Wall -Werror -g $(CFLAGS_OPTIMIZE)
+CFLAGS += -DTORT_GC=$(TORT_GC) -fnested-functions -Iinclude -Iext/include -Iboot/include -I$(GC)/include -Wall -Werror -g $(CFLAGS_OPTIMIZE)
 
-ifeq "$(USE_GC)" "0"
+ifeq "$(TORT_GC)" "0"
 else
 LDFLAGS += -L$(PREFIX)/lib #
 LIBS += -lgc #
@@ -167,7 +167,7 @@ $(EXTLIB_OFILES) : $(LIB_HFILES) $(EXTLIB_HFILES)
 # libgc.a:
 #
 
-ifeq "$(USE_GC)" "0"
+ifeq "$(TORT_GC)" "0"
 gc :
 else
 gc : $(GC)/.libs/libgc.a
