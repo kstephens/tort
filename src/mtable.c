@@ -146,13 +146,9 @@ tort_v tort_runtime_initialize_mtable()
   /*************************************************/
   /* Create core method tables. */
 
-  /* Create vector base. */
   tort__mt(vector_base) = tort_mtable_create(tort__mt(object));
-
-  /* Create map mtable. */
+  tort__mt(pair)        = tort_mtable_create(tort__mt(object));
   tort__mt(map)         = tort_mtable_create(tort__mt(vector_base));
-
-  /* Back patch mtable -> map. */
   _tort_m_mtable__set_delegate(tort_ta tort__mt(mtable), tort__mt(map));
 
   /* Initialize nil object header. */

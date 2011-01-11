@@ -95,6 +95,11 @@ tort_v _tort_m_message___inspect(tort_tp tort_message *msg, tort_v io)
   return tort_nil;
 }
 
+tort_v _tort_m_pair___inspect(tort_thread_param tort_pair *rcvr, tort_v io)
+{
+  printf("@pair(%O, %O)", rcvr->key, rcvr->value);
+  return tort_nil;
+}
 
 tort_v _tort_m_map___inspect(tort_thread_param tort_v rcvr, tort_v io)
 {
