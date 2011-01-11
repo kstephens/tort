@@ -152,7 +152,8 @@ struct tort_string { tort_H; /* Same layout as tort_vector_base. */
   size_t element_size; /* sizeof(char) */
 } tort_string;
 
-#define tort_string_data(X) ((char*)tort_vector_base_data(X))
+#define tort_string_charP(X) ((char*)tort_vector_base_data(X))
+#define tort_string_data(X) tort_string_charP(X)
 #define tort_string_size(X) tort_vector_base_size(X)
 #define tort_string_alloc_size(X) tort_vector_base_alloc_size(X)
 
@@ -171,10 +172,11 @@ struct tort_symbol { tort_H;
 };
 
 static inline 
-const char *tort_symbol_data(tort_v sym) 
+const char *tort_symbol_charP(tort_v sym) 
 { 
-  return tort_string_data(tort_ref(tort_symbol, sym)->name);
+  return tort_string_charP(tort_ref(tort_symbol, sym)->name);
 }
+#define tort_symbol_data(X) tort_symbol_charP(X)
 
 tort_symbol* tort_symbol_make(const char *string);
 const char *tort_symbol_encode(const char *in);
@@ -257,6 +259,7 @@ extern tort_runtime_ __tort;
 #define tort_printf(io, fmt, args...) tort_send(tort__s(__printf), io, fmt, ## args)
 #define tort_printfv(io, fmt, vapp) tort_send(tort__s(__printfv), io, fmt, vapp)
 #define tort_flush(io) tort_send(tort_s(flush), io)
+#define tort_sprintf(STR, FMT, ARGS...) tort_send(tort__s(__printf), (STR), (FMT), #ARGS)
 
 tort_lookup_decl(_tort_lookup);
 tort_lookup_decl(_tort_m_mtable__lookup);

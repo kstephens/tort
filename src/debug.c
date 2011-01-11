@@ -33,7 +33,7 @@ tort_v _tort_m_message__backtrace(tort_thread_param tort_v rcvr)
     msg = tort_ref(tort_message, msg)->previous_message;
   }
 
-  v = tort_send(tort__s(new), tort_vector_null, tort_i(i));
+  v = tort_send(tort__s(new), tort__mt(vector), tort_i(i));
 
   i = 0;
   msg = rcvr;

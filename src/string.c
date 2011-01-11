@@ -3,12 +3,6 @@
 
 /********************************************************************/
 
-tort_v _tort_m_string__new(tort_thread_param tort_v rcvr, tort_v size)
-{
-  return tort_string_new(0, tort_I(size));
-}
-
-
 tort_v _tort_m_string__get (tort_thread_param tort_string *rcvr, tort_v _i)
 {
   long i = tort_I(_i);
@@ -25,16 +19,26 @@ tort_v _tort_m_string__set (tort_thread_param tort_string *rcvr, tort_v _i, tort
 }
 
 
-/********************************************************************/
-
-
-tort_v tort_string_new(const char *string, size_t size)
+tort_v _tort_M_string___new(tort_tp tort_mtable *mtable, const char *string, size_t size)
 {
-  tort_string *v = tort_vector_base_new(tort__mt(string), string, size, sizeof(string[0]));
+  tort_string *v = tort_vector_base_new(mtable, string, size, sizeof(string[0]));
   if ( ! string ) {
     memset(v->data, 0, v->alloc_size);
   }
   return v;
+}
+
+tort_v _tort_M_string__new(tort_tp tort_mtable *mtable, tort_v size)
+{
+  return tort_send(tort__s(_new), mtable, 0, tort_I(size));
+}
+
+/********************************************************************/
+
+
+tort_v tort_string_new(const char *ptr, size_t size)
+{
+  return _tort_M_string___new(tort_ta tort__mt(string), ptr, size);
 }
 
 

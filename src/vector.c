@@ -107,17 +107,16 @@ tort_v _tort_M_vector___new(tort_thread_param tort_v mtable, const void *data, s
 }
 
 
+tort_v _tort_M_vector__new(tort_tp tort_mtable *mtable, tort_v size)
+{
+  return tort_send(tort__s(_new), mtable, 0, tort_I(size));
+}
+
+
 tort_v tort_vector_new(const tort_v *vec, size_t size)
 {
-  return _tort_M_vector___new(tort_thread_arg tort__mt(vector), vec, size);
+  return _tort_M_vector___new(tort_ta tort__mt(vector), vec, size);
 }
-
-
-tort_v _tort_m_vector__new(tort_thread_param tort_v rcvr, tort_v _size)
-{
-  return tort_vector_new(0, tort_I(_size));
-}
-
 
 tort_v _tort_m_vector__get (tort_thread_param tort_v rcvr, tort_v _i)
 {
