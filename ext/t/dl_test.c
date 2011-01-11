@@ -26,7 +26,7 @@ int main(int argc, char **argv, char **environ)
   tort_send(tort_s(lisp_write), tort_false, io);
   tort_printf(io, "\n");
 
-  v = tort_send(tort_s(new), tort_mt(pair), tort_true, tort_false);
+  v = tort_send(tort_s(new), tort_mt(cons), tort_true, tort_false);
   tort_send(tort_s(lisp_write), v, io);
   tort_printf(io, "\n");
 

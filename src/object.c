@@ -13,22 +13,12 @@ tort_v _tort_m_object___alloc_size (tort_thread_param tort_v rcvr)
 
 tort_v _tort_m_object__clone (tort_thread_param tort_v rcvr)
 {
-  tort_v val;
-  void *ptr;
   size_t alloc_size = sizeof(tort_header) + tort_h_ref(rcvr)->alloc_size;
-
-  assert(tort_h_ref(rcvr)->alloc_size);
-
-  ptr = tort_malloc(alloc_size);
-
+  void *ptr = tort_malloc(alloc_size);
   memcpy(ptr, tort_h_ref(rcvr), alloc_size);
-
   ptr += sizeof(tort_header);
-  val = tort_ref_box(ptr);
-
-  return val;
+  return ptr;
 }
-
 
 tort_v _tort_m_object__identity (tort_thread_param tort_v rcvr)
 {

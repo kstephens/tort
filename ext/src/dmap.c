@@ -18,7 +18,7 @@ tort_v _tort_M_dmap__new(tort_tp tort_v mtable, tort_map *map, tort_dmap *delega
 tort_v _tort_m_dmap__get(tort_tp tort_dmap *dmap, tort_v key)
 {
   while ( dmap ) {
-    tort_map_entry *e = tort_send(tort__s(get_entry), dmap->map, key);
+    tort_pair *e = tort_send(tort__s(get_entry), dmap->map, key);
     if ( e ) return e->value;
     dmap = dmap->delegate;
   }
@@ -29,7 +29,7 @@ tort_v _tort_m_dmap__get(tort_tp tort_dmap *dmap, tort_v key)
 tort_v _tort_m_dmap__set(tort_tp tort_dmap *dmap, tort_v key, tort_v value)
 {
   while ( dmap ) {
-    tort_map_entry *e = tort_send(tort__s(get_entry), dmap->map, key);
+    tort_pair *e = tort_send(tort__s(get_entry), dmap->map, key);
     if ( e ) {
       e->value = key;
       return dmap;

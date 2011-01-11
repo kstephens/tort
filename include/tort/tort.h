@@ -11,7 +11,7 @@
 #include <stdio.h>
 #include <string.h> /* memset() */
 
-
+#include "tort/box.h"
 #include "tort/config.h"
 
 typedef void* tort_v;
@@ -26,8 +26,6 @@ typedef void* tort_v;
 #define tort_i(V) tort_tagged_box(V)
 #define tort_I(X) tort_tagged_data(X)
 
-#define tort_error_decl(X)  tort_v X (const char *format, va_list *vapp)
-
 typedef struct tort_symbol tort_symbol;
 typedef struct tort_mtable tort_mtable;
 typedef struct tort_message tort_message;
@@ -40,6 +38,9 @@ typedef struct tort_method tort_method;
 
 #define tort_lookup_decl(X) tort_message* X (tort_tp tort_mtable *mtable, tort_message *message)
 #define tort_apply_decl(X)  tort_v X (tort_tp tort_v rcvr, ...)
+
+#define tort_GETTER(MT,T,N) tort_v _tort_m_##MT##__##N( tort_tp tort_##MT *rcvr ) { return tort_box_(T,rcvr->N); }
+#define tort_SETTER(MT,T,N) tort_v _tort_m_##MT##__set_##N( tort_tp tort_##MT *rcvr, tort_v val ) { rcvr->N = tort_unbox_(T,val); return rcvr; }
 
 typedef
 struct tort_header {
@@ -125,22 +126,22 @@ struct tort_vector { tort_H; /* Same layout as tort_vector_base. */
 tort_v tort_vector_new(const tort_v *d, size_t s);
 
 typedef 
-struct tort_map_entry { tort_H;
+struct tort_pair { tort_H;
   tort_v key;
   tort_v value;
-} tort_map_entry;
+} tort_pair;
 
 typedef
 struct tort_map { tort_H; /* Same layout as tort_vector_base. */
   tort_vector_base _vector_base;
 } tort_map;
 
-#define tort_map_data(X) ((tort_map_entry**)tort_vector_base_data(X))
+#define tort_map_data(X) ((tort_pair**)tort_vector_base_data(X))
 #define tort_map_size(X) tort_vector_base_size(X)
 
 #define tort_map_EACH(m, me)					\
   {								\
-  tort_map_entry **me##p = tort_map_data(m), *me;		\
+  tort_pair **me##p = tort_map_data(m), *me;			\
   while ( (me = *(me##p ++)) ) {
 #define tort_map_EACH_END() }}
 
@@ -208,6 +209,7 @@ struct tort_runtime { tort_H;
   tort_v _m_method_not_found; /** method called if method cannot be found. */
 
   tort_v _in_error;
+#define tort_error_decl(X)  tort_v X (const char *format, va_list *vapp)
   tort_error_decl((*error));
   tort_error_decl((*fatal));
 
@@ -298,8 +300,6 @@ void  tort_free(void *ptr);
 void *tort_realloc(void *ptr, size_t size);
 
 tort_v tort_map_create();
-
-tort_apply_decl(_tort_m_mtable___method_not_found);
 
 #if TORT_ALLOC_DEBUG
 tort_v _tort_allocate (tort_tp tort_v meth_table, size_t size, const char *alloc_file, int alloc_line);

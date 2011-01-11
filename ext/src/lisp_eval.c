@@ -1,7 +1,5 @@
 #include "tort/lisp.h"
 
-/********************************************************************/
-
 tort_v _tort_m_symbol__lisp_eval(tort_tp tort_v sym, tort_v env)
 {
   return tort_send(tort__s(get), env, sym);
@@ -12,7 +10,7 @@ tort_v _tort_m_object__lisp_eval(tort_tp tort_v obj, tort_v env)
   return obj;
 }
 
-tort_v _tort_m_pair__lisp_eval(tort_tp tort_pair *obj, tort_v env)
+tort_v _tort_m_cons__lisp_eval(tort_tp tort_cons *obj, tort_v env)
 {
   tort_v val;
   if ( obj->car == tort_s(quote) ) {
@@ -40,12 +38,12 @@ tort_v _tort_m_object__lisp_eval_car(tort_tp tort_v obj, tort_v env)
   return obj;
 }
 
-tort_v _tort_m_symbol__lisp_apply(tort_tp tort_v obj, tort_pair *args, tort_v env)
+tort_v _tort_m_symbol__lisp_apply(tort_tp tort_v obj, tort_cons *args, tort_v env)
 {
   return tort_send(obj, args->car);
 }
 
-tort_v _tort_m_pair__lisp_eval_args(tort_tp tort_pair *obj, tort_v env)
+tort_v _tort_m_cons__lisp_eval_args(tort_tp tort_cons *obj, tort_v env)
 {
   return tort_cons(tort_send(tort_s(lisp_eval), obj->car, env),
 		   tort_send(tort_s(lisp_eval_args), obj->cdr, env));
@@ -53,7 +51,7 @@ tort_v _tort_m_pair__lisp_eval_args(tort_tp tort_pair *obj, tort_v env)
 }
 
 
-tort_v _tort_m_nil__lisp_eval_args(tort_tp tort_pair *obj, tort_v env)
+tort_v _tort_m_nil__lisp_eval_args(tort_tp tort_cons *obj, tort_v env)
 {
   return obj;
 }

@@ -1,8 +1,13 @@
 #!/bin/sh
-set -e
+set -e # x
 (
     cat "$1.begin"
-    perl -ne 'print "extern ", $_, ";\n" if ( ! /^\s*(static|extern|return)\b/ && ! /[={}]/ && /^\s*[a-z0-9]+.*?\s+_tort_[a-zA-Z0-9_]+\s*[(].*[)]\s*(;\s*)?$/ ); ' src/*.c include/tort/integer.h /dev/null
+    for f in src/*.c include/tort/integer.h
+    do
+      ${CC} ${CFLAGS} -E -o - "$f"
+    done |
+    perl -ne 'print "extern ", $1, ";\n" if ( ! /^\s*(static|extern|return)\b/ && ! /TORT_NO_INTERNAL/ && /^([a-z0-9_\*]+?\s+_tort_[a-zA-Z0-9_]+\s*[(][^)]+[)])\s*(\{\s+|;\s*$|$)/i ); ' |
+    sort -u
     cat "$1.end"
 ) > "$2"
 

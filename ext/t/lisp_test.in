@@ -9,7 +9,7 @@
   symbol symbol
   string "string"
   number 123
-  pair   (1 . 2)
+  cons   (1 . 2)
   true   #t
   false  #f
   improper-list (1 2 . 3)

@@ -261,13 +261,12 @@ tort_apply_decl(_tort_m_object___method_not_found)
 		     );
   tort_error_message("  receiver %s", tort_object_name(rcvr));
 #if TORT_ALLOC_DEBUG
-  tort_error_message("  allocated at %s:%d#%lu",
+  tort_error_message("  allocated at %s:%d #%lu",
 		     tort_h(rcvr).alloc_file,
 		     tort_h(rcvr).alloc_line,
 		     tort_h(rcvr).alloc_id);
 #endif
-  abort();
-  tort_inspect(tort_stderr, _tort_message);
+  tort_error_message("  message %O", _tort_message);
   tort_error(": not applicable");
   return tort_nil;
 }

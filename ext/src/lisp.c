@@ -2,27 +2,27 @@
 
 /********************************************************************/
 
-tort_v _tort_M_pair__new(tort_thread_param tort_v pair_mt, tort_v a, tort_v d)
+tort_v _tort_M_cons__new(tort_thread_param tort_v cons_mt, tort_v a, tort_v d)
 {
-  tort_pair *pair = tort_send(tort__s(_allocate), pair_mt, sizeof(*pair));
-  pair->car = a;
-  pair->cdr = d;
-  return pair;
+  tort_cons *cons = tort_send(tort__s(_allocate), cons_mt, sizeof(*cons));
+  cons->car = a;
+  cons->cdr = d;
+  return cons;
 }
 
 
 #define ACCESSOR(X)							\
-  tort_v _tort_m_pair__##X(tort_thread_param tort_v rcvr)		\
+  tort_v _tort_m_cons__##X(tort_thread_param tort_v rcvr)		\
   {									\
-    return tort_ref(tort_pair, rcvr)->X;				\
+    return tort_ref(tort_cons, rcvr)->X;				\
   }									\
   tort_v tort_##X(tort_v rcvr) {					\
     return tort_send(tort_s(X), rcvr);					\
   }									\
-  tort_v _tort_m_pair__setD##X##E(tort_thread_param tort_v rcvr,	\
+  tort_v _tort_m_cons__setD##X##E(tort_thread_param tort_v rcvr,	\
 			       tort_v val)				\
   {									\
-    tort_ref(tort_pair, rcvr)->X = val;					\
+    tort_ref(tort_cons, rcvr)->X = val;					\
     return rcvr;							\
   }
 
@@ -53,12 +53,12 @@ tort_v tort_caddr(tort_v v)
 }
 
 
-tort_v _tort_m_list__size(tort_tp tort_pair *rcvr) /**/
+tort_v _tort_m_list__size(tort_tp tort_cons *rcvr) /**/
 {
   size_t i = 0;
   while ( rcvr != tort_nil )  {
     ++ i;
-    if ( tort_h_mtable(rcvr) == tort_mt(pair) ) {
+    if ( tort_h_mtable(rcvr) == tort_mt(cons) ) {
       rcvr = rcvr->cdr;
     } else {
       break;
@@ -72,9 +72,9 @@ tort_v _tort_m_list__lisp_write(tort_thread_param tort_v rcvr, tort_v io) /**/
 {
   tort_printf(io, "(");
   while ( rcvr != tort_nil ) {
-    if ( tort_h_mtable(rcvr) == tort_mt(pair) ) {
-      tort_send(tort_s(lisp_write), tort_ref(tort_pair, rcvr)->car, io);
-      rcvr = tort_ref(tort_pair, rcvr)->cdr;
+    if ( tort_h_mtable(rcvr) == tort_mt(cons) ) {
+      tort_send(tort_s(lisp_write), tort_ref(tort_cons, rcvr)->car, io);
+      rcvr = tort_ref(tort_cons, rcvr)->cdr;
       if ( rcvr == tort_nil ) break;
     } else {
       tort_printf(io, ". ");
@@ -94,9 +94,9 @@ tort_v _tort_m_list__list_TO_vector(tort_thread_param tort_v rcvr, tort_v io) /*
   tort_v vec = tort_vector_new(0, tort_I(size));
   size_t i = 0;
   while ( rcvr != tort_nil ) {
-    if ( tort_h_mtable(rcvr) == tort_mt(pair) ) {
-      tort_vector_data(vec)[i ++] = tort_ref(tort_pair, rcvr)->car;
-      rcvr = tort_ref(tort_pair, rcvr)->cdr;
+    if ( tort_h_mtable(rcvr) == tort_mt(cons) ) {
+      tort_vector_data(vec)[i ++] = tort_ref(tort_cons, rcvr)->car;
+      rcvr = tort_ref(tort_cons, rcvr)->cdr;
     } else {
       tort_vector_data(vec)[i ++] = rcvr;
       break;
@@ -190,7 +190,7 @@ tort_v _tort_m_io__lisp_read (tort_thread_param tort_v stream)
 #define GETC(s) fgetc(FP(s))
 #define UNGETC(s, c) ungetc(c, FP(s))
 #define EOS tort_eos
-#define CONS(x,y) tort_send(tort_s(new), tort_mt(pair), x, y)
+#define CONS(x,y) tort_send(tort_s(new), tort_mt(cons), x, y)
 #define SET_CDR(CONS,V) tort_send(tort_s(setDcdrE), CONS, V)
 #define MAKE_CHAR(I) tort_i(I)
 #define STRING(b, l) tort_string_new(b, l)
@@ -220,7 +220,7 @@ tort_v _tort_string_to_number(tort_v s, int radix) /**/
 
 tort_v tort_runtime_initialize_lisp()
 {
-  tort_v _mt_pair = tort_mtable_make("pair", 0);
+  tort_v _mt_cons = tort_mtable_make("cons", 0);
   tort_mtable_make("list", 0);
 
   /* Reused methods. */
@@ -230,15 +230,15 @@ tort_v tort_runtime_initialize_lisp()
   tort_add_method(tort__mt(message), "lisp_write", _tort_m_message___inspect);
   tort_add_method(tort__mt(nil),    "lisp_write", _tort_m_nil___inspect);
 
-  tort_add_method(_mt_pair, "value", _tort_m_pair__car);
+  tort_add_method(_mt_cons, "value", _tort_m_cons__car);
 
-  tort_add_method(_mt_pair, "lisp_write", _tort_m_list__lisp_write);
+  tort_add_method(_mt_cons, "lisp_write", _tort_m_list__lisp_write);
   tort_add_method(tort__mt(nil),  "lisp_write", _tort_m_list__lisp_write);
-  tort_add_method(_mt_pair, "size", _tort_m_list__size);
+  tort_add_method(_mt_cons, "size", _tort_m_list__size);
   tort_add_method(tort__mt(nil),  "size", _tort_m_list__size);
-  tort_add_method(_mt_pair, "list->vector", _tort_m_list__list_TO_vector);
+  tort_add_method(_mt_cons, "list->vector", _tort_m_list__list_TO_vector);
   tort_add_method(tort__mt(nil),  "list->vector", _tort_m_list__list_TO_vector);
 
-  return _mt_pair;
+  return _mt_cons;
 }
 

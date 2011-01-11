@@ -42,31 +42,13 @@ void* _tort_m_vector_base___data (tort_thread_param tort_vector_base *v)
 {
   return v->data;
 }
-
-
 void* _tort_m_vector_base___ref (tort_thread_param tort_vector_base *v, tort_v i)
 {
   return v->data + v->element_size * tort_I(i);
 }
-
-
-tort_v _tort_m_vector_base__size (tort_thread_param tort_vector_base *v)
-{
-  return tort_i(v->size);
-}
-
-
-tort_v _tort_m_vector_base__alloc_size (tort_thread_param tort_vector_base *v)
-{
-  return tort_i(v->alloc_size);
-}
-
-
-tort_v _tort_m_vector_base__element_size (tort_thread_param tort_vector_base *v)
-{
-  return tort_i(v->element_size);
-}
-
+tort_GETTER(vector_base,size_t,size);
+tort_GETTER(vector_base,size_t,alloc_size);
+tort_GETTER(vector_base,size_t,element_size);
 
 tort_v _tort_m_vector_base___resize (tort_thread_param tort_vector_base *v, size_t size)
 {

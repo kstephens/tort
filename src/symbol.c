@@ -24,7 +24,7 @@ tort_symbol* _tort_M_symbol__new(tort_tp tort_mtable *mtable, tort_v name)
 tort_symbol* tort_symbol_make(const char *string)
 {
   if ( string ) {
-    tort_map_entry *e = _tort_m_map__get_entry_cstr(tort_ta tort_(symbols), string);
+    tort_pair *e = _tort_m_map__get_entry_cstr(tort_ta tort_(symbols), string);
     if ( e ) {
       // fprintf(stderr, "\n old symbol = %s %p\n", tort_symbol_data(e->value), (void *) e->value);
       return e->value;

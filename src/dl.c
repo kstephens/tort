@@ -91,7 +91,7 @@ tort_v tort_m_map___run_initializers(tort_thread_param tort_v map)
 }
 
 
-static int process_method(int cmeth, const char *prefix, tort_map_entry *e)
+static int process_method(int cmeth, const char *prefix, tort_pair *e)
 {
   const char *name = tort_symbol_data(e->key);
   if ( strncmp(name, prefix, strlen(prefix)) == 0 ) {
