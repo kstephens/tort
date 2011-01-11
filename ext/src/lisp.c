@@ -153,9 +153,9 @@ tort_v _tort_m_map__lisp_write(tort_thread_param tort_v rcvr, tort_v io)
   printf("(make <map> ");
   tort_map_EACH(rcvr, entry) {
     if ( entry_i > 0 ) printf(" ");
-    tort_send(tort_s(lisp_write), entry->key, IO);
+    tort_send(tort_s(lisp_write), entry->first, IO);
     printf(" ");
-    tort_send(tort_s(lisp_write), entry->value, IO);
+    tort_send(tort_s(lisp_write), entry->second, IO);
     entry_i ++;
   } tort_map_EACH_END();
   printf(")");

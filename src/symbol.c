@@ -26,8 +26,8 @@ tort_symbol* tort_symbol_make(const char *string)
   if ( string ) {
     tort_pair *e = _tort_m_map__get_entry_cstr(tort_ta tort_(symbols), string);
     if ( e ) {
-      // fprintf(stderr, "\n old symbol = %s %p\n", tort_symbol_data(e->value), (void *) e->value);
-      return e->value;
+      // fprintf(stderr, "\n old symbol = %s %p\n", tort_symbol_data(e->second), (void *) e->second);
+      return e->second;
     } else {
       tort_string *name = tort_string_new_cstr(string);
       tort_symbol *sym = _tort_M_symbol___create(tort_ta tort__mt(symbol), name);

@@ -24,8 +24,8 @@ tort_v _tort_m_string___dlopen(tort_tp tort_string *rcvr)
   st = tort_map_create();
   tort_send(tort_s(_load_symtab), st, file, 0);
 
-  base_sym = tort_symbol_data(tort_map_data(st)[0]->key);
-  base_ptr = (void*) tort_I(tort_map_data(st)[0]->value);
+  base_sym = tort_symbol_data(tort_map_data(st)[0]->first);
+  base_ptr = (void*) tort_I(tort_map_data(st)[0]->second);
 #if 0
   fprintf(stderr, "base_sym = '%s'\n", base_sym);
   fprintf(stderr, "base_ptr = %p\n", base_ptr);
@@ -74,11 +74,11 @@ tort_v tort_m_map___run_initializers(tort_thread_param tort_v map)
 {
   static const char prefix[] = "_tort_runtime_initialize_";
   tort_map_EACH(map, e) {
-    if ( tort_h_mtable(e->key) != tort__mt(symbol) ) continue;
-    const char *name = tort_symbol_data(e->key);
+    if ( tort_h_mtable(e->first) != tort__mt(symbol) ) continue;
+    const char *name = tort_symbol_data(e->first);
     // fprintf(stderr, "e = @%p \"%s\"\n", e, name);
     if ( strncmp(name, prefix, strlen(prefix)) == 0 ) {
-      void *ptr = (void*) tort_I(e->value);
+      void *ptr = (void*) tort_I(e->second);
       tort_v (*func)();
       func = ptr;
       if ( _tort_dl_debug ) 
@@ -93,7 +93,7 @@ tort_v tort_m_map___run_initializers(tort_thread_param tort_v map)
 
 static int process_method(int cmeth, const char *prefix, tort_pair *e)
 {
-  const char *name = tort_symbol_data(e->key);
+  const char *name = tort_symbol_data(e->first);
   if ( strncmp(name, prefix, strlen(prefix)) == 0 ) {
     const char *cls = name + strlen(prefix);
     const char *meth = cls;
@@ -104,7 +104,7 @@ static int process_method(int cmeth, const char *prefix, tort_pair *e)
 	cls_buf[meth - cls] = 0;
 	cls = cls_buf;
 	meth += 2;
-	void *ptr = (void*) tort_I(e->value);
+	void *ptr = (void*) tort_I(e->second);
 	meth = tort_symbol_encode(meth);
 	if ( _tort_dl_debug ) 
 	  fprintf(stderr, "  method %s%c%s => @%p\n", cls, cmeth ? '.' : '#', meth, ptr);
@@ -126,7 +126,7 @@ tort_v tort_m_map___load_methods(tort_thread_param tort_v map)
   static const char obj_prefix[] = "__tort_m_";
   static const char cls_prefix[] = "__tort_M_";
   tort_map_EACH(map, e) {
-    if ( tort_h_mtable(e->key) != tort__mt(symbol) ) continue;
+    if ( tort_h_mtable(e->first) != tort__mt(symbol) ) continue;
     // fprintf(stderr, "e = @%p \"%s\"\n", e, name);
     (void) (process_method(0, obj_prefix, e) || process_method(1, cls_prefix, e));
   }

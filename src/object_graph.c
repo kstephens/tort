@@ -126,7 +126,7 @@ static void g1(tort_og_context *context, tort_v obj)
     tort_mtable *o = obj;
     LINK(delegate);
     tort_map_EACH(obj, me) { 
-      LINK_PTR(tort_symbol_data(me->key), me->value); 
+      LINK_PTR(tort_symbol_data(me->first), me->second); 
     } tort_map_EACH_END();
   }
 

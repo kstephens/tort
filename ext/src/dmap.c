@@ -19,7 +19,7 @@ tort_v _tort_m_dmap__get(tort_tp tort_dmap *dmap, tort_v key)
 {
   while ( dmap ) {
     tort_pair *e = tort_send(tort__s(get_entry), dmap->map, key);
-    if ( e ) return e->value;
+    if ( e ) return e->second;
     dmap = dmap->delegate;
   }
   return tort_nil;
@@ -31,7 +31,7 @@ tort_v _tort_m_dmap__set(tort_tp tort_dmap *dmap, tort_v key, tort_v value)
   while ( dmap ) {
     tort_pair *e = tort_send(tort__s(get_entry), dmap->map, key);
     if ( e ) {
-      e->value = key;
+      e->second = value;
       return dmap;
     }
     dmap = dmap->delegate;

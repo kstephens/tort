@@ -97,7 +97,7 @@ tort_v _tort_m_message___inspect(tort_tp tort_message *msg, tort_v io)
 
 tort_v _tort_m_pair___inspect(tort_thread_param tort_pair *rcvr, tort_v io)
 {
-  printf("@pair(%O, %O)", rcvr->key, rcvr->value);
+  printf("@pair(%O, %O)", rcvr->first, rcvr->second);
   return tort_nil;
 }
 
@@ -107,9 +107,9 @@ tort_v _tort_m_map___inspect(tort_thread_param tort_v rcvr, tort_v io)
   printf("@map( \n  ");
   tort_map_EACH(rcvr, entry) {
     if ( entry_i > 0 ) printf(",\n  ");
-    tort_inspect(IO, entry->key);
+    tort_inspect(IO, entry->first);
     printf(" => ");
-    tort_inspect(IO, entry->value);
+    tort_inspect(IO, entry->second);
     entry_i ++;
   } tort_map_EACH_END();
   printf("  )");

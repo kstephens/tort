@@ -127,8 +127,7 @@ tort_v tort_vector_new(const tort_v *d, size_t s);
 
 typedef 
 struct tort_pair { tort_H;
-  tort_v key;
-  tort_v value;
+  tort_v first, second;
 } tort_pair;
 
 typedef
