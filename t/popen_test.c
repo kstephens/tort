@@ -22,7 +22,7 @@ int main(int argc, char **argv, char **environ)
     printf("\nread up to 64 chars from popen(\"echo 12345\", \"r\") => ");
     v = tort_string_new_cstr("echo 12345");
     c = tort_string_new_cstr("r");
-    o = tort_send(tort__s(__create), tort_stdin, 0);
+    o = tort_send(tort__s(__create), tort__mt(io), 0);
     o = tort_send(tort__s(popen), o, v, c);
     v = tort_send(tort__s(read), o, tort_i(64));
     tort_inspect(io, v);

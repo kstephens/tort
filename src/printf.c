@@ -2,7 +2,7 @@
 
 #define FP io->fp
 
-tort_v _tort_m_io___printfv(tort_tp tort_io* io, const char *format, const char *fe, va_list *vapp)
+tort_v _tort_m_object___printfv(tort_tp tort_io *io, const char *format, const char *fe, va_list *vapp)
 {
 #define vap (*vapp)
   const char *b = format, *e;
@@ -91,16 +91,69 @@ tort_v _tort_m_io___printfv(tort_tp tort_io* io, const char *format, const char 
   return io;
 }
 
-tort_v _tort_m_io____printfv(tort_tp tort_io* io, const char *fmt, va_list *vapp)
+static int string_read(void *str, char *buf, int size)
+{
+  return tort_I(tort_send(tort__s(__read), (tort_v) str, (void*) buf, (size_t) size));
+}
+
+static int string_write(void *str, const char *buf, int size)
+{
+  tort_send(tort__s(__write), (tort_v) str, (void*) buf, (size_t) size);
+  return size;
+}
+
+static fpos_t string_seek(void *str, fpos_t pos, int dir)
+{
+  return 0;
+}
+
+static int string_close(void *str)
+{
+  return 0;
+}
+
+tort_v _tort_m_string___printfv(tort_tp tort_string *str, const char *fmt, va_list *vapp)
+{
+  FILE *fp = funopen((void*) str,
+		     string_read,
+		     string_write,
+		     string_seek,
+		     string_close);
+  tort_io *io = tort_send(tort__s(__create), tort__mt(io), fp);
+  tort_v result = tort_send(tort_s(_printfv), io, fmt, strchr(fmt, 0), vapp);
+  fclose(fp);
+  return result;
+}
+
+tort_v _tort_m_object____printfv(tort_tp tort_v io, const char *fmt, va_list *vapp)
 {
   return tort_send(tort_s(_printfv), io, fmt, strchr(fmt, 0), vapp);
 }
 
-tort_v _tort_m_io____printf(tort_tp tort_io* io, const char *fmt, ...)
+tort_v _tort_m_object____printf(tort_tp tort_v io, const char *fmt, ...)
 {
   va_list vap;
   va_start(vap, fmt);
-  io = _tort_m_io____printfv(tort_ta io, fmt, &vap);
+  io = _tort_m_object____printfv(tort_ta io, fmt, &vap);
+  va_end(vap);
+  return io;
+}
+
+tort_v _tort_m_nil____printf(tort_tp tort_v io, const char *fmt, ...)
+{
+  va_list vap;
+  va_start(vap, fmt);
+  io = tort_string_new(0, 0);
+  _tort_m_object____printfv(tort_ta io, fmt, &vap);
+  va_end(vap);
+  return io;
+}
+
+tort_v _tort_m_string____printf(tort_tp tort_v io, const char *fmt, ...)
+{
+  va_list vap;
+  va_start(vap, fmt);
+  _tort_m_object____printfv(tort_ta io, fmt, &vap);
   va_end(vap);
   return io;
 }
