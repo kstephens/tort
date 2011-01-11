@@ -4,15 +4,18 @@ rcvr = @io(@x1)
 backtrace =   @message( __debugger, @io(@x1), @method(__debugger,@x2), @map( 
   __debugger => @method(__debugger,@x2),
   __message => @method(__message,@x3),
-  __register_finalizer => @method(__register_finalizer,@x4),
-  _alloc_size => @method(_alloc_size,@x5),
-  _inspect => @method(_inspect,@x6),
-  _method_not_found => @method(_method_not_found,@x7),
-  _mtable => @method(_mtable,@x8),
-  _name => @method(_name,@x9),
-  clone => @method(clone,@x10),
-  identity => @method(identity,@x11),
-  __finalize => @method(__finalize,@x11)  ))
+  __printf => @method(__printf,@x4),
+  __printfv => @method(__printfv,@x5),
+  __register_finalizer => @method(__register_finalizer,@x6),
+  _alloc_size => @method(_alloc_size,@x7),
+  _inspect => @method(_inspect,@x8),
+  _method_not_found => @method(_method_not_found,@x9),
+  _mtable => @method(_mtable,@x10),
+  _name => @method(_name,@x11),
+  _printfv => @method(_printfv,@x12),
+  clone => @method(clone,@x13),
+  identity => @method(identity,@x14),
+  __finalize => @method(__finalize,@x14)  ))
 
 HELLO!
 
