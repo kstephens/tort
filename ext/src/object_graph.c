@@ -89,7 +89,8 @@ static const char *slot_str(tort_og_context *context, struct slot *slot, tort_v 
   } else if ( mt == tort__mt(symbol) ) {
     snprintf(buf, sizeof(buf), "%s", tort_symbol_charP(val));
   } else {
-    link(context, slot->obj, port, val, 0, slot->link_style);
+    if ( port ) 
+      link(context, slot->obj, port, val, 0, slot->link_style);
     snprintf(buf, sizeof(buf), "%s", tort_object_name_(val));
   }
   if ( e[0] != 0 ) {
