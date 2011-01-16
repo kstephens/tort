@@ -71,6 +71,16 @@ tort_v _tort_m_object____debugger(tort_thread_param tort_v rcvr)
 #undef printf
 
 
+const char *tort_mtable_name_(tort_v val)
+{
+  if ( 0 ) {
+  }
+#define tort_d_mt(N) else if ( val == tort__mt(N) ) { return #N; }
+#include "tort/d_mt.h"
+
+  return "";
+}
+
 const char *tort_object_name_(tort_v val)
 {
   char *str = 0;

@@ -55,7 +55,9 @@ tort_v _tort_m_mtable__add_method (tort_tp tort_mtable *mtable, tort_symbol *sym
 {
   // fprintf(stderr, "  add_method %s %s %p\n", tort_object_name(mtable), tort_object_name(symbol), method->applyf);
   if ( method->name == tort_nil || method->name == 0 ) {
-    method->name = symbol;
+    char *buf = tort_malloc(strlen(tort_mtable_name_(mtable)) + 2 + strlen(tort_symbol_charP(symbol)) + 1);
+    sprintf(buf, "%s::%s", tort_mtable_name_(mtable), tort_symbol_charP(symbol));
+    method->name = tort_symbol_make(buf);
   }
   _tort_m_symbol___version_change(tort_ta symbol);
   _tort_m_map__set(tort_ta (tort_v) mtable, symbol, method);

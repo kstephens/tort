@@ -341,6 +341,7 @@ tort_v tort_error (const char *format, ...);
 tort_v tort_error_message(const char *format, ...);
 
 void tort_debug_stop_at();
+const char *tort_mtable_name_(tort_v val);
 const char *tort_object_name_(tort_v val);
 const char *tort_object_name(tort_v val);
 
