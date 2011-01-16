@@ -273,7 +273,7 @@ void og_object(tort_og_context *context, tort_v obj)
     while ( link ) {
       struct link *link_next = link->next;
       fprintf(FP, "\
-\"node%p\":%s -> \"node%p\":%s [ \n\
+\"node%p\":%s:e -> \"node%p\":%s:w [ \n\
   id = %d \n\
   %s \n\
 ]; \n\
