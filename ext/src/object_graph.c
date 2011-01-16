@@ -72,7 +72,7 @@ static void link(tort_og_context *context, tort_v src_obj, const char *src_slot,
 
 static const char *slot_str(tort_og_context *context, struct slot *slot, tort_v val, const char *port)
 {
-  tort_mtable *mt = tort_h_mtable(slot->value);
+  tort_mtable *mt = tort_h_mtable(val);
   char buf[128], *e = buf + sizeof(buf) - 2;
   memset(buf, 0, sizeof(buf));
 
