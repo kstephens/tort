@@ -10,6 +10,7 @@ tort_v _tort_m_object__lisp_eval(tort_tp tort_v obj, tort_v env)
   return obj;
 }
 
+
 tort_v _tort_m_cons__lisp_eval(tort_tp tort_cons *obj, tort_v env)
 {
   tort_v val;
@@ -19,14 +20,21 @@ tort_v _tort_m_cons__lisp_eval(tort_tp tort_cons *obj, tort_v env)
   else if ( obj->car == tort_s(if) ) {
     val = tort_send(tort_s(lisp_eval), tort_car(obj->cdr), env);
     if ( val == tort_false ) {
-      return tort_caddr(obj->cdr);
+      val = tort_caddr(obj->cdr);
     } else {
-      return tort_cadr(obj->cdr);
+      val = tort_cadr(obj->cdr);
+    }
+    return tort_send(tort_s(lisp_eval), val, env);
+  }
+  else if ( obj->car == tort_s(while) ) {
+    while ( (val = tort_send(tort_s(lisp_eval), tort_car(obj->cdr), env)) != tort_false ) {
+      return tort_send(tort_s(lisp_eval), tort_cadr(obj->cdr), env);
     }
   }
   else {
     val = tort_send(tort_s(lisp_eval_car), obj->car, env);
     tort_v args = tort_send(tort_s(lisp_eval_args), obj->cdr, env);
+    args = tort_send(tort_s(listTOvector), args);
     return tort_send(tort_s(lisp_apply), val, args, env);
   }
 
@@ -38,10 +46,11 @@ tort_v _tort_m_object__lisp_eval_car(tort_tp tort_v obj, tort_v env)
   return obj;
 }
 
-tort_v _tort_m_symbol__lisp_apply(tort_tp tort_v obj, tort_cons *args, tort_v env)
+tort_v _tort_m_symbol__lisp_apply(tort_tp tort_v obj, tort_v args, tort_v env)
 {
-  return tort_send(obj, args->car);
+  return tort_send(tort_s(_sendv), obj, args);
 }
+
 
 tort_v _tort_m_cons__lisp_eval_args(tort_tp tort_cons *obj, tort_v env)
 {
