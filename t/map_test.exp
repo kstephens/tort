@@ -1,21 +1,21 @@
 
   _mt_map => @map( 
-  _inspect => @method(_inspect,@x1),
-  _load_symtab => @method(_load_symtab,@x2),
-  add => @method(add,@x3),
-  clone => @method(clone,@x4),
-  delete => @method(delete,@x5),
-  get => @method(get,@x6),
-  get_entry => @method(get_entry,@x7),
-  get_entry_by_value => @method(get_entry_by_value,@x8),
-  get_entry_cstr => @method(get_entry_cstr,@x9),
-  get_entry_string => @method(get_entry_string,@x10),
-  get_key => @method(get_key,@x11),
-  get_string => @method(get_string,@x12),
-  initialize => @method(initialize,@x13),
-  set => @method(set,@x14),
-  _run_initializers => @method(_run_initializers,@x15),
-  _load_methods => @method(_load_methods,@x16)  )
+  _inspect => @method(map::_inspect,@x1),
+  _load_symtab => @method(map::_load_symtab,@x2),
+  add => @method(map::add,@x3),
+  clone => @method(map::clone,@x4),
+  delete => @method(map::delete,@x5),
+  get => @method(map::get,@x6),
+  get_entry => @method(map::get_entry,@x7),
+  get_entry_by_value => @method(map::get_entry_by_value,@x8),
+  get_entry_cstr => @method(map::get_entry_cstr,@x9),
+  get_entry_string => @method(map::get_entry_string,@x10),
+  get_key => @method(map::get_key,@x11),
+  get_string => @method(map::get_string,@x12),
+  initialize => @method(map::initialize,@x13),
+  set => @method(map::set,@x14),
+  _run_initializers => @method(map::_run_initializers,@x15),
+  _load_methods => @method(map::_load_methods,@x16)  )
 o => @map( 
     )
 (size o) => 0

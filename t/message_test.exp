@@ -1,17 +1,17 @@
-Some object ==> ( @message( __message, @io(@x1), @method(__message,@x2), @map( 
-  __debugger => @method(__debugger,@x3),
-  __message => @method(__message,@x2),
-  __printf => @method(__printf,@x4),
-  __printfv => @method(__printfv,@x5),
-  __register_finalizer => @method(__register_finalizer,@x6),
-  _alloc_size => @method(_alloc_size,@x7),
-  _inspect => @method(_inspect,@x8),
-  _method_not_found => @method(_method_not_found,@x9),
-  _mtable => @method(_mtable,@x10),
-  _name => @method(_name,@x11),
-  _printfv => @method(_printfv,@x12),
-  clone => @method(clone,@x13),
-  identity => @method(identity,@x14),
-  __finalize => @method(__finalize,@x14)  )) ) <== is in here!
+Some object ==> ( @message( __message, @io(@x1), @method(object::__message,@x2), @map( 
+  __debugger => @method(object::__debugger,@x3),
+  __message => @method(object::__message,@x2),
+  __printf => @method(object::__printf,@x4),
+  __printfv => @method(object::__printfv,@x5),
+  __register_finalizer => @method(object::__register_finalizer,@x6),
+  _alloc_size => @method(object::_alloc_size,@x7),
+  _inspect => @method(object::_inspect,@x8),
+  _method_not_found => @method(object::_method_not_found,@x9),
+  _mtable => @method(object::_mtable,@x10),
+  _name => @method(object::_name,@x11),
+  _printfv => @method(object::_printfv,@x12),
+  clone => @method(object::clone,@x13),
+  identity => @method(object::identity,@x14),
+  __finalize => @method(object::__finalize,@x14)  )) ) <== is in here!
 
 DONE
