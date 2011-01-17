@@ -50,6 +50,15 @@ tort_GETTER(vector_base,size_t,size);
 tort_GETTER(vector_base,size_t,alloc_size);
 tort_GETTER(vector_base,size_t,element_size);
 
+tort_v _tort_m_vector_base___delete_n (tort_tp tort_vector_base *v, tort_v i, tort_v n)
+{
+  memmove(v->data + v->element_size * tort_I(i), 
+	  v->data + v->element_size * (tort_I(i) + tort_I(n)),
+	  v->element_size * (v->size - tort_I(n)));
+  v->size -= tort_I(n);
+  return v;
+}
+
 tort_v _tort_m_vector_base___resize (tort_thread_param tort_vector_base *v, size_t size)
 {
   size_t old_size = v->size;
