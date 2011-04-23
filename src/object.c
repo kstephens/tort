@@ -1,6 +1,16 @@
 #include "tort/tort.h"
 #include <assert.h>
 
+tort_v _tort_m_object__eqQ (tort_tp tort_v rcvr, tort_v val)
+{
+  return rcvr == val ? tort_true : tort_false;
+}
+
+tort_v _tort_m_object__not (tort_tp tort_v rcvr)
+{
+  return rcvr == tort_false ? rcvr : tort_true;
+}
+
 tort_v _tort_m_object___mtable (tort_thread_param tort_v rcvr)
 {
   return tort_h_ref(rcvr)->mtable;
