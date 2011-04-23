@@ -1,3 +1,4 @@
+;; -*- lisp -*-
 ;; comment
 #!comment
 (
@@ -22,8 +23,52 @@
 
 (define x 10)
 x
+(lambda (x) ('+ x 1))
+(if #t 'true)
+(if #f 'true 'false)
+(if #f 'true)
+(define f (lambda x x))
+(f 1 2 3)
+(define f (lambda x ('car x)))
+f
+(f 1 2 3)
+(set! f 1)
+f
 (define f (lambda (x) ('* x x)))
 (f 1)
 (f 2)
 (f 3)
-
+(begin 1 2 3)
+(define not 'not)
+(define eq? 'eq?)
+(define nil '())
+(define car 'car)
+(define cdr 'cdr)
+(define set-car! 'set-car!)
+(define set-cdr! 'set-cdr!)
+(define + '+)
+(+ 1 2)
+(define * '*)
+(* 3 4)
+&env
+&root
+(define cons 
+  (lambda x
+    (set-cdr! x (car (cdr x)))
+    x))
+cons
+(cons 1 2)
+(define map 
+  (lambda (l f)
+    (if (eq? l nil)
+	nil
+      (cons (f (car l))
+	    (map (cdr l) f)))))
+(define a 1)
+(map '(1 2 3 4) 
+     (lambda (x) 
+       (set! x (* x x))
+       (set! a (+ a x))
+       x
+       ))
+a

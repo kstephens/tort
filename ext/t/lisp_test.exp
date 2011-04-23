@@ -5,6 +5,28 @@ read lisp object from stdin: (read o) => (hash-semi-comment nothing nil () nil n
  => x
  >   == x
  => 10
+ >   == (lambda (x) ((quote +) x 1))
+ => (&lambda #f((x) #f) #(((quote +) x 1)) . #e((make <map> x 0) . ()))
+ >   == (if #t (quote true))
+ => true
+ >   == (if #f (quote true) (quote false))
+ => false
+ >   == (if #f (quote true))
+ => ()
+ >   == (define f (lambda x x))
+ => f
+ >   == (f 1 2 3)
+ => (1 2 3)
+ >   == (define f (lambda x ((quote car) x)))
+ => f
+ >   == f
+ => (&lambda #f(x x) #(((quote car) x)) . #e((make <map> x 0 f 1) . ()))
+ >   == (f 1 2 3)
+ => 1
+ >   == (set! f 1)
+ => f
+ >   == f
+ => 1
  >   == (define f (lambda (x) ((quote *) x x)))
  => f
  >   == (f 1)
@@ -13,10 +35,52 @@ read lisp object from stdin: (read o) => (hash-semi-comment nothing nil () nil n
  => 4
  >   == (f 3)
  => 9
+ >   == (begin 1 2 3)
+ => 3
+ >   == (define not (quote not))
+ => not
+ >   == (define eq? (quote eq?))
+ => eq?
+ >   == (define nil (quote ()))
+ => nil
+ >   == (define car (quote car))
+ => car
+ >   == (define cdr (quote cdr))
+ => cdr
+ >   == (define set-car! (quote set-car!))
+ => set-car!
+ >   == (define set-cdr! (quote set-cdr!))
+ => set-cdr!
+ >   == (define + (quote +))
+ => +
+ >   == (+ 1 2)
+ => 3
+ >   == (define * (quote *))
+ => *
+ >   == (* 3 4)
+ => 12
+ >   == &env
+ => #e((make <map> x 0 f 1 not 2 eq? 3 nil 4 car 5 cdr 6 set-car! 7 set-cdr! 8 + 9 * 10) . ())
+ >   == &root
+ => #e((make <map> x 0 f 1 not 2 eq? 3 nil 4 car 5 cdr 6 set-car! 7 set-cdr! 8 + 9 * 10) . ())
+ >   == (define cons (lambda x (set-cdr! x (car (cdr x))) x))
+ => cons
+ >   == cons
+ => (&lambda #f(x x) #((set-cdr! x (car (cdr x))) x) . #e((make <map> x 0 f 1 not 2 eq? 3 nil 4 car 5 cdr 6 set-car! 7 set-cdr! 8 + 9 * 10 cons 11) . ()))
+ >   == (cons 1 2)
+ => (1 . 2)
+ >   == (define map (lambda (l f) (if (eq? l nil) nil (cons (f (car l)) (map (cdr l) f)))))
+ => map
+ >   == (define a 1)
+ => a
+ >   == (map (quote (1 2 3 4)) (lambda (x) (set! x (* x x)) (set! a (+ a x)) x))
+ => (1 4 9 16)
+ >   == a
+ => 31
  >  
 tort gc stats:            get_heap_size =           ######
 tort gc stats:           get_free_bytes =            #####
-tort gc stats:       get_bytes_since_gc =           ######
+tort gc stats:       get_bytes_since_gc =            #####
 tort gc stats:          get_total_bytes =           ######
 tort gc stats:                    gc_no =                #
 tort gc stats:    all_interior_pointers =                #

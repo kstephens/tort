@@ -12,17 +12,17 @@ tort_v _tort_M_cons__new(tort_thread_param tort_v cons_mt, tort_v a, tort_v d)
 
 
 #define ACCESSOR(X)							\
-  tort_v _tort_m_cons__##X(tort_thread_param tort_v rcvr)		\
+  tort_v _tort_m_cons__##X(tort_thread_param tort_cons *rcvr)		\
   {									\
-    return tort_ref(tort_cons, rcvr)->X;				\
+    return rcvr->X;							\
   }									\
   tort_v tort_##X(tort_v rcvr) {					\
     return tort_send(tort_s(X), rcvr);					\
   }									\
-  tort_v _tort_m_cons__setD##X##E(tort_thread_param tort_v rcvr,	\
+  tort_v _tort_m_cons__setD##X##E(tort_thread_param tort_cons *rcvr,	\
 			       tort_v val)				\
   {									\
-    tort_ref(tort_cons, rcvr)->X = val;					\
+    rcvr->X = val;							\
     return rcvr;							\
   }
 
