@@ -24,6 +24,24 @@ static tort_symbol_mapping mappings[] =
   };
 
 static
+int sm_cmp(const void *a, const void *b)
+{
+  return ((tort_symbol_mapping*) b)->pattern_size - ((tort_symbol_mapping*) a)->pattern_size;
+}
+
+static
+void sort_symbol_mappings()
+{
+  int n = 0;
+  tort_symbol_mapping *sm = mappings;
+  while ( sm->pattern ) {
+    ++ sm;
+    ++ n;
+  }
+  qsort(mappings, n, sizeof(mappings[0]), sm_cmp);
+}
+
+static
 tort_symbol_mapping *find_mapping(tort_symbol_mapping *sm, const char *s)
 {
   while ( sm->pattern ) {
@@ -44,6 +62,12 @@ const char *tort_symbol_encode(const char *in)
   char *out = tort_malloc(sizeof(out[0]) * (strlen(in) + 1));
   char *t = out;
   int encoded = 0;
+  static int sorted = 0;
+
+  if ( ! sorted ) {
+    ++ sorted;
+    sort_symbol_mappings();
+  }
 
   while ( *s ) {
     tort_symbol_mapping *sm = find_mapping(mappings, s);
