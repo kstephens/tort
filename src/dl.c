@@ -109,6 +109,10 @@ static int process_method(int cmeth, const char *prefix, tort_pair *e)
 	if ( _tort_dl_debug ) 
 	  fprintf(stderr, "  method %s%c%s => @%p\n", cls, cmeth ? '.' : '#', meth, ptr);
 	tort_v mtable = tort_mtable_get(cls_buf);
+	if ( ! mtable ) {
+	  tort_error("dl: cannot find mtable %s", cls_buf);
+	  return -1;
+	}
 	if ( cmeth ) {
 	  mtable = tort_h_ref(mtable)->mtable;
 	}
@@ -123,19 +127,26 @@ static int process_method(int cmeth, const char *prefix, tort_pair *e)
 
 tort_v tort_m_map___load_methods(tort_thread_param tort_v map)
 {
+  int result = 0;
   static const char obj_prefix[] = "__tort_m_";
   static const char cls_prefix[] = "__tort_M_";
   tort_map_EACH(map, e) {
     if ( tort_h_mtable(e->first) != tort__mt(symbol) ) continue;
     // fprintf(stderr, "e = @%p \"%s\"\n", e, name);
-    (void) (process_method(0, obj_prefix, e) || process_method(1, cls_prefix, e));
+    if ( (result = process_method(0, obj_prefix, e)) == 0 )
+      result = process_method(1, cls_prefix, e);
+    if ( result < 0 ) break;
   }
   tort_map_EACH_END();
-  return 0;
+  return result >= 0 ? map : tort_nil;
 }
 
 tort_v tort_runtime_initialize_dl()
 {
+  {
+    const char *s = getenv("TORT_DL_DEBUG");
+    _tort_dl_debug = s && *s ? atoi(s) : 0;
+  }
   /* Required here for bootstrapping. */
   tort_add_method(tort_mt(map), "_run_initializers", tort_m_map___run_initializers);
   tort_add_method(tort_mt(map), "_load_methods", tort_m_map___load_methods);
