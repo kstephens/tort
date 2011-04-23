@@ -85,7 +85,6 @@ tort_v _tort_m_vector_base___append (tort_thread_param tort_vector_base *v, cons
   return (tort_v) v;
 }
 
-
 tort_v _tort_m_vector_base__append (tort_thread_param tort_vector_base *v, tort_v other)
 {
   void *data = tort_send(tort__s(_data), other);
@@ -93,7 +92,6 @@ tort_v _tort_m_vector_base__append (tort_thread_param tort_vector_base *v, tort_
   assert(v != other);
   return _tort_m_vector_base___append(tort_thread_arg v, data, size); 
 }
-
 
 tort_v _tort_m_vector_base___add (tort_thread_param tort_vector_base *v, const void *datap)
 {
@@ -115,12 +113,10 @@ tort_v _tort_M_vector___new(tort_thread_param tort_v mtable, const void *data, s
   return val;
 }
 
-
 tort_v _tort_M_vector__new(tort_tp tort_mtable *mtable, tort_v size)
 {
   return tort_send(tort__s(_new), mtable, 0, tort_I(size));
 }
-
 
 tort_v tort_vector_new(const tort_v *vec, size_t size)
 {
@@ -133,7 +129,6 @@ tort_v _tort_m_vector__get (tort_thread_param tort_v rcvr, tort_v _i)
   return tort_vector_data(rcvr)[i];
 }
 
-
 tort_v _tort_m_vector__set (tort_thread_param tort_v rcvr, tort_v _i, tort_v _v)
 {
   long i = tort_I(_i);
@@ -141,6 +136,10 @@ tort_v _tort_m_vector__set (tort_thread_param tort_v rcvr, tort_v _i, tort_v _v)
   return rcvr;
 }
 
+tort_v _tort_m_vector__add (tort_thread_param tort_v rcvr, tort_v _v)
+{
+  return tort_send(tort__s(_add), rcvr, &_v, 1);
+}
 
 tort_v _tort_m_vector__each (tort_thread_param tort_v rcvr, tort_v block)
 {
@@ -150,7 +149,6 @@ tort_v _tort_m_vector__each (tort_thread_param tort_v rcvr, tort_v block)
   tort_vector_loop_end(rcvr);
   return rcvr;
 }
-
 
 tort_v _tort_m_vector__map (tort_thread_param tort_v rcvr, tort_v block)
 {
