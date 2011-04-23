@@ -13,6 +13,9 @@ BOP(SUB,-)
 BOP(MUL,*)
 BOP(DIV,/)
 #ifndef BOP_NO_INT
+BOP(AND,&)
+BOP(OR,|)
+BOP(XOR,^)
 BOP(MOD,%)
 BOP(LSH,<<)
 BOP(RSH,>>)
@@ -21,6 +24,8 @@ BOP(RSH,>>)
 #endif
 
 #ifdef ROP
+ROP(LAND,&&)
+ROP(LOR,||)
 ROP(EQ,==)
 ROP(NE,!=)
 ROP(LT,<)
