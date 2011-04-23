@@ -7,7 +7,7 @@ tort_v tort_error_messagev(const char *type, const char *format, va_list *vapp)
     fprintf(stderr, "\ntort: too many errors\n");
   } else {
     tort_(_in_error) = tort_true;
-    tort_printf(tort_stderr, "tort %s:", type);
+    tort_printf(tort_stderr, "\ntort %s: ", type);
     tort_printfv(tort_stderr, format, vapp);
     tort_printf(tort_stderr, "\n");
     tort_(_in_error) = 0;
