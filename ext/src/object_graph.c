@@ -273,7 +273,7 @@ void og_object(tort_og_context *context, tort_v obj)
     while ( link ) {
       struct link *link_next = link->next;
       fprintf(FP, "\
-\"node%p\":%s:e -> \"node%p\":%s:w [ \n\
+\"node%p\":\"%s\":e -> \"node%p\":\"%s\":w [ \n\
   id = %d \n\
   %s \n\
 ]; \n\
@@ -350,7 +350,7 @@ void tog(tort_v obj)
   sprintf(cmd, "dot -Tsvg:cairo:cairo -o %s %s", graph_svg, graph_gv);
   system(cmd);
 
-  sprintf(cmd, "open %s", graph_svg);  
+  sprintf(cmd, "open -a Firefox %s", graph_svg);  
   system(cmd);
 }
 
