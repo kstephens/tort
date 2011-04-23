@@ -14,8 +14,10 @@ backtrace =   @message( __debugger, @io(@x1), @method(object::__debugger,@x2), @
   _name => @method(object::_name,@x11),
   _printfv => @method(object::_printfv,@x12),
   clone => @method(object::clone,@x13),
-  identity => @method(object::identity,@x14),
-  __finalize => @method(object::__finalize,@x14)  ))
+  eq? => @method(object::eq?,@x14),
+  identity => @method(object::identity,@x15),
+  not => @method(object::not,@x16),
+  __finalize => @method(object::__finalize,@x15)  ))
 
 HELLO!
 
