@@ -19,3 +19,11 @@
   unquote ,unquote
   unquote-splicing ,@unquote-splicing
 )
+
+(define x 10)
+x
+(define f (lambda (x) ('* x x)))
+(f 1)
+(f 2)
+(f 3)
+
