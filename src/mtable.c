@@ -65,6 +65,15 @@ tort_v _tort_m_mtable__add_method (tort_tp tort_mtable *mtable, tort_symbol *sym
   return method;
 }
 
+tort_v _tort_m_mtable__remove_method (tort_tp tort_mtable *mtable, tort_symbol *symbol)
+{
+  tort_v method;
+  _tort_m_symbol___version_change(tort_ta symbol);
+  method = _tort_m_map__delete(tort_ta (tort_v) mtable, symbol);
+  _tort_m_mtable___method_changed(tort_ta mtable, symbol, method);
+  return mtable;
+}
+
 /********************************************************************/
 
 tort_v tort_add_method(tort_v mtable, const char *name, void *applyf)
