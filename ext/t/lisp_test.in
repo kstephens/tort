@@ -52,7 +52,7 @@ f
 (define * '*)
 (* 3 4)
 &env
-&root
+&globals
 (define cons 
   (lambda x
     (set-cdr! x (car (cdr x)))
