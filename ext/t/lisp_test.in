@@ -27,6 +27,7 @@ x
 (if #t 'true)
 (if #f 'true 'false)
 (if #f 'true)
+((lambda x x) 1 2 3)
 (define f (lambda x x))
 (f 1 2 3)
 (define f (lambda x ('car x)))
@@ -72,3 +73,25 @@ cons
        x
        ))
 a
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Calling lisp closures as methods.
+;;
+
+(define mtable 
+  (lambda (n)
+    ('get ('get &root 'mtable) n)))
+
+(define <object> (mtable 'object))
+<object>
+
+(define add-method
+  (lambda (mt s m)
+    ('add_method mt s m)
+    ))
+
+(add-method <object> 'foo
+	    (lambda (x) (* x 5)))
+
+('foo 3)
+

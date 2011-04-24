@@ -1,7 +1,7 @@
 
 tort - Tiny Object RunTime
 
-Inspired by Ian Piumarta's work on idst and other small runtimes.
+Inspired by Ian Piumarta's idst and other small runtimes.
 
 Core is under 2000 lines of uncommented C.
 
@@ -19,12 +19,12 @@ Supports:
 ** IO with FILE* and finalization.
 * Dynamic message dispatch.
 ** ~50,000,000 send/sec on OS X 64-bit using a global method cache.
-** global method cache montors for invalidations due to:
+** global method cache monitors for invalidations due to:
 *** New method definitons using symbol version counters.
 *** Changes in lookup() meta-send protocol method.
 *** Changes in method table delegation.
 * Meta-send protocol:
-** Decomposed into lookup(message, rcvr, ...), apply(message, rcvr, ...).
+** Decomposed into lookup(message, receiver, ...), apply(message, receiver, ...).
 ** Fully recursive lookup() delegation.
 ** Message objects allocated on C stack.
 * Can be linked against BDW GC library.
@@ -38,7 +38,7 @@ Extensions are dynamically loaded:
 *** Conses.
 *** Lisp reader.
 *** Lisp writer.
-*** Lisp evaluator (prototype).
+*** Lisp evaluator.
 ** Lexical blocks using GCC nested functions.
-** Fibers using setjmp and mmap().
+** Fibers.
 ** Object graphing using graphviz/dot.
