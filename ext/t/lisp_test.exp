@@ -91,6 +91,10 @@ read lisp object from stdin: (read o) => (hash-semi-comment nothing nil () nil n
  => (lambda (x) ...)
  >   == ((quote foo) 3)
  => 15
+ >   == (add-method <object> (quote mul) (lambda (x y) (* x y)))
+ => (lambda (x y) ...)
+ >   == ((quote mul) 3 31)
+ => 93
  >  
 tort gc stats:            get_heap_size =           ######
 tort gc stats:           get_free_bytes =            #####
