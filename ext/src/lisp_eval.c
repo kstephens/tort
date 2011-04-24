@@ -1,4 +1,5 @@
 #include "tort/lisp.h"
+#include <stdarg.h>
 
 int _tort_lisp_trace = 0;
 
@@ -55,9 +56,18 @@ typedef struct tort_lisp_closure { tort_H;
 tort_v _tort_M_lisp_closure___apply(tort_tp tort_v rcvr, ...)
 {
   tort_lisp_closure *obj = (tort_v) _tort_message->method;
-  tort_vector *args = tort_vector_new(&rcvr, tort_I(obj->formals->argc));
-  tort_v env = tort_send(tort__s(new), tort_mt(lisp_environment), 
-			 obj->formals, obj->environment, args);
+  tort_vector *argv = tort_vector_new(0, tort_I(obj->formals->argc));
+  tort_v env;
+  va_list vap;
+  int i = 0;
+  va_start(vap, rcvr);
+  tort_vector_data(argv)[i ++] = rcvr;
+  while ( i < tort_I(obj->formals->argc) ) {
+    tort_vector_data(argv)[i ++] = va_arg(vap, tort_v);
+  }
+  va_end(vap);
+  env = tort_send(tort__s(new), tort_mt(lisp_environment), 
+		  obj->formals, obj->environment, argv);
   // tort_printf(tort_stderr, "\n  with env: %O %O\n", env, body);
   return tort_send(tort_s(lisp_eval_body), obj->body, env);
 }

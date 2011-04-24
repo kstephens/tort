@@ -95,3 +95,9 @@ a
 
 ('foo 3)
 
+(add-method <object> 'mul
+	    (lambda (x y) (* x y)))
+
+('mul 3 31)
+
+
