@@ -83,6 +83,7 @@ struct tort_message { tort_H;
   tort_v       fiber; /* the sending fiber */
   tort_method  *method; /* the found method. */
   tort_mtable  *mtable; /* the mtable where the method was found. */
+  unsigned short argc; /* number of arguments, including reciever.  > 0 if specified by caller. */
 };
 tort_h_struct(tort_message);
 
@@ -267,8 +268,7 @@ tort_lookup_decl(_tort_m_mtable__lookup);
 #define _tort_send_RCVR(RCVR, ARGS...)(RCVR)
 #define _tort_send_ARGS(RCVR, ARGS...)ARGS
 #define _tort_send_RCVR_ARGS(RCVR, EATEN, ARGS...)RCVR, ##ARGS
-#define _tort_send(SEL, RCVR_AND_ARGS...)				\
-  ({									\
+#define _tort_send_msg_init(SEL, RCVR_AND_ARGS...)			\
     tort_message_ __tort_msg = {					\
       { sizeof(tort_message),						\
 	tort__mt(message) },						\
@@ -278,10 +278,50 @@ tort_lookup_decl(_tort_m_mtable__lookup);
 	_tort_message ? _tort_message->fiber : _tort_fiber		\
       }									\
     };									\
+
+#define _tort_send(SEL, RCVR_AND_ARGS...)				\
+  ({									\
+    _tort_send_msg_init(SEL, RCVR_AND_ARGS);				\
+    __tort_msg._.argc = 0;						\
     _tort_lookup(_tort_message, tort_h_mtable(__tort_msg._.receiver), &__tort_msg._)-> \
       method->applyf(&__tort_msg._, _tort_send_RCVR_ARGS(__tort_msg._.receiver, RCVR_AND_ARGS)); \
   })
 #define tort_send(SEL, RCVR_AND_ARGS...)_tort_send(SEL, RCVR_AND_ARGS)
+
+#define _tort_sendn(SEL, ARGC, RCVR_AND_ARGS...)			\
+  ({									\
+    _tort_send_msg_init(SEL, RCVR_AND_ARGS);				\
+    __tort_msg._.argc = (ARGC);						\
+    _tort_lookup(_tort_message, tort_h_mtable(__tort_msg._.receiver), &__tort_msg._)-> \
+      method->applyf(&__tort_msg._, _tort_send_RCVR_ARGS(__tort_msg._.receiver, RCVR_AND_ARGS)); \
+  })
+#define tort_sendn(SEL, ARGC, RCVR_AND_ARGS...)_tort_sendn(SEL, ARGSC, RCVR_AND_ARGS)
+
+/* Tail call, reuse current message object. */
+#define _tort_sendt(SEL, RCVR_AND_ARGS...)				\
+  do {									\
+    _tort_message->selector = (tort_v) (SEL);				\
+    _tort_message->receiver = (tort_v) _tort_send_RCVR(RCVR_AND_ARGS);	\
+    _tort_message->method = 0; _tort_message->mtable = 0;		\
+    _tort_message->argc = 0;						\
+    return								\
+      _tort_lookup(_tort_message, tort_h_mtable(_tort_message->receiver), _tort_message)-> \
+      method->applyf(_tort_message, _tort_send_RCVR_ARGS(_tort_message->receiver, RCVR_AND_ARGS)); \
+  } while ( 0 )
+#define return_tort_send(SEL, RCVR_AND_ARGS...)_tort_sendt(SEL, RCVR_AND_ARGS)
+
+/* Tail call, reuse current message object. */
+#define _tort_sendnt(SEL, ARGC, RCVR_AND_ARGS...)			\
+  do {									\
+    _tort_message->selector = (tort_v) (SEL);				\
+    _tort_message->receiver = (tort_v) _tort_send_RCVR(RCVR_AND_ARGS);	\
+    _tort_message->method = 0; _tort_message->mtable = 0;		\
+    _tort_message->argc = (ARGC);					\
+    return								\
+      _tort_lookup(_tort_message, tort_h_mtable(_tort_message->receiver), _tort_message)-> \
+      method->applyf(_tort_message, _tort_send_RCVR_ARGS(_tort_message->receiver, RCVR_AND_ARGS)); \
+  } while ( 0 )
+#define return_tort_sendn(SEL, ARGC, RCVR_AND_ARGS...)_tort_sendnt(SEL, ARGC, RCVR_AND_ARGS)
 
 /* catch for top-level messages: DO NOT MODIFY THESE VARS! */
 extern tort_message *_tort_message; 
