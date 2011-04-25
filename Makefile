@@ -143,6 +143,9 @@ srcs : $(GEN_C_FILES)
 %.lo : %.c
 	$(COMPILE.c) -o $@ $<
 
+%.s : %.c 
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(TARGET_ARCH) -S -o $@ $<
+
 src/lisp.lo : src/lispread.c
 
 
