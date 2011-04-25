@@ -6,8 +6,8 @@ int _tort_lisp_trace = 0;
 typedef struct tort_lisp_formals { tort_H;
   tort_v formals;
   tort_v formals_n;
-  tort_v argc;
-  tort_v map;
+  tort_v argc; /* minimum number of arguments required. */
+  tort_v map; /* Maps symbols to environment->argv[i]. */
   tort_v rest;
 } tort_lisp_formals;
 
@@ -56,13 +56,14 @@ typedef struct tort_lisp_closure { tort_H;
 tort_v _tort_M_lisp_closure___apply(tort_tp tort_v rcvr, ...)
 {
   tort_lisp_closure *obj = (tort_v) _tort_message->method;
-  tort_vector *argv = tort_vector_new(0, tort_I(obj->formals->argc));
+  int argc = _tort_message->argc ? _tort_message->argc : tort_I(obj->formals->argc);
+  tort_vector *argv = tort_vector_new(0, argc);
   tort_v env;
   va_list vap;
   int i = 0;
   va_start(vap, rcvr);
   tort_vector_data(argv)[i ++] = rcvr;
-  while ( i < tort_I(obj->formals->argc) ) {
+  while ( i < argc ) {
     tort_vector_data(argv)[i ++] = va_arg(vap, tort_v);
   }
   va_end(vap);
@@ -128,7 +129,7 @@ tort_v _tort_M_lisp_environment__new(tort_tp tort_mtable *mtable, tort_lisp_form
     tort_error("too many args");
   if ( tort_h_mtable(args) == tort_mt(vector) ) {
     env->argv = args;
-    env->rest = tort_false; // FIXME
+    env->rest = tort_false; /* Lazy: see get below. */
   } else {
     argv = tort_vector_new(0, tort_I(formals->argc));
     env->argv = argv;
@@ -169,16 +170,25 @@ tort_v _tort_m_lisp_environment__get(tort_tp tort_lisp_environment *env, tort_v 
     return tort_send(tort_s(globals), env);
   }
   else if ( env->formals->rest == name ) {
+    if ( env->rest == tort_false ) {
+      tort_v *tailp = &env->rest;
+      int i;
+      *tailp = tort_nil;
+      for ( i = tort_I(env->formals->argc); i < tort_vector_size(env->argv); ++ i ) {
+	*tailp = tort_cons(tort_vector_data(env->argv)[i], tort_nil);
+	tailp = &((tort_cons*) *tailp)->cdr;
+      }
+    }
     return env->rest;
   } else {
     tort_v index = tort_send(tort__s(get), env->formals->map, name);
     if ( index != tort_nil ) {
-      return tort_send(tort__s(get), env->argv, index);
+      return_tort_send(tort__s(get), env->argv, index);
     } else {
       if ( env->parent == tort_nil ) {
 	return tort_error("get: cannot find %O\n", name);
       } else {
-	return tort_send(tort__s(get), env->parent, name);
+	return_tort_send(tort__s(get), env->parent, name);
       }
     }
   }
@@ -194,7 +204,7 @@ tort_v _tort_m_lisp_environment__set(tort_tp tort_lisp_environment *env, tort_v 
       tort_send(tort__s(set), env->argv, index, value);
     } else {
       if ( env->parent == tort_nil ) {
-	tort_error("error");
+	tort_error("symbol %O is unbound", name);
       } else {
 	tort_send(tort__s(set), env->parent, name, value);
       }
@@ -223,12 +233,12 @@ tort_v _tort_m_lisp_environment__add(tort_tp tort_lisp_environment *env, tort_v 
 tort_v _tort_m_lisp_environment__define(tort_tp tort_lisp_environment *env, tort_v name, tort_v value)
 {
   tort_v globals = tort_send(tort_s(globals), env);
-  return tort_send(tort__s(add), globals, name, value);
+  return_tort_send(tort__s(add), globals, name, value);
 }
 
 tort_v _tort_m_symbol__lisp_eval(tort_tp tort_v sym, tort_v env)
 {
-  return tort_send(tort__s(get), env, sym);
+  return_tort_send(tort__s(get), env, sym);
 }
 
 tort_v _tort_m_object__lisp_eval(tort_tp tort_v obj, tort_v env)
@@ -265,10 +275,10 @@ tort_v _tort_m_cons__lisp_eval(tort_tp tort_cons *obj, tort_v env)
     } else {
       val = tort_cadr(obj->cdr);
     }
-    return tort_send(tort_s(lisp_eval), val, env);
+    return_tort_send(tort_s(lisp_eval), val, env);
   }
   else if ( val == tort_s(begin) ) {
-    return tort_send(tort_s(lisp_eval_body), obj->cdr, env);
+    return_tort_send(tort_s(lisp_eval_body), obj->cdr, env);
   }
   else if ( val == tort_s(while) ) {
     val = tort_nil;
@@ -280,7 +290,7 @@ tort_v _tort_m_cons__lisp_eval(tort_tp tort_cons *obj, tort_v env)
   else if ( val == tort_s(lambda) ) {
     tort_v formals = tort_car(obj->cdr);
     tort_v body = tort_cdr(obj->cdr);
-    return tort_send(tort__s(new), tort_mt(lisp_closure), formals, body, env);
+    return_tort_send(tort__s(new), tort_mt(lisp_closure), formals, body, env);
   }
   else {
     tort_v args;
@@ -288,33 +298,33 @@ tort_v _tort_m_cons__lisp_eval(tort_tp tort_cons *obj, tort_v env)
     args = tort_send(tort_s(lisp_eval_args), obj->cdr, env);
     // if ( _tort_lisp_trace || 1) tort_printf(tort_stderr, "\n  lisp_eval %O\n", obj);
     // if ( _tort_lisp_trace || 1) tort_printf(tort_stderr, "\n  f = %O, args = %O\n", val, args);
-    return tort_send(tort_s(lisp_apply), val, args, env);
+    return_tort_send(tort_s(lisp_apply), val, args, env);
   }
 }
 
 tort_v _tort_m_symbol__lisp_eval_car(tort_tp tort_v obj, tort_v env)
 {
   if ( _tort_lisp_trace ) tort_printf(tort_stderr, "\n  symbol::lisp_eval_car: %O\n", obj);
-  return tort_send(tort_s(get), env, obj);
+  return_tort_send(tort_s(get), env, obj);
 }
 
 tort_v _tort_m_object__lisp_eval_car(tort_tp tort_v obj, tort_v env)
 {
   if ( _tort_lisp_trace ) tort_printf(tort_stderr, "\n  object::lisp_eval_car: %O\n", obj);
-  return tort_send(tort_s(lisp_eval), obj, env);
+  return_tort_send(tort_s(lisp_eval), obj, env);
 }
 
 tort_v _tort_m_symbol__lisp_apply(tort_tp tort_v obj, tort_v args, tort_v env)
 {
   tort_vector *argv = tort_send(tort_s(list_TO_vector), args);
   if ( _tort_lisp_trace ) tort_printf(tort_stderr, "\n  symbol::lisp_apply: %O %O\n", obj, argv);
-  return tort_send(tort_s(_sendv), obj, tort_vector_data(argv), tort_vector_size(argv));
+  return_tort_send(tort_s(_sendv), obj, tort_vector_data(argv), tort_vector_size(argv));
 }
 
 tort_v _tort_m_object__lisp_apply(tort_tp tort_cons *obj, tort_v args, tort_v env)
 {
   if ( _tort_lisp_trace ) tort_printf(tort_stderr, "\n  object::lisp_apply: %O %O\n", obj, args);
-  return tort_send(tort_s(__debugger), obj);
+  return_tort_send(tort_s(__debugger), obj);
 }
 
 tort_v _tort_m_cons__lisp_eval_args(tort_tp tort_cons *obj, tort_v env)
