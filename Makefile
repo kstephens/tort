@@ -6,7 +6,8 @@ libdir=$(PREFIX)/lib#
 
 LIBTOOL=$(GC)/libtool #
 CC=gcc#
-COMPILE.c = $(LIBTOOL) --mode=compile $(CC) $(CFLAGS) $(CPPFLAGS) $(TARGET_ARCH) -c #
+CC_BASE=$(CC) $(CFLAGS) $(CPPFLAGS) $(TARGET_ARCH)#
+COMPILE.c = $(LIBTOOL) --mode=compile $(CC_BASE) -c #
 CFLAGS += -shared -export-dynamic #
 LIB_FLAGS += -rpath $(libdir) #
 
@@ -144,7 +145,7 @@ srcs : $(GEN_C_FILES)
 	$(COMPILE.c) -o $@ $<
 
 %.s : %.c 
-	$(CC) $(CFLAGS) $(CPPFLAGS) $(TARGET_ARCH) -S -o $@ $<
+	$(CC_BASE) -S -o $@ $<
 
 src/lisp.lo : src/lispread.c
 

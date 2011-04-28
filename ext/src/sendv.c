@@ -3,6 +3,8 @@
 tort_v _tort_m_symbol___sendv(tort_tp tort_v sel, const tort_v *a, size_t n)
 {
   switch ( n ) {
+  case 0:
+    return_tort_sendn(sel, 0, tort_nil);
   case 1:
     return_tort_sendn(sel, n, a[0]);
   case 2:

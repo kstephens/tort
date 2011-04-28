@@ -83,7 +83,7 @@ struct tort_message { tort_H;
   tort_v       fiber; /* the sending fiber */
   tort_method  *method; /* the found method. */
   tort_mtable  *mtable; /* the mtable where the method was found. */
-  unsigned short argc; /* number of arguments, including reciever.  > 0 if specified by caller. */
+  short argc;  /* number of arguments, including reciever.  >= 0 if specified by caller. */
 };
 tort_h_struct(tort_message);
 
@@ -282,7 +282,7 @@ tort_lookup_decl(_tort_m_mtable__lookup);
 #define _tort_send(SEL, RCVR_AND_ARGS...)				\
   ({									\
     _tort_send_msg_init(SEL, RCVR_AND_ARGS);				\
-    __tort_msg._.argc = 0;						\
+    __tort_msg._.argc = -1;						\
     _tort_lookup(_tort_message, tort_h_mtable(__tort_msg._.receiver), &__tort_msg._)-> \
       method->applyf(&__tort_msg._, _tort_send_RCVR_ARGS(__tort_msg._.receiver, RCVR_AND_ARGS)); \
   })
@@ -303,7 +303,7 @@ tort_lookup_decl(_tort_m_mtable__lookup);
     _tort_message->selector = (tort_v) (SEL);				\
     _tort_message->receiver = (tort_v) _tort_send_RCVR(RCVR_AND_ARGS);	\
     _tort_message->method = 0; _tort_message->mtable = 0;		\
-    _tort_message->argc = 0;						\
+    _tort_message->argc = -1;						\
     return								\
       _tort_lookup(_tort_message, tort_h_mtable(_tort_message->receiver), _tort_message)-> \
       method->applyf(_tort_message, _tort_send_RCVR_ARGS(_tort_message->receiver, RCVR_AND_ARGS)); \

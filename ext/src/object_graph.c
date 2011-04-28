@@ -221,7 +221,7 @@ void og_object(tort_og_context *context, tort_v obj)
     SLOT(fiber);
     SLOT(method);
     SLOT(mtable);
-    og_slot(context, obj, "argc", tort_i(o->argc), "%hu", 0, 0);
+    og_slot(context, obj, "argc", tort_i(o->argc), "%ld", 0, 0);
   }
   else if ( mt == tort__mt(method) ) {
     tort_method *o = obj;

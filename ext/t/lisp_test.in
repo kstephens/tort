@@ -28,8 +28,8 @@ x
 (if #f 'true 'false)
 (if #f 'true)
 ((lambda x x) 1 2 3)
-(define f (lambda x x))
-(f 1 2 3)
+(define list (lambda x x))
+(list 1 2 3)
 (define f (lambda x ('car x)))
 f
 (f 1 2 3)
@@ -99,5 +99,19 @@ a
 	    (lambda (x y) (* x y)))
 
 ('mul 3 31)
+
+(add-method <object> 'bar
+	    (lambda (rcvr . args) (list rcvr args)))
+
+('bar 1)
+('bar 1 2)
+('bar 1 2 3)
+
+(add-method <object> 'baz
+	    (lambda args args))
+
+('baz 1)
+('baz)
+
 
 
