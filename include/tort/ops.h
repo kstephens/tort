@@ -3,7 +3,10 @@ UOP(NOT,!)
 #ifndef BOP_NO_INT
 UOP(INV,~)
 #endif
+#ifndef UOP_NO_NEG
 UOP(NEG,-)
+#undef  UOP_NO_NEG
+#endif
 #undef UOP
 #endif
 

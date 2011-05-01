@@ -14,9 +14,9 @@ int main(int argc, char **argv, char **environ)
   c = tort_i(-123);
 
 #define UOP(N,OP) \
-  tort_printf(io, "\n %s %lld => %lld\n", #OP, (long long) tort_I(a), (long long) tort_I(tort_send(tort__s(N), a))); \
-  tort_printf(io, "\n %s %lld => %lld\n", #OP, (long long) tort_I(b), (long long) tort_I(tort_send(tort__s(N), b))); \
-  tort_printf(io, "\n %s %lld => %lld\n", #OP, (long long) tort_I(c), (long long) tort_I(tort_send(tort__s(N), c)));
+  tort_printf(io, "\n %s %lld => tort_send(tort__s(%s), %p) => %lld\n", #OP, (long long) tort_I(a), #N, (void*) a, (long long) tort_I(tort_send(tort__s(N), a))); \
+  tort_printf(io, "\n %s %lld => tort_send(tort__s(%s), %p) => %lld\n", #OP, (long long) tort_I(b), #N, (void*) b, (long long) tort_I(tort_send(tort__s(N), b))); \
+  tort_printf(io, "\n %s %lld => tort_send(tort__s(%s), %p) => %lld\n", #OP, (long long) tort_I(c), #N, (void*) c, (long long) tort_I(tort_send(tort__s(N), c)));
 
 #define BOP(N,OP) \
   tort_printf(io, "\n %lld %s %lld => %lld\n", (long long) tort_I(a), #OP, (long long) tort_I(b), (long long) tort_I(tort_send(tort__s(N), a, b)));
