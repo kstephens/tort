@@ -12,6 +12,7 @@ typedef struct tort_lisp_formals { tort_H;
 } tort_lisp_formals;
 
 typedef struct tort_lisp_closure { tort_H;
+  /* Same layout as tort_method. */
   tort_apply_decl((*applyf));
   tort_v name;
   tort_lisp_formals *formals;
@@ -68,6 +69,7 @@ tort_v _tort_M_lisp_closure___apply(tort_tp tort_v rcvr, ...)
   int argc = _tort_message->argc >= 0 ? _tort_message->argc : tort_I(obj->formals->argc);
   tort_vector *argv = tort_vector_new(0, argc > 0 ? argc : 1);
   tort_lisp_environment *env;
+  {
   va_list vap;
   int i = 0;
   va_start(vap, rcvr);
@@ -76,6 +78,7 @@ tort_v _tort_M_lisp_closure___apply(tort_tp tort_v rcvr, ...)
     tort_vector_data(argv)[i ++] = va_arg(vap, tort_v);
   }
   va_end(vap);
+  }
   // tort_printf(tort_stderr, "\n  apply (%O argc %d expected-argc %d %O)\n", _tort_message->selector, (int) argc, (int) tort_I(obj->formals->argc), argv);
   env = tort_send(tort__s(new), tort_mt(lisp_environment), 
 		  obj->formals, obj->environment, argv, tort_i(argc));
