@@ -1,21 +1,21 @@
 
- ! 123 => 0
+ ! 123 => tort_send(tort__s(NOT), 0xf7) => 0
 
- ! 4 => 0
+ ! 4 => tort_send(tort__s(NOT), 0x9) => 0
 
- ! -123 => 0
+ ! -123 => tort_send(tort__s(NOT), 0xffffffffffffff0b) => 0
 
- ~ 123 => -124
+ ~ 123 => tort_send(tort__s(INV), 0xf7) => -124
 
- ~ 4 => -5
+ ~ 4 => tort_send(tort__s(INV), 0x9) => -5
 
- ~ -123 => 122
+ ~ -123 => tort_send(tort__s(INV), 0xffffffffffffff0b) => 122
 
- - 123 => -2148644021
+ - 123 => tort_send(tort__s(NEG), 0xf7) => -123
 
- - 4 => -2148644140
+ - 4 => tort_send(tort__s(NEG), 0x9) => -4
 
- - -123 => -2148644267
+ - -123 => tort_send(tort__s(NEG), 0xffffffffffffff0b) => 123
 
  123 + 4 => 127
 
