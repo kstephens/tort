@@ -17,6 +17,10 @@
 #define TORT_MCACHE_USE_SYMBOL_VERSION 1 /* if true, use symbol versioning instead of flusing the entire global method caches when a new method is added. */
 #endif
 
+#ifndef TORT_ANON_SYMBOL_MTABLE
+#define TORT_ANON_SYMBOL_MTABLE 1 /* if true, anon symbols use their own map for mtable -> method. */
+#endif
+
 #ifndef TORT_NIL_IS_ZERO
 #define TORT_NIL_IS_ZERO 1 /* if true, use (tort_v) 0 as nil */
 #endif

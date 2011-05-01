@@ -212,6 +212,9 @@ void og_object(tort_og_context *context, tort_v obj)
     tort_symbol *o = obj;
     SLOT(name);
     SLOT(version);
+#if TORT_ANON_SYMBOL_MTABLE
+    SLOT(mtable_method_map);
+#endif
   }
   else if ( mt == tort__mt(message) ) {
     tort_message *o = obj;

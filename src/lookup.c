@@ -140,15 +140,18 @@ tort_v _tort_m_symbol___version_change(tort_tp tort_symbol *sym)
 
 tort_lookup_decl(_tort_m_mtable__lookup)
 {
-  tort_v method = tort_nil, sel = message->selector;
+  tort_v method = tort_nil;
+  tort_symbol *sel = message->selector;
 
   if ( TORT_LOOKUP_TRACE ) 
     _tort_lookup_trace_level ++;
 
-  method =
-    _tort_m_map__get(tort_thread_arg
-		     (tort_v) mtable, 
-		     sel);
+#if TORT_ANON_SYMBOL_MTABLE
+  if ( (sel->name == tort_nil || sel->name == 0) )
+    method = _tort_m_map__get(tort_ta (tort_v) sel->mtable_method_map, mtable);
+  else
+#endif
+    method = _tort_m_map__get(tort_ta (tort_v) mtable, sel);
 
   if ( TORT_LOOKUP_TRACE ) {
     fprintf(stderr, "  %p %*s_tort_m_mtable__lookup: mtable = %s, sel = %s, meth = %s\n", 

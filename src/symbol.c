@@ -3,6 +3,10 @@
 
 /********************************************************************/
 
+tort_GETTER(symbol,tort_v,name);
+tort_GETTER(symbol,tort_v,version);
+tort_GETTER(symbol,tort_v,mtable_method_map);
+
 const char *_tort_symbol_name(tort_v sym) 
 { 
   return tort_string_data(tort_ref(tort_symbol, sym)->name);
@@ -13,6 +17,9 @@ tort_symbol* _tort_M_symbol___create(tort_tp tort_mtable *mtable, tort_v name)
   tort_symbol *value = tort_allocate(mtable, sizeof(tort_symbol));
   value->name = name;
   value->version = tort_i(0);
+#if TORT_ANON_SYMBOL_MTABLE
+  value->mtable_method_map = ( name == tort_nil || name == 0 ) ? tort_map_create() : tort_nil;
+#endif
   return value;
 }
 

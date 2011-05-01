@@ -60,6 +60,11 @@ tort_v _tort_m_mtable__add_method (tort_tp tort_mtable *mtable, tort_symbol *sym
     method->name = tort_symbol_make(buf);
   }
   _tort_m_symbol___version_change(tort_ta symbol);
+#if TORT_ANON_SYMBOL_MTABLE
+  if ( symbol->name == tort_nil || symbol->name == 0 ) {
+    _tort_m_map__set(tort_ta (tort_v) symbol->mtable_method_map, mtable, method);
+  } else
+#endif
   _tort_m_map__set(tort_ta (tort_v) mtable, symbol, method);
   _tort_m_mtable___method_changed(tort_ta mtable, symbol, method);
   return method;
@@ -69,6 +74,11 @@ tort_v _tort_m_mtable__remove_method (tort_tp tort_mtable *mtable, tort_symbol *
 {
   tort_v method;
   _tort_m_symbol___version_change(tort_ta symbol);
+#if TORT_ANON_SYMBOL_MTABLE
+  if ( symbol->name == tort_nil ) {
+    method = _tort_m_map__delete(tort_ta (tort_v) symbol->mtable_method_map, mtable);
+  } else
+#endif
   method = _tort_m_map__delete(tort_ta (tort_v) mtable, symbol);
   _tort_m_mtable___method_changed(tort_ta mtable, symbol, method);
   return mtable;
@@ -92,15 +102,12 @@ tort_mtable* tort_mtable_set_delegate(tort_mtable *obj_mt, tort_v delegate)
 {
   tort_mtable *cls_mt;
   tort_v cls_delegate;
-  if ( delegate == 0 && tort_nil != 0 ) {
+  if ( delegate == 0 && tort_nil != 0 )
     delegate = tort_nil;
-  }
   cls_mt = tort_h_ref(obj_mt)->mtable;
   cls_delegate = delegate != tort_nil ? tort_h_ref(delegate)->mtable : tort_nil;
-
   _tort_m_mtable__set_delegate(tort_ta obj_mt, delegate);
   _tort_m_mtable__set_delegate(tort_ta cls_mt, cls_delegate);
-  
   return obj_mt;
 }
 
@@ -119,7 +126,6 @@ tort_mtable* tort_mtable_create(tort_v delegate)
   tort_mtable *cls_mt = tort_mtable_create_0(0);
   tort_h_ref(obj_mt)->mtable = cls_mt;
   tort_mtable_set_delegate(obj_mt, delegate);
- 
   return obj_mt;
 }
 

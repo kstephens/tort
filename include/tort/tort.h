@@ -170,12 +170,17 @@ struct tort_mtable { tort_H;
 struct tort_symbol { tort_H;
   tort_string *name;
   tort_v version;
+#if TORT_ANON_SYMBOL_MTABLE
+  tort_map *mtable_method_map;
+#endif
 };
 
 static inline 
 const char *tort_symbol_charP(tort_v sym) 
 { 
-  return tort_string_charP(tort_ref(tort_symbol, sym)->name);
+  return tort_ref(tort_symbol, sym)->name ? 
+    tort_string_charP(tort_ref(tort_symbol, sym)->name) : 
+    "";
 }
 #define tort_symbol_data(X) tort_symbol_charP(X)
 
