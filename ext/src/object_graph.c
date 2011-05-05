@@ -100,6 +100,7 @@ static const char *slot_str(tort_og_context *context, struct slot *slot, tort_v 
   return strdup(buf);
 }
 
+static 
 void og_slot_to_dot(tort_og_context *context, struct slot *slot)
 {
   tort_v val = slot->value;
@@ -141,6 +142,7 @@ void og_slot_to_dot(tort_og_context *context, struct slot *slot)
   fprintf(FP, "</TR>\n");
 }
 
+static
 void og_slot(tort_og_context *context, 
 		 tort_v obj, const char *name, tort_v value, 
 		 const char *format, 
@@ -160,6 +162,7 @@ void og_slot(tort_og_context *context,
   context->slots_next = &slot->next;
 }
 
+static
 void og_object(tort_og_context *context, tort_v obj)
 {
   tort_mtable *mt = tort_h_mtable(obj);
