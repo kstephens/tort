@@ -25,7 +25,6 @@ int _getline(char **linep, size_t *sizep, FILE *fp)
   return rtn;
 }
 
-
 tort_v _tort_m_map___load_symtab(tort_thread_param tort_v st, const char *file, void *ptr_base)
 {
   FILE *fp;
@@ -97,7 +96,6 @@ tort_v _tort_m_map___load_symtab(tort_thread_param tort_v st, const char *file, 
 
   return st;
 }
-
 
 tort_v tort_runtime_initialize_symtab()
 {

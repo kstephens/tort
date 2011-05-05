@@ -9,7 +9,6 @@ tort_method* tort_method_make(void *applyf)
   return meth;
 }
 
-
 tort_v tort_runtime_initialize_method()
 {
 #define tort_d_m(MT, S, F) \

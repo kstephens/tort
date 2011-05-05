@@ -158,9 +158,7 @@ tort_v _tort_m_string____printf(tort_tp tort_v io, const char *fmt, ...)
   return io;
 }
 
-
 /********************************************************************/
-
 
 #ifdef __LINUX__
 int 
@@ -178,7 +176,6 @@ _tort_printf_object (FILE *stream,
   return len;
 }
 
-
 static
 int 
 _tort_printf_object_lisp (FILE *stream,
@@ -194,9 +191,6 @@ _tort_printf_object_lisp (FILE *stream,
 
   return len;
 }
-
-
-
 
 static int
 _tort_printf_extension_arginfo (

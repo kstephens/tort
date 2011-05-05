@@ -43,4 +43,3 @@ tort_v tort_object_make()
   return obj;
 }
 
-

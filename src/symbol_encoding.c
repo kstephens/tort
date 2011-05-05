@@ -94,4 +94,3 @@ const char *tort_symbol_encode(const char *in)
   }
 }
 
-

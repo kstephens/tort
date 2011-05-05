@@ -1,8 +1,6 @@
 /* -*- c -*- */
 #include "tort/core.h"
 
-/********************************************************************/
-
 tort_GETTER(symbol,tort_v,name);
 tort_GETTER(symbol,tort_v,version);
 tort_GETTER(symbol,tort_v,mtable_method_map);
@@ -46,7 +44,6 @@ tort_symbol* tort_symbol_make(const char *string)
     return _tort_M_symbol___create(tort_ta tort__mt(symbol), tort_nil);
   }
 }
-
 
 tort_v tort_runtime_initialize_symbol()
 {

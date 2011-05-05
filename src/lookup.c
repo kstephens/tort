@@ -160,8 +160,8 @@ tort_lookup_decl(_tort_m_mtable__lookup)
 	    tort_object_name(mtable), 
 	    tort_symbol_data(sel),
 	    tort_object_name(method));
-  }
   
+  }
   if ( method != tort_nil ) {
     message->method = method;
     message->mtable = mtable;

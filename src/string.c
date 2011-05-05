@@ -1,14 +1,10 @@
 #include "tort/core.h"
 
-
-/********************************************************************/
-
 tort_v _tort_m_string__get (tort_thread_param tort_string *rcvr, tort_v _i)
 {
   long i = tort_I(_i);
   return tort_i(rcvr->data[i]);
 }
-
 
 tort_v _tort_m_string__set (tort_thread_param tort_string *rcvr, tort_v _i, tort_v _v)
 {
@@ -17,7 +13,6 @@ tort_v _tort_m_string__set (tort_thread_param tort_string *rcvr, tort_v _i, tort
   rcvr->data[i] = v;
   return rcvr;
 }
-
 
 tort_v _tort_M_string___new(tort_tp tort_mtable *mtable, const char *string, size_t size)
 {
@@ -35,12 +30,10 @@ tort_v _tort_M_string__new(tort_tp tort_mtable *mtable, tort_v size)
 
 /********************************************************************/
 
-
 tort_v tort_string_new(const char *ptr, size_t size)
 {
   return _tort_M_string___new(tort_ta tort__mt(string), ptr, size);
 }
-
 
 tort_v tort_string_new_cstr(const char *string)
 {

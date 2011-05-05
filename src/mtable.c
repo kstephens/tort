@@ -22,7 +22,6 @@ tort_v _tort_allocate(tort_thread_param tort_v mtable, size_t size
   return val;
 }
 
-
 tort_v _tort_m_mtable__allocate (tort_tp tort_mtable *mtable)
 {
   return _tort_m_mtable___allocate(tort_ta mtable, mtable->instance_size);
@@ -111,7 +110,6 @@ tort_mtable* tort_mtable_set_delegate(tort_mtable *obj_mt, tort_v delegate)
   return obj_mt;
 }
 
-
 static tort_mtable * tort_mtable_create_0(tort_v delegate)
 {
   tort_mtable *mt = tort_allocate(tort__mt(mtable), sizeof(tort_mtable));
@@ -129,14 +127,12 @@ tort_mtable* tort_mtable_create(tort_v delegate)
   return obj_mt;
 }
 
-
 tort_mtable* tort_mtable_get(const char *name)
 {
   tort_v sym = tort_symbol_make(name);
   tort_v mt = tort_send(tort__s(get), tort_(m_mtable), sym);
   return mt;
 }
-
 
 tort_mtable* tort_mtable_make(const char *name, tort_v parent)
 {
@@ -148,7 +144,6 @@ tort_mtable* tort_mtable_make(const char *name, tort_v parent)
   }
   return mt;
 }
-
 
 tort_v tort_runtime_initialize_mtable()
 {
