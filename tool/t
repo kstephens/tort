@@ -1,4 +1,5 @@
 #!/bin/bash
+_dir="$(dirname $0)"
 errors=0
 tests=0
 action="$1"; shift
@@ -14,10 +15,10 @@ do
     case "$action"
     in
       valgrind)
-        (TORT_GC=0 valgrind $f.t <$in || echo $?) 2>&1 | t/filter-output
+        (TORT_GC=0 valgrind $f.t <$in || echo $?) 2>&1 | $_dir/filter-output
       ;;
       *)
-    ($f.t <$in || echo $?) 2>&1 | t/filter-output > $f.out 
+    ($f.t <$in || echo $?) 2>&1 | $_dir/filter-output > $f.out 
     if ! diff -U 10 $f.exp $f.out ; then 
 	echo "========== $f.out ==========" 1>&2 
 	cat $f.out 
