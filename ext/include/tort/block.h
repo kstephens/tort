@@ -5,7 +5,7 @@
 
 /**
    Blocks respond to #value by returning themselves as
-   the method in block mt lookup, if the selector is 
+   the method in block mt #lookup, if the selector is 
    #value.
 
    This forces the applyf of the block's #value to be the 
