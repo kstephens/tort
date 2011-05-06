@@ -29,3 +29,8 @@ endif
 
 LIB_TORT = $(BASE_DIR)/src/libtort.la
 
+GEN_FILES = 
+GEN_LIBS = 
+GEN_BINS =
+
+BIN_LIBS = $(TEST_LIBS) #

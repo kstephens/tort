@@ -1,9 +1,3 @@
-######################################################################
-
-GEN_FILES = 
-
-GEN_LIBS = 
-
 GEN_H_GEN_FILES := $(shell ls include/tort/*.h.gen 2>/dev/null | sort -u | grep -v 'include/tort/*.h.gen')
 GEN_H_FILES = $(GEN_H_GEN_FILES:%.gen=%)
 GEN_FILES += $(GEN_H_FILES)
@@ -14,13 +8,17 @@ LIB_HFILES := $(shell ls include/tort/*.h $(GEN_H_FILES) 2>/dev/null | sort -u |
 LIB_OFILES = $(LIB_CFILES:.c=.lo)
 
 GEN_LIBS += $(LIB) #
+GEN_LIBS += $(LIB:.a=.so) #
+
+BIN_CFILES := $(shell ls bin/*.c 2>/dev/null | sort -u | grep -v 'bin/*.c')
+BIN_OFILES := $(BIN_CFILES:%.c=%.lo)
+BIN_EFILES := $(BIN_OFILES:%.lo=%)
+
+GEN_BINS += $(BIN_OFILES) $(BIN_EFILES) #
 
 export LIB_CFILES
 export LIB_HFILES
 export LIB_OFILES
-
-GEN_LIBS += $(LIB) #
-GEN_LIBS += $(LIB:.a=.so) #
 
 export CC
 export CFLAGS
@@ -39,9 +37,11 @@ TEST_OUT_FILES = $(TEST_C_FILES:.c=.out)
 all : components tests
 	@for d in $(SUBDIRS) .; do [ $$d = '.' ] && break; $(MAKE) -C "$$d" all; done
 
-components : early $(GEN_H_FILES) $(GEN_C_FILES) libs 
+components : early $(GEN_H_FILES) $(GEN_C_FILES) libs bins
 
 libs : $(LIBS_EARLY) $(GEN_LIBS)
+
+bins : $(BINS_EARLY) $(GEN_BINS)
 
 early : early-headers early-files check-gen-new
 
@@ -96,6 +96,14 @@ srcs : $(GEN_C_FILES)
 	$(CC_BASE) -S -o $@ $<
 
 ######################################################################
+# executable:
+#
+
+% : %.lo
+	$(LIBTOOL) --mode=link $(CC) $(CFLAGS) $(LDFLAGS) $@.lo $(BIN_LIBS) $(LIBS) -o $@
+
+
+######################################################################
 # library:
 #
 
@@ -148,7 +156,7 @@ accept-all-test : tests
 #
 
 clean :
-	rm -f $(TEST_T_FILES) $(GEN_LIBS) src/*{.o,.lo,.la} t/*.{t,out} $(GEN_C_FILES) $(GEN_H_FILES) .stats/*
+	rm -f $(TEST_T_FILES) $(GEN_LIBS) $(GEN_BINS) src/*{.o,.lo,.la} t/*.{t,out} $(GEN_C_FILES) $(GEN_H_FILES) .stats/*
 	rm -rf boot/include
 	find . -name '*.dSYM' -type d -print0 | xargs -0 rm -rf
 	@for d in $(SUBDIRS) .; do [ "$$d" = '.' ] && break; $(MAKE) -C "$$d" clean; done
