@@ -124,27 +124,24 @@ run-test : tests
 	@set -ex; for f in $(TEST_T_FILES); do \
 	  $$f ;\
 	done
-	for d in $(SUBDIRS) .; do [ $$d = '.' ] && break; $(MAKE) -C "$$d" run-test; done
+	@for d in $(SUBDIRS) .; do [ $$d = '.' ] && break; $(MAKE) -C "$$d" run-test; done
 
 test : tests
 	@echo "Testing:"
-	$(BASE_DIR)tool/t run $(TEST_FILES)
-	for d in $(SUBDIRS) .; do [ $$d = '.' ] && break; $(MAKE) -C "$$d" test; done
+	$(BASE_DIR)/tool/t run $(TEST_FILES)
+	@for d in $(SUBDIRS) .; do [ $$d = '.' ] && break; $(MAKE) -C "$$d" test; done
 
 valgrind : tests
 	@echo "Valgrind:"
-	$(BASE_DIR)tool/t valgrind $(TEST_FILES)
-	for d in $(SUBDIRS) .; do [ $$d = '.' ] && break; $(MAKE) -C "$$d" valgrind; done
+	$(BASE_DIR)/tool/t valgrind $(TEST_FILES)
+	@for d in $(SUBDIRS) .; do [ $$d = '.' ] && break; $(MAKE) -C "$$d" valgrind; done
 
 accept-test : tests
-	@set -ex; for f in $(TEST_FILES); do \
-	  if [ ! -f $$f.exp ] ; then cp $$f.out $$f.exp ; git add `ls $$f.{c,exp,in}`; fi ;\
-	done
+	$(BASE_DIR)/tool/t accept $(TEST_FILES)
 
 accept-all-test : tests
-	@set -ex; for f in $(TEST_FILES); do \
-	  if [ -f $$f.out ] ; then cp $$f.out $$f.exp ; git add `ls $$f.{c,exp,in}`; fi ;\
-	done
+	$(BASE_DIR)/tool/t accept $(TEST_FILES)
+	@for d in $(SUBDIRS) .; do [ $$d = '.' ] && break; $(MAKE) -C "$$d" accept-all-test; done
 
 ######################################################################
 # maint:

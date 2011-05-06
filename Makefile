@@ -1,13 +1,13 @@
-BASE_DIR=./#
+BASE_DIR=.#
 SUBDIRS=ext lisp#
-include $(BASE_DIR)mk/config.mk
+include $(BASE_DIR)/mk/config.mk
 
 LIB=$(LIB_TORT)
 TEST_LIBS = $(LIB) $(LIB_TORT)
 
 LIBS_EARLY += gc #
 
-include $(BASE_DIR)mk/target.mk
+include $(BASE_DIR)/mk/target.mk
 
 ######################################################################
 # default:
@@ -44,7 +44,7 @@ gc :
 else
 gc : $(GC)/.libs/libgc.a
 
-$(GC)/.libs/libgc.a : archive/$(GC).tar.gz
+$(GC)/.libs/libgc.a : $(BASE_DIR)/archive/$(GC_VERSION).tar.gz
 	if [ ! -d $(GC) ]; then tar -zxvf $^; fi
 	cd $(GC) && if [ ! -f Makefile ]; then ./configure --enable-shared --prefix=$(PREFIX); fi
 	cd $(GC) && make && make install

@@ -1,6 +1,6 @@
-()
-#t
-#f
-(#t . #f)
+nil
+true
+false
+@pair(true, false)
 
 DONE

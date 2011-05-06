@@ -1,32 +1,43 @@
 #!/bin/bash
 _dir="$(dirname $0)"
+_dir="$(cd "$_dir" && /bin/pwd)"
+progpath="$_dir/$(basename "$0")"
 errors=0
 tests=0
 action="$1"; shift
 for f in "$@"
 do
+  f_t="$f.t"
+  f_d="$(dirname "$f_t")"
+  f_d="$(cd "$f_d" && /bin/pwd)"
+  f_t_libs="$(dirname "$f_t")/.libs/$(basename "$f_t")"
+  [ -x "$f_t_libs" ] && f_t="$f_t_libs"
   case "$action"
   in
     run|valgrind)
     tests=`expr $tests + 1`
     in=/dev/null
-    if [ -f $f.in ] ; then in=$f.in ; fi
+    if [ -f "$f.in" ] ; then in="$f.in" ; fi
     echo "========= test $f.t < $in: "
     case "$action"
     in
       valgrind)
-        (TORT_GC=0 valgrind $f.t <$in || echo $?) 2>&1 | $_dir/filter-output
+        (TORT_GC=0 valgrind "$f_t" <"$in" || echo $?) 2>&1 | $_dir/filter-output
+      ;;
+      accept)
+        cp "$f.out" "$f.exp"
+	git add `ls $$f.{c,exp,in} 2>/dev/null`
       ;;
       *)
-    ($f.t <$in || echo $?) 2>&1 | $_dir/filter-output > $f.out 
-    if ! diff -U 10 $f.exp $f.out ; then 
+    ("$f_t" <$in || echo $?) 2>&1 | $_dir/filter-output > "$f.out" 
+    if ! diff -U 10 "$f.exp" "$f.out" ; then 
 	echo "========== $f.out ==========" 1>&2 
 	cat $f.out 
 	echo "========== To accept, run: " 1>&2 
-	echo "  rm -f $f.exp; make accept-test TEST_FILES=$f;" 
+	echo "  (cd '$(dirname "$f_d")' && $progpath accept '$f')" 
 	echo "  # OR make accept-all-test;" 
 	errors=`expr $errors + 1` 
-	egrep -e ': line .* (Segmentation|Abort)' $f.out && set -x && gdb --args `dirname $f`/.libs/`basename $f`.t
+	egrep -e ': line .* (Segmentation|Abort)' $f.out && set -x && gdb --args "$f_t"
 	set +x 2>/dev/null
     fi
       ;;
