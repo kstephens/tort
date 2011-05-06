@@ -154,7 +154,7 @@ clean :
 	rm -f $(TEST_T_FILES) $(GEN_LIBS) src/*{.o,.lo,.la} t/*.{t,out} $(GEN_C_FILES) $(GEN_H_FILES) .stats/*
 	rm -rf boot/include
 	find . -name '*.dSYM' -type d -print0 | xargs -0 rm -rf
-	for d in $(SUBDIRS) .; do [ "$$d" = '.' ] && break; $(MAKE) -C "$$d" clean; done
+	@for d in $(SUBDIRS) .; do [ "$$d" = '.' ] && break; $(MAKE) -C "$$d" clean; done
 
 very-clean : clean
 

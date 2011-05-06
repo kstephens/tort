@@ -266,7 +266,7 @@ tort_apply_decl(_tort_m_object___method_not_found)
 		     tort_h(rcvr).alloc_line,
 		     tort_h(rcvr).alloc_id);
 #endif
-  tort_error_message("  message %O", _tort_message);
+  tort_error_message("  message %T", _tort_message);
   tort_error(": not applicable");
   return tort_nil;
 }

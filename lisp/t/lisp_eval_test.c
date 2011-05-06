@@ -10,7 +10,7 @@ int main(int argc, char **argv, char **environ)
   tort_v v;
  
   tort_runtime_create();
-  tort_send(tort_s(_dlopen), tort_string_new_cstr("libtortext"));
+  tort_send(tort_s(_dlopen), tort_string_new_cstr("libtortlisp"));
 
   in = tort_stdin;
   out = tort_stdout;

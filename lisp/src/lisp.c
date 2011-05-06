@@ -223,6 +223,9 @@ tort_v tort_runtime_initialize_lisp()
   tort_v _mt_cons = tort_mtable_make("cons", 0);
   tort_mtable_make("list", 0);
 
+  /* Dependency. */
+  tort_send(tort_s(_dlopen), tort_string_new_cstr("libtortext"));
+
   /* Reused methods. */
   tort_add_method(tort__mt(tagged), "lisp_write", _tort_m_tagged___inspect);
   tort_add_method(tort__mt(string), "lisp_write", _tort_m_string___inspect);
