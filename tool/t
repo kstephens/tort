@@ -14,6 +14,12 @@ do
   [ -x "$f_t_libs" ] && f_t="$f_t_libs"
   case "$action"
   in
+    accept)
+      set -x
+      cp "$f.out" "$f.exp"
+      git add `ls $f.{c,exp,in} 2>/dev/null`
+      set +x 2>/dev/null
+    ;;
     run|valgrind)
     tests=`expr $tests + 1`
     in=/dev/null
@@ -23,10 +29,6 @@ do
     in
       valgrind)
         (TORT_GC=0 valgrind "$f_t" <"$in" || echo $?) 2>&1 | $_dir/filter-output
-      ;;
-      accept)
-        cp "$f.out" "$f.exp"
-	git add `ls $$f.{c,exp,in} 2>/dev/null`
       ;;
       *)
     ("$f_t" <$in || echo $?) 2>&1 | $_dir/filter-output > "$f.out" 
