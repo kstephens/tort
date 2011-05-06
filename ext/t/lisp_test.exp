@@ -15,9 +15,9 @@ read lisp object from stdin: (read o) => (hash-semi-comment nothing nil () nil n
  => ()
  >   == ((lambda x x) 1 2 3)
  => (1 2 3)
- >   == (define f (lambda x x))
- => f
- >   == (f 1 2 3)
+ >   == (define list (lambda x x))
+ => list
+ >   == (list 1 2 3)
  => (1 2 3)
  >   == (define f (lambda x ((quote car) x)))
  => f
@@ -62,9 +62,9 @@ read lisp object from stdin: (read o) => (hash-semi-comment nothing nil () nil n
  >   == (* 3 4)
  => 12
  >   == &env
- => #e((make <map> x 0 f 1 not 2 eq? 3 nil 4 car 5 cdr 6 set-car! 7 set-cdr! 8 + 9 * 10) . ())
+ => #e((make <map> x 0 list 1 f 2 not 3 eq? 4 nil 5 car 6 cdr 7 set-car! 8 set-cdr! 9 + 10 * 11) . ())
  >   == &globals
- => #e((make <map> x 0 f 1 not 2 eq? 3 nil 4 car 5 cdr 6 set-car! 7 set-cdr! 8 + 9 * 10) . ())
+ => #e((make <map> x 0 list 1 f 2 not 3 eq? 4 nil 5 car 6 cdr 7 set-car! 8 set-cdr! 9 + 10 * 11) . ())
  >   == (define cons (lambda x (set-cdr! x (car (cdr x))) x))
  => cons
  >   == cons
@@ -84,7 +84,7 @@ read lisp object from stdin: (read o) => (hash-semi-comment nothing nil () nil n
  >   == (define <object> (mtable (quote object)))
  => <object>
  >   == <object>
- => (make <map> __debugger @method(object::__debugger,@x1) __message @method(object::__message,@x2) __printf @method(object::__printf,@x3) __printfv @method(object::__printfv,@x4) __register_finalizer @method(object::__register_finalizer,@x5) _alloc_size @method(object::_alloc_size,@x6) _inspect @method(object::_inspect,@x7) _method_not_found @method(object::_method_not_found,@x8) _mtable @method(object::_mtable,@x9) _name @method(object::_name,@x10) _printfv @method(object::_printfv,@x11) clone @method(object::clone,@x12) eq? @method(object::eq?,@x13) identity @method(object::identity,@x14) not @method(object::not,@x15) __finalize @method(object::__finalize,@x14) lisp_apply @method(object::lisp_apply,@x16) lisp_eval @method(object::lisp_eval,@x17) lisp_eval_body @method(object::lisp_eval_body,@x18) lisp_eval_car @method(object::lisp_eval_car,@x19) lisp_write @method(object::lisp_write,@x20))
+ => (make <map> __debugger @method(object::__debugger,@x1) __message @method(object::__message,@x2) __printfs @method(object::__printfs,@x3) __printfsv @method(object::__printfsv,@x4) __register_finalizer @method(object::__register_finalizer,@x5) _alloc_size @method(object::_alloc_size,@x6) _inspect @method(object::_inspect,@x7) _method_not_found @method(object::_method_not_found,@x8) _mtable @method(object::_mtable,@x9) _name @method(object::_name,@x10) _printfv @method(object::_printfv,@x11) clone @method(object::clone,@x12) eq? @method(object::eq?,@x13) identity @method(object::identity,@x14) not @method(object::not,@x15) __finalize @method(object::__finalize,@x14) lisp_apply @method(object::lisp_apply,@x16) lisp_eval @method(object::lisp_eval,@x17) lisp_eval_body @method(object::lisp_eval_body,@x18) lisp_eval_car @method(object::lisp_eval_car,@x19) lisp_write @method(object::lisp_write,@x20))
  >   == (define add-method (lambda (mt s m) ((quote add_method) mt s m)))
  => add-method
  >   == (add-method <object> (quote foo) (lambda (x) (* x 5)))
@@ -95,6 +95,20 @@ read lisp object from stdin: (read o) => (hash-semi-comment nothing nil () nil n
  => (lambda (x y) ...)
  >   == ((quote mul) 3 31)
  => 93
+ >   == (add-method <object> (quote bar) (lambda (rcvr . args) (list rcvr args)))
+ => (lambda (rcvr . args) ...)
+ >   == ((quote bar) 1)
+ => (1 ())
+ >   == ((quote bar) 1 2)
+ => (1 (2))
+ >   == ((quote bar) 1 2 3)
+ => (1 (2 3))
+ >   == (add-method <object> (quote baz) (lambda args args))
+ => (lambda args ...)
+ >   == ((quote baz) 1)
+ => (1)
+ >   == ((quote baz))
+ => (())
  >  
 tort gc stats:            get_heap_size =           ######
 tort gc stats:           get_free_bytes =            #####

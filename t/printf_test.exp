@@ -1,2 +1,4 @@
-tool/t: line 14: 53083 Bus error               $f.t < $in
-138
+HELLO!
+printf(...) => "{{@pair(true, false)}}"
+
+DONE

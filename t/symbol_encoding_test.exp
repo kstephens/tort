@@ -2,7 +2,7 @@ _ => _
 ADDADD => ++
 DOT => .
 MOD => %
-NEG => -
+NEG => !=G
 SUB => -
 NOT => !
 set_carE => set_car!

@@ -13,7 +13,7 @@ LIB_FLAGS += -rpath $(libdir) #
 
 CFLAGS_OPTIMIZE = -O2
 CFLAGS_OPTIMIZE = -O3
-CFLAGS_OPTIMIZE = 
+#CFLAGS_OPTIMIZE = 
 CFLAGS += -DTORT_DLIB_DIR='"$(libdir)"' -DTORT_DLIB_SUFFIX='".dylib"' #
 CFLAGS += -DTORT_GC=$(TORT_GC) -fnested-functions $(CFLAGS_INC) -Iinclude -I$(BASE_DIR)include -I$(BASE_DIR)boot/include -I$(GC)/include -Wall -Werror -g $(CFLAGS_OPTIMIZE)
 
