@@ -73,7 +73,6 @@ void _tort_mcache_stats()
 #undef S
 }
 
-
 static void mcache_flush_all()
 {
   (void) TORT_MCACHE_STAT(++ mcache_stats.flush_all_n);
@@ -129,14 +128,12 @@ tort_v _tort_m_mtable___method_changed(tort_tp tort_mtable *rcvr, tort_v sym, to
   return rcvr;
 }
 
-
 tort_v _tort_m_symbol___version_change(tort_tp tort_symbol *sym)
 {
   (void) TORT_MCACHE_STAT(++ mcache_stats.symbol_version_change_n);
   sym->version += 2;
   return sym;
 }
-
 
 tort_lookup_decl(_tort_m_mtable__lookup)
 {

@@ -11,10 +11,8 @@ tort_v _tort_m_object___inspect(tort_thread_param tort_v rcvr, tort_v io)
   } else {
     printf("@object @%p", (void *) rcvr);
   }
-
   return tort_nil;
 }
-
 
 tort_v _tort_m_tagged___inspect(tort_thread_param tort_v rcvr, tort_v io)
 {
@@ -26,13 +24,11 @@ tort_v _tort_m_tagged___inspect(tort_thread_param tort_v rcvr, tort_v io)
   return tort_nil;
 }
 
-
 tort_v _tort_m_string___inspect(tort_thread_param tort_v rcvr, tort_v io)
 {
   printf("\"%s\"", (char *) tort_string_data(rcvr));
   return tort_nil;
 }
-
 
 tort_v _tort_m_vector___inspect(tort_thread_param tort_v rcvr, tort_v io)
 {
@@ -45,7 +41,6 @@ tort_v _tort_m_vector___inspect(tort_thread_param tort_v rcvr, tort_v io)
   return tort_nil;
 }
 
-
 tort_v _tort_m_symbol___inspect(tort_tp tort_symbol *rcvr, tort_v io)
 {
   if ( rcvr->name != tort_nil ) {
@@ -56,20 +51,17 @@ tort_v _tort_m_symbol___inspect(tort_tp tort_symbol *rcvr, tort_v io)
   return tort_nil;
 }
 
-
 tort_v _tort_m_nil___inspect(tort_thread_param tort_v rcvr, tort_v io)
 {
   printf("nil");
   return tort_nil;
 }
 
-
 tort_v _tort_m_boolean___inspect(tort_thread_param tort_v rcvr, tort_v io)
 {
   printf(rcvr == tort_false ? "false" : "true");
   return tort_nil;
 }
-
 
 tort_v _tort_m_method___inspect(tort_tp tort_method *meth, tort_v io)
 {
@@ -78,7 +70,6 @@ tort_v _tort_m_method___inspect(tort_tp tort_method *meth, tort_v io)
   printf("@method(%s,@%p)", meth_cstr, (void *) meth->applyf);
   return tort_nil;
 }
-
 
 tort_v _tort_m_message___inspect(tort_tp tort_message *msg, tort_v io)
 {
@@ -90,14 +81,13 @@ tort_v _tort_m_message___inspect(tort_tp tort_message *msg, tort_v io)
   tort_inspect(IO, msg->method);
   printf(", ");
   tort_inspect(IO, msg->mtable);
-  printf(")");
- 
+  printf(")"); 
   return tort_nil;
 }
 
 tort_v _tort_m_pair___inspect(tort_thread_param tort_pair *rcvr, tort_v io)
 {
-  printf("@pair(%O, %O)", rcvr->first, rcvr->second);
+  printf("@pair(%T, %T)", rcvr->first, rcvr->second);
   return tort_nil;
 }
 
@@ -113,17 +103,11 @@ tort_v _tort_m_map___inspect(tort_thread_param tort_v rcvr, tort_v io)
     entry_i ++;
   } tort_map_EACH_END();
   printf("  )");
-
   return tort_nil;
 }
 
-
 #undef printf
 #undef IO
-
-
-/********************************************************************/
-
 
 tort_v tort_runtime_initialize_write()
 {

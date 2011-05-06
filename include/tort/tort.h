@@ -186,6 +186,8 @@ const char *tort_symbol_charP(tort_v sym)
 
 tort_symbol* tort_symbol_make(const char *string);
 const char *tort_symbol_encode(const char *in);
+tort_symbol* tort_symbol_make_encode(const char *string);
+
 
 struct tort_method { tort_H;
   tort_apply_decl((*applyf));
@@ -262,10 +264,10 @@ extern tort_runtime_ __tort;
 
 #define tort_write(io, str) tort_send(tort__s(__write), io, str)
 #define tort_inspect(io, obj) tort_send(tort__s(_inspect), obj, io)
-#define tort_printf(io, fmt, args...) tort_send(tort__s(__printf), io, fmt, ## args)
-#define tort_printfv(io, fmt, vapp) tort_send(tort__s(__printfv), io, fmt, vapp)
+#define tort_printf(io, fmt, args...) tort_send(tort__s(__printfs), io, fmt, ## args)
+#define tort_printfv(io, fmt, vapp) tort_send(tort__s(__printfsv), io, fmt, vapp)
 #define tort_flush(io) tort_send(tort_s(flush), io)
-#define tort_sprintf(STR, FMT, ARGS...) tort_send(tort__s(__printf), (STR), (FMT), #ARGS)
+#define tort_sprintf(STR, FMT, ARGS...) tort_send(tort__s(__printfs), (tort_v) (STR), (FMT), ##ARGS)
 
 tort_lookup_decl(_tort_lookup);
 tort_lookup_decl(_tort_m_mtable__lookup);
@@ -357,10 +359,10 @@ tort_v _tort_allocate (tort_tp tort_v meth_table, size_t size);
 #endif
 
 #if TORT_MULTIPLICITY
-#define tort_s(X) tort_symbol_make(tort_symbol_encode(#X))
+#define tort_s(X) tort_symbol_make_encode(#X)
 #define tort_mt(X) tort_mtable_get(#X)
 #else
-#define tort_s(X)  ({ static tort_v _s_##X;  _s_##X ?  _s_##X :  (_s_##X  = tort_symbol_make(tort_symbol_encode(#X))); })
+#define tort_s(X)  ({ static tort_v _s_##X;  _s_##X ?  _s_##X :  (_s_##X  = tort_symbol_make_encode(#X)); })
 #define tort_mt(X) ({ static tort_v _mt_##X; _mt_##X ? _mt_##X : (_mt_##X = tort_mtable_get(#X)); })
 #endif
 #define tort__s(X) tort_(_s_##X)

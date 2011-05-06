@@ -14,9 +14,8 @@ tort_v _tort_m_object___printfv(tort_tp tort_io *io, const char *format, const c
     while ( e < fe && *e != '%' )
       ++ e;
 
-    if ( (size = e - b) ) {
+    if ( (size = e - b) )
       tort_send(tort__s(__write), io, b, size);
-    }
 
     b = e;
     if ( b >= fe ) break;
@@ -29,7 +28,8 @@ tort_v _tort_m_object___printfv(tort_tp tort_io *io, const char *format, const c
 #define FMT (*fp = 0, fmt)
       do {
 	if ( fp >= fmt + sizeof(fmt) ) abort();
-	if ( ! (b < fe) ) break; 
+	if ( ! (b < fe) ) break;
+	fp[1] = 0;
 	switch ( (*(fp ++) = *(b ++)) ) {
 	case 0:
 	  abort();
@@ -67,15 +67,13 @@ tort_v _tort_m_object___printfv(tort_tp tort_io *io, const char *format, const c
 	  }
 	  done = 1; break;
 	case 'p':
-	  *fp = 0;
 	  fprintf(FP, FMT, va_arg(vap, void*));
 	  done = 1; break;
 	case 's': case 'b':
-	  *fp = 0;
 	  fprintf(FP, FMT, va_arg(vap, char*));
 	  done = 1; break;
 	case 'T':
-	  tort_send(tort_s(_inspect), va_arg(vap, tort_v), io);
+	  tort_send(tort__s(_inspect), va_arg(vap, tort_v), io);
 	  done = 1; break;
 	case 'O':
 	  tort_send(tort_s(lisp_write), va_arg(vap, tort_v), io);
@@ -112,7 +110,7 @@ static int string_close(void *str)
   return 0;
 }
 
-tort_v _tort_m_string___printfv(tort_tp tort_string *str, const char *fmt, va_list *vapp)
+tort_v _tort_m_string____printfsv(tort_tp tort_string *str, const char *fmt, va_list *vapp)
 {
   FILE *fp = funopen((void*) str,
 		     string_read,
@@ -120,106 +118,33 @@ tort_v _tort_m_string___printfv(tort_tp tort_string *str, const char *fmt, va_li
 		     string_seek,
 		     string_close);
   tort_io *io = tort_send(tort__s(__create), tort__mt(io), fp);
-  tort_v result = tort_send(tort_s(_printfv), io, fmt, strchr(fmt, 0), vapp);
+  tort_v result = tort_send(tort__s(__printfsv), io, fmt, vapp);
   fclose(fp);
   return result;
 }
 
-tort_v _tort_m_object____printfv(tort_tp tort_v io, const char *fmt, va_list *vapp)
+tort_v _tort_m_nil____printfsv(tort_tp tort_string *str, const char *fmt, va_list *vapp)
 {
-  return tort_send(tort_s(_printfv), io, fmt, strchr(fmt, 0), vapp);
+  str = tort_string_new(0, 0);
+  tort_send(tort__s(__printfsv), str, fmt, vapp);
+  return str;
 }
 
-tort_v _tort_m_object____printf(tort_tp tort_v io, const char *fmt, ...)
+tort_v _tort_m_object____printfsv(tort_tp tort_v io, const char *fmt, va_list *vapp)
 {
-  va_list vap;
-  va_start(vap, fmt);
-  io = _tort_m_object____printfv(tort_ta io, fmt, &vap);
-  va_end(vap);
-  return io;
+  return tort_send(tort__s(_printfv), io, fmt, strchr(fmt, 0), vapp);
 }
 
-tort_v _tort_m_nil____printf(tort_tp tort_v io, const char *fmt, ...)
+tort_v _tort_m_object____printfs(tort_tp tort_v io, const char *fmt, ...)
 {
   va_list vap;
   va_start(vap, fmt);
-  io = tort_string_new(0, 0);
-  _tort_m_object____printfv(tort_ta io, fmt, &vap);
+  io = tort_send(tort__s(__printfsv), io, fmt, &vap);
   va_end(vap);
   return io;
 }
-
-tort_v _tort_m_string____printf(tort_tp tort_v io, const char *fmt, ...)
-{
-  va_list vap;
-  va_start(vap, fmt);
-  _tort_m_object____printfv(tort_ta io, fmt, &vap);
-  va_end(vap);
-  return io;
-}
-
-/********************************************************************/
-
-#ifdef __LINUX__
-int 
-_tort_printf_object (FILE *stream,
-		     __const struct printf_info *info,
-		     __const void *__const *args
-		     )
-{
-  tort_v v;
-  int len = 128; /* ??? */
-
-  v = *(tort_v*) args[0];
-  v = tort_inspect(FP_TORT_OBJ(stream), v);
-
-  return len;
-}
-
-static
-int 
-_tort_printf_object_lisp (FILE *stream,
-		     __const struct printf_info *info,
-		     __const void *__const *args
-		     )
-{
-  tort_v v;
-  int len = 128; /* ??? */
-
-  v = *(tort_v*) args[0];
-  v = tort_send(tort__s(lisp_write), v, FP_TORT_OBJ(stream));
-
-  return len;
-}
-
-static int
-_tort_printf_extension_arginfo (
-				    const struct printf_info *info, 
-				    size_t n,
-				    int *argtypes, 
-				    int *size
-				    )
-{
-  if (n > 0) {
-    argtypes[0] = PA_POINTER;
-    size[0] = sizeof(tort_v);
-  }
-  return 1;
-}
-#endif
 
 tort_v tort_runtime_initialize_printf()
 {
-#ifdef __LINUX__
-  /* Register the print functions for tort_v.  */
-  register_printf_specifier('T', 
-			    _tort_printf_object,
-			    _tort_printf_extension_arginfo);
-
-  register_printf_specifier('O', 
-			    _tort_printf_object_lisp,
-			    _tort_printf_extension_arginfo);
-#endif
-
   return tort__mt(io);
 }

@@ -94,3 +94,7 @@ const char *tort_symbol_encode(const char *in)
   }
 }
 
+tort_symbol* tort_symbol_make_encode(const char *string)
+{
+  return tort_symbol_make(tort_symbol_encode(string));
+}
