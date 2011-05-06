@@ -85,7 +85,7 @@ tort_v _tort_m_io____write(tort_tp tort_io *rcvr, void *data, size_t size)
 
 tort_v _tort_m_io___write(tort_tp tort_io *rcvr, tort_v str)
 {
-  return tort_send(tort__s(__write), rcvr, tort_string_data(str), tort_string_size(str));
+  return_tort_send(tort__s(__write), rcvr, tort_string_data(str), tort_string_size(str));
 }
 
 tort_v _tort_m_io__flush(tort_tp tort_io *rcvr)

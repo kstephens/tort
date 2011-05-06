@@ -172,16 +172,16 @@ FIND_STAT_FILES= \
 stats :
 	@mkdir -p .stats
 	@echo "`/bin/pwd`:"
-	@echo "Generated LoC:"
+	@echo "  Generated LoC:"
 	@find $(GEN_H_FILES) $(GEN_C_FILES) 2>/dev/null | \
 	  sort -u > .stats/files_gen
 	@xargs wc -l < .stats/files_gen
-	@echo "Source LoC:"
+	@echo "  Source LoC:"
 	@find src include $(FIND_STAT_FILES) | \
 	  sort -u > .stats/files.t
 	@comm -23 .stats/files.t .stats/files_gen > .stats/files_src
 	@xargs wc -l < .stats/files_src
-	@echo "Test LoC:"
+	@echo "  Test LoC:"
 	@find t $(FIND_STAT_FILES) | \
 	  sort -u > .stats/files.t
 	@comm -23 .stats/files.t .stats/files_gen > .stats/files_t

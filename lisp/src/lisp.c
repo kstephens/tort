@@ -1,7 +1,5 @@
 #include "tort/lisp.h"
 
-/********************************************************************/
-
 tort_v _tort_M_cons__new(tort_thread_param tort_v cons_mt, tort_v a, tort_v d)
 {
   tort_cons *cons = tort_send(tort__s(_allocate), cons_mt, sizeof(*cons));
@@ -9,7 +7,6 @@ tort_v _tort_M_cons__new(tort_thread_param tort_v cons_mt, tort_v a, tort_v d)
   cons->cdr = d;
   return cons;
 }
-
 
 #define ACCESSOR(X)							\
   tort_v _tort_m_cons__##X(tort_thread_param tort_cons *rcvr)		\
@@ -52,7 +49,6 @@ tort_v tort_caddr(tort_v v)
   return tort_cdr(tort_cddr(v));
 }
 
-
 tort_v _tort_m_list__size(tort_tp tort_cons *rcvr) /**/
 {
   size_t i = 0;
@@ -66,7 +62,6 @@ tort_v _tort_m_list__size(tort_tp tort_cons *rcvr) /**/
   }
   return tort_i(i);
 }
-
 
 tort_v _tort_m_list__lisp_write(tort_thread_param tort_v rcvr, tort_v io) /**/
 {
@@ -87,7 +82,6 @@ tort_v _tort_m_list__lisp_write(tort_thread_param tort_v rcvr, tort_v io) /**/
   return tort_nil;
 }
 
-
 tort_v _tort_m_list__list_TO_vector(tort_thread_param tort_v rcvr, tort_v io) /**/
 {
   tort_v size = tort_send(tort__s(size), rcvr);
@@ -105,17 +99,14 @@ tort_v _tort_m_list__list_TO_vector(tort_thread_param tort_v rcvr, tort_v io) /*
   return vec;
 }
 
-
 #define IO (io ? io : tort_stdout)
 #define printf(fmt, args...) tort_printf(IO, fmt, ##args)
-
 
 tort_v _tort_m_object__lisp_write(tort_thread_param tort_v rcvr, tort_v io)
 {
   printf("(make <object> @%p)", (void *) rcvr);
   return tort_nil;
 }
-
 
 tort_v _tort_m_vector__lisp_write(tort_tp tort_vector *rcvr, tort_v io)
 {
@@ -128,7 +119,6 @@ tort_v _tort_m_vector__lisp_write(tort_tp tort_vector *rcvr, tort_v io)
   return tort_nil;
 }
 
-
 tort_v _tort_m_symbol__lisp_write(tort_tp tort_symbol *rcvr, tort_v io)
 {
   if ( rcvr->name != tort_nil ) {
@@ -139,13 +129,11 @@ tort_v _tort_m_symbol__lisp_write(tort_tp tort_symbol *rcvr, tort_v io)
   return tort_nil;
 }
 
-
 tort_v _tort_m_boolean__lisp_write(tort_thread_param tort_v rcvr, tort_v io)
 {
   printf(rcvr == tort_false ? "#f" : "#t");
   return tort_nil;
 }
-
 
 tort_v _tort_m_map__lisp_write(tort_thread_param tort_v rcvr, tort_v io)
 {
@@ -162,13 +150,11 @@ tort_v _tort_m_map__lisp_write(tort_thread_param tort_v rcvr, tort_v io)
   return tort_nil;
 }
 
-
 tort_v _tort_m_eos__lisp_write(tort_thread_param tort_v rcvr, tort_v io)
 {
   printf("#e");
   return tort_nil;
 }
-
 
 #undef printf
 #undef IO

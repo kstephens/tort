@@ -17,7 +17,7 @@ tort_v _tort_m_object____message(tort_thread_param tort_v rcvr)
 {
   rcvr = _tort_message;
   // rcvr = tort_ref(tort_message, rcvr)->previous_message;
-  return tort_send(tort__s(clone), rcvr);
+  return_tort_send(tort__s(clone), rcvr);
 }
 
 

@@ -132,7 +132,7 @@ tort_v _tort_m_nil____printfsv(tort_tp tort_string *str, const char *fmt, va_lis
 
 tort_v _tort_m_object____printfsv(tort_tp tort_v io, const char *fmt, va_list *vapp)
 {
-  return tort_send(tort__s(_printfv), io, fmt, strchr(fmt, 0), vapp);
+  return_tort_send(tort__s(_printfv), io, fmt, strchr(fmt, 0), vapp);
 }
 
 tort_v _tort_m_object____printfs(tort_tp tort_v io, const char *fmt, ...)

@@ -82,7 +82,7 @@ tort_v _tort_M_lisp_closure___apply(tort_tp tort_v rcvr, ...)
   // tort_printf(tort_stderr, "\n  apply (%O argc %d expected-argc %d %O)\n", _tort_message->selector, (int) argc, (int) tort_I(obj->formals->argc), argv);
   env = tort_send(tort__s(new), tort_mt(lisp_environment), 
 		  obj->formals, obj->environment, argv, tort_i(argc));
-  return tort_send(tort_s(lisp_eval_body), obj->body, env);
+  return_tort_send(tort_s(lisp_eval_body), obj->body, env);
 }
 
 tort_v _tort_M_lisp_closure__new(tort_tp tort_mtable *mtable, tort_v formals, tort_v body, tort_v env)
@@ -107,7 +107,7 @@ tort_v _tort_m_lisp_closure__lisp_apply(tort_tp tort_lisp_closure *obj, tort_v a
   env = tort_send(tort__s(new), tort_mt(lisp_environment), 
 		  obj->formals, obj->environment, args, tort_nil);
   // tort_printf(tort_stderr, "\n  with env: %O %O\n", env, body);
-  return tort_send(tort_s(lisp_eval_body), obj->body, env);
+  return_tort_send(tort_s(lisp_eval_body), obj->body, env);
 }
 
 tort_v _tort_m_lisp_environment__lisp_write(tort_thread_param tort_lisp_environment *rcvr, tort_v io)
@@ -173,7 +173,7 @@ tort_v _tort_m_lisp_environment__get(tort_tp tort_lisp_environment *env, tort_v 
     return tort_(root);
   }
   else if ( name == tort_s(ANDglobals) ) {
-    return tort_send(tort_s(globals), env);
+    return_tort_send(tort_s(globals), env);
   }
   else if ( env->formals->rest == name ) {
     if ( env->rest == tort_false ) {

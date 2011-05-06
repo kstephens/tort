@@ -25,7 +25,7 @@ tort_v _tort_M_string___new(tort_tp tort_mtable *mtable, const char *string, siz
 
 tort_v _tort_M_string__new(tort_tp tort_mtable *mtable, tort_v size)
 {
-  return tort_send(tort__s(_new), mtable, 0, tort_I(size));
+  return_tort_send(tort__s(_new), mtable, 0, tort_I(size));
 }
 
 /********************************************************************/
