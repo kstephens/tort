@@ -35,7 +35,15 @@ tort_v _tort_m_object__identity (tort_thread_param tort_v rcvr)
   return rcvr;
 }
 
-/********************************************************************/
+tort_v _tort_m_object___slot_at (tort_tp tort_v rcvr, tort_v offset)
+{
+  return ((tort_v*) rcvr)[tort_I(offset)];
+}
+
+tort_v _tort_m_object___set_slot_at (tort_tp tort_v rcvr, tort_v offset, tort_v value)
+{
+  return ((tort_v*) rcvr)[tort_I(offset)] = value;
+}
 
 tort_v tort_object_make()
 {
