@@ -28,6 +28,7 @@ Supports:
 ** Fully recursive lookup() delegation.
 ** Message objects allocated on C stack.
 ** Supports tail recursion.
+** Support method aliasing.
 * Can be linked against BDW GC library.
 * Configurable.
 
