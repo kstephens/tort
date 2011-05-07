@@ -83,6 +83,16 @@ tort_v _tort_m_mtable__remove_method (tort_tp tort_mtable *mtable, tort_symbol *
   return mtable;
 }
 
+tort_v _tort_m_mtable__alias_method (tort_tp tort_mtable *mtable, tort_symbol *symbol, tort_symbol *other_symbol)
+{
+  tort_message_ msg_ = { { sizeof(tort_message), tort__mt(message) } };
+  tort_message *msg = &msg_._;
+  msg->selector = other_symbol;
+  msg->method = tort_nil;
+  msg = tort_send(tort_s(lookup), mtable, msg);
+  return_tort_send(tort_s(add_method), mtable, symbol, msg->method);
+}
+
 /********************************************************************/
 
 tort_v tort_add_method(tort_v mtable, const char *name, void *applyf)
