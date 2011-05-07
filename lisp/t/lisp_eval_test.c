@@ -13,7 +13,7 @@ int main(int argc, char **argv, char **environ)
   in = tort_stdin;
   out = tort_stdout;
 
-  v = tort_send(tort_s(lisp_repl), in, out, tort_(root));
+  v = tort_send(tort_s(lisp_repl), in, out, out, tort_nil);
 
   tort_printf(out, "\n\nDONE\n");
 
