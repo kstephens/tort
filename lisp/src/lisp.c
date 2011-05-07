@@ -99,7 +99,7 @@ tort_v _tort_m_list__list_TO_vector(tort_thread_param tort_v rcvr, tort_v io) /*
   return vec;
 }
 
-#define IO (io ? io : tort_stdout)
+#define IO (io != tort_nil ? io : tort_stdout)
 #define printf(fmt, args...) tort_printf(IO, fmt, ##args)
 
 tort_v _tort_m_object__lisp_write(tort_thread_param tort_v rcvr, tort_v io)
@@ -180,6 +180,7 @@ tort_v _tort_m_io__lisp_read (tort_thread_param tort_v stream)
 #define SET_CDR(CONS,V) tort_send(tort_s(setDcdrE), CONS, V)
 #define MAKE_CHAR(I) tort_i(I)
 #define STRING(b, l) tort_string_new(b, l)
+#define ESCAPE_STRING(X) tort_send(tort_s(escapeE), X)
 #define LIST_2_VECTOR(X) tort_send(tort_s(list_TO_vector), X)
 #define SYMBOL_DOT tort_s(DOT)
 #define SYMBOL(NAME) tort_s(NAME)
