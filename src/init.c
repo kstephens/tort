@@ -107,9 +107,6 @@ tort_v tort_runtime_create_ (int *argcp, char ***argvp, char ***envp)
   tort_send(tort__s(set), tort_(root), tort_symbol_make("true"), tort_true);
   tort_send(tort__s(set), tort_(root), tort_symbol_make("false"), tort_false);
   tort_send(tort__s(set), tort_(root), tort_symbol_make("mtable"), tort_(m_mtable));
-  tort_send(tort__s(set), tort_(root), tort_symbol_make("stdin"), tort_stdin);
-  tort_send(tort__s(set), tort_(root), tort_symbol_make("stdout"), tort_stdout);
-  tort_send(tort__s(set), tort_(root), tort_symbol_make("stderr"), tort_stderr);
 
 #define tort_d_mt(X) \
   if ( tort__mt(X) ) tort_send(tort__s(set), tort_(m_mtable), tort_symbol_make(#X), tort__mt(X));

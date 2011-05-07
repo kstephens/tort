@@ -21,8 +21,9 @@ tort_v _tort_M_io____create(tort_tp tort_mtable *mtable, FILE *fp)
 {
   tort_io *rcvr = _tort_allocate(tort_ta mtable, sizeof(tort_io));
   FP = fp;
-  if ( FP )
+  if ( FP ) {
     // FP_TORT_OBJ(FP) = rcvr;
+  }
   IO->name = IO->mode = tort_nil;
   IO->flags = 0;
   return rcvr;
@@ -69,12 +70,6 @@ tort_v _tort_m_io__close(tort_tp tort_io *rcvr)
     FP = 0;
   }
   return rcvr;
-}
-
-tort_v _tort_m_string____write(tort_tp tort_string *rcvr, void *data, size_t size)
-{
-  tort_send(tort__s(_append), rcvr, data, size);
-  return tort_i(size);
 }
 
 tort_v _tort_m_io____write(tort_tp tort_io *rcvr, void *data, size_t size)
@@ -129,12 +124,28 @@ tort_v _tort_m_io____finalize(tort_tp tort_io *rcvr)
   return tort_nil;
 }
 
+tort_v _tort_m_string____write(tort_tp tort_string *rcvr, void *data, size_t size)
+{
+  tort_send(tort__s(_append), rcvr, data, size);
+  return tort_i(size);
+}
+
+tort_v _tort_m_string__flush(tort_tp tort_string *rcvr)
+{
+  return rcvr;
+}
+
+
 extern tort_v tort_runtime_initialize_printf();
 tort_v tort_runtime_initialize_io()
 {
   tort_stdin  = _tort_M_io____create(tort_ta tort__mt(io), stdin);
   tort_stdout = _tort_M_io____create(tort_ta tort__mt(io), stdout);
   tort_stderr = _tort_M_io____create(tort_ta tort__mt(io), stderr);
+
+  tort_send(tort__s(set), tort_(root), tort_s(stdin), tort_stdin);
+  tort_send(tort__s(set), tort_(root), tort_s(stdout), tort_stdout);
+  tort_send(tort__s(set), tort_(root), tort_s(stderr), tort_stderr);
 
   tort_eos    = tort_allocate(tort__mt(eos), sizeof(tort_object));
 
