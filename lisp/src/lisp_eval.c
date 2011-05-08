@@ -298,6 +298,15 @@ tort_v _tort_m_cons__lisp_eval(tort_tp tort_cons *obj, tort_v env)
     tort_v body = tort_cdr(obj->cdr);
     return_tort_send(tort__s(new), tort_mt(lisp_closure), formals, body, env);
   }
+  else if ( val == tort_s(let) ) {
+    val = tort_car(obj->cdr); /* bindings */
+    return_tort_send(tort_s(lisp_apply),
+		     tort_send(tort__s(new), tort_mt(lisp_closure), 
+			       tort_send(tort_s(lisp_eval_let_names), val, env), /* names */
+			       tort_cdr(obj->cdr), env), /* closure */
+		     tort_send(tort_s(lisp_eval_let_values), val, env), /* values */
+		     env);
+  }
   else {
     tort_v args;
     val  = tort_send(tort_s(lisp_eval_car), obj->car, env);
@@ -318,6 +327,28 @@ tort_v _tort_m_object__lisp_eval_car(tort_tp tort_v obj, tort_v env)
 {
   if ( _tort_lisp_trace ) tort_printf(tort_stderr, "\n  object::lisp_eval_car: %O\n", obj);
   return_tort_send(tort_s(lisp_eval), obj, env);
+}
+
+tort_v _tort_m_cons__lisp_eval_let_names(tort_tp tort_cons *obj, tort_v env)
+{
+  return tort_cons(tort_car(obj->car), 
+		   tort_send(tort_s(lisp_eval_let_names), obj->cdr, env));
+}
+
+tort_v _tort_m_object__lisp_eval_let_names(tort_tp tort_v obj, tort_v env)
+{
+  return obj;
+}
+
+tort_v _tort_m_cons__lisp_eval_let_values(tort_tp tort_cons *obj, tort_v env)
+{
+  return tort_cons(tort_send(tort_s(lisp_eval), tort_cadr(obj->car), env), 
+		   tort_send(tort_s(lisp_eval_let_values), obj->cdr, env));
+}
+
+tort_v _tort_m_object__lisp_eval_let_values(tort_tp tort_v obj, tort_v env)
+{
+  return obj;
 }
 
 tort_v _tort_m_symbol__lisp_apply(tort_tp tort_v obj, tort_v args, tort_v env)
@@ -353,8 +384,6 @@ tort_v _tort_m_symbol__lisp_eval_args(tort_tp tort_v sym, tort_v env)
 tort_v _tort_m_vector__lisp_eval_body(tort_tp tort_vector *obj, tort_v env)
 {
   tort_v val = tort_nil;
-  if ( obj->size == 0 )
-    return val;
   tort_vector_loop(obj, expr); {
     val = tort_send(tort_s(lisp_eval), expr, env);
   } tort_vector_loop_end(obj);
