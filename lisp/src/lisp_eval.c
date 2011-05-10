@@ -60,7 +60,7 @@ tort_v _tort_M_lisp_formals__new(tort_tp tort_mtable *mtable, tort_v formals)
 
 tort_v _tort_m_lisp_formals__lisp_write(tort_thread_param tort_lisp_formals *rcvr, tort_v io)
 {
-  return tort_printf(io, "#f(%O %O)", rcvr->formals, rcvr->rest);
+  return tort_printf(io, "#f(%O . %O)", rcvr->formals, rcvr->rest);
 }
 
 tort_v _tort_M_lisp_closure___apply(tort_tp tort_v rcvr, ...)
@@ -316,12 +316,14 @@ tort_v _tort_m_cons__lisp_eval(tort_tp tort_cons *obj, tort_v env)
   }
   else if ( val == tort_s(let) ) {
     val = tort_car(obj->cdr); /* bindings */
-    return_tort_send(tort_s(lisp_apply),
-		     tort_send(tort__s(new), tort_mt(lisp_closure), 
-			       tort_send(tort_s(lisp_eval_let_names), val, env), /* names */
-			       tort_cdr(obj->cdr), env), /* closure */
-		     tort_send(tort_s(lisp_eval_let_values), val, env), /* values */
-		     env);
+    if ( val != tort_nil )
+      env = tort_send(tort__s(new), tort_mt(lisp_environment), 
+		      tort_send(tort__s(new), tort_mt(lisp_formals), 
+				tort_send(tort_s(lisp_eval_let_names), val, env) /* bindings => names => */ ), /* formals */
+		      env, /* parent environment. */
+		      tort_send(tort_s(lisp_eval_let_values), val, env), /* bindings => values => args */
+		      tort_nil);
+    return_tort_send(tort_s(lisp_eval_body), tort_cdr(obj->cdr), env);
   }
   else {
     tort_v args;
