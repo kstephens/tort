@@ -178,7 +178,11 @@ tort_lookup_decl(_tort_lookup)
 {
   tort_v sel = message->selector;
 
+  message->_h[-1].alloc_size = sizeof(tort_message);
+  message->_h[-1].mtable = tort__mt(message);
+  message->mtable = tort_nil; 
   message->method = tort_nil;
+  message->fiber = message->previous_message ? message->previous_message->fiber : _tort_fiber;
 
 #ifndef TORT_MCACHE_STAT
 #define TORT_MCACHE_STAT(X) 1
