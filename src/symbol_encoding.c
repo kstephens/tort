@@ -22,6 +22,8 @@ static tort_symbol_mapping mappings[] =
     { "P",    "%" },
     { "E",    "!" },
     { "Q",    "?" },
+    { "S",    "*" },
+    // { "A",    "&" },
     { 0, 0 },
   };
 
@@ -47,12 +49,10 @@ static
 tort_symbol_mapping *find_mapping(tort_symbol_mapping *sm, const char *s)
 {
   while ( sm->pattern ) {
-    if ( ! sm->pattern_size ) {
+    if ( ! sm->pattern_size )
       sm->pattern_size = strlen(sm->pattern);
-    }
-    if ( strncmp(s, sm->pattern, sm->pattern_size) == 0 ) {
+    if ( ! strncmp(s, sm->pattern, sm->pattern_size) )
       return sm;
-    }
     ++ sm;
   }
   return 0;
@@ -76,9 +76,8 @@ const char *tort_symbol_encode(const char *in)
     if ( sm ) {
       const char *r = sm->replace;
       encoded = 1;
-      while ( *r ) {
+      while ( *r )
 	*(t ++) = *(r ++);
-      }
       s += sm->pattern_size;
     } else {
       *(t ++) = *(s ++);
