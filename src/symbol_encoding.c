@@ -74,10 +74,10 @@ const char *tort_symbol_encode(const char *in)
     tort_symbol_mapping *sm = find_mapping(mappings, s);
     if ( sm ) {
       const char *r = sm->replace;
-      encoded = 1;
       while ( *r )
 	*(t ++) = *(r ++);
       s += sm->pattern_size;
+      encoded = 1;
     } else {
       *(t ++) = *(s ++);
     }
