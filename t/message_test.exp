@@ -10,11 +10,13 @@ Some object ==> ( @message( clone, @message( __printfs, @io(@x1), @method(object
   _mtable => @method(object::_mtable,@x10),
   _name => @method(object::_name,@x11),
   _printfv => @method(object::_printfv,@x12),
-  clone => @method(object::clone,@x13),
-  eq? => @method(object::eq?,@x14),
-  identity => @method(object::identity,@x15),
-  not => @method(object::not,@x16),
-  __finalize => @method(object::__finalize,@x15)  )), @method(object::clone,@x13), @map( 
+  _set_slot_at => @method(object::_set_slot_at,@x13),
+  _slot_at => @method(object::_slot_at,@x14),
+  clone => @method(object::clone,@x15),
+  eq? => @method(object::eq?,@x16),
+  identity => @method(object::identity,@x17),
+  not => @method(object::not,@x18),
+  __finalize => @method(object::__finalize,@x17)  )), @method(object::clone,@x15), @map( 
   __debugger => @method(object::__debugger,@x3),
   __message => @method(object::__message,@x4),
   __printfs => @method(object::__printfs,@x2),
@@ -26,10 +28,12 @@ Some object ==> ( @message( clone, @message( __printfs, @io(@x1), @method(object
   _mtable => @method(object::_mtable,@x10),
   _name => @method(object::_name,@x11),
   _printfv => @method(object::_printfv,@x12),
-  clone => @method(object::clone,@x13),
-  eq? => @method(object::eq?,@x14),
-  identity => @method(object::identity,@x15),
-  not => @method(object::not,@x16),
-  __finalize => @method(object::__finalize,@x15)  )) ) <== is in here!
+  _set_slot_at => @method(object::_set_slot_at,@x13),
+  _slot_at => @method(object::_slot_at,@x14),
+  clone => @method(object::clone,@x15),
+  eq? => @method(object::eq?,@x16),
+  identity => @method(object::identity,@x17),
+  not => @method(object::not,@x18),
+  __finalize => @method(object::__finalize,@x17)  )) ) <== is in here!
 
 DONE

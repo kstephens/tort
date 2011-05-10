@@ -1,4 +1,4 @@
   v = size
-  (size symbols) => 246
+  (size symbols) => 255
 
 DONE
