@@ -23,7 +23,7 @@ static tort_symbol_mapping mappings[] =
     { "E",    "!" },
     { "Q",    "?" },
     { "S",    "*" },
-    // { "A",    "&" },
+    { "A",    "&" },
     { 0, 0 },
   };
 
@@ -39,6 +39,7 @@ void sort_symbol_mappings()
   int n = 0;
   tort_symbol_mapping *sm = mappings;
   while ( sm->pattern ) {
+    sm->pattern_size = strlen(sm->pattern);
     ++ sm;
     ++ n;
   }
@@ -49,8 +50,6 @@ static
 tort_symbol_mapping *find_mapping(tort_symbol_mapping *sm, const char *s)
 {
   while ( sm->pattern ) {
-    if ( ! sm->pattern_size )
-      sm->pattern_size = strlen(sm->pattern);
     if ( ! strncmp(s, sm->pattern, sm->pattern_size) )
       return sm;
     ++ sm;
