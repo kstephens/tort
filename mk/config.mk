@@ -12,7 +12,8 @@ LIBTOOL=$(GC)/libtool #
 CC=gcc#
 CC_BASE=$(CC) $(CFLAGS) $(CPPFLAGS) $(TARGET_ARCH)#
 COMPILE.c = $(LIBTOOL) --mode=compile $(CC_BASE) -c #
-CFLAGS += -shared -export-dynamic #
+CFLAGS_SHARED=-shared -export-dynamic # 
+CFLAGS += $(CFLAGS_SHARED) #
 LIB_FLAGS += -rpath $(libdir) #
 
 CFLAGS_OPTIMIZE = -O2
