@@ -17,11 +17,12 @@ tort_v tort_vector_base_new(tort_v mtable, const void *data, size_t size, size_t
 
 tort_v _tort_m_vector_base___initialize(tort_thread_param tort_vector_base *v, size_t size, size_t element_size)
 {
-  v->data = tort_malloc(
-			v->alloc_size = 
-			(v->element_size = element_size) *
-			((v->size = size) + 1) /* + 1 null terminator */
-			); 
+  v->data = (v->_h[-1].mtable == tort__mt(string) ? tort_malloc_atomic : tort_malloc)
+    (
+     v->alloc_size = 
+     (v->element_size = element_size) *
+     ((v->size = size) + 1) /* + 1 null terminator */
+     ); 
   memset(v->data, 0, v->alloc_size); /* not if GC_malloc() */
   return v;
 }
@@ -29,7 +30,8 @@ tort_v _tort_m_vector_base___initialize(tort_thread_param tort_vector_base *v, s
 tort_v _tort_m_vector_base__clone (tort_thread_param tort_vector_base *v)
 {
   tort_vector_base *v2 = _tort_m_object__clone(tort_thread_arg v);
-  memcpy(v2->data = tort_malloc(v2->alloc_size), v->data, v2->element_size * (v2->size + 1));
+  v2->data = (v->_h[-1].mtable == tort__mt(string) ? tort_malloc_atomic : tort_malloc)(v2->alloc_size);
+  memcpy(v2->data, v->data, v2->element_size * (v2->size + 1));
   return v2;
 }
 
@@ -105,9 +107,8 @@ tort_v _tort_M_vector___new(tort_thread_param tort_v mtable, const void *data, s
   tort_v val = _tort_M_vector_base___new(tort_thread_arg mtable, data, size, sizeof(tort_v));
   if ( ! data ) {
     size_t i;
-    for ( i = 0; i < (size + 1); ++ i ) {
+    for ( i = 0; i < (size + 1); ++ i )
       tort_vector_data(val)[i] = tort_nil;
-    }
   }
   return val;
 }
@@ -144,8 +145,7 @@ tort_v _tort_m_vector__each (tort_thread_param tort_v rcvr, tort_v block)
 {
   tort_vector_loop(rcvr, x) {
     tort_send(tort__s(value), block, x);
-  }
-  tort_vector_loop_end(rcvr);
+  } tort_vector_loop_end(rcvr);
   return rcvr;
 }
 
@@ -163,8 +163,7 @@ tort_v _tort_m_vector__map (tort_thread_param tort_v rcvr, tort_v block)
 		x_i, 
 		tort_vector_data(new_vec)[x_i]);
 #endif
- }
-  tort_vector_loop_end(rcvr);
+  } tort_vector_loop_end(rcvr);
   return new_vec;
 }
 

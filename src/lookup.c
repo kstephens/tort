@@ -36,6 +36,7 @@ struct {
     ,hit_sel_n
     ,hit_sel_version_n 
     ,lookup_n
+    ,delegate_traverse_n
     ,method_change_n
     ,lookup_change_n
     ,delegate_change_n
@@ -67,6 +68,7 @@ void _tort_mcache_stats()
   S(hit_sel_n);
   S(hit_sel_version_n);
   S(lookup_n);
+  S(delegate_traverse_n);
   S(mcache_size);
   S(method_change_n);
   S(lookup_change_n);
@@ -179,6 +181,7 @@ tort_lookup_decl(_tort_m_mtable__lookup)
       _tort_lookup_trace_level --;
   }
   else if ( (mtable = mtable->delegate) != tort_nil ) {
+    (void) TORT_MCACHE_STAT(mcache_stats.delegate_traverse_n ++);
     if ( TORT_LOOKUP_TRACE ) {
       message = tort_send(s_lookup, mtable, message);
       _tort_lookup_trace_level --;
@@ -199,10 +202,6 @@ tort_lookup_decl(_tort_lookup)
   message->mtable = tort_nil; 
   message->method = tort_nil;
   message->fiber = message->previous_message ? message->previous_message->fiber : _tort_fiber;
-
-#ifndef TORT_MCACHE_STAT
-#define TORT_MCACHE_STAT(X) 1
-#endif
 
   if ( TORT_LOOKUP_TRACE )  {
     _tort_lookup_trace_level ++;
