@@ -18,7 +18,7 @@ Supports:
 ** Map.
 ** IO with FILE* and finalization.
 * Dynamic message dispatch.
-** ~50,000,000 send/sec on OS X 64-bit using a global method cache.
+** ~30,000,000 send/sec on OS X 64-bit using a global method cache.
 ** global method cache monitors for invalidations due to:
 *** New method definitons using symbol version counters.
 *** Changes in lookup() meta-send protocol method.
