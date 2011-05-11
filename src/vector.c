@@ -1,14 +1,12 @@
 #include "tort/core.h"
 #include <assert.h>
 
-
 tort_v _tort_M_vector_base___new(tort_thread_param tort_v mtable, const void *data, size_t size, size_t element_size)
 {
   tort_vector_base *v = tort_allocate(mtable, sizeof(tort_vector_base));
   _tort_m_vector_base___initialize(tort_thread_arg v, size, element_size);
-  if ( data ) {
+  if ( data )
     memcpy(v->data, data, v->element_size * v->size);
-  }
   return v;
 }
 
@@ -16,7 +14,6 @@ tort_v tort_vector_base_new(tort_v mtable, const void *data, size_t size, size_t
 {
   return _tort_M_vector_base___new(tort_thread_arg mtable, data, size, element_size);
 }
-
 
 tort_v _tort_m_vector_base___initialize(tort_thread_param tort_vector_base *v, size_t size, size_t element_size)
 {
@@ -26,17 +23,15 @@ tort_v _tort_m_vector_base___initialize(tort_thread_param tort_vector_base *v, s
 			((v->size = size) + 1) /* + 1 null terminator */
 			); 
   memset(v->data, 0, v->alloc_size); /* not if GC_malloc() */
-  return (tort_v) v;
+  return v;
 }
-
 
 tort_v _tort_m_vector_base__clone (tort_thread_param tort_vector_base *v)
 {
   tort_vector_base *v2 = _tort_m_object__clone(tort_thread_arg v);
   memcpy(v2->data = tort_malloc(v2->alloc_size), v->data, v2->element_size * (v2->size + 1));
-  return (tort_v) v2;
+  return v2;
 }
-
 
 void* _tort_m_vector_base___data (tort_thread_param tort_vector_base *v)
 {
@@ -65,13 +60,18 @@ tort_v _tort_m_vector_base___resize (tort_thread_param tort_vector_base *v, size
   size_t old_alloc_size = v->alloc_size;
   if ( size > old_size || size < old_size / 2 ) {
     v->alloc_size = v->element_size * (size + 1); /* + 1 null terminator */
-    v->data = 
-      old_alloc_size ? tort_realloc(v->data, v->alloc_size) :
-      tort_malloc(v->alloc_size);
+    if ( v->_h[-1].mtable == tort__mt(string) ) { /* HACK */
+      v->data = 
+	old_alloc_size ? tort_realloc_atomic(v->data, v->alloc_size) :
+	tort_malloc_atomic(v->alloc_size);
+    } else {
+      v->data = 
+	old_alloc_size ? tort_realloc(v->data, v->alloc_size) :
+	tort_malloc(v->alloc_size);
+    }
   }
-  return (tort_v) v;
+  return v;
 }
-
 
 tort_v _tort_m_vector_base___append (tort_thread_param tort_vector_base *v, const void *datap, size_t data_count)
 {
@@ -81,8 +81,8 @@ tort_v _tort_m_vector_base___append (tort_thread_param tort_vector_base *v, cons
 	 datap,
 	 v->element_size * data_count);
   v->size = size += data_count;
-  memset(v->data + v->element_size * size, 0, v->element_size);
-  return (tort_v) v;
+  memset(v->data + v->element_size * size, 0, v->element_size); /* null terminator. */
+  return v;
 }
 
 tort_v _tort_m_vector_base__append (tort_thread_param tort_vector_base *v, tort_v other)

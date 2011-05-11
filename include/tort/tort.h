@@ -322,8 +322,10 @@ extern tort_v _tort_fiber;
 #endif
 
 void *tort_malloc(size_t size);
+void *tort_malloc_atomic(size_t size);
 void  tort_free(void *ptr);
 void *tort_realloc(void *ptr, size_t size);
+void *tort_realloc_atomic(void *ptr, size_t size);
 
 tort_v tort_map_create();
 
