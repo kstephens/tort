@@ -17,9 +17,8 @@ tort_v _tort_m_string__set (tort_thread_param tort_string *rcvr, tort_v _i, tort
 tort_v _tort_M_string___new(tort_tp tort_mtable *mtable, const char *string, size_t size)
 {
   tort_string *v = tort_vector_base_new(mtable, string, size, sizeof(string[0]));
-  if ( ! string ) {
+  if ( ! string )
     memset(v->data, 0, v->alloc_size);
-  }
   return v;
 }
 
