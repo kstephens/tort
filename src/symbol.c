@@ -3,7 +3,9 @@
 
 tort_GETTER(symbol,tort_v,name);
 tort_GETTER(symbol,tort_v,version);
+#if TORT_ANON_SYMBOL_MTABLE
 tort_GETTER(symbol,tort_v,mtable_method_map);
+#endif
 
 const char *_tort_symbol_name(tort_v sym) 
 { 
