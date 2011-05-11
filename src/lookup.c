@@ -7,11 +7,6 @@
 #include <stdio.h>
 #include <assert.h>
 
-#if 0
-#undef TORT_LOOKUP_TRACE
-#define TORT_LOOKUP_TRACE 1
-#endif
-
 int _tort_lookup_trace_level = 0;
 
 tort_message *_tort_message;
@@ -29,10 +24,11 @@ typedef struct tort_mcache_entry {
   tort_mtable *mtable; /* The mtable the method was found in. */
 } tort_mcache_entry;
 
-#define mcache_size 1021
+#define MCACHE_SIZE 1021
 static
-tort_mcache_entry mcache[mcache_size];
+tort_mcache_entry mcache[MCACHE_SIZE];
 
+static
 struct {
   unsigned long 
      hit_n
@@ -46,6 +42,8 @@ struct {
     ,flush_all_n
     ,flush_symbol_n
     ,symbol_version_change_n
+    ,collision_n
+    ,mcache_size
     ;
 } mcache_stats;
 
@@ -57,6 +55,7 @@ struct {
 
 void _tort_mcache_stats()
 {
+  mcache_stats.mcache_size = MCACHE_SIZE;
   fprintf(stderr, "tort: mcache: %lu hit / %lu lookup = %.8g\n",
 	  (unsigned long) mcache_stats.hit_n,
 	  (unsigned long) mcache_stats.lookup_n,
@@ -64,12 +63,18 @@ void _tort_mcache_stats()
 
 #define S(N) \
   fprintf(stderr, "tort: mcache: %26s = %16lu\n", #N, (unsigned long) mcache_stats.N)
+  S(hit_mtable_n);
+  S(hit_sel_n);
+  S(hit_sel_version_n);
+  S(lookup_n);
+  S(mcache_size);
   S(method_change_n);
   S(lookup_change_n);
   S(delegate_change_n);
   S(symbol_version_change_n);
   S(flush_all_n);
   S(flush_symbol_n);
+  S(collision_n);
 #undef S
 }
 
@@ -114,7 +119,7 @@ tort_v _tort_m_mtable___method_changed(tort_tp tort_mtable *rcvr, tort_v sym, to
     mcache_flush_all();
   } else {
     int i;
-    for ( i = 0; i < mcache_size; ++ i ) {
+    for ( i = 0; i < MCACHE_SIZE; ++ i ) {
       if ( mcache[i].sel == sym ) {
 	(void) TORT_MCACHE_STAT(++ mcache_stats.flush_symbol_n);
 	memset(&mcache[i], 0, sizeof(mcache[i]));
@@ -144,7 +149,7 @@ tort_lookup_decl(_tort_m_mtable__lookup)
     _tort_lookup_trace_level ++;
 
 #if TORT_ANON_SYMBOL_MTABLE
-  if ( (sel->name == tort_nil || sel->name == 0) )
+  if ( sel->name == tort_nil )
     method = _tort_m_map__get(tort_ta (tort_v) sel->mtable_method_map, mtable);
   else
 #endif
@@ -159,20 +164,25 @@ tort_lookup_decl(_tort_m_mtable__lookup)
 	    tort_object_name(method));
   
   }
+
   if ( method != tort_nil ) {
     message->method = method;
     message->mtable = mtable;
+
+    if ( TORT_LOOKUP_TRACE ) 
+      _tort_lookup_trace_level --;
   }
   else if ( (mtable = mtable->delegate) != tort_nil ) {
-    message = tort_send(tort_s(lookup), mtable, message);
+    if ( TORT_LOOKUP_TRACE ) {
+      message = tort_send(tort__s(lookup), mtable, message);
+      _tort_lookup_trace_level --;
+    } else {
+      return_tort_send(tort__s(lookup), mtable, message);
+    }
   }
   
-  if ( TORT_LOOKUP_TRACE ) 
-    _tort_lookup_trace_level --;
-
   return message;
 }
-
 
 tort_lookup_decl(_tort_lookup)
 {
@@ -204,7 +214,7 @@ tort_lookup_decl(_tort_lookup)
      (((size_t) mtable) << 2) ^
      (((size_t) sel) >> 3)
      );
-  tort_mcache_entry *mce = &mcache[i % mcache_size];
+  tort_mcache_entry *mce = &mcache[i % MCACHE_SIZE];
   if (    mce->mt  == mtable && TORT_MCACHE_STAT(++ mcache_stats.hit_mtable_n)
        && mce->sel == sel    && TORT_MCACHE_STAT(++ mcache_stats.hit_sel_n)
 #if TORT_MCACHE_USE_SYMBOL_VERSION
@@ -246,6 +256,11 @@ tort_lookup_decl(_tort_lookup)
 #if TORT_MCACHE_USE_SYMBOL_VERSION
     mce->sel_version = tort_ref(tort_symbol, mce->sel)->version;
 #endif
+
+#if TORT_GLOBAL_MCACHE_STATS
+    if ( mce->method )
+      (void) TORT_MCACHE_STAT(++ mcache_stats.collision_n);
+#endif
     mce->method = message->method;
     mce->mtable = message->mtable;
   }
@@ -256,7 +271,6 @@ tort_lookup_decl(_tort_lookup)
 
   return message;
 }
-
 
 tort_apply_decl(_tort_m_object___method_not_found) 
 {
@@ -275,15 +289,13 @@ tort_apply_decl(_tort_m_object___method_not_found)
   return tort_nil;
 }
 
-
 tort_v tort_runtime_initialize_lookup()
 {
   tort_(_m_method_not_found) = tort_method_make(_tort_m_object___method_not_found);
 
 #if TORT_GLOBAL_MCACHE && TORT_GLOBAL_MCACHE_STATS
-  if ( getenv("TORT_MCACHE_STATS") ) {
+  if ( getenv("TORT_MCACHE_STATS") )
     atexit(_tort_mcache_stats);
-  }
 #endif
   return 0;
 }
