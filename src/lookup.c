@@ -109,12 +109,18 @@ tort_v _tort_m_mtable__set_delegate(tort_tp tort_mtable *rcvr, tort_v delegate)
   return rcvr;
 }
 
+#if 1
+#define s_lookup tort__s(lookup)
+#else
+#define s_lookup tort_s(lookup)
+#endif
+
 tort_v _tort_m_mtable___method_changed(tort_tp tort_mtable *rcvr, tort_v sym, tort_v meth)
 {
 #if TORT_GLOBAL_MCACHE
   (void) TORT_MCACHE_STAT(++ mcache_stats.method_change_n);
 #if TORT_MCACHE_USE_SYMBOL_VERSION
-  if ( sym == tort__s(lookup) ) {
+  if ( sym == s_lookup ) {
     (void) TORT_MCACHE_STAT(++ mcache_stats.lookup_change_n);
     mcache_flush_all();
   } else {
@@ -174,10 +180,10 @@ tort_lookup_decl(_tort_m_mtable__lookup)
   }
   else if ( (mtable = mtable->delegate) != tort_nil ) {
     if ( TORT_LOOKUP_TRACE ) {
-      message = tort_send(tort__s(lookup), mtable, message);
+      message = tort_send(s_lookup, mtable, message);
       _tort_lookup_trace_level --;
     } else {
-      return_tort_send(tort__s(lookup), mtable, message);
+      return_tort_send(s_lookup, mtable, message);
     }
   }
   
@@ -229,10 +235,10 @@ tort_lookup_decl(_tort_lookup)
   } else {
 #endif
 
-    if ( sel == tort__s(lookup) && message->receiver == (tort_v) tort__mt(mtable) ) {
+    if ( sel == s_lookup && message->receiver == (tort_v) tort__mt(mtable) ) {
       message = _tort_m_mtable__lookup(tort_ta mtable, message);
     } else {
-      message = tort_send(tort__s(lookup), mtable, message);
+      message = tort_send(s_lookup, mtable, message);
     }
     
     if ( message->method == tort_nil ) {
