@@ -14,7 +14,7 @@
 #endif
 
 #ifndef TORT_MCACHE_USE_SYMBOL_VERSION
-#define TORT_MCACHE_USE_SYMBOL_VERSION 1 /* if true, use symbol versioning instead of flusing the entire global method caches when a new method is added. */
+#define TORT_MCACHE_USE_SYMBOL_VERSION 1 /* if true, use symbol versioning instead of flushing the entire global method caches when a new method is added. */
 #endif
 
 #ifndef TORT_ANON_SYMBOL_MTABLE
