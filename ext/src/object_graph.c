@@ -222,6 +222,7 @@ void og_object(tort_og_context *context, tort_v obj)
   const char *obj_name;
   const char *h_style = "BGCOLOR=\"#BBBBBB\"";
   const char *s_style = "BGCOLOR=\"#DDDDDD\"";
+  const char *sl_style = "color=\"#888888\"";
 
   if ( obj == tort_nil ) {
     fprintf(FP, "node [ label=\"<0> nil\" ];\n");
@@ -244,23 +245,23 @@ void og_object(tort_og_context *context, tort_v obj)
 
   obj_name = tort_object_name(obj);
 
-#define SLOT(NAME) og_slot(context, obj, #NAME, "%s", 0, o->NAME, 0, s_style, 0)
+#define SLOT(NAME) og_slot(context, obj, #NAME, "%s", 0, o->NAME, 0, s_style, sl_style)
 
-  og_slot(context, obj, "alloc_size", "%s", 0, tort_i(tort_h(obj)->alloc_size), 0, h_style, 0);
+  og_slot(context, obj, "alloc_size", "%s", 0, tort_i(tort_h(obj)->alloc_size), 0, h_style, sl_style);
   og_slot(context, obj, "mtable",     "%s", 0, mt, 0, h_style, "style=\"dotted\"");
   og_slot(context, obj, 0,            "%s", 0, obj, 0, "BGCOLOR=\"black\" COLOR=\"WHITE\"", 0);
 
   if ( 0 ) {
   } else if ( mt == tort__mt(string) ) {
-    og_slot(context, obj, "data", "%s", 0, obj, 0, s_style, 0);
+    og_slot(context, obj, "data", "%s", 0, obj, 0, s_style, sl_style);
   } else if ( mt == tort__mt(vector)  ) {
-    og_slot(context, obj, "data", "%s", 0, obj, "%p", s_style, 0);
+    og_slot(context, obj, "data", "%s", 0, obj, "%p", s_style, sl_style);
   }
 
   if ( mt == tort__mt(string) || mt == tort__mt(vector) || mt == tort__mt(map) || mt == tort__mt(mtable) ) {
-    og_slot(context, obj, "size",         "%s", 0, tort_i(tort_vector_base_size(obj)), 0, s_style, 0);
-    og_slot(context, obj, "alloc_size",   "%s", 0, tort_i(tort_vector_base_alloc_size(obj)), 0, s_style, 0);
-    og_slot(context, obj, "element_size", "%s", 0, tort_i(tort_vector_base_element_size(obj)), 0, s_style, 0);
+    og_slot(context, obj, "size",         "%s", 0, tort_i(tort_vector_base_size(obj)), 0, s_style, sl_style);
+    og_slot(context, obj, "alloc_size",   "%s", 0, tort_i(tort_vector_base_alloc_size(obj)), 0, s_style, sl_style);
+    og_slot(context, obj, "element_size", "%s", 0, tort_i(tort_vector_base_element_size(obj)), 0, s_style, sl_style);
   }
   
   if ( mt == tort__mt(symbol) ) {
