@@ -170,6 +170,9 @@ READ_DECL
   int radix = 10;
 
  try_again:
+#ifdef READ_PROLOGUE
+  READ_PROLOGUE;
+#endif
   c = eat_whitespace_peekchar(stream);
   if ( c == EOF )
     RETURN(EOS);
