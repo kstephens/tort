@@ -150,18 +150,14 @@ tort_v tort_runtime_initialize_gc()
 void tort_gc_dump_stats()
 {
   tort_v io = tort_stderr;
-
-  if ( ! _tort_gc_mode ) return;
-
   tort_flush(tort_stdout);
   tort_flush(tort_stderr);
-
-  tort_flush(io);
   tort_printf(io, "\n");
+  if ( _tort_gc_mode ) {
 #define Pf(X) tort_printf(io, "tort: gc stats: %26s = %16lu\n", #X, GC_##X())
 #define Pl(X) tort_printf(io, "tort: gc stats: %26s = %16lu\n", #X, GC_##X)
 #include "gc_stats.h"
-
+  }
 #if TORT_GC_STATS
 #define S(N) \
   tort_printf(io, "tort: gc stats: %26s = %16lu\n", #N, (unsigned long) gc_stats.N)
@@ -178,7 +174,6 @@ void tort_gc_dump_stats()
   S(finalize_n);
 #undef S
 #endif
-
   tort_flush(io);
 }
 
@@ -194,5 +189,4 @@ void tort_gc_invoke_finalizers()
   if ( ! _tort_gc_mode ) return;
   GC_invoke_finalizers();
 }
-
 
