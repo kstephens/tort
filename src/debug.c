@@ -1,6 +1,5 @@
 #include "tort/core.h"
 
-
 /********************************************************************/
 
 void tort_debug_stop_at()
@@ -8,10 +7,8 @@ void tort_debug_stop_at()
   /* NOTHING */
 }
 
-
 #define IO tort_stderr
 #define printf(fmt, args...) tort_printf(IO, fmt, ##args)
-
 
 tort_v _tort_m_object____message(tort_thread_param tort_v rcvr)
 {
@@ -19,7 +16,6 @@ tort_v _tort_m_object____message(tort_thread_param tort_v rcvr)
   // rcvr = tort_ref(tort_message, rcvr)->previous_message;
   return_tort_send(tort__s(clone), rcvr);
 }
-
 
 tort_v _tort_m_message__backtrace(tort_thread_param tort_v rcvr)
 {
@@ -46,7 +42,6 @@ tort_v _tort_m_message__backtrace(tort_thread_param tort_v rcvr)
   return v;
 }
 
-
 tort_v _tort_m_object____debugger(tort_thread_param tort_v rcvr)
 {
   tort_v bt;
@@ -66,10 +61,7 @@ tort_v _tort_m_object____debugger(tort_thread_param tort_v rcvr)
 
   return rcvr;
 }
-
-
 #undef printf
-
 
 const char *tort_mtable_name_(tort_v val)
 {
@@ -130,10 +122,20 @@ const char *tort_object_name_(tort_v val)
   else if ( val == tort_(root) ) {
     snprintf(str = buf, S, "@root");
   }
+  else if ( val == tort_stdin ) {
+    snprintf(str = buf, S, "@io(stdin)");
+  }
+  else if ( val == tort_stdout ) {
+    snprintf(str = buf, S, "@io(stdout)");
+  }
+  else if ( val == tort_stderr ) {
+    snprintf(str = buf, S, "@io(stderr)");
+  }
 #define tort_d_mt(N) else if ( val == tort__mt(N) ) { snprintf(str = buf, S, "@mtable(%s)", #N); }
 #include "tort/d_mt.h"
 #define tort_d_mt(N) else if ( tort_h_mtable(val) == tort__mt(N) ) { snprintf(str = buf, S, "@%s(@%p)", #N, (void*) val); }
 #include "tort/d_mt.h"
+  else if ( tort_h_mtable(val) == tort__mt(mtable) ) { snprintf(str = buf, S, "@mtable(%p)", (void*) val); }
   else {
     return 0;
   }
@@ -177,19 +179,14 @@ const char *tort_object_name(tort_v val)
   }
   return str;
 }
-
-
 #undef S
-
 
 tort_v _tort_m_object___name(tort_thread_param tort_v rcvr)
 {
   return tort_string_new_cstr(tort_object_name(rcvr));
 }
 
-
 /********************************************************************/
-
 
 tort_v tort_runtime_initialize_debug()
 {

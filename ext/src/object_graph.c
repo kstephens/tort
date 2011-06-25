@@ -10,20 +10,22 @@ typedef struct tort_og_context
 
   struct slot {
     tort_v obj;
-    const char *name;
+    tort_v name;
     const char *name_format;
+    const char *sep;
     tort_v value;
     const char *format;
     const char *style;
     const char *link_style;
+    int port;
     struct slot *next;
   } *slots, **slots_next;
 
   struct link {
     tort_v src_obj;
-    const char *src_slot;
+    int src_port;
     tort_v dst_obj;
-    const char *dst_slot;
+    int dst_port;
     const char *style;
     int edge_id;
     struct link *next;
@@ -54,18 +56,20 @@ static int visitedQ(tort_og_context *context, void *ptr)
 static void visited(tort_og_context *context, void *ptr)
 {
   struct visited *v = malloc(sizeof(*v));
+  memset(v, 0, sizeof(*v));
   v->ptr = ptr;
   v->next = context->visited;
   context->visited = v;
 }
 
-static void link(tort_og_context *context, tort_v src_obj, const char *src_slot, tort_v dst_obj, const char *dst_slot, const char *style)
+static void link(tort_og_context *context, tort_v src_obj, int src_port, tort_v dst_obj, int dst_port, const char *style)
 {
   struct link *link = malloc(sizeof(*link));
+  memset(link, 0, sizeof(*link));
   link->src_obj = src_obj;
-  link->src_slot = src_slot;
+  link->src_port = src_port;
   link->dst_obj = dst_obj;
-  link->dst_slot = dst_slot;
+  link->dst_port = dst_port;
   link->style = style;
   link->edge_id = EDGEID ++;
   link->next = 0;
@@ -75,48 +79,57 @@ static void link(tort_og_context *context, tort_v src_obj, const char *src_slot,
 
 static char *sgml_encode(const char *s)
 {
-  size_t size = strlen(s) * 6 + 1;
-  char *t = malloc(size); // "&amp;" "&#255;"
-  char *o = t;
-  int c;
-
-  memset(t, 0, size);
-  while ( (c = *(s ++)) ) {
-    /**/ if ( c == '&' ) strcpy(o, "&amp;");
-    else if ( c == '<' ) strcpy(o, "&lt;");
-    else if ( c == '>' ) strcpy(o, "&gt;");
-    else if ( c == '"' ) strcpy(o, "&quot;");
-    else if ( c < ' ' || *s >= 127 ) sprintf(o, "&#%d;", c);
-    else *(o ++) = c;
-    o = strchr(o, 0);
+  if ( s ) {
+    size_t size = strlen(s) * 6 + 1;
+    char *t = malloc(size); // "&amp;" "&#255;"
+    char *o = t;
+    int c;
+    
+    memset(t, 0, size);
+    while ( (c = *(s ++)) ) {
+      /**/ if ( c == '&' ) strcpy(o, "&amp;");
+      else if ( c == '<' ) strcpy(o, "&lt;");
+      else if ( c == '>' ) strcpy(o, "&gt;");
+      else if ( c == '"' ) strcpy(o, "&quot;");
+      else if ( c < ' ' || *s >= 127 ) sprintf(o, "&#%d;", c);
+      else *(o ++) = c;
+      o = strchr(o, 0);
+    }
+    *o = 0;
+    
+    return t;
+  } else {
+    return (char*) s;
   }
-  *o = 0;
-
-  return t;
 }
 
-static const char *slot_str(tort_og_context *context, struct slot *slot, tort_v val, const char *port)
+static char *slot_str(tort_og_context *context, struct slot *slot, tort_v val, int port)
 {
   tort_mtable *mt = tort_h_mtable(val);
   char buf[128], *e = buf + sizeof(buf) - 2;
   memset(buf, 0, sizeof(buf));
 
-  if ( ! port ) port = slot->name;
+  if ( ! port ) port = slot->port;
   if ( 0 ) {
   } else if ( val == tort_nil ) {
-    return "nil";
+    strcpy(buf, "nil");
   } else if ( val == 0 ) {
-    return "NULL";
+    strcpy(buf, "NULL");
   } else if ( mt == tort__mt(tagged) ) {
     snprintf(buf, sizeof(buf), "%lld", (long long) tort_I(val));
   } else if ( mt == tort__mt(string) ) {
     snprintf(buf, sizeof(buf), "\"%s\"", tort_string_charP(val));
   } else if ( mt == tort__mt(symbol) ) {
-    snprintf(buf, sizeof(buf), "%s", tort_symbol_charP(val));
+    tort_symbol *obj = val;
+    if ( obj->name == tort_nil ) {
+      snprintf(buf, sizeof(buf), "@symbol(%p)", val);
+    } else {
+      snprintf(buf, sizeof(buf), "%s", tort_symbol_charP(val));
+    }
   } else {
     if ( port && tort_h_mtable(val) != tort__mt(method) ) 
       link(context, slot->obj, port, val, 0, slot->link_style);
-    snprintf(buf, sizeof(buf), "%s", tort_object_name_(val));
+    snprintf(buf, sizeof(buf), "%s", tort_object_name(val));
   }
   if ( e[0] != 0 ) {
     e[0] = e[-1] = e[-2] = '.';
@@ -128,51 +141,41 @@ static
 void og_slot_to_dot(tort_og_context *context, struct slot *slot)
 {
   tort_v val = slot->value;
-  tort_mtable *mt = tort_h_mtable(val);
+  // tort_mtable *mt = tort_h_mtable(val);
   const char *style = slot->style ? slot->style : "";
 
   fprintf(FP, "  <TR>");
-  if ( 0 ) {
-  } else if ( mt == tort__mt(pair) ) {
-    tort_pair *o = val;
-    char _port_first[128], _port_second[128];
-    char *port_first, *port_second;
-   
-    ++ context->port_id;
-    snprintf(_port_first,  sizeof(_port_first),  "%u_first",  context->port_id);
-    snprintf(_port_second, sizeof(_port_second), "%u_second", context->port_id);
-
-    port_first = strdup(_port_first);
-    port_second = strdup(_port_second);
-
-    fprintf(FP, "<TD %s ALIGN=\"RIGHT\" PORT=\"%s\">%s =</TD><TD %s ALIGN=\"LEFT\" PORT=\"%s\">%s</TD>",
-	    style, port_first,
-	    slot_str(context, slot, o->first, port_first),
-	    style, port_second,
-	    slot_str(context, slot, o->second, port_second));
+  if ( slot->name == 0 ) {
+    fprintf(FP, "<TD BGCOLOR=\"black\" ALIGN=\"LEFT\" PORT=\"-1\">");
   } else {
-    if ( slot->name == 0 ) {
-      fprintf(FP, "<TD PORT=\"0\" BGCOLOR=\"black\"></TD>");
-      fprintf(FP, "<TD ALIGN=\"LEFT\">");
+    fprintf(FP, "<TD %s ALIGN=\"RIGHT\">", style);
+    if ( slot->name_format ) {
+      fprintf(FP, slot->name_format, slot->name);
     } else {
       //fprintf(stderr, "slot %p slot->name %p\n", slot, slot->name);
-      char *slot_ = sgml_encode(slot->name);
-      fprintf(FP, "<TD ALIGN=\"RIGHT\">");
-      fprintf(FP, slot->name_format ? slot->name_format : "%s", slot_);
-      fprintf(FP, "</TD>");
-      fprintf(FP, "<TD ALIGN=\"LEFT\" PORT=\"%s\">", slot_);
-      free(slot_);
-    }
-    // fprintf(stderr, "slot %p slot->format %s\n", slot, slot->format);
-    if ( slot->format ) {
-      fprintf(FP, slot->format, val);
-    } else {
-      const char *str = slot_str(context, slot, val, 0);
-      // fprintf(stderr, "slot %p slot_str %s\n", slot, str);
+      char *str = slot_str(context, slot, slot->name, 0);
       fprintf(FP, "%s", str);
+      free(str);
     }
-    fprintf(FP, "</TD>");
+    slot->port = ++ context->port_id;
   }
+  fprintf(FP, "%s</TD>", slot->sep ? slot->sep : "");
+
+  if ( slot->port ) {
+    fprintf(FP, "<TD ALIGN=\"LEFT\" PORT=\"%d\">", slot->port);
+  } else {
+    fprintf(FP, "<TD ALIGN=\"LEFT\">");
+  }
+  // fprintf(stderr, "slot %p slot->format %s\n", slot, slot->format);
+  if ( slot->format ) {
+    fprintf(FP, slot->format, val);
+  } else {
+    char *str = slot_str(context, slot, val, 0);
+    // fprintf(stderr, "slot %p slot_str %s\n", slot, str);
+    fprintf(FP, "%s", str);
+    free(str);
+  }
+  fprintf(FP, "</TD>");
   fprintf(FP, "</TR>\n");
 }
 
@@ -183,16 +186,20 @@ static void gdb_stop_here() { }
 
 static
 void og_slot(tort_og_context *context, 
-	     tort_v obj, const char *name, const char *name_format, 
+	     tort_v obj, 
+	     tort_v name, const char *name_format, 
+	     const char *sep,
 	     tort_v value, const char *format, 
 	     const char *style,
 	     const char *link_style)
 {
   struct slot *slot = malloc(sizeof(*slot));
+  memset(slot, 0, sizeof(*slot));
   assert(context);
   slot->obj = obj;
   slot->name = name;
   slot->name_format = name_format;
+  slot->sep = sep;
   slot->value = value;
   slot->format = format;
   slot->style = style;
@@ -211,8 +218,10 @@ static
 void og_object(tort_og_context *context, tort_v obj)
 {
   tort_mtable *mt = tort_h_mtable(obj);
-  // tort_mtable *cls_mt = tort_h_mtable(mt);
+  tort_mtable *cls_mt = tort_h_mtable(mt);
   const char *obj_name;
+  const char *h_style = "BGCOLOR=\"#BBBBBB\"";
+  const char *s_style = "BGCOLOR=\"#DDDDDD\"";
 
   if ( obj == tort_nil ) {
     fprintf(FP, "node [ label=\"<0> nil\" ];\n");
@@ -235,23 +244,23 @@ void og_object(tort_og_context *context, tort_v obj)
 
   obj_name = tort_object_name(obj);
 
-#define SLOT(NAME) og_slot(context, obj, #NAME, 0, o->NAME, 0, 0, 0)
+#define SLOT(NAME) og_slot(context, obj, #NAME, "%s", 0, o->NAME, 0, s_style, 0)
 
-  og_slot(context, obj, "alloc_size", 0, tort_i(tort_h(obj)->alloc_size), 0, 0, 0);
-  og_slot(context, obj, "mtable",     0, mt, 0, 0, "style=\"dotted\"");
-  og_slot(context, obj, 0,            0, obj, 0, "BGCOLOR=\"black\" COLOR=\"WHITE\"", 0);
+  og_slot(context, obj, "alloc_size", "%s", 0, tort_i(tort_h(obj)->alloc_size), 0, h_style, 0);
+  og_slot(context, obj, "mtable",     "%s", 0, mt, 0, h_style, "style=\"dotted\"");
+  og_slot(context, obj, 0,            "%s", 0, obj, 0, "BGCOLOR=\"black\" COLOR=\"WHITE\"", 0);
 
   if ( 0 ) {
   } else if ( mt == tort__mt(string) ) {
-    og_slot(context, obj, "data", 0, obj, 0, 0, 0);
+    og_slot(context, obj, "data", "%s", 0, obj, 0, s_style, 0);
   } else if ( mt == tort__mt(vector)  ) {
-    og_slot(context, obj, "data", 0, obj, "%p", 0, 0);
+    og_slot(context, obj, "data", "%s", 0, obj, "%p", s_style, 0);
   }
 
-  if ( mt == tort__mt(string) || mt == tort__mt(vector) || mt == tort_mt(map) || mt == tort_mt(mtable) ) {
-    og_slot(context, obj, "size",         0, tort_i(tort_vector_base_size(obj)), 0, 0, 0);
-    og_slot(context, obj, "alloc_size",   0, tort_i(tort_vector_base_alloc_size(obj)), 0, 0, 0);
-    og_slot(context, obj, "element_size", 0, tort_i(tort_vector_base_element_size(obj)), 0, 0, 0);
+  if ( mt == tort__mt(string) || mt == tort__mt(vector) || mt == tort__mt(map) || mt == tort__mt(mtable) ) {
+    og_slot(context, obj, "size",         "%s", 0, tort_i(tort_vector_base_size(obj)), 0, s_style, 0);
+    og_slot(context, obj, "alloc_size",   "%s", 0, tort_i(tort_vector_base_alloc_size(obj)), 0, s_style, 0);
+    og_slot(context, obj, "element_size", "%s", 0, tort_i(tort_vector_base_element_size(obj)), 0, s_style, 0);
   }
   
   if ( mt == tort__mt(symbol) ) {
@@ -270,39 +279,28 @@ void og_object(tort_og_context *context, tort_v obj)
     SLOT(fiber);
     SLOT(method);
     SLOT(mtable);
-    og_slot(context, obj, "argc", 0, tort_i(o->argc), "%ld", 0, 0);
+    og_slot(context, obj, "argc", "%s", 0, tort_i(o->argc), "%ld", 0, 0);
   }
   else if ( mt == tort__mt(method) ) {
     tort_method *o = obj;
-    og_slot(context, obj, "applyf", 0, o->applyf, "%p", 0, 0);
-    og_slot(context, obj, "data",   0, o->data, "%p", 0, 0);
-    og_slot(context, obj, "name",   0, o->name, 0, 0, 0);
+    og_slot(context, obj, "applyf", "%s", 0, o->applyf, "%p", 0, 0);
+    og_slot(context, obj, "data",   "%s", 0, o->data, "%p", 0, 0);
+    og_slot(context, obj, "name",   "%s", 0, o->name, 0, 0, 0);
   }
-  else if ( mt == tort__mt(mtable) ) {
+  else if ( mt == tort__mt(mtable) || cls_mt == tort__mt(mtable) ) {
     tort_mtable *o = obj;
-    int slot_i = -1;
     // fprintf(stderr, "mtable %s\n", tort_object_name(obj));
     SLOT(delegate);
-    tort_map_EACH(obj, me) {
-      slot_i ++;
-      // fprintf(stderr, "  slot %d me=%p mt(%p) = %s\n", slot_i, me, me->first, tort_object_name(tort_h_mtable(me->first)));
-      if ( tort_h_mtable(me->first) != tort__mt(symbol) ) {
-	fprintf(stderr, "  obj=%p slot=%d : UNEXPECTED NON-SYMBOL key %s in mtable\n", 
-		obj, 
-		slot_i, 
-		tort_object_name(me->first)
-		);
-	og_slot(context, obj, tort_object_name(me->first), "%s =", me->second, 0, 0, 0);
-      } else 
-	og_slot(context, obj, tort_object_name(me->first), 0, me, 0, 0, 0);
-    } tort_map_EACH_END();
+    goto map;
   }
   else if ( mt == tort__mt(map) ) {
-    int slot_i = -1;
+    int slot_i;
+  map: 
+    slot_i = -1;
     tort_map_EACH(obj, me) { 
       ++ slot_i;
       // fprintf(stderr, "  slot %d me=%p mt(%p) = %s\n", ++ slot_i, me, me->first, tort_object_name(tort_h_mtable(me->first)));
-      og_slot(context, obj, tort_object_name(me->first), "%s =", me->second, 0, 0, 0);
+      og_slot(context, obj, me->first, 0, " =", me->second, 0, 0, 0);
     } tort_map_EACH_END();
   }
 
@@ -344,13 +342,13 @@ void og_object(tort_og_context *context, tort_v obj)
     while ( link ) {
       struct link *link_next = link->next;
       fprintf(FP, "\
-\"node%p\":\"%s\":e -> \"node%p\":\"%s\":w [ \n\
+\"node%p\":\"%d\":e -> \"node%p\":\"%d\":w [ \n\
   id = %d \n\
   %s \n\
 ]; \n\
 ",
-	      link->src_obj, link->src_slot,
-	      link->dst_obj, link->dst_slot ? link->dst_slot : "0",
+	      link->src_obj, link->src_port,
+	      link->dst_obj, link->dst_port ? link->dst_port : -1,
 	      link->edge_id,
 	      (link->style ? link->style : ""));
       link = link_next;
