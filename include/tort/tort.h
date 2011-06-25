@@ -243,6 +243,7 @@ struct tort_runtime { tort_H;
 
   /* globals */
   tort_v m_mtable; /* map of symbol to mtable. */
+  tort_v dl_maps;  /* map of loaded dynamic library filenames to maps of DL symbols. */
 
   tort_v _initialized;
 } tort_runtime;

@@ -56,6 +56,8 @@ tort_v _tort_m_string___dlopen(tort_tp tort_string *rcvr)
     st = tort_map_create();
     tort_send(tort_s(_load_symtab), st, file, base_ptr);
     
+    tort_send(tort_s(set), tort_(dl_maps), tort_symbol_make(file), st);
+
     tort_send(tort_s(_run_initializers), st);
     tort_send(tort_s(_load_methods), st);
 
@@ -150,6 +152,9 @@ tort_v tort_runtime_initialize_dl()
   /* Required here for bootstrapping. */
   tort_add_method(tort_mt(map), "_run_initializers", tort_m_map___run_initializers);
   tort_add_method(tort_mt(map), "_load_methods", tort_m_map___load_methods);
+  tort_(dl_maps) = tort_map_create();
+  tort_send(tort__s(set), tort_(root), tort_s(dl_maps), tort_(dl_maps));
+
   return 0;
 }
 
