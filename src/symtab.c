@@ -77,8 +77,12 @@ tort_v _tort_m_map___load_symtab(tort_thread_param tort_v st, const char *file, 
 #endif
 	tort_v t_name = tort_symbol_make(c_name);
 	tort_v t_addr = tort_i((size_t) c_addr);
-	tort_send(tort__s(set), st, t_name, t_addr);
-	tort_send(tort__s(set), st, t_addr, t_name);
+	if ( c_addr == (void*) tort_I(t_addr) ) {
+	  tort_send(tort__s(set), st, t_name, t_addr);
+	  tort_send(tort__s(set), st, t_addr, t_name);
+	} else {
+	  fprintf(stderr, "cannot store %s->%p pointer in integer", c_name, c_addr);
+	}
       }
 #if 0
       fprintf(stderr, " c_tokens = %d\n", c_tokens);
