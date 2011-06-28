@@ -16,7 +16,7 @@ int main(int argc, char **argv, char **environ)
 
   {
     extern void tog(tort_v);
-    tog(_tort->_mt_object);
+    tog(_tort->root);
   }
   tort_printf(io, "\n\nDONE\n");
 

@@ -258,7 +258,7 @@ void og_object(tort_og_context *context, tort_v obj)
     og_slot(context, obj, "data", "%s", 0, obj, "%p", s_style, sl_style);
   }
 
-  if ( mt == tort__mt(string) || mt == tort__mt(vector) || mt == tort__mt(map) || mt == tort__mt(mtable) ) {
+  if ( mt == tort__mt(string) || mt == tort__mt(vector) || mt == tort__mt(map) || mt == tort__mt(mtable) || cls_mt == tort__mt(mtable) ) {
     og_slot(context, obj, "size",         "%s", 0, tort_i(tort_vector_base_size(obj)), 0, s_style, sl_style);
     og_slot(context, obj, "alloc_size",   "%s", 0, tort_i(tort_vector_base_alloc_size(obj)), 0, s_style, sl_style);
     og_slot(context, obj, "element_size", "%s", 0, tort_i(tort_vector_base_element_size(obj)), 0, s_style, sl_style);
