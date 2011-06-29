@@ -13,19 +13,19 @@ tort_v _tort_m_object__not (tort_tp tort_v rcvr)
 
 tort_v _tort_m_object___mtable (tort_thread_param tort_v rcvr)
 {
-  return tort_h_ref(rcvr)->mtable;
+  return tort_h(rcvr)->mtable;
 }
 
 tort_v _tort_m_object___alloc_size (tort_thread_param tort_v rcvr)
 {
-  return tort_i(tort_h_ref(rcvr)->alloc_size);
+  return tort_i(tort_h(rcvr)->alloc_size);
 }
 
 tort_v _tort_m_object__clone (tort_thread_param tort_v rcvr)
 {
-  size_t alloc_size = sizeof(tort_header) + tort_h_ref(rcvr)->alloc_size;
+  size_t alloc_size = sizeof(tort_header) + tort_h(rcvr)->alloc_size;
   void *ptr = tort_malloc(alloc_size);
-  memcpy(ptr, tort_h_ref(rcvr), alloc_size);
+  memcpy(ptr, tort_h(rcvr), alloc_size);
   ptr += sizeof(tort_header);
   return ptr;
 }
