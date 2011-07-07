@@ -17,7 +17,7 @@ static char *isn_to_name[isn__END + 1];
 static 
 void run(word_t **pc_p, word_t **sp_p);
 
-#define DEBUG 0
+#define DEBUG 1
 
 #if DEBUG
 #define TRACE(NAME)  fprintf(stderr, "  %p: pc=%p sp=%p %s \t (in %s)\n", pc_p, pc - 1, sp, #NAME, __FUNCTION__)
@@ -42,6 +42,10 @@ void run_compiled(word_t **pc_p, word_t **sp_p)
   }
   pc = *pc_p;
   sp = *sp_p;
+
+#if DEBUG
+  printf("%s(%p => %p, %p => %p)\n", __FUNCTION__, pc_p, pc, sp_p, sp);
+#endif
 
 #define push(X) *(-- sp) = (word_t) (X)
 #define pop() *(sp ++)
@@ -68,7 +72,7 @@ void run(word_t **pc_p, word_t **sp_p)
   word_t *isn_p;
 
 #if DEBUG
-  printf("run(%p => %p, %p => %p)\n", pc_p, pc, sp_p, sp);
+  printf("%s(%p => %p, %p => %p)\n", __FUNCTION__, pc_p, pc, sp_p, sp);
 #endif
 
  next_isn:
@@ -78,11 +82,20 @@ void run(word_t **pc_p, word_t **sp_p)
   case isn__PREAMBLE:
     TRACE(_PREAMBLE);
     *isn_p = (word_t) isn__PREAMBLE_;
+    if ( *pc_p != pc ) {
+      fprintf(stderr, "    rewrite %p => %p\n", *pc_p, pc);
+    }
+    *pc_p = pc;
+    *sp_p = sp;
     goto next_isn;
 
   case isn__PREAMBLE_:
     TRACE(_PREAMBLE_);
+    if ( *pc_p != pc ) {
+      fprintf(stderr, "    rewrite %p => %p\n", *pc_p, pc);
+    }
     *pc_p = pc;
+    *sp_p = sp;
     return run_compiled(pc_p, sp_p);
 
 #define ISN(name, narg, body)			\
@@ -110,7 +123,7 @@ int main(int argc, char **argv)
   static word_t stack[16];
   static word_t *top = stack + 16;
 
-  word_t add_3_print[] = {
+  static word_t add_3_print[] = {
     isn__PREAMBLE,
     isn_LIT, 3,
     isn_ADD,
@@ -118,11 +131,10 @@ int main(int argc, char **argv)
     isn_RTN,
     0
   };
-  word_t program[] = {
+  static word_t program[] = {
     isn__PREAMBLE,
     isn_LIT, 2,
-    isn_CALL_, add_3_print,
-    isn_RTN,
+    isn_CALL_TAIL_, add_3_print,
     0
   };
   word_t *pc = program;
@@ -132,7 +144,7 @@ int main(int argc, char **argv)
 
   run(&pc, &top);
   run(&pc, &top);
-  run(&pc, &top);
+  run_compiled(&pc, &top);
 
   return 0;
 }

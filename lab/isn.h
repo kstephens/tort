@@ -20,10 +20,21 @@ ISN(CALL_, 1,
     run((word_t**) &pc[-1], &sp)
     )
 
+ISN(CALL_TAIL_, 1,
+    pc_p = (word_t**) &pc[-1];
+    pc = *pc_p
+    )
+
 ISN(CALL, 0,
     {
       pc = pop();
       run(&pc, &sp);
+    })
+
+ISN(CALL_TAIL, 0,
+    {
+      pc_p = 0;
+      pc = pop();
     })
 
 ISN(RTN, 0, 
