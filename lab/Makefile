@@ -18,8 +18,8 @@ piumarta-$(TAK_C_CALL) : piumarta.c Makefile
 	gcc -g $(CFLAGS) piumarta.c -o $@
 
 threadcomp : threadcomp.c isn.h
-	gcc -g -O3 threadcomp.c -o $@
+	gcc -O3 -g threadcomp.c -o $@
 
-threadcomp.s : threadcomp.c
+threadcomp.s : threadcomp.c isn.h
 	gcc -O3 -S threadcomp.c -o $@
 

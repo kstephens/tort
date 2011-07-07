@@ -3,7 +3,7 @@
 typedef enum isn_t {
   isn__BEGIN,
   isn__PREAMBLE,
-  isn__PREAMBLE_COMPILED,
+  isn__PREAMBLE_,
 #define ISN(name, narg, body) isn_##name,
 #include "isn.h"
   isn__END
@@ -11,23 +11,40 @@ typedef enum isn_t {
 
 typedef void *word_t;
 
-static
-void *isn_to_addr[isn__END + 1];
+static void *isn_to_addr[isn__END + 1];
+static char *isn_to_name[isn__END + 1];
 
-static word_t stack[16];
-static word_t *top = stack + 16;
+static 
+void run(word_t **pc_p, word_t **sp_p);
+
+#define DEBUG 0
+
+#if DEBUG
+#define TRACE(NAME)  fprintf(stderr, "  %p: pc=%p sp=%p %s \t (in %s)\n", pc_p, pc - 1, sp, #NAME, __FUNCTION__)
+#define TRACE_JMP(X) fprintf(stderr, "  %p: pc <= %p\n", pc_p, X)
+#else
+#define TRACE(NAME)
+#define TRACE_JMP(X)
+#endif
 
 static
-void run_compiled(word_t *pc)
+void run_compiled(word_t **pc_p, word_t **sp_p)
 {
-  if ( pc == 0 ) {
-#define ISN(name, narg, body) isn_to_addr[isn_##name] = &&isn_addr_##name;
+  word_t *pc;
+  word_t *sp;
+
+  if ( pc_p == 0 ) {
+#define ISN(name, narg, body) \
+    isn_to_addr[isn_##name] = &&isn_addr_##name; \
+    isn_to_name[isn_##name] = #name;
 #include "isn.h"
     return;
   }
+  pc = *pc_p;
+  sp = *sp_p;
 
-#define push(X) *(-- top) = (word_t) (X)
-#define pop() *(top ++)
+#define push(X) *(-- sp) = (word_t) (X)
+#define pop() *(sp ++)
 
 #define args_0() (void) 0
 #define args_1() word_t arg0 = *(pc ++)
@@ -35,7 +52,7 @@ void run_compiled(word_t *pc)
   goto * *(pc ++);
 
 #define ISN(name, narg, body) \
-  isn_addr_##name: {	      \
+  isn_addr_##name: TRACE(name); {		\
     args_##narg();	      \
     body;		      \
     goto * *(pc ++);	      \
@@ -44,22 +61,32 @@ void run_compiled(word_t *pc)
 }
 
 static 
-void run(word_t **pc_p)
+void run(word_t **pc_p, word_t **sp_p)
 {
-  word_t *isn_p;
   word_t *pc = *pc_p;
+  word_t *sp = *sp_p;
+  word_t *isn_p;
+
+#if DEBUG
+  printf("run(%p => %p, %p => %p)\n", pc_p, pc, sp_p, sp);
+#endif
 
  next_isn:
-  switch ( (isn_t) *(isn_p = pc ++) ) {
+  if ( *(isn_p = pc ++) >= (word_t) isn__END )
+    goto jmp_compiled;
+  switch ( (isn_t) *isn_p ) {
   case isn__PREAMBLE:
-    *isn_p = (word_t) isn__PREAMBLE_COMPILED;
+    TRACE(_PREAMBLE);
+    *isn_p = (word_t) isn__PREAMBLE_;
     goto next_isn;
 
-  case isn__PREAMBLE_COMPILED:
-    return run_compiled(*pc_p = pc);
+  case isn__PREAMBLE_:
+    TRACE(_PREAMBLE_);
+    *pc_p = pc;
+    return run_compiled(pc_p, sp_p);
 
 #define ISN(name, narg, body)			\
-    case isn_##name:				\
+    case isn_##name: TRACE(name);		\
       *isn_p = isn_to_addr[isn_##name]; {	\
       args_##narg();				\
       body;					\
@@ -67,26 +94,45 @@ void run(word_t **pc_p)
     }
 #include "isn.h"
   default:
-    goto * *isn_p;
+  jmp_compiled:
+    -- pc;
+    *sp_p = sp;
+#if DEBUG
+    fprintf(stderr, "  jmp_compiled for isn %p: %p, %p\n", *pc, pc, sp);
+#endif
+    run_compiled(&pc, sp_p);
+    return;
   }
 }
 
 int main(int argc, char **argv)
 {
-  word_t program[] = {
+  static word_t stack[16];
+  static word_t *top = stack + 16;
+
+  word_t add_3_print[] = {
     isn__PREAMBLE,
-    isn_LIT, 2,
     isn_LIT, 3,
     isn_ADD,
     isn_PRINT,
     isn_RTN,
     0
   };
+  word_t program[] = {
+    isn__PREAMBLE,
+    isn_LIT, 2,
+    isn_CALL_, add_3_print,
+    isn_RTN,
+    0
+  };
   word_t *pc = program;
 
-  run_compiled(0);
-  run(&pc);
-  run(&pc);
+  /* INIT */
+  run_compiled(0, 0);
+
+  run(&pc, &top);
+  run(&pc, &top);
+  run(&pc, &top);
 
   return 0;
 }
