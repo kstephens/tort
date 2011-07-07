@@ -16,3 +16,10 @@ piumarta-$(TAK_C_CALL)-run : piumarta-$(TAK_C_CALL)
 piumarta-$(TAK_C_CALL) : piumarta.c Makefile
 	gcc -E $(CFLAGS) piumarta.c > piumarta-$(TAK_C_CALL).i
 	gcc -g $(CFLAGS) piumarta.c -o $@
+
+threadcomp : threadcomp.c isn.h
+	gcc -g -O3 threadcomp.c -o $@
+
+threadcomp.s : threadcomp.c
+	gcc -O3 -S threadcomp.c -o $@
+
