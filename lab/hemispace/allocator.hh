@@ -4,6 +4,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <iostream>
+#include <sys/mman.h> /* mmap(), munmap() */
 
 namespace hemispace {
   class ref_;
@@ -42,11 +43,8 @@ namespace hemispace {
 
   class Space {
   public:
-    void *alloc_;
-    void *base_;
-    void *end_;
-    size_t size_;
-    size_t object_n_;
+    void *alloc_, *base_, *end_;
+    size_t size_, object_n_;
 
     Space(size_t size)
     {
@@ -56,6 +54,7 @@ namespace hemispace {
     {
       unmap();
     }
+
     size_t align_size(size_t size)
     {
 #ifndef PAGESIZE
@@ -64,26 +63,74 @@ namespace hemispace {
       return (size + PAGESIZE - 1) & ~(PAGESIZE - 1);
     }
 
+    size_t allocated_size() const {
+      return (char*) alloc_ - (char*) base_;
+    }
+
     void map(size_t size)
     {
       size_ = align_size(size);
-      alloc_ = base_ = malloc(size_);
+      alloc_ = base_ = mmap((void*) 0, 
+			    size_, 
+			    PROT_READ | PROT_WRITE,
+			    MAP_ANON | MAP_PRIVATE,
+			    -1, (off_t) 0);
       end_ = (char*) base_ + size_;
       object_n_ = 0;
     }
+
     void unmap()
     {
-      free(base_);
-      base_ = end_ = 0;
-      size_ = 0;
-      object_n_ = 0;
+      if ( base_)
+	munmap(base_, size_);
+      alloc_ = base_ = end_ = 0;
+      size_ = object_n_ = 0;
     }
+
+    void shrink(size_t size)
+    {
+      size_t new_size = align_size(size);
+      assert((char*) base_ + new_size <= end_);
+      if ( new_size < size_ ) {
+	fprintf(stderr, "  shrinking [ %p, %p ) to [ %p, %p ) [%lu]\n",
+		base_, end_, base_, (char*) base_ + new_size,
+		(unsigned long) new_size);
+	munmap((char*) base_ + new_size, size_ - new_size);
+	size_ = new_size;
+	end_ = (char*) base_ + size_;
+      }
+    }
+
     void remap(size_t size)
     {
-      size_ = align_size(size);
-      alloc_ = base_ = base_ ? 
-	realloc(base_, size_) :
-	malloc(size_);
+      size_t new_size = align_size(size);
+      if ( base_ ) {
+	if ( new_size < size_ ) {
+	  munmap((char*) base_ + new_size, size_ - new_size);
+	} else {	  
+	  munmap(base_, size_);
+	  base_ = mmap((void*) 0, 
+		       new_size, 
+		       PROT_READ | PROT_WRITE,
+		       MAP_ANON | MAP_PRIVATE,
+		       -1, (off_t) 0);
+ 	}
+      } else {
+	base_ = mmap((void*) 0, 
+		     new_size, 
+		     PROT_READ | PROT_WRITE,
+		     MAP_ANON | MAP_PRIVATE,
+		     -1, (off_t) 0);
+      }
+
+      fprintf(stderr, "  remap [ %p, %p ) [%lu]\n",
+	      base_, (char*) base_ + new_size,
+	      (unsigned long) new_size);
+
+      size_ = new_size;
+      alloc_ = base_;
+      if ( ! base_ )
+	size_ = 0;
       end_ = (char*) base_ + size_;
       object_n_ = 0;
     }
@@ -114,22 +161,25 @@ namespace hemispace {
     Space *from_, *to_;
     void (*roots_)();
 
-    Allocator() : from_(0), to_(0)
-    {
-    }
+    Allocator() : from_(0), to_(0) { }
 
     void collect(size_t needed_size)
     {
       size_t new_size = from_->size_;
+      new_size += from_->size_ * 0.10 + needed_size;
 
-      fprintf(stderr, "  collect() : new_size = %ld\n", (unsigned long) new_size);
-      fprintf(stderr, "  collect() : from [ @%p, @%p )\n",
+      fprintf(stderr, "  collect() : before: object_n_ = %ld\n", (unsigned long) from_->object_n_);
+      fprintf(stderr, "  collect() : before: new_size = %ld\n", (unsigned long) new_size);
+      fprintf(stderr, "  collect() : before: from [ @%p, @%p )\n",
 	      from_->base_, from_->alloc_);
 
-      // new_size += from_->size_ * 0.10 + needed_size;
       to_->remap(new_size);
 
       roots_();
+
+      if ( to_->allocated_size() < from_->size_ / 2 ) {
+	to_->shrink(from_->size_ / 2);
+      }
 
       from_->unmap();
 
@@ -139,7 +189,8 @@ namespace hemispace {
 	from_ = t;
       }
 
-      fprintf(stderr, "  collect() : object_n_ = %ld\n", (unsigned long) from_->object_n_);
+      fprintf(stderr, "  collect() : after: object_n_ = %ld\n", (unsigned long) from_->object_n_);
+      fprintf(stderr, "  collect(): DONE\n\n");
     }
 
     void init()
@@ -172,7 +223,7 @@ namespace hemispace {
       if ( from_->containsQ(r->ptr()) ) {
 	void *to_ptr;
 
-	/* If there is a forwarding pointer at r in "from" Space to "to" space, */
+	/* If there is a forwarding pointer in "from" Space to "to" Space, */
 	if ( to_ptr = forwarding_to(r) ) {
 	  fprintf(stderr, "      from %p forward to %p\n", r->ptr(), to_ptr);
 	  /* Redirect ref to "to" Space. */
