@@ -165,24 +165,31 @@ namespace hemispace {
 
     void collect(size_t needed_size)
     {
+      // Calculate new "to" space size.
       size_t new_size = from_->size_;
       new_size += from_->size_ * 0.10 + needed_size;
 
+      fprintf(stderr, "\n  collect() : BEGIN\n");
       fprintf(stderr, "  collect() : before: object_n_ = %ld\n", (unsigned long) from_->object_n_);
       fprintf(stderr, "  collect() : before: new_size = %ld\n", (unsigned long) new_size);
       fprintf(stderr, "  collect() : before: from [ @%p, @%p )\n",
 	      from_->base_, from_->alloc_);
 
+      // Resize "to" Space.
       to_->remap(new_size);
 
+      // Scan roots.
       roots_();
 
+      // If "to" Space is much smaller, shrink it now.
       if ( to_->allocated_size() < from_->size_ / 2 ) {
 	to_->shrink(from_->size_ / 2);
       }
 
+      // Free old "from" Space.
       from_->unmap();
 
+      // Flip "from" and "to".
       {
 	Space *t = to_;
 	to_ = from_;
@@ -190,7 +197,7 @@ namespace hemispace {
       }
 
       fprintf(stderr, "  collect() : after: object_n_ = %ld\n", (unsigned long) from_->object_n_);
-      fprintf(stderr, "  collect(): DONE\n\n");
+      fprintf(stderr, "  collect() : DONE\n\n");
     }
 
     void init()
@@ -206,6 +213,7 @@ namespace hemispace {
 	collect(cls->size_);
 	ptr = from_->alloc(cls);
       }
+      fprintf(stderr, ".");
       return ptr;
     }
 
