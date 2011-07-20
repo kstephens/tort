@@ -1,4 +1,4 @@
-ISN(LIT, 1,
+ISN(LIT_, 1,
     push(arg0)
     )
 
@@ -17,24 +17,27 @@ ISN(PRINT, 0,
     )
 
 ISN(CALL_, 1,
-    run((word_t**) &pc[-1], &sp)
+    CALLX(pc[-1], sp);
     )
 
 ISN(CALL_TAIL_, 1,
-    pc_p = (word_t**) &pc[-1];
-    pc = *pc_p
-    )
+    {
+      pc_p = (word_t**) &pc[-1];
+      pc = *pc_p;
+      goto call_tail;
+    })
 
 ISN(CALL, 0,
     {
       pc = pop();
-      run(&pc, &sp);
+      CALLX(pc, sp);
     })
 
 ISN(CALL_TAIL, 0,
     {
-      pc_p = 0;
+      /* pc_p = 0; */
       pc = pop();
+      goto call_tail;
     })
 
 ISN(RTN, 0, 

@@ -1,13 +1,16 @@
 
 CFLAGS= #
 CFLAGS+= -O3 #
-CFLAGS+= -DTAK_C_CALL=$(TAK_C_CALL) #
-CFLAGS+= -g
+CFLAGS+= -g #
 
-all: threadcomp
+all: threadcomp.i threadcomp
+
 threadcomp : threadcomp.c isn.h
-	gcc -O3 -g threadcomp.c -o $@
+	gcc $(CFLAGS) threadcomp.c -o $@
+
+threadcomp.i : threadcomp.c isn.h
+	gcc $(CFLAGS) -E threadcomp.c -o $@
 
 threadcomp.s : threadcomp.c isn.h
-	gcc -O3 -S threadcomp.c -o $@
+	gcc $(CFLAGS) -S threadcomp.c -o $@
 
