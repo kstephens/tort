@@ -47,8 +47,19 @@ namespace hemispace {
     void *alloc_, *base_, *end_;
     size_t size_, object_n_;
 
-    Space(size_t size) { map(size); }
-    ~Space()           { unmap(); }
+    Space()  { }
+    ~Space() { unmap(); }
+
+    void flip(Space &other) 
+    {
+#define SWAP(T,X) { T tmp = X; X = other.X; other.X = tmp; }
+      SWAP(void*, alloc_);
+      SWAP(void*, base_);
+      SWAP(void*, end_);
+      SWAP(size_t, size_);
+      SWAP(size_t, object_n_);
+#undef SWAP
+    }
 
     size_t align_size(size_t size)
     {
@@ -155,60 +166,56 @@ namespace hemispace {
   class Allocator {
   public:
     size_t initial_size_;
-    Space *from_, *to_;
+    Space from_, to_;
     void (*roots_)();
 
-    Allocator() : from_(0), to_(0) { }
+    Allocator() { }
 
     void collect(size_t needed_size)
     {
       // Calculate new "to" space size.
-      size_t new_size = from_->size_;
-      new_size += from_->size_ * 0.10 + needed_size;
+      size_t new_size = from_.size_;
+      new_size += from_.size_ * 0.10 + needed_size;
 
       fprintf(stderr, "\n  collect() : BEGIN\n");
-      fprintf(stderr, "  collect() : before: object_n_ = %ld\n", (unsigned long) from_->object_n_);
+      fprintf(stderr, "  collect() : before: object_n_ = %ld\n", (unsigned long) from_.object_n_);
       fprintf(stderr, "  collect() : before: new_size = %ld\n", (unsigned long) new_size);
       fprintf(stderr, "  collect() : before: from [ @%p, @%p )\n",
-	      from_->base_, from_->alloc_);
+	      from_.base_, from_.alloc_);
 
       // Resize "to" Space.
-      to_->remap(new_size);
+      to_.remap(new_size);
 
       // Scan roots.
       roots_();
 
       // If "to" Space is much smaller, shrink it now.
-      if ( to_->allocated_size() < from_->size_ / 2 ) {
-	to_->shrink(from_->size_ / 2);
+      if ( to_.allocated_size() < from_.size_ / 2 ) {
+	to_.shrink(from_.size_ / 2);
       }
 
       // Free old "from" Space.
-      from_->unmap();
+      from_.unmap();
 
       // Flip "from" and "to".
-      {
-	Space *t = to_;
-	to_ = from_;
-	from_ = t;
-      }
+      to_.flip(from_);
 
-      fprintf(stderr, "  collect() : after: object_n_ = %ld\n", (unsigned long) from_->object_n_);
+      fprintf(stderr, "  collect() : after: object_n_ = %ld\n", (unsigned long) from_.object_n_);
       fprintf(stderr, "  collect() : DONE\n\n");
     }
 
     void init()
     {
-      from_ = new Space(initial_size_);
-      to_   = new Space(initial_size_);
+      from_.map(initial_size_);
+      to_.map(initial_size_);
     }
 
     void *alloc(Class *cls)
     {
-      void *ptr = from_->alloc(cls);
+      void *ptr = from_.alloc(cls);
       if ( ! ptr ) {
 	collect(cls->size_);
-	ptr = from_->alloc(cls);
+	ptr = from_.alloc(cls);
       }
       fprintf(stderr, ".");
       return ptr;
@@ -217,7 +224,7 @@ namespace hemispace {
     void *forwarding_to(ref_ *r)
     {
       void *ptr = r->forward_to();
-      return to_->containsQ(ptr) ? ptr : 0;
+      return to_.containsQ(ptr) ? ptr : 0;
     }
 
     void scan(ref_ *r)
@@ -225,7 +232,7 @@ namespace hemispace {
     again:
       fprintf(stderr, "    ref @%p => %p\n", r, r->ptr());
       /* If ref points into "from" Space, */
-      if ( from_->containsQ(r->ptr()) ) {
+      if ( from_.containsQ(r->ptr()) ) {
 	void *to_ptr;
 
 	/* If there is a forwarding pointer in "from" Space to "to" Space, */
@@ -236,7 +243,7 @@ namespace hemispace {
 	} else {
 	  Class *cls = r->cls();
 	  /* Allocate a object copy in the "to" Space. */
-	  to_ptr = to_->alloc(cls);
+	  to_ptr = to_.alloc(cls);
 	  memcpy(to_ptr, r->ptr(), cls->size_);
 	  
 	  fprintf(stderr, "      from %p copy to %p\n", r->ptr(), to_ptr);
