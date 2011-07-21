@@ -4,6 +4,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <iostream>
+#include <assert.h>
 #include <sys/mman.h> /* mmap(), munmap() */
 
 namespace hemispace {
@@ -22,20 +23,20 @@ namespace hemispace {
   protected:
     void *p_;
   public:
-    ref_() : p_(0) { }
-    ref_(void *p) : p_(p) { }
+    ref_()              : p_(0) { }
+    ref_(void *p)       : p_(p) { }
     ref_(const ref_ &r) : p_(r.p_) { }
     
-    ref_& operator =(void *p) { p_ = p; return *this; }
+    ref_& operator =(void *p)       { p_ = p; return *this; }
     ref_& operator =(const ref_ &r) { p_ = r.p_; return *this; }
 
-    void *ptr() const { return p_; }
+    void *ptr() const  { return p_; }
     void ptr_(void *p) { p_ = p; }
 
-    void *forward_to() const { return ((void**) p_)[-1]; }
+    void *forward_to() const  { return ((void**) p_)[-1]; }
     void forward_to_(void *p) { ((void**) p_)[-1] = p; }
     
-    Class *cls() const { return ((Class**) p_)[-1]; }
+    Class *cls() const    { return ((Class**) p_)[-1]; }
     void cls_(Class *cls) { ((Class**) p_)[-1] = cls; }
 
     void scan();
@@ -46,14 +47,8 @@ namespace hemispace {
     void *alloc_, *base_, *end_;
     size_t size_, object_n_;
 
-    Space(size_t size)
-    {
-      map(size);
-    }
-    ~Space()
-    {
-      unmap();
-    }
+    Space(size_t size) { map(size); }
+    ~Space()           { unmap(); }
 
     size_t align_size(size_t size)
     {
@@ -67,22 +62,31 @@ namespace hemispace {
       return (char*) alloc_ - (char*) base_;
     }
 
+    void *sys_mmap(void *base, size_t size) const
+    {
+      void *addr = mmap(base, size, PROT_READ | PROT_WRITE,
+			MAP_ANON | MAP_PRIVATE, -1, (off_t) 0);
+      fprintf(stderr, "  @%p: mmap(@%p, %llu) => @%p\n", this, base, (unsigned long long) size, addr);
+      return addr;
+    }
+    void sys_munmap(void *base, size_t size) const
+    {
+      fprintf(stderr, "  @%p: munmap(@%p, %llu)\n", this, base, (unsigned long long) size);
+      assert(munmap(base, size) == 0);
+    }
+
     void map(size_t size)
     {
       size_ = align_size(size);
-      alloc_ = base_ = mmap((void*) 0, 
-			    size_, 
-			    PROT_READ | PROT_WRITE,
-			    MAP_ANON | MAP_PRIVATE,
-			    -1, (off_t) 0);
-      end_ = (char*) base_ + size_;
+      alloc_ = base_ = sys_mmap(0, size_);
+	end_ = (char*) base_ + size_;
       object_n_ = 0;
     }
 
     void unmap()
     {
       if ( base_)
-	munmap(base_, size_);
+	sys_munmap(base_, size_);
       alloc_ = base_ = end_ = 0;
       size_ = object_n_ = 0;
     }
@@ -95,7 +99,7 @@ namespace hemispace {
 	fprintf(stderr, "  shrinking [ %p, %p ) to [ %p, %p ) [%lu]\n",
 		base_, end_, base_, (char*) base_ + new_size,
 		(unsigned long) new_size);
-	munmap((char*) base_ + new_size, size_ - new_size);
+	sys_munmap((char*) base_ + new_size, size_ - new_size);
 	size_ = new_size;
 	end_ = (char*) base_ + size_;
       }
@@ -106,21 +110,13 @@ namespace hemispace {
       size_t new_size = align_size(size);
       if ( base_ ) {
 	if ( new_size < size_ ) {
-	  munmap((char*) base_ + new_size, size_ - new_size);
+	  sys_munmap((char*) base_ + new_size, size_ - new_size);
 	} else {	  
-	  munmap(base_, size_);
-	  base_ = mmap((void*) 0, 
-		       new_size, 
-		       PROT_READ | PROT_WRITE,
-		       MAP_ANON | MAP_PRIVATE,
-		       -1, (off_t) 0);
+	  sys_munmap(base_, size_);
+	  base_ = sys_mmap(0, new_size);
  	}
       } else {
-	base_ = mmap((void*) 0, 
-		     new_size, 
-		     PROT_READ | PROT_WRITE,
-		     MAP_ANON | MAP_PRIVATE,
-		     -1, (off_t) 0);
+	base_ = sys_mmap(0, new_size);
       }
 
       fprintf(stderr, "  remap [ %p, %p ) [%lu]\n",
@@ -137,7 +133,8 @@ namespace hemispace {
 
     int containsQ(void *ptr) { return base_ <= ptr && ptr < alloc_; }
 
-    void *alloc(Class *cls) {
+    void *alloc(Class *cls) 
+    {
       size_t actual_size = cls->size_ + sizeof(cls);
       void *new_alloc = (char*) alloc_ + actual_size;
       void *result;
@@ -262,7 +259,7 @@ namespace hemispace {
     static Allocator instance;
   };
 
-  void ref_::scan() {
+  inline void ref_::scan() {
     Allocator::instance.scan(this);
   }
 
@@ -283,8 +280,9 @@ namespace hemispace {
     }
 
     void init() { prev_ = stackref_::top_; stackref_::top_ = this; }
-    stackref_() : ref_(0) { init(); }
-    stackref_(void *p) : ref_(p) { init(); }
+
+    stackref_()                   : ref_(0) { init(); }
+    stackref_(void *p)            : ref_(p) { init(); }
     stackref_(const stackref_ &r) : ref_(r) { init(); }
 
     ~stackref_ () 

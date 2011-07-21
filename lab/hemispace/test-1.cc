@@ -1,11 +1,6 @@
 #include <assert.h>
 #include "allocator.hh"
 
-namespace hemispace {
-  Allocator Allocator::instance;
-  stackref_* stackref_::top_ = 0;
-}
-
 using namespace hemispace;
 
 class Cons {
@@ -41,6 +36,9 @@ int main(int argc, char **argv)
   }
   assert(x.ptr());
   assert(x->cdr.ptr() == x.ptr());
+
+  fprintf(stderr, "\nOK\n");
+  return 0;
 }
 
 
