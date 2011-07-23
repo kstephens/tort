@@ -117,6 +117,8 @@ static char *slot_str(tort_og_context *context, struct slot *slot, tort_v val, i
     strcpy(buf, "NULL");
   } else if ( mt == tort__mt(tagged) ) {
     snprintf(buf, sizeof(buf), "%lld", (long long) tort_I(val));
+  } else if ( mt == tort__mt(ptr) ) {
+    snprintf(buf, sizeof(buf), "@%p", tort_ptr_data(val));
   } else if ( mt == tort__mt(string) ) {
     snprintf(buf, sizeof(buf), "\"%s\"", tort_string_charP(val));
   } else if ( mt == tort__mt(symbol) ) {
@@ -235,6 +237,11 @@ void og_object(tort_og_context *context, tort_v obj)
   else if ( mt == tort__mt(tagged) ) {
     fprintf(FP, "node [ label=\"<0> %lld\" ];\n",
 	    (long long) tort_I(obj));
+    return;
+  }
+  else if ( mt == tort__mt(ptr) ) {
+    fprintf(FP, "node [ label=\"<0> @%p\" ];\n",
+	    tort_ptr_data(obj));
     return;
   }
 
