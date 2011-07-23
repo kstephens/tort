@@ -1,5 +1,4 @@
 #ifdef UOP
-UOP(NOT,!)
 #ifndef BOP_NO_INT
 UOP(INV,~)
 #endif
@@ -7,7 +6,6 @@ UOP(INV,~)
 UOP(NEG,-)
 #undef  UOP_NO_NEG
 #endif
-#undef UOP
 #endif
 
 #ifdef BOP
@@ -23,18 +21,40 @@ BOP(MOD,%)
 BOP(LSH,<<)
 BOP(RSH,>>)
 #endif
-#undef BOP
+#endif
+
+#ifdef LUP
+LUP(NOT,!)
+#endif
+
+#ifdef LOP
+LOP(LAND,&&)
+LOP(LOR,||)
 #endif
 
 #ifdef ROP
-ROP(LAND,&&)
-ROP(LOR,||)
 ROP(EQ,==)
 ROP(NE,!=)
 ROP(LT,<)
 ROP(GT,>)
 ROP(LE,<=)
 ROP(GE,>=)
+#endif
+
+#ifdef UOP
+#undef UOP
+#endif
+#ifdef BOP
+#undef BOP
+#endif
+#ifdef LOP
+#undef LOP
+#endif
+#ifdef LUP
+#undef LUP
+#endif
+#ifdef ROP
 #undef ROP
 #endif
+
 

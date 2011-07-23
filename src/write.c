@@ -26,7 +26,7 @@ tort_v _tort_m_tagged___inspect(tort_thread_param tort_v rcvr, tort_v io)
 
 tort_v _tort_m_ptr___inspect(tort_tp tort_v rcvr, tort_v io)
 {
-  printf("@%p", tort_ptr_data(rcvr));
+  printf("@%p", tort_P(rcvr));
   return tort_nil;
 }
 

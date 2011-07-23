@@ -93,7 +93,8 @@ struct tort_ptr { tort_H; /* basic ptr. */
   void *data;
 } tort_ptr;
 
-#define tort_ptr_data(X) tort_ref(tort_ptr, X)->data
+#define tort_P(X) tort_ref(tort_ptr, X)->data
+void * tort_ptr_data(tort_v x);
 tort_v tort_ptr_new(void *ptr);
 
 typedef 

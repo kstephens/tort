@@ -13,7 +13,9 @@ static tort_symbol_mapping mappings[] =
     { "_TO_", "->" },
     { "DOT",  "." },
 #define UOP(N,OP) { #N, #OP },
+#define LUP(N,OP) { #N, #OP },
 #define BOP(N,OP) { #N, #OP },
+#define LOP(N,OP) { #N, #OP },
 #define ROP(N,OP) { #N, #OP },
 #define UOP_NO_NEG 1
 #include "tort/ops.h"

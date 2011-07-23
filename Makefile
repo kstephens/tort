@@ -13,7 +13,7 @@ include $(BASE_DIR)/mk/target.mk
 # default:
 #
 
-bootstrap :
+bootstrap : clean
 	$(MAKE) clean
 	-rm -f include/tort/integer.h.new
 	-$(MAKE) 
