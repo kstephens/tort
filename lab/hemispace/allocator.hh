@@ -165,8 +165,8 @@ namespace hemispace {
     
   class Allocator {
   public:
-    size_t initial_size_;
     Space from_, to_;
+    size_t initial_size_;
     void (*roots_)();
 
     Allocator() { }
