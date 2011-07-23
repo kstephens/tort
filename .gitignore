@@ -5,6 +5,8 @@
 gc-*/
 *.out
 *.t
+*.s
+*.i
 .libs/
 .stats
 *.dSYM/

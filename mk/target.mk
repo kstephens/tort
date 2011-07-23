@@ -92,6 +92,9 @@ srcs : $(GEN_C_FILES)
 %.lo : %.c
 	$(COMPILE.c) -o $@ $<
 
+%.i : %.c 
+	$(CC_BASE) -E -o $@ $<
+
 %.s : %.c 
 	$(CC_BASE) -S -o $@ $<
 
