@@ -7,10 +7,10 @@ ISN(POP, 0,
     )
 
 ISN(ADD, 0, 
-    ({
+    {
       sp[1] = sp[0] + (size_t) sp[1];
       pop();
-    }))
+    })
 
 ISN(PRINT, 0, 
     printf("%ld\n", (long) (size_t) pop());
@@ -44,7 +44,6 @@ ISN(RTN, 0,
     {
       *sp_p = sp;
       return;
-    }
-    )
+    })
 
 #undef ISN
