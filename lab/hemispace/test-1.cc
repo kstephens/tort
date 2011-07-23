@@ -1,5 +1,8 @@
 #include <assert.h>
 #include "allocator.hh"
+#if _ASSEMBLY
+#include "allocator.cc"
+#endif
 
 using namespace hemispace;
 
