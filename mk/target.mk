@@ -100,7 +100,7 @@ srcs : $(GEN_C_FILES)
 #
 
 % : %.lo
-	$(LIBTOOL) --mode=link $(CC) $(CFLAGS) $(LDFLAGS) $@.lo $(BIN_LIBS) $(LIBS) -o $@
+	$(LIBTOOL) --tag=LD --mode=link $(CC) $(CFLAGS) $(LDFLAGS) $@.lo $(BIN_LIBS) $(LIBS) -o $@
 
 
 ######################################################################
@@ -108,7 +108,7 @@ srcs : $(GEN_C_FILES)
 #
 
 $(LIB) : $(LIB_OFILES)
-	$(LIBTOOL) --mode=link $(CC) $(LDFLAGS) $(LIB_FLAGS) -o $@ $(LIB_OFILES)
+	$(LIBTOOL) --tag=LD --mode=link $(CC) $(LDFLAGS) $(LIB_FLAGS) -o $@ $(LIB_OFILES)
 	$(LIBTOOL) --mode=install cp $@ $(libdir)
 
 $(LIB_OFILES) : $(LIB_HFILES)
@@ -120,7 +120,7 @@ $(LIB_OFILES) : $(LIB_HFILES)
 # TEST_LIBS = $(LIB_TORT)
 
 %.t : %.c 
-	$(LIBTOOL) --mode=link $(CC) $(CFLAGS) $(LDFLAGS) $(@:.t=.c) $(TEST_LIBS) $(LIBS) -o $@
+	$(LIBTOOL) --tag=LD --mode=link $(CC) $(CFLAGS) $(LDFLAGS) $(@:.t=.c) $(TEST_LIBS) $(LIBS) -o $@
 
 tests : components $(TEST_T_FILES) 
 

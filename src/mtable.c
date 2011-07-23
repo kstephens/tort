@@ -184,6 +184,7 @@ tort_v tort_runtime_initialize_mtable()
   tort_(tagged_header).mtable  = tort__mt(tagged);
 
   /* Other core. */
+  tort__mt(ptr)         = tort_mtable_create(tort__mt(object));
   tort__mt(string)      = tort_mtable_create(tort__mt(vector_base));
   tort__mt(vector)      = tort_mtable_create(tort__mt(vector_base));
   tort__mt(symbol)      = tort_mtable_create(tort__mt(object));

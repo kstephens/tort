@@ -1,3 +1,10 @@
+#ifdef __linux__
+#define _GNU_SOURCE 1
+#define __USE_GNU 1 /* fopencookie() */
+#include <libio.h>
+#include <stdio.h>
+#endif
+
 #include "tort/core.h"
 
 #define FP io->fp
@@ -89,6 +96,50 @@ tort_v _tort_m_object___printfv(tort_tp tort_io *io, const char *format, const c
   return io;
 }
 
+#ifdef __linux__
+static __ssize_t str_read_fn (void *__cookie, char *__buf, size_t __nbytes)
+{
+  return tort_I(tort_send(tort__s(__read), (tort_v) __cookie, (void*) __buf, (size_t) __nbytes));
+}
+
+static __ssize_t str_write_fn (void *__cookie, __const char *__buf,
+                                 size_t __n)
+{
+  tort_send(tort__s(__write), (tort_v) __cookie, (void*) __buf, (size_t) __n);
+  return __n;
+}
+
+static int str_seek_fn (void *__cookie, _IO_off64_t *__pos, int __w)
+{
+  return -1; /* UNSUPPORTED */
+}
+
+/* Close COOKIE.  */
+static int str_close_fn (void *__cookie)
+{
+  return 0; /* NOP */
+}
+
+static cookie_io_functions_t str_io_funcs = { 
+  str_read_fn,
+  str_write_fn,
+  str_seek_fn,
+  str_close_fn
+};
+
+tort_v _tort_m_string____printfsv(tort_tp tort_string *str, const char *fmt, va_list *vapp)
+{
+  FILE *fp = fopencookie((void*) str,
+			 "w",
+			 str_io_funcs);
+  tort_io *io = tort_send(tort__s(__create), tort__mt(io), fp);
+  tort_v result = tort_send(tort__s(__printfsv), io, fmt, vapp);
+  fclose(fp);
+  return result;
+}
+#endif
+
+#ifdef __APPLE__
 static int string_read(void *str, char *buf, int size)
 {
   return tort_I(tort_send(tort__s(__read), (tort_v) str, (void*) buf, (size_t) size));
@@ -122,6 +173,7 @@ tort_v _tort_m_string____printfsv(tort_tp tort_string *str, const char *fmt, va_
   fclose(fp);
   return result;
 }
+#endif
 
 tort_v _tort_m_nil____printfsv(tort_tp tort_string *str, const char *fmt, va_list *vapp)
 {

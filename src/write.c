@@ -24,6 +24,12 @@ tort_v _tort_m_tagged___inspect(tort_thread_param tort_v rcvr, tort_v io)
   return tort_nil;
 }
 
+tort_v _tort_m_ptr___inspect(tort_tp tort_v rcvr, tort_v io)
+{
+  printf("@%p", tort_ptr_data(rcvr));
+  return tort_nil;
+}
+
 tort_v _tort_m_string___inspect(tort_thread_param tort_v rcvr, tort_v io)
 {
   printf("\"%s\"", (char *) tort_string_data(rcvr));
