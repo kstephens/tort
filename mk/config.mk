@@ -11,6 +11,7 @@ LD_LIBRARY_PATH:=$(libdir):$(LD_LIBRARY_PATH)
 
 LIBTOOL=$(GC)/libtool #
 CC=gcc-4.3# # for -fnested-functions support
+CC=gcc#
 CC_BASE=$(CC) $(CFLAGS) $(CPPFLAGS) $(TARGET_ARCH)#
 COMPILE.c = $(LIBTOOL) --tag=CC --mode=compile $(CC_BASE) -c #
 CFLAGS_SHARED=-shared -export-dynamic # 
@@ -22,7 +23,7 @@ CFLAGS_OPTIMIZE = -O3
 CFLAGS_OPTIMIZE = 
 CFLAGS += -DTORT_DLIB_DIR='"$(libdir)"' #
 CFLAGS += -DTORT_GC=$(TORT_GC) #
-#CFLAGS += -fnested-functions #
+CFLAGS += -fnested-functions #
 CFLAGS += $(CFLAGS_INC) -Iinclude -I$(BASE_DIR)/include -I$(BASE_DIR)/boot/include -I$(GC)/include -Wall -Werror -g $(CFLAGS_OPTIMIZE)
 
 ifeq "$(TORT_GC)" "0"
