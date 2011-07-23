@@ -258,7 +258,7 @@ void og_object(tort_og_context *context, tort_v obj)
     og_slot(context, obj, "data", "%s", 0, obj, "%p", s_style, sl_style);
   }
 
-  if ( mt == tort__mt(string) || mt == tort__mt(vector) || mt == tort__mt(map) || mt == tort__mt(mtable) ) {
+  if ( mt == tort__mt(string) || mt == tort__mt(vector) || mt == tort__mt(map) || mt == tort__mt(mtable) || cls_mt == tort__mt(mtable) ) {
     og_slot(context, obj, "size",         "%s", 0, tort_i(tort_vector_base_size(obj)), 0, s_style, sl_style);
     og_slot(context, obj, "alloc_size",   "%s", 0, tort_i(tort_vector_base_alloc_size(obj)), 0, s_style, sl_style);
     og_slot(context, obj, "element_size", "%s", 0, tort_i(tort_vector_base_element_size(obj)), 0, s_style, sl_style);
@@ -280,13 +280,20 @@ void og_object(tort_og_context *context, tort_v obj)
     SLOT(fiber);
     SLOT(method);
     SLOT(mtable);
-    og_slot(context, obj, "argc", "%s", 0, tort_i(o->argc), "%ld", 0, 0);
+    og_slot(context, obj, "argc", "%s", 0, tort_i(o->argc), 0, s_style, sl_style);
   }
   else if ( mt == tort__mt(method) ) {
     tort_method *o = obj;
-    og_slot(context, obj, "applyf", "%s", 0, o->applyf, "%p", 0, 0);
-    og_slot(context, obj, "data",   "%s", 0, o->data, "%p", 0, 0);
-    og_slot(context, obj, "name",   "%s", 0, o->name, 0, 0, 0);
+    og_slot(context, obj, "applyf", "%s", 0, o->applyf, "%p", s_style, sl_style);
+    og_slot(context, obj, "data",   "%s", 0, o->data, "%p", s_style, sl_style);
+    og_slot(context, obj, "name",   "%s", 0, o->name, 0, s_style, sl_style);
+  }
+  else if ( mt == tort__mt(io) ) {
+    tort_io *o = obj;
+    og_slot(context, obj, "fp", "%s", 0, o->fp, "%p", s_style, sl_style);
+    SLOT(name);
+    SLOT(mode);
+    og_slot(context, obj, "flags", "%s", 0, tort_i(o->flags), 0, s_style, sl_style);
   }
   else if ( mt == tort__mt(mtable) || cls_mt == tort__mt(mtable) ) {
     tort_mtable *o = obj;

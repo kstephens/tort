@@ -46,8 +46,8 @@ gc : $(GC)/.libs/libgc.a
 
 $(GC)/.libs/libgc.a : $(BASE_DIR)/archive/$(GC_VERSION).tar.gz
 	if [ ! -d $(GC) ]; then tar -zxvf $^; fi
-	cd $(GC) && if [ ! -f Makefile ]; then ./configure --enable-shared --prefix=$(PREFIX); fi
-	cd $(GC) && make && make install
+	unset CFLAGS LDFLAGS; cd $(GC) && if [ ! -f Makefile ]; then ./configure --enable-shared --prefix=$(PREFIX); fi
+	unset CFLAGS LDFLAGS; cd $(GC) && make && make install
 endif
 
 ######################################################################
