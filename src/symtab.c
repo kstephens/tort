@@ -1,5 +1,7 @@
 #include "tort/core.h"
 
+extern int _tort_dl_debug;
+
 static
 int _getline(char **linep, size_t *sizep, FILE *fp)
 {
@@ -36,9 +38,9 @@ tort_v _tort_m_map___load_symtab(tort_thread_param tort_v st, const char *file, 
 
   snprintf(cmd, sizeof(cmd), "%s.sym", file);
 
-#if 0
-  fprintf(stderr, "  cmd => %s\n", cmd);
-#endif
+  if ( _tort_dl_debug ) {
+  fprintf(stderr, "  load_symtab: cmd => %s\n", cmd);
+  }
 
   if ( (fp = fopen(cmd, "r")) ) {
     char *line = 0;
@@ -47,13 +49,14 @@ tort_v _tort_m_map___load_symtab(tort_thread_param tort_v st, const char *file, 
     while ( _getline(&line, &line_size, fp) != -1 ) {
       void *c_addr;
       char c_mode = 0;
-      char c_name[128];
+      char c_name_buf[128];
+      char *c_name = c_name_buf;
       char c_fileline[1024];
       int  c_tokens = 0;
 
-#if 0
+      if ( _tort_dl_debug ) {
       fprintf(stderr, "  line => @%p '%s'\n", line, line);
-#endif
+      }
 
       c_name[0] = c_fileline[0] = 0;
       // line[line_size] = '\0';
@@ -68,6 +71,10 @@ tort_v _tort_m_map___load_symtab(tort_thread_param tort_v st, const char *file, 
 	   ! strchr(c_name, '.')
 	   ) {
 	c_addr = ptr_base + (size_t) c_addr;
+#ifdef __APPLE__
+	if ( *c_name == '_' ) ++ c_name;
+#endif
+
 #if 0
 	fprintf(stderr, "   => %p %c %s %s\n", 
 		c_addr,
@@ -76,12 +83,12 @@ tort_v _tort_m_map___load_symtab(tort_thread_param tort_v st, const char *file, 
 		c_fileline);
 #endif
 	tort_v t_name = tort_symbol_make(c_name);
-	tort_v t_addr = tort_i((size_t) c_addr);
-	if ( c_addr == (void*) tort_I(t_addr) ) {
+	tort_v t_addr = tort_ptr_new(c_addr);
+	if ( c_addr == (void*) tort_ptr_data(t_addr) ) {
 	  tort_send(tort__s(set), st, t_name, t_addr);
 	  tort_send(tort__s(set), st, t_addr, t_name);
 	} else {
-	  fprintf(stderr, "cannot store %s->%p pointer in integer", c_name, c_addr);
+	  fprintf(stderr, "  tort: cannot store %s -> %p pointer in tort_ptr_data", c_name, c_addr);
 	}
       }
 #if 0

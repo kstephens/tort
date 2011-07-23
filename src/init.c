@@ -87,8 +87,9 @@ tort_v tort_runtime_create_ (int *argcp, char ***argvp, char ***envp)
   tort_(root) = tort_map_create();
 
   /* Uncloneable objects. */
-  tort_add_method(tort__mt(symbol),  "clone", _tort_m_object__identity);
+  tort_add_method(tort__mt(symbol),  "clone", _tort_m_object__identity);  
   tort_add_method(tort__mt(nil),     "clone", _tort_m_object__identity);
+  tort_add_method(tort__mt(ptr),  "clone", _tort_m_object__identity);
   tort_add_method(tort__mt(tagged),  "clone", _tort_m_object__identity);
   tort_add_method(tort__mt(boolean), "clone", _tort_m_object__identity);
 

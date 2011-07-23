@@ -15,6 +15,7 @@
 #include "tort/config.h"
 
 typedef void* tort_v;
+typedef ssize_t tort_vi;
 
 #define tort_ref(T, X)      ((struct T *)(X))
 #define tort_ref_box(PTR)   ((tort_v)(PTR))
@@ -86,6 +87,14 @@ struct tort_message { tort_H;
   short argc;  /* number of arguments, including reciever.  >= 0 if specified by caller. */
 };
 tort_h_struct(tort_message);
+
+typedef
+struct tort_ptr { tort_H; /* basic ptr. */
+  void *data;
+} tort_ptr;
+
+#define tort_ptr_data(X) tort_ref(tort_ptr, X)->data
+tort_v tort_ptr_new(void *ptr);
 
 typedef 
 struct tort_vector_base { tort_H; /* Same layout as tort_vector, tort_string. */
