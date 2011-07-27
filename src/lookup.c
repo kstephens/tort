@@ -193,9 +193,12 @@ tort_lookup_decl(_tort_m_mtable__lookup)
   return message;
 }
 
-tort_lookup_decl(_tort_lookup)
+tort_message* _tort_lookup (tort_tp tort_v rcvr, tort_message *message)
 {
   tort_v sel = message->selector;
+  
+  rcvr = tort_h_mtable(rcvr); /* See tort_send* macros. */
+#define MTABLE ((tort_mtable*) rcvr)
 
   message->_h[-1].alloc_size = sizeof(tort_message);
   message->_h[-1].mtable = tort__mt(message);
@@ -216,11 +219,11 @@ tort_lookup_decl(_tort_lookup)
   (void) TORT_MCACHE_STAT(mcache_stats.lookup_n ++);
   size_t i = 
     (
-     (((size_t) mtable) << 2) ^
+     (((size_t) MTABLE) << 2) ^
      (((size_t) sel) >> 3)
      );
   tort_mcache_entry *mce = &mcache[i % MCACHE_SIZE];
-  if (    mce->mt  == mtable && TORT_MCACHE_STAT(++ mcache_stats.hit_mtable_n)
+  if (    mce->mt  == MTABLE && TORT_MCACHE_STAT(++ mcache_stats.hit_mtable_n)
        && mce->sel == sel    && TORT_MCACHE_STAT(++ mcache_stats.hit_sel_n)
 #if TORT_MCACHE_USE_SYMBOL_VERSION
        && mce->sel_version == tort_ref(tort_symbol, sel)->version && TORT_MCACHE_STAT(++ mcache_stats.hit_sel_version_n)
@@ -235,9 +238,9 @@ tort_lookup_decl(_tort_lookup)
 #endif
 
     if ( sel == s_lookup && message->receiver == (tort_v) tort__mt(mtable) ) {
-      message = _tort_m_mtable__lookup(tort_ta mtable, message);
+      message = _tort_m_mtable__lookup(tort_ta MTABLE, message);
     } else {
-      message = tort_send(s_lookup, mtable, message);
+      message = tort_send(s_lookup, MTABLE, message);
     }
     
     if ( message->method == tort_nil ) {
@@ -249,7 +252,7 @@ tort_lookup_decl(_tort_lookup)
 		tort_symbol_data(sel));
       }
 
-      message->mtable = mtable;
+      message->mtable = MTABLE;
       message->method = tort_(_m_method_not_found);
     }
 
@@ -274,6 +277,7 @@ tort_lookup_decl(_tort_lookup)
   if ( TORT_LOOKUP_TRACE )
     _tort_lookup_trace_level --;
 
+#undef MTABLE
   return message;
 }
 

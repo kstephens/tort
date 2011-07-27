@@ -280,7 +280,7 @@ extern tort_runtime_ __tort;
 #define tort_flush(io) tort_send(tort_s(flush), io)
 #define tort_sprintf(STR, FMT, ARGS...) tort_send(tort__s(__printfs), (tort_v) (STR), (FMT), ##ARGS)
 
-tort_lookup_decl(_tort_lookup);
+tort_message* _tort_lookup (tort_tp tort_v rcvr, tort_message *message);
 tort_lookup_decl(_tort_m_mtable__lookup);
 
 #define _tort_send_RCVR(RCVR, ARGS...)(RCVR)
@@ -299,7 +299,7 @@ tort_lookup_decl(_tort_m_mtable__lookup);
   ({									\
     _tort_send_msg_init(SEL, RCVR_AND_ARGS);				\
     __tort_msg._.argc = (ARGC);						\
-    _tort_lookup(_tort_message, tort_h_mtable(__tort_msg._.receiver), &__tort_msg._)-> \
+    _tort_lookup(_tort_message, __tort_msg._.receiver, &__tort_msg._)-> \
       method->applyf(&__tort_msg._, _tort_send_RCVR_ARGS(__tort_msg._.receiver, RCVR_AND_ARGS)); \
   })
 #define tort_send(SEL, RCVR_AND_ARGS...)_tort_sendn(SEL, -1, RCVR_AND_ARGS)
@@ -312,7 +312,7 @@ tort_lookup_decl(_tort_m_mtable__lookup);
     _tort_message->receiver = (tort_v) _tort_send_RCVR(RCVR_AND_ARGS);	\
     _tort_message->argc = (ARGC);					\
     return								\
-      _tort_lookup(_tort_message, tort_h_mtable(_tort_message->receiver), _tort_message)-> \
+      _tort_lookup(_tort_message, _tort_message->receiver, _tort_message)-> \
       method->applyf(_tort_message, _tort_send_RCVR_ARGS(_tort_message->receiver, RCVR_AND_ARGS)); \
   } while ( 0 )
 #define return_tort_send(SEL, RCVR_AND_ARGS...)_tort_sendnt(SEL, -1, RCVR_AND_ARGS)
