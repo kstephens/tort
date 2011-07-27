@@ -13,6 +13,11 @@ tort_v _tort_m_ptr___ptr_data(tort_tp tort_v p, void **pptr)
   return p;
 }
 
+tort_v _tort_m_ptr___ptr_object(tort_tp tort_v p, void **pptr)
+{
+  return tort_P(p); /* UNSAFE! */
+}
+
 void *tort_ptr_data(tort_v v)
 {
   void *ptr = 0;
