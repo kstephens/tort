@@ -11,7 +11,4 @@ gc-*/
 .stats
 *.dSYM/
 local/
-boot/
-include/tort/integer.h
-include/tort/*.new
 
