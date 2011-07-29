@@ -61,7 +61,7 @@ namespace hemispace {
 #undef SWAP
     }
 
-    size_t align_size(size_t size)
+    size_t align_size(size_t size) const
     {
 #ifndef PAGESIZE
 #define PAGESIZE 4096
@@ -142,7 +142,7 @@ namespace hemispace {
       object_n_ = 0;
     }
 
-    int containsQ(void *ptr) { return base_ <= ptr && ptr < alloc_; }
+    int containsQ(void *ptr) const { return base_ <= ptr && ptr < alloc_; }
 
     void *alloc(Class *cls) 
     {
@@ -242,7 +242,7 @@ namespace hemispace {
 	  r->ptr_(to_ptr);
 	} else {
 	  Class *cls = r->cls();
-	  /* Allocate a object copy in the "to" Space. */
+	  /* Allocate an object copy in the "to" Space. */
 	  to_ptr = to_.alloc(cls);
 	  memcpy(to_ptr, r->ptr(), cls->size_);
 	  
@@ -256,6 +256,8 @@ namespace hemispace {
 
 	  /* Recursively scan object in "to" Space. */
 	  r = cls->scan_(to_ptr);
+
+	  /* Tail-recurse on ref returned from scan_. */
 	  if ( r ) {
 	    fprintf(stderr, "   again:\n");
 	    goto again;
