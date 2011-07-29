@@ -1,0 +1,15 @@
+*.o
+*.lo
+*.a
+*.la
+*.out
+*.t
+*.s
+*.i
+.libs/
+.stats
+*.dSYM/
+boot/
+include/tort/integer.h
+include/tort/*.new
+
