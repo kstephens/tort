@@ -12,7 +12,7 @@ LD_LIBRARY_PATH:=$(libdir):$(LD_LIBRARY_PATH)
 LIBTOOL=$(GC)/libtool #
 CC=gcc-4.3# # for -fnested-functions support
 CC=gcc#
-CC=gcc-mp-4.3#
+#CC=gcc-mp-4.3#
 CC_BASE=$(CC) $(CFLAGS) $(CPPFLAGS) $(TARGET_ARCH)#
 COMPILE.c = $(LIBTOOL) --tag=CC --mode=compile $(CC_BASE) -c #
 CFLAGS_SHARED=-shared -export-dynamic # 
@@ -33,7 +33,7 @@ LDFLAGS += -L$(PREFIX)/lib #
 LIBS += -lgc #
 endif
 
-LIB_TORT = $(BASE_DIR)/core/src/libtort.la
+LIB_TORT = $(BASE_DIR)/core/src/libtortcore.la
 
 GEN_FILES = 
 GEN_LIBS = 
