@@ -18,6 +18,19 @@ tort_v _tort_m_ptr___ptr_object(tort_tp tort_v p, void **pptr)
   return tort_P(p); /* UNSAFE! */
 }
 
+tort_v _tort_m_ptr___object_ptr(tort_tp tort_v obj)
+{
+  return tort_p(obj);
+}
+
+tort_v _tort_m_ptr___to_string(tort_tp tort_v p)
+{
+  char buf[64];
+  snprintf(buf, sizeof(buf) - 1, "%016llx", (unsigned long long) (ssize_t) tort_P(p));
+  return tort_string_new(buf, strlen(buf));
+}
+
+
 void *tort_ptr_data(tort_v v)
 {
   void *ptr = 0;
