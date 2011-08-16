@@ -34,7 +34,7 @@ LDFLAGS += -L$(PREFIX)/lib #
 LIBS += -lgc #
 endif
 
-LIB_TORT = $(BASE_DIR)/core/src/libtort.la
+LIB_TORT = $(BASE_DIR)/core/src/libtortcore.la
 
 GEN_FILES = 
 GEN_LIBS = 

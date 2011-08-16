@@ -1,7 +1,7 @@
 BASE_DIR=../#
 include $(BASE_DIR)/mk/config.mk
 
-LIB = src/libtort.la
+LIB = src/libtortcore.la
 TEST_LIBS = $(LIB) $(LIB_TORT)
 
 include $(BASE_DIR)/mk/target.mk

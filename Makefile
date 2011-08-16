@@ -2,7 +2,7 @@ BASE_DIR=.#
 SUBDIRS=core ext lisp#
 include $(BASE_DIR)/mk/config.mk
 
-LIB=$(LIB_TORT)
+LIB=# $(LIB_TORT)
 TEST_LIBS = $(LIB) $(LIB_TORT)
 
 LIBS_EARLY += gc #
