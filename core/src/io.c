@@ -29,6 +29,11 @@ tort_v _tort_M_io____create(tort_tp tort_mtable *mtable, FILE *fp)
   return rcvr;
 }
 
+tort_v _tort_M_io__create(tort_tp tort_mtable *mtable, FILE *fp)
+{
+  return _tort_M_io____create(tort_ta mtable, 0);
+}
+
 tort_v _tort_m_io__open(tort_tp tort_io *rcvr, tort_v name, tort_v mode)
 {
   if ( (FP = fopen(tort_string_data(name), tort_string_data(mode))) ){
@@ -102,6 +107,11 @@ tort_v _tort_m_io__read(tort_tp tort_io *rcvr, tort_string *buf)
   buf->data[count] = '\0';
 
   return buf;
+}
+
+tort_v _tort_m_io__openQ(tort_tp tort_io *rcvr)
+{
+  return FP ? tort_true : tort_false;
 }
 
 tort_v _tort_m_io__eof(tort_tp tort_io *rcvr)

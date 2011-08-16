@@ -1,7 +1,11 @@
 (define nil '())
+(define send (lambda (sym rcvr . args) (sym rcvr . args)))
+
 (define %root (lambda (sym) ('get &root sym)))
 (define %mtable-by-name (lambda (sym) ('get (%root 'mtable) sym)))
+(define *standard-input*  (%root 'stdin))
 (define *standard-output* (%root 'stdout))
+(define *standard-error*  (%root 'stderr))
 
 (define %get-type (lambda (o) ('_mtable o)))
 (define eq? (lambda (a b) ('eq? a b)))
@@ -25,6 +29,10 @@
 
 (define string-ref (lambda (s i) ('get s i)))
 (define string-set! (lambda (s i v) ('set s i v)))
+(define string-append 
+  (lambda args
+    (set-car! args ('clone (car args)))
+    (%reduce 'append args)))
 
 (define write 
   (lambda (obj . port)
@@ -68,6 +76,15 @@
       ('/ first (%reduce (lambda (a b) ('* a b)) args)))))
 
 (define = eq?)
+
+(define <io> (%mtable-by-name 'io))
+
+(define *load-debug* #t)
+(define load (lambda (fname . env))
+  ('lisp_repl ('open ('create <io>) fname "r") 
+	      (if *load-debug* *standard-error* nil)
+	      (if *load-debug* (string-append fname ": ") nil)
+	      (if (null? env) &env (car env))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
