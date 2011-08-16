@@ -15,12 +15,23 @@ tort_v _tort_m_ptr___ptr_data(tort_tp tort_v p, void **pptr)
 
 tort_v _tort_m_ptr___ptr_object(tort_tp tort_v p, void **pptr)
 {
-  return tort_P(p); /* UNSAFE! */
+  *pptr = tort_P(p);
+  return p;
 }
 
-tort_v _tort_m_ptr___object_ptr(tort_tp tort_v obj)
+tort_v _tort_m_object___object_ptr(tort_tp tort_v obj)
 {
-  return tort_p(obj);
+  return tort_ptr_new(obj);
+}
+
+tort_v _tort_m_nil___object_ptr(tort_tp tort_v obj)
+{
+  return tort_ptr_new(0);
+}
+
+tort_v _tort_m_tagged___object_ptr(tort_tp tort_v obj)
+{
+  return tort_nil;
 }
 
 tort_v _tort_m_ptr___to_string(tort_tp tort_v p)
@@ -29,7 +40,6 @@ tort_v _tort_m_ptr___to_string(tort_tp tort_v p)
   snprintf(buf, sizeof(buf) - 1, "%016llx", (unsigned long long) (ssize_t) tort_P(p));
   return tort_string_new(buf, strlen(buf));
 }
-
 
 void *tort_ptr_data(tort_v v)
 {
