@@ -25,8 +25,13 @@ tort_v _tort_m_string___dlopen(tort_tp tort_string *rcvr)
     sprintf(file_buffer, "%s/%s", TORT_DLIB_DIR, file);
     file = file_buffer;
   }
-  sprintf(file_buffer, "%s%s", file, TORT_DLIB_SUFFIX);
-  file = file_buffer;
+  if ( strlen(file) < strlen(TORT_DLIB_SUFFIX) || strcmp(strchr(file, '\0') - strlen(TORT_DLIB_SUFFIX), TORT_DLIB_SUFFIX) ) {
+    sprintf(file_buffer, "%s%s", file, TORT_DLIB_SUFFIX);
+    file = file_buffer;
+  }
+  if ( _tort_dl_debug ) {
+    fprintf(stderr, "  _dlopen: file = %s\n", file);
+  }
 
   st = tort_map_create();
   tort_send(tort_s(_load_symtab), st, file, 0);

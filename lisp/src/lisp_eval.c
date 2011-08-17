@@ -394,9 +394,9 @@ tort_v _tort_m_nil__lisp_eval_args(tort_tp tort_cons *obj, tort_v env)
   return obj;
 }
 
-tort_v _tort_m_symbol__lisp_eval_args(tort_tp tort_v sym, tort_v env)
+tort_v _tort_m_object__lisp_eval_args(tort_tp tort_v obj, tort_v env)
 {
-  return_tort_send(tort__s(get), env, sym);
+  return_tort_send(tort_s(lisp_eval), obj, env);
 }
 
 tort_v _tort_m_vector__lisp_eval_body(tort_tp tort_vector *obj, tort_v env)

@@ -29,6 +29,11 @@ tort_v _tort_M_io____create(tort_tp tort_mtable *mtable, FILE *fp)
   return rcvr;
 }
 
+tort_v _tort_M_io__create(tort_tp tort_mtable *mtable, FILE *fp)
+{
+  return _tort_M_io____create(tort_ta mtable, 0);
+}
+
 tort_v _tort_m_io__open(tort_tp tort_io *rcvr, tort_v name, tort_v mode)
 {
   if ( (FP = fopen(tort_string_data(name), tort_string_data(mode))) ){
@@ -104,6 +109,11 @@ tort_v _tort_m_io__read(tort_tp tort_io *rcvr, tort_string *buf)
   return buf;
 }
 
+tort_v _tort_m_io__openQ(tort_tp tort_io *rcvr)
+{
+  return FP ? tort_true : tort_false;
+}
+
 tort_v _tort_m_io__eof(tort_tp tort_io *rcvr)
 {
   return tort_i(FP ? feof(FP) : -1);
@@ -124,6 +134,11 @@ tort_v _tort_m_io____finalize(tort_tp tort_io *rcvr)
   return tort_nil;
 }
 
+tort_v _tort_m_string___write(tort_tp tort_io *rcvr, tort_v str)
+{
+  return_tort_send(tort__s(_append), rcvr, tort_string_data(str), tort_string_size(str));
+}
+
 tort_v _tort_m_string____write(tort_tp tort_string *rcvr, void *data, size_t size)
 {
   tort_send(tort__s(_append), rcvr, data, size);
@@ -135,6 +150,10 @@ tort_v _tort_m_string__flush(tort_tp tort_string *rcvr)
   return rcvr;
 }
 
+tort_v _tort_m_string__close(tort_tp tort_string *rcvr)
+{
+  return rcvr;
+}
 
 extern tort_v tort_runtime_initialize_printf();
 tort_v tort_runtime_initialize_io()

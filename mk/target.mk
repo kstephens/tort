@@ -3,7 +3,7 @@ GEN_H_FILES = $(GEN_H_GEN_FILES:%.gen=%)
 GEN_FILES += $(GEN_H_FILES)
 GEN_C_FILES = #
 
-LIB_CFILES := $(shell ls src/*.c $(GEN_C_FILES) | sort -u)
+LIB_CFILES := $(shell ls src/*.c $(GEN_C_FILES) 2>/dev/null | sort -u)
 LIB_HFILES := $(shell ls include/tort/*.h $(GEN_H_FILES) 2>/dev/null | sort -u | grep -v 'include/tort/*.h') 
 LIB_OFILES = $(LIB_CFILES:.c=.lo)
 
@@ -90,20 +90,20 @@ srcs : $(GEN_C_FILES)
 #
 
 %.lo : %.c
-	$(COMPILE.c) -o $@ $<
+	$(COMPILE.c) $(CFLAGS_DEBUG) -o $@ $<
 
 %.i : %.c 
 	$(CC_BASE) -E -o $@ $<
 
 %.s : %.c 
-	$(CC_BASE) -S -o $@ $<
+	$(CC_BASE:%-g%=%%) -S -o $@ $<
 
 ######################################################################
 # executable:
 #
 
 % : %.lo
-	$(LIBTOOL) --tag=LD --mode=link $(CC) $(CFLAGS) $(LDFLAGS) $@.lo $(BIN_LIBS) $(LIBS) -o $@
+	$(LIBTOOL) --tag=LD --mode=link $(CC) $(CFLAGS) $(CFLAGS_DEBUG) $(LDFLAGS) $@.lo $(BIN_LIBS) $(LIBS) -o $@
 
 
 ######################################################################
