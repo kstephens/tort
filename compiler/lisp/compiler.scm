@@ -1,33 +1,49 @@
-(define compile:make
+(define compiler:make
   (lambda args 
-    '()
+    (list "")
     ))
 
-(define compile:emit 
+(define compiler:stream
+  (lambda (c)
+    (car c)))
+
+(define compiler:set-stream!
+  (lambda (c s)
+    (set-car! c s)))
+
+(define compiler:emit 
   (lambda (c . args)
+    (set! c (compiler:stream c))
     (map args (lambda (x)
-		(write x)))
-    (newline)
+		(display x c)))
+    (newline c)
     ))
 
-(define compile:method 
+(define compiler:method 
   (lambda (c o)
-    (compile:emit c '_ (compile:method:name o) ':)
-    (compile:emit c "pushq %rbp")               ; save caller's frame pointer.
-    (compile:emit c "movq %rsp, %rbp")          ; set frame pointer to current stack pointer.
-    ;(compile:emit c "subq $xxx, %rsp")         ; Save space for local variables.
-    (compile:method:body c o)
-    (compile:emit c "leave")
-    (compile:emit c "ret") 
+    (compiler:emit c '_ (compiler:method:name c o) ':)
+    (compiler:emit c "pushq %rbp")               ; save caller's frame pointer.
+    (compiler:emit c "movq %rsp, %rbp")          ; set frame pointer to current stack pointer.
+    ;(compiler:emit c "subq $xxx, %rsp")         ; Save space for local variables.
+    (compiler:method:body c o)
+    (compiler:emit c "leave")
+    (compiler:emit c "ret") 
     ))
 
-(define compile:method:name
+(define compiler:method:name
   (lambda (c o)
-    (string-append "_" (send 'name o))
+    (string-append "_tort_x_" (send '_to_string ('_object_ptr o)))
     ))
 
-(define compile:method:body 
+(define compiler:method:body 
   (lambda (c o)
-    (compile:emit c "movq $42, %rax")
-    (compile:emit c "addq %rax, %rax")
+    (compiler:emit c "movq $42, %rax")
+    (compiler:emit c "addq %rax, %rax")
     ))
+
+;;;;;
+
+(define m ('get ('_mtable 'symbol) '_inspect))
+(define c (compiler:make))
+(compiler:method c m)
+(compiler:stream c)
