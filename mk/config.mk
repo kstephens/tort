@@ -24,7 +24,7 @@ CFLAGS_OPTIMIZE = -O3
 CFLAGS_OPTIMIZE = 
 CFLAGS += -DTORT_DLIB_DIR='"$(libdir)"' #
 CFLAGS += -DTORT_GC=$(TORT_GC) #
-#CFLAGS += -fnested-functions #
+CFLAGS += -fnested-functions #
 CFLAGS += $(CFLAGS_INC) -Iinclude -I$(BASE_DIR)/core/include -I$(BASE_DIR)/core/boot/include -I$(GC)/include -Wall -Werror -g $(CFLAGS_OPTIMIZE)
 
 ifeq "$(TORT_GC)" "0"
