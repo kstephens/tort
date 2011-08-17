@@ -36,10 +36,14 @@ tort_v _tort_m_map___load_symtab(tort_thread_param tort_v st, const char *file, 
 	   file, file);
   system(cmd);
 
+  if ( _tort_dl_debug ) {
+  fprintf(stderr, "  load_symtab: cmd => %s\n", cmd);
+  }
+
   snprintf(cmd, sizeof(cmd), "%s.sym", file);
 
   if ( _tort_dl_debug ) {
-  fprintf(stderr, "  load_symtab: cmd => %s\n", cmd);
+  fprintf(stderr, "  load_symtab: .sym file => %s\n", cmd);
   }
 
   if ( (fp = fopen(cmd, "r")) ) {
