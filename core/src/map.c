@@ -41,9 +41,8 @@ tort_pair* _tort_m_map__get_entry_string(tort_tp tort_map *rcvr, tort_v key)
 tort_pair* _tort_m_map__get_entry_cstr(tort_tp tort_map *rcvr, const char *key)
 {
   tort_map_EACH(rcvr, entry) {
-    if ( strcmp(tort_string_data(entry->first), key) == 0 ) {
+    if ( strcmp(tort_string_data(entry->first), key) == 0 )
       return entry;
-    }
   } tort_map_EACH_END();
   return 0;
 }
@@ -69,11 +68,10 @@ tort_v _tort_m_map__get_string(tort_thread_param tort_map *rcvr, tort_v key)
 tort_v _tort_m_map__set(tort_thread_param tort_map *rcvr, tort_v key, tort_v value)
 {
   tort_pair *e = _tort_m_map__get_entry(tort_thread_arg rcvr, key);
-  if ( ! e ) {
+  if ( ! e )
     _tort_m_map__add(tort_thread_arg rcvr, key, value);
-  } else {
+  else
     e->second = value;
-  }
   return rcvr;
 }
 
@@ -92,7 +90,6 @@ tort_v _tort_m_map__delete(tort_thread_param tort_map *rcvr, tort_v key)
   return tort_nil;
 }
 
-
 tort_v _tort_m_map__clone(tort_thread_param tort_map *rcvr)
 {
   tort_v new_map = _tort_m_object__clone(tort_thread_arg rcvr);
@@ -103,10 +100,6 @@ tort_v _tort_m_map__clone(tort_thread_param tort_map *rcvr)
   } tort_map_EACH_END();
   return new_map;
 }
-
-
-/********************************************************************/
-
 
 tort_v tort_map_create()
 {

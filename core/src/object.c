@@ -1,5 +1,4 @@
 #include "tort/tort.h"
-#include <assert.h>
 
 tort_v _tort_m_object__eqQ (tort_tp tort_v rcvr, tort_v val)
 {
