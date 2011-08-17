@@ -56,7 +56,9 @@
 					;(display "sfile ")(write sfile)(newline)
 					;(display "ofile ")(write ofile)(newline)
 	(let ((f (open-output-file sfile))
-	      (st nil))
+	      (name-sym (make-symbol name))
+	      (st nil)
+	      (func-ptr nil))
 	  (display (compiler:stream c) f)
 	  (close-output-file f)
 
@@ -66,8 +68,12 @@
 	  (posix:system (string-append "otool -tv " dfile))
 
 	  (set! st ('_dlopen (string-append "./" dfile)))
-	  (write st)
-	  ; ('_ccall ('get st (make-symbol name)))
+	  (write st)(newline)
+	  (display "name-sym = ")(write name-sym)(newline)
+	  ;;(display "name-sym class = ")(write (%get-type name-sym))(newline)
+	  (set! func-ptr ('get st name-sym))
+	  (display "func-ptr = ")(write func-ptr)(newline)
+	  ('_ccall func-ptr)
 	)))))
 
 ;;;;;
@@ -76,6 +82,6 @@
 (define c (compiler:make))
 (compiler:method c m)
 (compiler:stream c)
-;(compiler:assemble c)
+(compiler:assemble c)
 
 
