@@ -1,6 +1,6 @@
 (define compiler:make
   (lambda args 
-    (list "")
+    (list "" nil)
     ))
 
 (define compiler:stream
@@ -14,21 +14,25 @@
 (define compiler:emit 
   (lambda (c . args)
     (set! c (compiler:stream c))
-    (map args (lambda (x)
+    (for-each args (lambda (x)
 		(display x c)))
     (newline c)
     ))
 
 (define compiler:method 
   (lambda (c o)
-    (compiler:emit c '_ (compiler:method:name c o) ':)
-    (compiler:emit c "pushq %rbp")               ; save caller's frame pointer.
-    (compiler:emit c "movq %rsp, %rbp")          ; set frame pointer to current stack pointer.
-    ;(compiler:emit c "subq $xxx, %rsp")         ; Save space for local variables.
-    (compiler:method:body c o)
-    (compiler:emit c "leave")
-    (compiler:emit c "ret") 
-    ))
+    (let ((mname (compiler:method:name c o)))
+      (set-car! (cdr c) mname)
+      (compiler:emit c ".text")
+      (compiler:emit c ".globl " '_ mname)
+      (compiler:emit c '_ mname ':)
+      (compiler:emit c "pushq %rbp")               ; save caller's frame pointer.
+      (compiler:emit c "movq %rsp, %rbp")          ; set frame pointer to current stack pointer.
+      ;(compiler:emit c "subq $xxx, %rsp")         ; Save space for local variables.
+      (compiler:method:body c o)
+      (compiler:emit c "leave")
+      (compiler:emit c "ret") 
+      )))
 
 (define compiler:method:name
   (lambda (c o)
@@ -39,7 +43,32 @@
   (lambda (c o)
     (compiler:emit c "movq $42, %rax")
     (compiler:emit c "addq %rax, %rax")
+    (compiler:emit c "orq  $1, %rax")
     ))
+
+(define compiler:assemble
+  (lambda (c)
+    (let ((name (car (cdr c))))
+      (let ((sfile (string-append name ".s"))
+	    (ofile (string-append name ".o"))
+	    (dfile (string-append name ".dylib"))
+	    )
+					;(display "sfile ")(write sfile)(newline)
+					;(display "ofile ")(write ofile)(newline)
+	(let ((f (open-output-file sfile))
+	      (st nil))
+	  (display (compiler:stream c) f)
+	  (close-output-file f)
+
+	  (posix:system (string-append "gcc --verbose -export-dynamic -fno-common -DPIC -c -o " ofile " " sfile))
+	  (posix:system (string-append "otool -tv " ofile))
+	  (posix:system (string-append "gcc --verbose -dynamiclib -Wl,-undefined -Wl,dynamic_lookup -o " dfile " " ofile " -compatibility_version 1 -current_version 1.0 -Wl,-single_module"))
+	  (posix:system (string-append "otool -tv " dfile))
+
+	  (set! st ('_dlopen (string-append "./" dfile)))
+	  (write st)
+	  ; ('_ccall ('get st (make-symbol name)))
+	)))))
 
 ;;;;;
 
@@ -47,3 +76,6 @@
 (define c (compiler:make))
 (compiler:method c m)
 (compiler:stream c)
+;(compiler:assemble c)
+
+
