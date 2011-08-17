@@ -134,6 +134,11 @@ tort_v _tort_m_io____finalize(tort_tp tort_io *rcvr)
   return tort_nil;
 }
 
+tort_v _tort_m_string___write(tort_tp tort_io *rcvr, tort_v str)
+{
+  return_tort_send(tort__s(_append), rcvr, tort_string_data(str), tort_string_size(str));
+}
+
 tort_v _tort_m_string____write(tort_tp tort_string *rcvr, void *data, size_t size)
 {
   tort_send(tort__s(_append), rcvr, data, size);
@@ -145,6 +150,10 @@ tort_v _tort_m_string__flush(tort_tp tort_string *rcvr)
   return rcvr;
 }
 
+tort_v _tort_m_string__close(tort_tp tort_string *rcvr)
+{
+  return rcvr;
+}
 
 extern tort_v tort_runtime_initialize_printf();
 tort_v tort_runtime_initialize_io()
