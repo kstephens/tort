@@ -19,6 +19,12 @@ tort_v _tort_m_ptr___ptr_object(tort_tp tort_v p, void **pptr)
   return p;
 }
 
+tort_v _tort_m_ptr___ccall(tort_tp tort_v p)
+{
+  void *ptr = tort_P(p);
+  return ((tort_v(*)(void)) ptr)();
+}
+
 tort_v _tort_m_object___object_ptr(tort_tp tort_v obj)
 {
   return tort_ptr_new(obj);
