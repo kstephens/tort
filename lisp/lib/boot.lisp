@@ -36,7 +36,6 @@
        (f (car l))
        (for-each (cdr l) f)))))
 
-
 (define <string> (%mtable-by-name 'string))
 (define string? 
   (lambda (o) (eq? (%get-type o) <string>)))
@@ -70,6 +69,20 @@
 (define close-input-file 
   (lambda (f)
     ('close f)))
+(define call-with-input-file
+  (lambda (file proc)
+    (let ((f (open-input-file file))
+	  (r nil))
+      (set! r (proc f))
+      (close-input-file f)
+      r)))
+(define call-with-output-file
+  (lambda (file proc)
+    (let ((f (open-output-file file))
+	  (r nil))
+      (set! r (proc f))
+      (close-output-file f)
+      r)))
 
 (define newline
   (lambda port
@@ -128,13 +141,10 @@
 (define *load-debug* #f)
 (define load 
   (lambda (fname . env)
-    (let ((f (open-input-file fname))
-	  (out (if *load-debug* *standard-error* nil))
+    (let ((out (if *load-debug* *standard-error* nil))
 	  (env (if (null? env) &env (car env))))
       ; (display "opened ")(write fname)(display " => ")(write f)(newline)
-      (let ((r ('lisp_repl f out out env)))
-	(close-input-file f)
-	(r)))))
+      (call-with-input-file fname (lambda (f) ('lisp_repl f out out env))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
