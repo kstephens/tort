@@ -143,7 +143,6 @@
   (lambda (fname . env)
     (let ((out (if *load-debug* *standard-error* nil))
 	  (env (if (null? env) &env (car env))))
-      ; (display "opened ")(write fname)(display " => ")(write f)(newline)
       (call-with-input-file fname (lambda (f) ('lisp_repl f out out env))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

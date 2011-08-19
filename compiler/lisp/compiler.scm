@@ -1,7 +1,9 @@
 (define compiler:make
   (lambda args 
-    (list "" nil)
-    ))
+    (list 
+     ""   ; output sttream
+     nil  ; output name
+     )))
 
 (define compiler:stream
   (lambda (c)
@@ -55,12 +57,11 @@
 	    )
 					;(display "sfile ")(write sfile)(newline)
 					;(display "ofile ")(write ofile)(newline)
-	(let ((f (open-output-file sfile))
-	      (name-sym (make-symbol name))
+	(let ((name-sym (make-symbol name))
 	      (st nil)
 	      (func-ptr nil))
-	  (display (compiler:stream c) f)
-	  (close-output-file f)
+	  (call-with-output-file sfile (lambda (f)
+					 (display (compiler:stream c) f)))
 
 	  (posix:system (string-append "gcc --verbose -export-dynamic -fno-common -DPIC -c -o " ofile " " sfile))
 	  (posix:system (string-append "otool -tv " ofile))
@@ -68,7 +69,7 @@
 	  (posix:system (string-append "otool -tv " dfile))
 
 	  (set! st ('_dlopen (string-append "./" dfile)))
-	  (write st)(newline)
+	  (display "st = ")(write st)(newline)
 	  (display "name-sym = ")(write name-sym)(newline)
 	  ;;(display "name-sym class = ")(write (%get-type name-sym))(newline)
 	  (set! func-ptr ('get st name-sym))
@@ -83,5 +84,4 @@
 (compiler:method c m)
 (compiler:stream c)
 (compiler:assemble c)
-
 
