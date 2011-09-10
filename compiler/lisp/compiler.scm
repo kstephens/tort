@@ -1,7 +1,7 @@
 (define compiler:make
   (lambda args 
     (list 
-     ""   ; output sttream
+     ""   ; output stream
      nil  ; output name
      )))
 
@@ -57,9 +57,10 @@
 	    )
 					;(display "sfile ")(write sfile)(newline)
 					;(display "ofile ")(write ofile)(newline)
-	(let ((name-sym (make-symbol name))
+	(let ((name-sym (string->symbol name))
 	      (st nil)
-	      (func-ptr nil))
+	      (func-ptr nil)
+	      (result #f))
 	  (call-with-output-file sfile (lambda (f)
 					 (display (compiler:stream c) f)))
 
@@ -68,13 +69,17 @@
 	  (posix:system (string-append "gcc --verbose -dynamiclib -Wl,-undefined -Wl,dynamic_lookup -o " dfile " " ofile " -compatibility_version 1 -current_version 1.0 -Wl,-single_module"))
 	  (posix:system (string-append "otool -tv " dfile))
 
+	  
 	  (set! st ('_dlopen (string-append "./" dfile)))
 	  (display "st = ")(write st)(newline)
 	  (display "name-sym = ")(write name-sym)(newline)
 	  ;;(display "name-sym class = ")(write (%get-type name-sym))(newline)
+	  ;;('__debugger st) (set! &trace 1)
 	  (set! func-ptr ('get st name-sym))
 	  (display "func-ptr = ")(write func-ptr)(newline)
-	  ('_ccall func-ptr)
+	  (set! result ('_ccall func-ptr))
+	  (display "result = ")(write result)(newline)
+	  result
 	)))))
 
 ;;;;;
