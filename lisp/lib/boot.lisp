@@ -52,6 +52,8 @@
   (lambda (o) (eq? (%get-type o) <symbol>)))
 (define make-symbol 
   (lambda (s) ('_create <symbol> s)))
+(define string->symbol 
+  (lambda (s) ('new <symbol> s)))
 
 (define *standard-input*  (%root 'stdin))
 (define *standard-output* (%root 'stdout))
