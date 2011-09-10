@@ -5,6 +5,10 @@
      nil  ; output name
      )))
 
+(define compiler:output-name 
+  (lambda (c)
+    (car (cdr c))))
+
 (define compiler:stream
   (lambda (c)
     (car c)))
@@ -24,7 +28,7 @@
 (define compiler:method 
   (lambda (c o)
     (let ((mname (compiler:method:name c o)))
-      (set-car! (cdr c) mname)
+      (set-car! (cdr c) mname) ; HACK compiler:output-name
       (compiler:emit c ".text")
       (compiler:emit c ".globl " '_ mname)
       (compiler:emit c '_ mname ':)
@@ -33,7 +37,8 @@
       ;(compiler:emit c "subq $xxx, %rsp")         ; Save space for local variables.
       (compiler:method:body c o)
       (compiler:emit c "leave")
-      (compiler:emit c "ret") 
+      (compiler:emit c "ret")
+      c
       )))
 
 (define compiler:method:name
@@ -49,8 +54,9 @@
     ))
 
 (define compiler:assemble
-  (lambda (c)
-    (let ((name (car (cdr c))))
+  (lambda (c . options)
+    (let ((name (compiler:output-name c))
+	  (verbose (not (null? options))))
       (let ((sfile (string-append name ".s"))
 	    (ofile (string-append name ".o"))
 	    (dfile (string-append name ".dylib"))
@@ -64,29 +70,49 @@
 	  (call-with-output-file sfile (lambda (f)
 					 (display (compiler:stream c) f)))
 
-	  (posix:system (string-append "gcc --verbose -export-dynamic -fno-common -DPIC -c -o " ofile " " sfile))
-	  (posix:system (string-append "otool -tv " ofile))
-	  (posix:system (string-append "gcc --verbose -dynamiclib -Wl,-undefined -Wl,dynamic_lookup -o " dfile " " ofile " -compatibility_version 1 -current_version 1.0 -Wl,-single_module"))
-	  (posix:system (string-append "otool -tv " dfile))
+	  (posix:system (string-append "gcc "
+				       (if verbose "--verbose" "")
+				       " -export-dynamic -fno-common -DPIC -c -o " ofile " " sfile))
+	  (if verbose (posix:system (string-append "otool -tv " ofile)))
+	  (posix:system (string-append "gcc "
+				       (if verbose "--verbose" "")
+				       " -dynamiclib -Wl,-undefined -Wl,dynamic_lookup -o " dfile " " ofile " -compatibility_version 1 -current_version 1.0 -Wl,-single_module"))
+	  (if verbose (posix:system (string-append "otool -tv " dfile)))
+	  (set! result dfile)
+	  (display "compile:assemble => ")(write result)(newline)
+	  result
+	)))))
 
-	  
+(define compiler:load 
+  (lambda (c . options)
+    (let ((name (compiler:output-name c))
+	  (verbose (not (null? options))))
+      (let ((sfile (string-append name ".s"))
+	    (ofile (string-append name ".o"))
+	    (dfile (string-append name ".dylib"))
+	    )
+	(let ((name-sym (string->symbol name))
+	      (st nil)
+	      (func-ptr nil)
+	      (result nil))
 	  (set! st ('_dlopen (string-append "./" dfile)))
-	  (display "st = ")(write st)(newline)
-	  (display "name-sym = ")(write name-sym)(newline)
+	  ;;(display "st = ")(write st)(newline)
+	  ;;(display "name-sym = ")(write name-sym)(newline)
 	  ;;(display "name-sym class = ")(write (%get-type name-sym))(newline)
 	  ;;('__debugger st) (set! &trace 1)
 	  (set! func-ptr ('get st name-sym))
-	  (display "func-ptr = ")(write func-ptr)(newline)
+	  (if verbose (begin (display "func-ptr = ")(write func-ptr)(newline)))
 	  (set! result ('_ccall func-ptr))
 	  (display "result = ")(write result)(newline)
 	  result
-	)))))
+    )))))
 
 ;;;;;
 
 (define m ('get ('_mtable 'symbol) '_inspect))
 (define c (compiler:make))
 (compiler:method c m)
-(compiler:stream c)
+;; (compiler:stream c)
 (compiler:assemble c)
+(compiler:load c)
 
