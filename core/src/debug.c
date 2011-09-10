@@ -58,6 +58,7 @@ tort_v _tort_m_object____debugger(tort_thread_param tort_v rcvr)
   tort_vector_loop_end(bt);
 
   printf("\n");
+  tort_debug_stop_at();
 
   return rcvr;
 }
