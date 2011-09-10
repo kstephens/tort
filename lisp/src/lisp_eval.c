@@ -202,6 +202,9 @@ tort_v _tort_m_lisp_environment__get(tort_tp tort_lisp_environment *env, tort_v 
 
 tort_v _tort_m_lisp_environment__set(tort_tp tort_lisp_environment *env, tort_v name, tort_v value)
 {
+  if ( name == tort_s(ANDtrace) ) {
+    _tort_lisp_trace = tort_I(value);
+  } else
   if ( env->formals->rest == name ) {
     env->rest = value;
   } else {
