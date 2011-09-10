@@ -1,0 +1,7 @@
+#!/bin/bash
+export TORT_GC=0
+cat <<END >./.tort.gdb
+break tort_debug_stop_at
+run
+END
+exec gdb --command=./.tort.gdb --args "$@"
