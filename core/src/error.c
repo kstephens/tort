@@ -37,7 +37,7 @@ tort_v _tort_fatal(const char *format, va_list *vapp)
 tort_v _tort_error(const char *format, va_list *vapp)
 {
   tort_error_messagev("error", format, vapp);
-  abort();
+  tort_send(tort__s(__debugger), _tort_message);
   return 0;
 }
 
