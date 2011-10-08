@@ -23,18 +23,18 @@
 (define set-cdr! (lambda (o v) ('set-cdr! o v)))
 (define list (lambda args args))
 (define map 
-  (lambda (l f)
+  (lambda (f l)
     (if (null? l)
 	l
       (cons (f (car l))
-	    (map (cdr l) f)))))
+	    (map f (cdr l))))))
 (define for-each
-  (lambda (l f)
+  (lambda (f l)
     (if (null? l)
 	l
       (begin
        (f (car l))
-       (for-each (cdr l) f)))))
+       (for-each f (cdr l))))))
 
 (define <string> (%mtable-by-name 'string))
 (define string? 
