@@ -2,9 +2,13 @@
 set -e # x
 (
     cat "$1.begin"
-    for f in src/*.c include/tort/integer.h
+    srcs="$(ls src/*.c include/tort/integer.h)"
+    cat <<EOF
+/* Sources: $srcs */
+EOF
+    for f in $srcs
     do
-      ${CC} ${CFLAGS} -E -o - "$f"
+      ${CC} ${CFLAGS} -E -o - "$f" || :
     done |
     perl -ne 'print "extern ", $1, ";\n" if ( ! /^\s*(static|extern|return)\b/ && ! /TORT_NO_INTERNAL/ && /^([a-z0-9_\*]+?\s+_tort_[a-zA-Z0-9_]+\s*[(][^)]+[)])\s*(\{\s+|;\s*$|$)/i ); ' |
     sort -u
