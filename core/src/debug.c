@@ -46,6 +46,7 @@ tort_v _tort_m_object____debugger(tort_thread_param tort_v rcvr)
 {
   tort_v bt;
 
+  (void) tort__s(__printfs);
   printf("\ntort debugger:\n");
   printf("rcvr = "); tort_inspect(IO, rcvr); printf("\n");
   bt = tort_send(tort_s(backtrace), _tort_message);
