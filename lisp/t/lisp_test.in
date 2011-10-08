@@ -114,4 +114,6 @@ a
 ('baz)
 
 
+;; Show graph of lisp env.
+('graph ('get ('get &root 'mtable) 'object_graph) &env)
 
