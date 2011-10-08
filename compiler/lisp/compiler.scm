@@ -20,8 +20,9 @@
 (define compiler:emit 
   (lambda (c . args)
     (set! c (compiler:stream c))
-    (for-each args (lambda (x)
-		(display x c)))
+    (for-each (lambda (x)
+		(display x c)) 
+	      args)
     (newline c)
     ))
 
@@ -107,12 +108,4 @@
 	  result
     )))))
 
-;;;;;
-
-(define m ('get ('_mtable 'symbol) '_inspect))
-(define c (compiler:make))
-(compiler:method c m)
-;; (compiler:stream c)
-(compiler:assemble c)
-(compiler:load c)
-
+;;;;
