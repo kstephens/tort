@@ -70,7 +70,7 @@ tort_v _tort_m_string__escapeE(tort_tp tort_string *str)
   return str;
 }
 
-tort_v _tort_m_string__unescape(tort_tp tort_string *str)
+tort_v _tort_m_string__unescape(tort_tp tort_string *str, tort_v more)
 {
   tort_string *result = tort_send(tort__s(clone), str);
   char *dst, *src = str->data, *src_end = str->data + str->size;
@@ -78,24 +78,24 @@ tort_v _tort_m_string__unescape(tort_tp tort_string *str)
   dst = result->data;
   while ( src < src_end ) {
     int c = *(src ++);
-    if ( 32 <= c || c < 127 ) { 
-      dst ++;
-    } else {
+    if ( c == '\\' || (more != tort_nil && c == '"') ) {
+      *(dst ++) = '\\';
+    } else if ( ! (32 <= c || c < 127)  ) { 
+      *(dst ++) = '\\'; 
       switch ( c ) {
-      case '\a': *(dst ++) = '\\'; c = 'a'; break;
-      case '\b': *(dst ++) = '\\'; c = 'b'; break;
-      case '\e': *(dst ++) = '\\'; c = 'e'; break;
-      case '\n': *(dst ++) = '\\'; c = 'n'; break;
-      case '\r': *(dst ++) = '\\'; c = 'r'; break;
-      case '\t': *(dst ++) = '\\'; c = 't'; break;
+      case '\a': c = 'a'; break;
+      case '\b': c = 'b'; break;
+      case '\e': c = 'e'; break;
+      case '\n': c = 'n'; break;
+      case '\r': c = 'r'; break;
+      case '\t': c = 't'; break;
       default:
-	*(dst ++) = '\\';
 	*(dst ++) = '0' + ((c >> 6) & 0x7);
 	*(dst ++) = '0' + ((c >> 3) & 0x7);
 	c         = '0' + ((c >> 0) & 0x7);
       }
-      *(dst ++) = c;
     }
+    *(dst ++) = c;
   }
   *dst = 0;
   return_tort_send(tort__s(_resize), result, dst - result->data);
