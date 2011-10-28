@@ -39,6 +39,7 @@
 (define <string> (%mtable-by-name 'string))
 (define string? 
   (lambda (o) (eq? (%get-type o) <string>)))
+(define string-new (lambda a ('new <string> (if (pair? a) (car a) 0))))
 (define string-length (lambda (s) ('size s)))
 (define string-ref (lambda (s i) ('get s i)))
 (define string-set! (lambda (s i v) ('set s i v)))
@@ -114,6 +115,10 @@
 	)
       a)))
 
+(define <tagged> (%mtable-by-name 'tagged))
+(define tagged? (lambda o (eq? (%get-type o) <tagged>)))
+(define number? tagged?)
+
 (define +
   (lambda args
     (if (null? args)
@@ -138,6 +143,19 @@
 	('/ 1 first)
       ('/ first (%reduce (lambda (a b) ('* a b)) args)))))
 
+;; BITWISE OPERATORS.
+(define |
+  (lambda (first . args)
+    ('| first (%reduce (lambda (a b) ('| a b)) args))))
+
+(define &
+  (lambda (first . args)
+    ('& first (%reduce (lambda (a b) ('& a b)) args))))
+
+(define ^
+  (lambda (first . args)
+    ('^ first (%reduce (lambda (a b) ('^ a b)) args))))
+
 (define = eq?)
 
 (define *load-debug* #f)
@@ -146,6 +164,14 @@
     (let ((out (if *load-debug* *standard-error* nil))
 	  (env (if (null? env) &env (car env))))
       (call-with-input-file fname (lambda (f) ('lisp_repl f out out env))))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define object->string
+  (lambda (o)
+    (let ((s (string-new)))
+      ('_inspect o s)
+      s)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
