@@ -32,7 +32,7 @@ tort_v _tort_m_ptr___inspect(tort_tp tort_v rcvr, tort_v io)
 
 tort_v _tort_m_string___inspect(tort_thread_param tort_v rcvr, tort_v io)
 {
-  tort_v str = tort_send(tort__s(unescape), rcvr, tort_i('"'));
+  tort_v str = tort_send(tort__s(escape), rcvr, tort_i('"'));
   printf("\"%s\"", (char *) tort_string_data(str));
   return tort_nil;
 }

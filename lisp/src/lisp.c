@@ -3,6 +3,7 @@
 tort_v _tort_M_cons__new(tort_thread_param tort_v cons_mt, tort_v a, tort_v d)
 {
   tort_cons *cons = tort_send(tort__s(_allocate), cons_mt, sizeof(*cons));
+  assert(cons);
   cons->car = a;
   cons->cdr = d;
   return cons;
@@ -186,7 +187,7 @@ tort_v _tort_m_io__lisp_read (tort_thread_param tort_v stream)
 #define SET_CDR(CONS,V) tort_send(tort_s(setDcdrE), CONS, V)
 #define MAKE_CHAR(I) tort_i(I)
 #define STRING(b, l) tort_string_new(b, l)
-#define ESCAPE_STRING(X) tort_send(tort_s(escapeE), X)
+#define ESCAPE_STRING(X) tort_send(tort_s(unescapeE), X)
 #define LIST_2_VECTOR(X) tort_send(tort_s(list_TO_vector), X)
 #define SYMBOL_DOT tort_s(DOT)
 #define SYMBOL(NAME) tort_s(NAME)

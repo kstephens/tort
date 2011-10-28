@@ -27,13 +27,14 @@ tort_v _tort_M_string__new(tort_tp tort_mtable *mtable, tort_v size)
   return_tort_send(tort__s(_new), mtable, 0, tort_I(size));
 }
 
-tort_v _tort_m_string__escapeE(tort_tp tort_string *str)
+tort_v _tort_m_string__unescapeE(tort_tp tort_string *str)
 {
   char *dst, *src = str->data, *src_end = str->data + str->size;
   dst = src;
   while ( src < src_end ) {
-    if ( *(src ++) == '\\' && src < src_end ) {
-      int c;
+    int c = *(src ++);
+    if ( c == '\\' && src < src_end ) {
+      int d = 0;
       switch ( (c = *(src ++)) ) {
       case 'a': c = '\a'; break;
       case 'b': c = '\b'; break;
@@ -43,34 +44,30 @@ tort_v _tort_m_string__escapeE(tort_tp tort_string *str)
       case 't': c = '\t'; break;
       case '0' ... '7':
 	c -= '0'; 
-	if ( ! *src ) break;
-	c <<= 3; c += *(src ++) - '0';
-	if ( ! *src ) break;
-	c <<= 3; c += *(src ++) - '0';	
+	if ( src >= src_end ) break;
+	c <<= 3; c += (*(src ++) - '0') & 7;
+	if ( src >= src_end ) break;
+	c <<= 3; c += (*(src ++) - '0') & 7;	
 	break;
-      case 'x': {
-	{ int x = c;
-	  x = x >= 'a' ? x - 'a' + 10 : x >= 'A' ? x - 'A' + 10 : x - '0';
-	  c = x;
-	  if ( ! *src ) break;
-	  x = *(src ++);
-	  x = x >= 'a' ? x - 'a' + 10 : x >= 'A' ? x - 'A' + 10 : x - '0';
-	  c <<= 4; c += x;
-	}
+      case 'x': 
+	d = c;
+	d = (d >= 'a' ? d - 'a' + 10 : d >= 'A' ? d - 'A' + 10 : d - '0') & 15;
+	c = d;
+	if ( src >= src_end ) break;
+	d = *(src ++);
+	d = (d >= 'a' ? d - 'a' + 10 : d >= 'A' ? d - 'A' + 10 : d - '0') & 15;
+	c <<= 4; c += d;
 	break;
       }
-      }
-      *(dst ++) = c;
-    } else {
-      dst ++;
     }
+    *(dst ++) = c;
   }
   *dst = 0;
   str->size = dst - str->data;
   return str;
 }
 
-tort_v _tort_m_string__unescape(tort_tp tort_string *str, tort_v more)
+tort_v _tort_m_string__escape(tort_tp tort_string *str, tort_v more)
 {
   tort_string *result = tort_send(tort__s(clone), str);
   char *dst, *src = str->data, *src_end = str->data + str->size;
