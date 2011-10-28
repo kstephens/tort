@@ -25,7 +25,7 @@ export CFLAGS
 
 ######################################################################
 
-TEST_C_FILES = $(shell ls t/*.c | sort -u)
+TEST_C_FILES = $(shell ls t/*.c 2>/dev/null | sort -u)
 TEST_T_FILES = $(TEST_C_FILES:.c=.t)
 TEST_FILES = $(TEST_C_FILES:.c=)
 TEST_OUT_FILES = $(TEST_C_FILES:.c=.out)
