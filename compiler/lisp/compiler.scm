@@ -89,6 +89,61 @@
                      " // constant object ref " ptr))
     ))
 
+(define compiler:compile-call
+  (lambda (c sel rcvr args)
+    ;; %rbx contains current message.
+    ;;
+    ;; Create message object on stack:
+    ;;   pushq %r15
+    ;;   subq  $(sizeof(tort_message)), %rsp
+    ;;   movq  %rsp, %r15 # %r15 now has address of message object
+    ;;   
+    ;; Initialize message object on stack:
+    ;;
+    ;;   movq  %rbx, tort_message.previous_message(%r15)
+    ;;   (comp sel) => %eax
+    ;;   movq  %eax, tort_message.selector(%r15)
+    ;;   (comp rcvr) => %eax
+    ;;   movq  %eax, tort_message.receiver(%r15)
+    ;;   movq  $(size args), tort_message.argc(%r15)
+    ;;
+    ;; %r15 = _tort_lookup(_tort_message, rcvr, message)
+    ;;
+    ;;   movq  %r15, %rdx ;
+    ;;   movq  %rax, %rsi ;
+    ;;   movq  %rbx, %rdi ;
+    ;;   call  _tort_lookup ; (_tort_message:%rdi, rcvr:%rsi, message:%rdx)
+    ;;   movq  %rax, %r15
+    ;;
+    ;; Invoke method->func(message, rcvr, args ...):
+    ;;
+    ;; Emit arguments into (%rdi, %rsi, %rdx, %rcx, %r8,  %r9,  push sp, etc)
+    ;;                      msg,  rcvr, arg0, arg1, arg2, arg3, arg4, etc)
+    ;; 
+    ;;   (comp arg4) => %rax
+    ;;   push %rax
+    ;;   (comp arg3) => %rax
+    ;;   movq %rax, %r9 ; arg3
+    ;;   (comp arg2) => %rax
+    ;;   movq %rax, %r8 ; arg2
+    ;;   (comp arg1) => %rax
+    ;;   movq %rax, %rcx ; arg1
+    ;;   (comp arg0) => %rax
+    ;;   movq %rax, %rdx ; arg0
+    ;;   movq tort_message.receiver(%r15), %rsi ; rcvr
+    ;;   movq %r15, %rdi ; msg
+    ;;
+    ;;   movq tort_message.method(%rbx), %rax
+    ;;   movq tort_method.func(%rax), %rax
+    ;;   call *(%rax)
+    ;; 
+    ;; Pop args sp:
+    ;; Pop message space:
+    ;;
+    ;; Restore %r15:
+    ;;    popq %r15:
+    ))
+
 (define compiler:literal:string
   (lambda (c o)
     (let ((v   (compiler:label c))

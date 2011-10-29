@@ -38,7 +38,16 @@ tort_v _tort_plain_c(void *arg0, tort_v arg1, tort_v arg2, tort_v arg3, tort_v a
 
 
 /* 
-IA64: calling sequence:
+x86 64: calling sequence:
+
+http://en.wikipedia.org/wiki/X86_calling_conventions#Microsoft_x64_calling_convention
+
+System V AMD64 ABI convention
+
+The calling convention of the System V AMD64 application binary interface[9] is followed on Linux and other non-Microsoft operating systems. 
+The registers RDI, RSI, RDX, RCX, R8 and R9 are used for integer and pointer arguments while XMM0, XMM1, XMM2, XMM3, XMM4, XMM5, XMM6 and XMM7 are used for floating point arguments.
+For system calls, R10 is used instead of RCX.[9] As in the Microsoft x64 calling convention, additional arguments are pushed onto the stack and the return value is stored in RAX.
+
 
 At Entry into callee:
 
@@ -64,7 +73,7 @@ Callee saves registers:
 	movq	%r13, -24(%rbp)
 	movq	%r14, -16(%rbp)
 	movq	%r15, -8(%rbp)
-	subq	$64, %rsp // extra space for %r9
+	subq	$80, %rsp // extra space for %r9 temp and additional arg?
 
 Callee saves arguments on stack:
 	movq    %r9,  -56(%rbp)
