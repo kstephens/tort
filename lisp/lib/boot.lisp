@@ -116,7 +116,7 @@
       a)))
 
 (define <tagged> (%mtable-by-name 'tagged))
-(define tagged? (lambda o (eq? (%get-type o) <tagged>)))
+(define tagged? (lambda (o) (eq? (%get-type o) <tagged>)))
 (define number? tagged?)
 
 (define +
