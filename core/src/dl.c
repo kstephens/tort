@@ -125,7 +125,7 @@ static int process_method(int cmeth, const char *prefix, tort_pair *e)
 	  fprintf(stderr, "  method %s%c%s => @%p\n", cls, cmeth ? '.' : '#', meth, ptr);
 	tort_v mtable = tort_mtable_get(cls_buf);
 	if ( ! mtable ) {
-	  tort_error("dl: cannot find mtable %s", cls_buf);
+	  tort_error(tort_ta "dl: cannot find mtable %s", cls_buf);
 	  return -1;
 	}
 	if ( cmeth ) {

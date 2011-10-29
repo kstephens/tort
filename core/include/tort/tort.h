@@ -85,6 +85,9 @@ struct tort_message { tort_H;
   tort_method  *method; /* the found method. */
   tort_mtable  *mtable; /* the mtable where the method was found. */
   short argc;  /* number of arguments, including reciever.  >= 0 if specified by caller. */
+#if TORT_MESSAGE_FILE_LINE
+  const char *file; int line;
+#endif
 };
 tort_h_struct(tort_message);
 
@@ -221,23 +224,23 @@ struct tort_runtime { tort_H;
 #endif
   tort_v string_null, vector_null;
   tort_v b_true, b_false;
-  tort_v symbols;
-  tort_v root;
+  tort_v symbols; /** Symbol table map: string=>symbol. */
+  tort_v root; /** Root namespace. */
 
   tort_v message; /* Current message: not thread/fiber-safe. */
   tort_v _m_method_not_found; /** method called if method cannot be found. */
 
   tort_v _in_error;
-#define tort_error_decl(X)  tort_v X (const char *format, va_list *vapp)
+#define tort_error_decl(X)  tort_v X (tort_tp const char *format, va_list *vapp)
   tort_error_decl((*error));
   tort_error_decl((*fatal));
 
-  tort_header nil_header;
-  tort_header tagged_header;
+  tort_header nil_header; /** Header for tort_nil object. */
+  tort_header tagged_header; /** Header for tagged object (integers). */
 
-  int _argc;
-  char **_argv;
-  char **_env;
+  int _argc; /** Process argument count from main(). */
+  char **_argv;/** Process argument vector from main(). */
+  char **_env;/** Process environment from main(). */
 
 #define tort_d_mt(N) tort_mtable *_mt_##N;
 #include "tort/d_mt.h"
@@ -286,6 +289,14 @@ tort_lookup_decl(_tort_m_mtable__lookup);
 #define _tort_send_RCVR(RCVR, ARGS...)(RCVR)
 #define _tort_send_ARGS(RCVR, ARGS...)ARGS
 #define _tort_send_RCVR_ARGS(RCVR, EATEN, ARGS...)RCVR, ##ARGS
+#if TORT_MESSAGE_FILE_LINE
+#define _tort_send_msg_file_line() __tort_msg._.file = __FILE__; __tort_msg._.line = __LINE__
+#define _tort_send_msg_file_line_t() _tort_message->file = __FILE__; _tort_message->line = __LINE__
+#else
+#define _tort_send_msg_file_line() 
+#define _tort_send_msg_file_line_t() 
+#endif
+
 #define _tort_send_msg_init(SEL, RCVR_AND_ARGS...)			\
     tort_message_ __tort_msg = {					\
       { },								\
@@ -293,7 +304,8 @@ tort_lookup_decl(_tort_m_mtable__lookup);
 	(tort_v) _tort_send_RCVR(RCVR_AND_ARGS),			\
 	_tort_message,							\
       }									\
-    }
+    };									\
+    _tort_send_msg_file_line()
 
 #define _tort_sendn(SEL, ARGC, RCVR_AND_ARGS...)			\
   ({									\
@@ -311,6 +323,7 @@ tort_lookup_decl(_tort_m_mtable__lookup);
     _tort_message->selector = (tort_v) (SEL);				\
     _tort_message->receiver = (tort_v) _tort_send_RCVR(RCVR_AND_ARGS);	\
     _tort_message->argc = (ARGC);					\
+    _tort_send_msg_file_line_t();					\
     return								\
       _tort_lookup(_tort_message, _tort_message->receiver, _tort_message)-> \
       method->applyf(_tort_message, _tort_send_RCVR_ARGS(_tort_message->receiver, RCVR_AND_ARGS)); \
@@ -373,8 +386,8 @@ tort_v tort_add_class_method(tort_v map, const char *name, void *applyf);
 tort_v tort_runtime_create_ (int *argcp, char ***argvp, char ***envp);
 #define tort_runtime_create() tort_runtime_create_(&argc, &argv, &environ)
 
-tort_v tort_fatal (const char *format, ...);
-tort_v tort_error (const char *format, ...);
+tort_v tort_fatal (tort_tp const char *format, ...);
+tort_v tort_error (tort_tp const char *format, ...);
 tort_v tort_error_message(const char *format, ...);
 
 void tort_debug_stop_at();

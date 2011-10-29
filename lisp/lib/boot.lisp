@@ -175,6 +175,19 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(define <mtable> (%mtable-by-name 'mtable))
+(define mtable? (lambda (o) (eq? (%get-type o) <mtable>)))
+
+(define <map> (%mtable-by-name 'map))
+(define map? (lambda (o) (eq? (%get-type o) <map>)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define posix ('allocate <posix>))
+(define posix:system (lambda (str) ('system posix str)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (define <posix> (%mtable-by-name 'posix))
 (define posix ('allocate <posix>))
 (define posix:system (lambda (str) ('system posix str)))
@@ -183,6 +196,6 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(set! *load-debug* #t)
+; (set! *load-debug* #t)
 (load "compiler/lisp/compiler.scm")
 

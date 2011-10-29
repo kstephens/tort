@@ -198,7 +198,7 @@ tort_v _tort_m_io__lisp_read (tort_thread_param tort_v stream)
 #define T  tort_true
 #define F  tort_false
 #define U  tort_nil
-#define ERROR(format, args...) tort_error(format, ##args)
+#define ERROR(format, args...) tort_error(tort_ta format, ##args)
 
 tort_v _tort_string_to_number(tort_v s, int radix) /**/
 {

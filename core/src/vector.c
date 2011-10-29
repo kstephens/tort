@@ -1,7 +1,7 @@
 #include "tort/core.h"
 #include <assert.h>
 
-tort_v _tort_M_vector_base___new(tort_thread_param tort_v mtable, const void *data, size_t size, size_t element_size)
+tort_v _tort_M_vector_base___new(tort_tp tort_v mtable, const void *data, size_t size, size_t element_size)
 {
   tort_vector_base *v = tort_allocate(mtable, sizeof(tort_vector_base));
   _tort_m_vector_base___initialize(tort_thread_arg v, size, element_size);

@@ -26,7 +26,7 @@ tort_v tort_error_message(const char *format, ...)
   return 0;
 }
 
-tort_v _tort_fatal(const char *format, va_list *vapp)
+tort_v _tort_fatal(tort_tp const char *format, va_list *vapp)
 {
   tort_error_messagev("fatal", format, vapp);
   abort();
@@ -34,7 +34,7 @@ tort_v _tort_fatal(const char *format, va_list *vapp)
 }
 
 
-tort_v _tort_error(const char *format, va_list *vapp)
+tort_v _tort_error(tort_tp const char *format, va_list *vapp)
 {
   tort_error_messagev("error", format, vapp);
   tort_send(tort__s(__debugger), _tort_message);
@@ -42,24 +42,24 @@ tort_v _tort_error(const char *format, va_list *vapp)
 }
 
 
-tort_v tort_fatal (const char *format, ...)
+tort_v tort_fatal (tort_tp const char *format, ...)
 {
   va_list vap;
   va_start(vap, format);
   if ( tort_(_initialized) ) {
     tort_printf(tort_stderr, "  in message: %T\n", _tort_message);
   }
-  tort_(fatal)(format, &vap);
+  tort_(fatal)(tort_ta format, &vap);
   va_end(vap);
   return 0;
 }
 
 
-tort_v tort_error (const char *format, ...)
+tort_v tort_error (tort_tp const char *format, ...)
 {
   va_list vap;
   va_start(vap, format);
-  tort_(error)(format, &vap);
+  tort_(error)(tort_ta format, &vap);
   va_end(vap);
   return 0;
 }

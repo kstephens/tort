@@ -130,9 +130,9 @@ tort_v _tort_M_lisp_environment__new(tort_tp tort_mtable *mtable, tort_lisp_form
     argc = tort_send(tort_s(size), args);
   env->argc = argc;
   if ( argc < formals->argc )
-    tort_error("not enough args");
+    tort_error(tort_ta "not enough args");
   if ( formals->rest == tort_false && env->argc > formals->argc )
-    tort_error("too many args");
+    tort_error(tort_ta "too many args");
   if ( tort_h_mtable(args) == tort_mt(vector) ) {
     env->argv = args;
     env->rest = tort_false; /* Lazy: see get below. */
@@ -192,7 +192,7 @@ tort_v _tort_m_lisp_environment__get(tort_tp tort_lisp_environment *env, tort_v 
       return_tort_send(tort__s(get), env->argv, index);
     } else {
       if ( env->parent == tort_nil ) {
-	return tort_error("get: cannot find %O\n", name);
+	return tort_error(tort_ta "get: cannot find %O\n", name);
       } else {
 	return_tort_send(tort__s(get), env->parent, name);
       }
@@ -213,7 +213,7 @@ tort_v _tort_m_lisp_environment__set(tort_tp tort_lisp_environment *env, tort_v 
       tort_send(tort__s(set), env->argv, index, value);
     } else {
       if ( env->parent == tort_nil ) {
-	tort_error("symbol %O is unbound", name);
+	tort_error(tort_ta "symbol %O is unbound", name);
       } else {
 	tort_send(tort__s(set), env->parent, name, value);
       }

@@ -29,6 +29,10 @@
 #define TORT_FALSE_IS_NIL 0 /* if true, tort_false = tort_nil */
 #endif
 
+#ifndef TORT_MESSAGE_FILE_LINE
+#define TORT_MESSAGE_FILE_LINE 1 /* if true, messages contain file, line info. */
+#endif
+
 #ifndef TORT_ALLOC_DEBUG
 #define TORT_ALLOC_DEBUG 0
 #endif

@@ -17,7 +17,7 @@ tort_v _tort_m_object____message(tort_thread_param tort_v rcvr)
   return_tort_send(tort__s(clone), rcvr);
 }
 
-tort_v _tort_m_message__backtrace(tort_thread_param tort_v rcvr)
+tort_v _tort_m_message__backtrace(tort_tp tort_v rcvr)
 {
   tort_v v, msg;
   size_t i = 0;
@@ -42,7 +42,7 @@ tort_v _tort_m_message__backtrace(tort_thread_param tort_v rcvr)
   return v;
 }
 
-tort_v _tort_m_object____debugger(tort_thread_param tort_v rcvr)
+tort_v _tort_m_object____debugger(tort_tp tort_v rcvr)
 {
   tort_v bt;
 
@@ -50,7 +50,7 @@ tort_v _tort_m_object____debugger(tort_thread_param tort_v rcvr)
   printf("\ntort debugger:\n");
   printf("rcvr = "); tort_inspect(IO, rcvr); printf("\n");
   bt = tort_send(tort_s(backtrace), _tort_message);
-  printf("backtrace = "); 
+  printf("backtrace =\n----\n"); 
   tort_vector_loop(bt, msg); {
     printf("  ");
     tort_inspect(IO, msg);
@@ -58,7 +58,7 @@ tort_v _tort_m_object____debugger(tort_thread_param tort_v rcvr)
   }
   tort_vector_loop_end(bt);
 
-  printf("\n");
+  printf("----\n");
   tort_debug_stop_at();
 
   return rcvr;
@@ -183,7 +183,7 @@ const char *tort_object_name(tort_v val)
 }
 #undef S
 
-tort_v _tort_m_object___name(tort_thread_param tort_v rcvr)
+tort_v _tort_m_object___name(tort_tp tort_v rcvr)
 {
   return tort_string_new_cstr(tort_object_name(rcvr));
 }

@@ -87,7 +87,10 @@ tort_v _tort_m_message___inspect(tort_tp tort_message *msg, tort_v io)
   printf(", ");
   tort_inspect(IO, msg->method);
   printf(", ");
-  tort_inspect(IO, msg->mtable);
+  printf("%s", tort_object_name(msg->mtable)); // tort_objtort_inspect(IO, msg->mtable);
+#if TORT_MESSAGE_FILE_LINE
+  printf(", \"%s:%d\"", msg->file ? msg->file : "<UNKNOWN>", msg->line);
+#endif
   printf(")"); 
   return tort_nil;
 }
