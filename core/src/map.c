@@ -1,5 +1,11 @@
 #include "tort/core.h"
 
+tort_v _tort_M_map__new(tort_tp tort_v mtable)
+{
+  tort_v val = tort_allocate(mtable, sizeof(tort_map));
+  return _tort_m_map__initialize(tort_thread_arg val);
+}
+
 tort_v _tort_m_map__initialize(tort_thread_param tort_map *rcvr)
 {
   return _tort_m_vector_base___initialize(tort_thread_arg (tort_vector_base*) rcvr, 0, sizeof(tort_pair*));
@@ -103,7 +109,6 @@ tort_v _tort_m_map__clone(tort_thread_param tort_map *rcvr)
 
 tort_v tort_map_create()
 {
-  tort_v val = tort_allocate(tort__mt(map), sizeof(tort_map));
-  return _tort_m_map__initialize(tort_thread_arg val);
+  return _tort_M_map__new(tort_ta tort__mt(map));
 }
 
