@@ -166,8 +166,6 @@
 
 (define compiler:compile:expr-dst
   (lambda (c o dst)
-    ; (compiler:emit c "// expr-dst: " (object->string o) " type:" ('_name (%get-type o)) " => " dst)
-    ; (set! &trace 1)
      (cond
      ((number? o)
       (compiler:compile:number c o dst))
@@ -175,7 +173,6 @@
       (compiler:compile:pair c o dst))
      (else
       (compiler:compile:constant c o dst)))
-    ; (set! &trace 0)
     ))
 
 (define compiler:compile:send
@@ -186,7 +183,7 @@
 		    (set! arg-i (+ arg-i 1))
 		    (list arg-i arg-expr))
 		  args)))
-     (compiler:emit c "// (send " sel " " rcvr " " args ")")
+     ;; (compiler:emit c "// (send " sel " " rcvr " " args ")")
       ;; Create message object on stack:
       ;;   
       ;;   Save msg reg:
@@ -203,18 +200,16 @@
       (compiler:emit c "// _msg => msg->previous_message")
       (compiler:emit c "movq  " _msg ", " msg->previous_message)
       ;;   selector:
-      (compiler:emit c "// sel " (object->string sel) " => msg->selector")
+      ;; (compiler:emit c "// sel " (object->string sel) " => msg->selector")
       (compiler:compile:expr c sel)
       (compiler:emit c "movq  " rtn-reg ", " msg->selector)
       ;(compiler:compile:expr-dst c sel msg->selector)
-
       ;;   argc:
       (let ((argc (+ (length args) 1))) ; + 1 for rcvr
 	(compiler:emit c "// (length args) " argc " => msg->argc")
 	(compiler:compile:expr-dst c argc msg->argc))
-
       ;;   receiver:
-      (compiler:emit c "// rcvr " (object->string rcvr) " => msg->receiver")
+      ;; (compiler:emit c "// rcvr " (object->string rcvr) " => msg->receiver")
       (compiler:compile:expr c rcvr)
       (compiler:emit c "movq  " rtn-reg ", " msg->receiver)
 
@@ -223,7 +218,7 @@
       (compiler:emit c "movq  " rtn-reg ", " arg1-reg " // rcvr")
       (compiler:emit c "movq  " msg     ", " arg2-reg " // message")
       (compiler:emit c "movq  " _msg    ", " arg0-reg " // _tort_message")
-      (compiler:emit c "call  " (compiler:global-symbol c '_tort_lookup))
+      (compiler:emit c "call  " (compiler:global-symbol c '_tort_lookup_debug))
       (compiler:emit c "movq  " rtn-reg ", " msg " // -> message")
 
       ;; Invoke method->func(message, rcvr, args ...):
@@ -254,15 +249,13 @@
       ;; Reclaim message space:
       ;;   Pop message space:
       (compiler:emit c "addq  $" compiler:message:alloc-size ", " sp-reg)
-
-      (compiler:emit c "// (send ...): END")
     ))
 
 (define compiler:compile:caller-arg 
   (lambda (c arg)
     (let ((arg-i    (car arg))
 	  (arg-expr (cadr arg)))
-      (compiler:emit c "// arg #" arg-i " => " (object->string arg-expr))
+      (compiler:emit c "// arg #" arg-i)
       (compiler:compile:expr-dst c arg-expr
 				 (if (< arg-i (vector-length arg-regs))
 				     (vector-ref arg-regs arg-i)
@@ -293,6 +286,22 @@
 	  (compiler:emit c Lfalse ":")))
 	(compiler:emit c Lend ":")
 	))
+     ((eq? (car o) 'while)
+      (let ((Lend (compiler:label c))
+	    (Lagain   (compiler:label c))
+	    (test-expr  (cdr o))
+	    (body-expr  (cddr o)))
+	(compiler:emit c Lagain ":")
+	(compiler:compile:expr-dst c (car test-expr) rtn-reg)
+	(compiler:compile:expr-dst c #f tmp0-reg)
+	(compiler:emit c "cmpq  " rtn-reg ", " tmp0-reg)
+	(compiler:emit c "je    " Lend)
+	(for-each (lambda (stmt)
+		    (compiler:compile:expr-dst c stmt dst))
+		  body-expr)
+	(compiler:emit c "jmp   " Lagain)
+	(compiler:emit c Lend ":")
+	))
      (else
       (compiler:compile:send c (car o) (cadr o) (cddr o))
       ;; send always emits to dst=rtn-reg.
@@ -307,12 +316,10 @@
 
 (define compiler:compile:number
   (lambda (c o dst)
-    ;; (compiler:emit c "// number " o)
     (compiler:compile:literal c (string-append "$" (object->string (| (+ o o) 1))) dst))) ;|
 
 (define compiler:compile:constant
   (lambda (c o dst)
-    ;; (compiler:emit c "// constant " (object->string o))
     (compiler:compile:literal c (compiler:constant c o) dst)))
 
 (define compiler:constant
