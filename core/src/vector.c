@@ -4,7 +4,7 @@
 tort_v _tort_M_vector_base___new(tort_tp tort_v mtable, const void *data, size_t size, size_t element_size)
 {
   tort_vector_base *v = tort_allocate(mtable, sizeof(tort_vector_base));
-  _tort_m_vector_base___initialize(tort_thread_arg v, size, element_size);
+  _tort_m_vector_base___initialize(tort_ta v, size, element_size);
   if ( data )
     memcpy(v->data, data, v->element_size * v->size);
   return v;
@@ -12,10 +12,10 @@ tort_v _tort_M_vector_base___new(tort_tp tort_v mtable, const void *data, size_t
 
 tort_v tort_vector_base_new(tort_v mtable, const void *data, size_t size, size_t element_size)
 {
-  return _tort_M_vector_base___new(tort_thread_arg mtable, data, size, element_size);
+  return _tort_M_vector_base___new(tort_ta mtable, data, size, element_size);
 }
 
-tort_v _tort_m_vector_base___initialize(tort_thread_param tort_vector_base *v, size_t size, size_t element_size)
+tort_v _tort_m_vector_base___initialize(tort_tp tort_vector_base *v, size_t size, size_t element_size)
 {
   v->data = (v->_h[-1].mtable == tort__mt(string) ? tort_malloc_atomic : tort_malloc)
     (
@@ -27,19 +27,19 @@ tort_v _tort_m_vector_base___initialize(tort_thread_param tort_vector_base *v, s
   return v;
 }
 
-tort_v _tort_m_vector_base__clone (tort_thread_param tort_vector_base *v)
+tort_v _tort_m_vector_base__clone (tort_tp tort_vector_base *v)
 {
-  tort_vector_base *v2 = _tort_m_object__clone(tort_thread_arg v);
+  tort_vector_base *v2 = _tort_m_object__clone(tort_ta v);
   v2->data = (v->_h[-1].mtable == tort__mt(string) ? tort_malloc_atomic : tort_malloc)(v2->alloc_size);
   memcpy(v2->data, v->data, v2->element_size * (v2->size + 1));
   return v2;
 }
 
-void* _tort_m_vector_base___data (tort_thread_param tort_vector_base *v)
+void* _tort_m_vector_base___data (tort_tp tort_vector_base *v)
 {
   return v->data;
 }
-void* _tort_m_vector_base___ref (tort_thread_param tort_vector_base *v, tort_v i)
+void* _tort_m_vector_base___ref (tort_tp tort_vector_base *v, tort_v i)
 {
   return v->data + v->element_size * tort_I(i);
 }
@@ -56,7 +56,7 @@ tort_v _tort_m_vector_base___delete_n (tort_tp tort_vector_base *v, tort_v i, to
   return v;
 }
 
-tort_v _tort_m_vector_base___resize (tort_thread_param tort_vector_base *v, size_t size)
+tort_v _tort_m_vector_base___resize (tort_tp tort_vector_base *v, size_t size)
 {
   size_t old_size = v->size;
   size_t old_alloc_size = v->alloc_size;
@@ -75,10 +75,10 @@ tort_v _tort_m_vector_base___resize (tort_thread_param tort_vector_base *v, size
   return v;
 }
 
-tort_v _tort_m_vector_base___append (tort_thread_param tort_vector_base *v, const void *datap, size_t data_count)
+tort_v _tort_m_vector_base___append (tort_tp tort_vector_base *v, const void *datap, size_t data_count)
 {
   size_t size = v->size;
-  _tort_m_vector_base___resize(tort_thread_arg v, size + data_count);
+  _tort_m_vector_base___resize(tort_ta v, size + data_count);
   memcpy(v->data + v->element_size * size,
 	 datap,
 	 v->element_size * data_count);
@@ -87,24 +87,24 @@ tort_v _tort_m_vector_base___append (tort_thread_param tort_vector_base *v, cons
   return v;
 }
 
-tort_v _tort_m_vector_base__append (tort_thread_param tort_vector_base *v, tort_v other)
+tort_v _tort_m_vector_base__append (tort_tp tort_vector_base *v, tort_v other)
 {
   void *data = tort_send(tort__s(_data), other);
   size_t size = tort_I(tort_send(tort__s(size), other));
   assert(v != other);
-  return _tort_m_vector_base___append(tort_thread_arg v, data, size); 
+  return _tort_m_vector_base___append(tort_ta v, data, size); 
 }
 
-tort_v _tort_m_vector_base___add (tort_thread_param tort_vector_base *v, const void *datap)
+tort_v _tort_m_vector_base___add (tort_tp tort_vector_base *v, const void *datap)
 {
-  return _tort_m_vector_base___append(tort_thread_arg v, datap, 1);
+  return _tort_m_vector_base___append(tort_ta v, datap, 1);
 }
 
 /********************************************************************/
 
-tort_v _tort_M_vector___new(tort_thread_param tort_v mtable, const void *data, size_t size)
+tort_v _tort_M_vector___new(tort_tp tort_v mtable, const void *data, size_t size)
 {
-  tort_v val = _tort_M_vector_base___new(tort_thread_arg mtable, data, size, sizeof(tort_v));
+  tort_v val = _tort_M_vector_base___new(tort_ta mtable, data, size, sizeof(tort_v));
   if ( ! data ) {
     size_t i;
     for ( i = 0; i < (size + 1); ++ i )
@@ -123,25 +123,25 @@ tort_v tort_vector_new(const tort_v *vec, size_t size)
   return _tort_M_vector___new(tort_ta tort__mt(vector), vec, size);
 }
 
-tort_v _tort_m_vector__get (tort_thread_param tort_v rcvr, tort_v _i)
+tort_v _tort_m_vector__get (tort_tp tort_v rcvr, tort_v _i)
 {
   long i = tort_I(_i);
   return tort_vector_data(rcvr)[i];
 }
 
-tort_v _tort_m_vector__set (tort_thread_param tort_v rcvr, tort_v _i, tort_v _v)
+tort_v _tort_m_vector__set (tort_tp tort_v rcvr, tort_v _i, tort_v _v)
 {
   long i = tort_I(_i);
   tort_vector_data(rcvr)[i] = _v;
   return rcvr;
 }
 
-tort_v _tort_m_vector__add (tort_thread_param tort_v rcvr, tort_v _v)
+tort_v _tort_m_vector__add (tort_tp tort_v rcvr, tort_v _v)
 {
   return_tort_send(tort__s(_add), rcvr, &_v, 1);
 }
 
-tort_v _tort_m_vector__each (tort_thread_param tort_v rcvr, tort_v block)
+tort_v _tort_m_vector__each (tort_tp tort_v rcvr, tort_v block)
 {
   tort_vector_loop(rcvr, x) {
     tort_send(tort__s(value), block, x);
@@ -149,7 +149,7 @@ tort_v _tort_m_vector__each (tort_thread_param tort_v rcvr, tort_v block)
   return rcvr;
 }
 
-tort_v _tort_m_vector__map (tort_thread_param tort_v rcvr, tort_v block)
+tort_v _tort_m_vector__map (tort_tp tort_v rcvr, tort_v block)
 {
   tort_v new_vec = tort_send(tort__s(clone), rcvr);
   tort_vector_loop(rcvr, x) {
