@@ -11,4 +11,4 @@ gc-*/
 .stats
 *.dSYM/
 local/
-
+tmp/
