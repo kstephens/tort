@@ -3,7 +3,7 @@
 #define IO (io ? io : tort_stdout)
 #define printf(fmt, args...) tort_printf(IO, fmt, ##args)
 
-tort_v _tort_m_object___inspect(tort_thread_param tort_v rcvr, tort_v io)
+tort_v _tort_m_object___inspect(tort_tp tort_v rcvr, tort_v io)
 {
   const char *str = tort_object_name_(rcvr);
   if ( str ) {
@@ -14,7 +14,7 @@ tort_v _tort_m_object___inspect(tort_thread_param tort_v rcvr, tort_v io)
   return tort_nil;
 }
 
-tort_v _tort_m_tagged___inspect(tort_thread_param tort_v rcvr, tort_v io)
+tort_v _tort_m_tagged___inspect(tort_tp tort_v rcvr, tort_v io)
 {
   if ( sizeof(tort_v) == sizeof(long long) ) {
     printf("%lld", (long long) tort_tagged_data(rcvr));
@@ -30,14 +30,14 @@ tort_v _tort_m_ptr___inspect(tort_tp tort_v rcvr, tort_v io)
   return tort_nil;
 }
 
-tort_v _tort_m_string___inspect(tort_thread_param tort_v rcvr, tort_v io)
+tort_v _tort_m_string___inspect(tort_tp tort_v rcvr, tort_v io)
 {
   tort_v str = tort_send(tort__s(escape), rcvr, tort_i('"'));
   printf("\"%s\"", (char *) tort_string_data(str));
   return tort_nil;
 }
 
-tort_v _tort_m_vector___inspect(tort_thread_param tort_v rcvr, tort_v io)
+tort_v _tort_m_vector___inspect(tort_tp tort_v rcvr, tort_v io)
 {
   printf("@vector( ");
   tort_vector_loop(rcvr, obj) {
@@ -58,13 +58,13 @@ tort_v _tort_m_symbol___inspect(tort_tp tort_symbol *rcvr, tort_v io)
   return tort_nil;
 }
 
-tort_v _tort_m_nil___inspect(tort_thread_param tort_v rcvr, tort_v io)
+tort_v _tort_m_nil___inspect(tort_tp tort_v rcvr, tort_v io)
 {
   printf("nil");
   return tort_nil;
 }
 
-tort_v _tort_m_boolean___inspect(tort_thread_param tort_v rcvr, tort_v io)
+tort_v _tort_m_boolean___inspect(tort_tp tort_v rcvr, tort_v io)
 {
   printf(rcvr == tort_false ? "false" : "true");
   return tort_nil;
@@ -95,13 +95,13 @@ tort_v _tort_m_message___inspect(tort_tp tort_message *msg, tort_v io)
   return tort_nil;
 }
 
-tort_v _tort_m_pair___inspect(tort_thread_param tort_pair *rcvr, tort_v io)
+tort_v _tort_m_pair___inspect(tort_tp tort_pair *rcvr, tort_v io)
 {
   printf("@pair(%T, %T)", rcvr->first, rcvr->second);
   return tort_nil;
 }
 
-tort_v _tort_m_map___inspect(tort_thread_param tort_v rcvr, tort_v io)
+tort_v _tort_m_map___inspect(tort_tp tort_v rcvr, tort_v io)
 {
   size_t entry_i = 0;
   printf("@map( \n  ");
