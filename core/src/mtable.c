@@ -27,6 +27,11 @@ tort_v _tort_m_mtable__allocate (tort_tp tort_mtable *mtable)
   return _tort_m_mtable___allocate(tort_ta mtable, mtable->instance_size);
 }
 
+tort_v _tort_m_mtable___instance_size (tort_tp tort_mtable *mtable)
+{
+  return tort_i(mtable->instance_size);
+}
+
 tort_v _tort_m_mtable___allocate (tort_tp tort_mtable *mtable, size_t size)
 {
   void *ptr;

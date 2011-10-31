@@ -10,17 +10,22 @@ tort_v _tort_m_object__not (tort_tp tort_v rcvr)
   return rcvr == tort_false ? rcvr : tort_true;
 }
 
-tort_v _tort_m_object___mtable (tort_thread_param tort_v rcvr)
+tort_v _tort_m_object___object_header_size (tort_tp tort_v rcvr)
+{
+  return tort_i(sizeof(tort_header));
+}
+
+tort_v _tort_m_object___mtable (tort_tp tort_v rcvr)
 {
   return tort_h(rcvr)->mtable;
 }
 
-tort_v _tort_m_object___alloc_size (tort_thread_param tort_v rcvr)
+tort_v _tort_m_object___alloc_size (tort_tp tort_v rcvr)
 {
   return tort_i(tort_h(rcvr)->alloc_size);
 }
 
-tort_v _tort_m_object__clone (tort_thread_param tort_v rcvr)
+tort_v _tort_m_object__clone (tort_tp tort_v rcvr)
 {
   size_t alloc_size = sizeof(tort_header) + tort_h(rcvr)->alloc_size;
   void *ptr = tort_malloc(alloc_size);
@@ -29,7 +34,7 @@ tort_v _tort_m_object__clone (tort_thread_param tort_v rcvr)
   return ptr;
 }
 
-tort_v _tort_m_object__identity (tort_thread_param tort_v rcvr)
+tort_v _tort_m_object__identity (tort_tp tort_v rcvr)
 {
   return rcvr;
 }
