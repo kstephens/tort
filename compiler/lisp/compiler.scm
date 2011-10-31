@@ -175,7 +175,7 @@
      ((symbol? o)
       (compiler:compile:symbol c o dst))
      (else
-      (compiler:compile:constant c o dst)))
+      (compiler:compile:reference c o dst)))
     ))
 
 (define compiler:compile:send
@@ -186,7 +186,7 @@
 		    (set! arg-i (+ arg-i 1))
 		    (list arg-i arg-expr))
 		  args)))
-     ;; (compiler:emit c "// (send " sel " " rcvr " " args ")")
+     ;; (compiler:emit c "  // (send " sel " " rcvr " " args ")")
       ;; Create message object on stack:
       ;;   
       ;;   Save msg reg:
@@ -200,19 +200,19 @@
       ;; Initialize message object:
       ;;
       ;;   previous_message:
-      (compiler:emit c "// _msg => msg->previous_message")
+      (compiler:emit c "  // _msg => msg->previous_message")
       (compiler:emit c "movq  " _msg ", " msg->previous_message)
       ;;   selector:
-      ;; (compiler:emit c "// sel " (object->string sel) " => msg->selector")
+      ;; (compiler:emit c "  // sel " (object->string sel) " => msg->selector")
       (compiler:compile:expr c sel)
       (compiler:emit c "movq  " rtn-reg ", " msg->selector)
       ;(compiler:compile:expr-dst c sel msg->selector)
       ;;   argc:
       (let ((argc (+ (length args) 1))) ; + 1 for rcvr
-	(compiler:emit c "// (length args) " argc " => msg->argc")
+	(compiler:emit c "  // (length args) " argc " => msg->argc")
 	(compiler:compile:expr-dst c argc msg->argc))
       ;;   receiver:
-      ;; (compiler:emit c "// rcvr " (object->string rcvr) " => msg->receiver")
+      ;; (compiler:emit c "  // rcvr " (object->string rcvr) " => msg->receiver")
       (compiler:compile:expr c rcvr)
       (compiler:emit c "movq  " rtn-reg ", " msg->receiver)
 
@@ -227,48 +227,52 @@
       ;; Invoke method->func(message, rcvr, args ...):
       ;;
       ;; Emit arguments in reverse order.
-      (map (lambda (arg)
-	     (compiler:compile:caller-arg c arg))
-	   (reverse args))
-
-      ;; receiver:
-      (compiler:emit c "movq  " msg->receiver ", " arg1-reg " // => rcvr")
-      ;; message:
-      (compiler:emit c "movq  " msg ", " arg0-reg " // => msg")
-
-      ;; msg->method->applyf(msg, rcvr, ...) 
-      (compiler:emit c "movq  " msg->method ", " meth " // msg->method => meth")
-      ;;   Restore msg reg:
-      (compiler:emit c "popq  " msg)
-      (compiler:emit c "call  *" meth->applyf " // apply() ")
-
-      ;;
-      ;;   movq tort_message.method(%rbx), %rax
-      ;;   movq tort_method.func(%rax), %rax
-      ;;   call *(%rax)
-      ;; 
-      ;; Pop args sp:
+      (let ((stack-arg-count 0))
+	(for-each (lambda (arg)
+		    (if (eq? 'STACK (compiler:compile:caller-arg c arg))
+			(set! stack-arg-count (+ stack-arg-count 1))
+			))
+		  (reverse args))
+	
+	;; receiver:
+	(compiler:emit c "movq  " msg->receiver ", " arg1-reg " // => rcvr")
+	;; message:
+	(compiler:emit c "movq  " msg ", " arg0-reg " // => msg")
+	
+	;; msg->method->applyf(msg, rcvr, ...) 
+	(compiler:emit c "movq  " msg->method ", " meth " // msg->method => meth")
+	(compiler:emit c "call  *" meth->applyf " // apply() ")
+	
+	;; 
+	;; Pop args sp:
+	(if (> stack-arg-count 0)
+	    (compiler:emit c "addq $" (* 8 stack-arg-count) ", " sp-reg))
+	)
 
       ;; Reclaim message space:
       ;;   Pop message space:
       (compiler:emit c "addq  $" compiler:message:alloc-size ", " sp-reg)
+      ;;   Restore msg reg:
+      (compiler:emit c "popq  " msg)
     ))
 
 (define compiler:compile:caller-arg 
   (lambda (c arg)
     (let ((arg-i    (car arg))
-	  (arg-expr (cadr arg)))
-      (compiler:emit c "// arg #" arg-i)
-      (compiler:compile:expr-dst c arg-expr
-				 (if (< arg-i (vector-length arg-regs))
+	  (arg-expr (cadr arg))
+	  (arg-type #f))
+      (compiler:emit c "  // arg #" arg-i)
+      (set! arg-type (if (< arg-i (vector-length arg-regs))
 				     (vector-ref arg-regs arg-i)
-				     'STACK)))))
+				     'STACK))
+      (compiler:compile:expr-dst c arg-expr arg-type)
+      arg-type)))
 
 (define compiler:compile:pair
   (lambda (c o dst)
     (cond
      ((eq? (car o) 'quote)
-      (compiler:compile:constant c (cadr o) dst))
+      (compiler:compile:quote c (cadr o) dst))
      ((eq? (car o) '&root)
       (compiler:compile:pair c (list ''get &root (cadr o)) dst))
      ((eq? (car o) 'if)
@@ -276,10 +280,14 @@
 	    (Lend   (compiler:label c))
 	    (test-expr  (cdr o))
 	    (true-expr  (cddr o))
-	    (false-expr (cdddr o)))
-	(compiler:compile:expr-dst c (car test-expr) rtn-reg)
+	    (false-expr (cdddr o))
+	    (false-value (compiler:constant:object c #f))
+	    )
+	;; cmpq expects 16-bit constant, so use a register for #f value.
 	(compiler:compile:expr-dst c #f tmp0-reg)
-	(compiler:emit c "cmpq  " rtn-reg ", " tmp0-reg)
+	(set! false-value tmp0-reg)
+	(compiler:compile:expr-dst c (car test-expr) rtn-reg)
+	(compiler:emit c "cmpq  " false-value ", " rtn-reg)
 	(compiler:emit c "je    " Lfalse)
 	(compiler:compile:expr-dst c (car true-expr) dst)
 	(cond 
@@ -297,12 +305,16 @@
       (let ((Lend (compiler:label c))
 	    (Lagain   (compiler:label c))
 	    (test-expr  (cdr o))
-	    (body-expr  (cddr o)))
+	    (body-expr  (cddr o))
+	    (false-value (compiler:constant:object c #f))
+	    )
 	(compiler:emit c "  .align 4,0x90")
 	(compiler:emit c Lagain ":")
-	(compiler:compile:expr-dst c (car test-expr) rtn-reg)
+	;; cmpq expects 16-bit constant, so use a register for #f value.
 	(compiler:compile:expr-dst c #f tmp0-reg)
-	(compiler:emit c "cmpq  " rtn-reg ", " tmp0-reg)
+	(set! false-value tmp0-reg)
+	(compiler:compile:expr-dst c (car test-expr) rtn-reg)
+	(compiler:emit c "cmpq  " false-value ", " rtn-reg)
 	(compiler:emit c "je    " Lend)
 	(for-each (lambda (stmt)
 		    (compiler:compile:expr-dst c stmt dst))
@@ -338,28 +350,47 @@
   (lambda (c o dst)
     (cond
      ((eq? o '&root)
-      (compiler:compile:constant c &root dst))
+      (compiler:compile:reference c &root dst))
      (else
-      (compiler:compile:constant c o dst)))
-    ))
-      
+      (compiler:compile:reference c o dst)))))
+
+(define compiler:compile:quote
+  (lambda (c o dst)
+    (cond
+     ((number? o)
+      (compiler:compile:number c o dst))
+     (else
+      (compiler:compile:reference c o dst)))))
+
 (define compiler:compile:number
   (lambda (c o dst)
-    (compiler:compile:literal c (string-append "$" (object->string (| (+ o o) 1))) dst))) ;|
+    (compiler:compile:literal c (compiler:constant:number c o) dst)))
 
-(define compiler:compile:constant
+(define compiler:compile:reference
   (lambda (c o dst)
-    (compiler:compile:literal c (compiler:constant c o) dst)))
-
-(define compiler:constant
-  (lambda (c o)
-    (string-append "$0x" ('_to_string ('_object_ptr o)))))
+    (compiler:compile:literal c (compiler:constant:reference c o) dst)))
 
 (define compiler:compile:literal
   (lambda (c o dst)
     (if (eq? dst 'STACK)
 	(compiler:emit c "pushq " o)
         (compiler:emit c "movq  " o ", " dst))))
+
+(define compiler:constant:object
+  (lambda (c o)
+    (cond
+     ((number? o)
+      (compiler:constant:number c o))
+     (else
+      (compiler:constant:reference c o)))))
+
+(define compiler:constant:number
+  (lambda (c o)
+    (string-append "$" (object->string (| (+ o o) 1))))) ; |
+
+(define compiler:constant:reference
+  (lambda (c o)
+    (string-append "$0x" ('_to_string ('_object_ptr o)))))
 
 )) ; let) let)
 
@@ -401,14 +432,19 @@
 	      (result #f))
 	  (call-with-output-file sfile (lambda (f)
 					 (display (compiler:stream c) f)))
+	  (if verbose
+	      (begin
+		(display "Assembly:\n") 
+		(display (compiler:stream c))
+		(display "=====\n")))
 
 	  (posix:system (string-append "gcc "
-				       (if verbose "--verbose" "")
+				       ; (if verbose "--verbose" "")
 				       " -D__DYNAMIC__ -fPIC -DPIC "
 				       " -export-dynamic -fno-common -c -o " ofile " " sfile))
-	  (if verbose (posix:system (string-append "otool -tv " ofile)))
+	  ; (if verbose (posix:system (string-append "otool -tv " ofile)))
 	  (posix:system (string-append "gcc "
-				       (if verbose "--verbose" "")
+				       ; (if verbose "--verbose" "")
 				       " -dynamiclib -Wl,-undefined -Wl,dynamic_lookup -o " dfile " " ofile " -compatibility_version 1 -current_version 1.0 -Wl,-single_module"))
 	  ; (if verbose (posix:system (string-append "otool -tv " dfile)))
 	  (set! result dfile)
