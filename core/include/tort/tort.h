@@ -211,8 +211,8 @@ tort_symbol* tort_symbol_make_encode(const char *string);
 
 struct tort_method { tort_H;
   tort_apply_decl((*applyf));
-  tort_v data;
   tort_v name;
+  tort_v data;
 };
 tort_h_struct(tort_method);
 

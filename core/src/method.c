@@ -8,8 +8,8 @@ tort_method* tort_method_make(void *applyf)
 {
   tort_method *meth = tort_allocate(tort__mt(method), sizeof(tort_method));
   meth->applyf = applyf;
-  meth->data = 0;
   meth->name = 0;
+  meth->data = 0;
   return meth;
 }
 

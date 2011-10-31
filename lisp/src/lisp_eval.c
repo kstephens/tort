@@ -58,7 +58,7 @@ tort_v _tort_M_lisp_formals__new(tort_tp tort_mtable *mtable, tort_v formals)
   return obj;
 }
 
-tort_v _tort_m_lisp_formals__lisp_write(tort_thread_param tort_lisp_formals *rcvr, tort_v io)
+tort_v _tort_m_lisp_formals__lisp_write(tort_tp tort_lisp_formals *rcvr, tort_v io)
 {
   return tort_printf(io, "#f(%O . %O)", rcvr->formals, rcvr->rest);
 }
@@ -91,13 +91,14 @@ tort_v _tort_M_lisp_closure__new(tort_tp tort_mtable *mtable, tort_v formals, to
   meth->applyf = _tort_M_lisp_closure___apply;
   formals = tort_send(tort__s(new), tort_mt(lisp_formals), formals);
   body = tort_send(tort_s(list_TO_vector), body);
+  meth->name = tort_nil;
   meth->formals = formals;
   meth->body = body;
   meth->environment = env;
   return meth;
 }
 
-tort_v _tort_m_lisp_closure__lisp_write(tort_thread_param tort_lisp_closure *rcvr, tort_v io)
+tort_v _tort_m_lisp_closure__lisp_write(tort_tp tort_lisp_closure *rcvr, tort_v io)
 {
   return tort_printf(io, "(lambda %O ...)", rcvr->formals->formals);
 }
@@ -110,7 +111,7 @@ tort_v _tort_m_lisp_closure__lisp_apply(tort_tp tort_lisp_closure *obj, tort_v a
   return_tort_send(tort_s(lisp_eval_body), obj->body, env);
 }
 
-tort_v _tort_m_lisp_environment__lisp_write(tort_thread_param tort_lisp_environment *rcvr, tort_v io)
+tort_v _tort_m_lisp_environment__lisp_write(tort_tp tort_lisp_environment *rcvr, tort_v io)
 {
   return tort_printf(io, "#e(%O . %O)", 
 		     rcvr->formals->map, 
@@ -192,7 +193,7 @@ tort_v _tort_m_lisp_environment__get(tort_tp tort_lisp_environment *env, tort_v 
       return_tort_send(tort__s(get), env->argv, index);
     } else {
       if ( env->parent == tort_nil ) {
-	return tort_error(tort_ta "get: cannot find %O\n", name);
+	return tort_error(tort_ta "get: symbol %O is unbound", name);
       } else {
 	return_tort_send(tort__s(get), env->parent, name);
       }
@@ -213,7 +214,7 @@ tort_v _tort_m_lisp_environment__set(tort_tp tort_lisp_environment *env, tort_v 
       tort_send(tort__s(set), env->argv, index, value);
     } else {
       if ( env->parent == tort_nil ) {
-	tort_error(tort_ta "symbol %O is unbound", name);
+	tort_error(tort_ta "set!: symbol %O is unbound", name);
       } else {
 	tort_send(tort__s(set), env->parent, name, value);
       }
