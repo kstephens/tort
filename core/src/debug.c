@@ -1,7 +1,5 @@
 #include "tort/core.h"
 
-/********************************************************************/
-
 void tort_debug_stop_at()
 {
   /* NOTHING */
@@ -10,37 +8,7 @@ void tort_debug_stop_at()
 #define IO tort_stderr
 #define printf(fmt, args...) tort_printf(IO, fmt, ##args)
 
-tort_v _tort_m_object____message(tort_thread_param tort_v rcvr)
-{
-  rcvr = _tort_message;
-  // rcvr = tort_ref(tort_message, rcvr)->previous_message;
-  return_tort_send(tort__s(clone), rcvr);
-}
-
-tort_v _tort_m_message__backtrace(tort_tp tort_v rcvr)
-{
-  tort_v v, msg;
-  size_t i = 0;
-
-  i = 0;
-  msg = rcvr;
-  while ( msg != tort_nil ) {
-    i ++;
-    msg = tort_ref(tort_message, msg)->previous_message;
-  }
-
-  v = tort_send(tort__s(new), tort__mt(vector), tort_i(i));
-
-  i = 0;
-  msg = rcvr;
-  while ( msg != tort_nil ) {
-    msg = tort_send(tort__s(clone), msg);
-    tort_vector_data(v)[i ++] = msg;
-    msg = tort_ref(tort_message, msg)->previous_message; 
-  }
-
-  return v;
-}
+tort_v _tort_debug_expr;
 
 tort_v _tort_m_object____debugger(tort_tp tort_v rcvr)
 {
@@ -49,6 +17,8 @@ tort_v _tort_m_object____debugger(tort_tp tort_v rcvr)
   (void) tort__s(__printfs);
   printf("\ntort debugger:\n");
   printf("rcvr = "); tort_inspect(IO, rcvr); printf("\n");
+  printf("type = %s\n", tort_object_name(tort_h_mtable(rcvr)));
+  printf("expr = %O\n", _tort_debug_expr); 
   bt = tort_send(tort_s(backtrace), _tort_message);
   printf("backtrace =\n----\n"); 
   tort_vector_loop(bt, msg); {
@@ -152,7 +122,6 @@ const char *tort_object_name_(tort_v val)
   return str;
 }
 
-
 const char *tort_object_name(tort_v val)
 {
   char *str = (char*) tort_object_name_(val);
@@ -187,8 +156,6 @@ tort_v _tort_m_object___name(tort_tp tort_v rcvr)
 {
   return tort_string_new_cstr(tort_object_name(rcvr));
 }
-
-/********************************************************************/
 
 tort_v tort_runtime_initialize_debug()
 {
