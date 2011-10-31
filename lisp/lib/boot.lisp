@@ -102,15 +102,11 @@
 (define open-output-file
   (lambda (fname)
     ('open ('create <io>) fname "w+")))
-(define close-output-file 
-  (lambda (f)
-    ('close f)))
+(define close-output-file (lambda (f) ('close f)))
 (define open-input-file
   (lambda (fname)
     ('open ('create <io>) fname "r")))
-(define close-input-file 
-  (lambda (f)
-    ('close f)))
+(define close-input-file (lambda (f) ('close f)))
 (define call-with-input-file
   (lambda (file proc)
     (let ((f (open-input-file file))
@@ -141,6 +137,11 @@
     (if (string? obj)
 	('_write port obj)
         (write obj port))))
+
+(define read
+  (lambda port
+    (set! port (if (pair? port) (car port) *standard-input*))
+    ('lisp_read port)))
 
 (define %reduce 
   (lambda (f l)
