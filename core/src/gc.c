@@ -19,10 +19,6 @@ struct {
     ;
 } gc_stats;
 
-#ifndef TORT_GC_STATS
-#define TORT_GC_STATS 1
-#endif
-
 #if TORT_GC_STATS
 #define TORT_GC_STAT(X) ((gc_stats.X), 1)
 #else
@@ -126,8 +122,7 @@ void tort_gc_atexit()
 tort_v tort_runtime_initialize_malloc()
 {
   const char *var;
-
-  _tort_gc_mode = atoi((var = getenv("TORT_GC")) ? var : "1");
+  _tort_gc_mode = atoi((var = getenv("TORT_GC")) ? var : "0"); // BOEHM GC is broken - kurt 2011/10/30
   if ( _tort_gc_mode > 0 ) {
     GC_finalize_on_demand = 1;
     _tort_malloc  = GC_malloc;
@@ -136,7 +131,6 @@ tort_v tort_runtime_initialize_malloc()
     _tort_realloc = GC_realloc;
     _tort_realloc_atomic = GC_realloc; /* ??? */
   }
-
   return 0;
 }
 
