@@ -243,6 +243,9 @@
 (define posix:system (lambda (str) ('system posix str)))
 ;; (posix:system "hostname")
 
+; ('add_method <tagged> '+ (lambda (a b) (+ a b)))
+('add_method <string> '+ (lambda (a b) ('append ('clone a) b)))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ; (set! *load-debug* #t)
