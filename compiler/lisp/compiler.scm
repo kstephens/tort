@@ -132,7 +132,7 @@
       (compiler:emit c "movq  " tmp0-reg ", -24(" ar-reg ")")
 
       ; Space for register saves:
-      (compiler:emit c "subq  $24, " sp-reg)
+      (compiler:emit c "subq  $32, " sp-reg) ; align to 16-byte stack frames.
       ;(compiler:emit c "subq $xxx, " sp-reg)         ; Save space for local variables.
 
       ; Move _tort_message to %rbx
@@ -172,6 +172,8 @@
       (compiler:compile:number c o dst))
      ((pair? o)
       (compiler:compile:pair c o dst))
+     ((symbol? o)
+      (compiler:compile:symbol c o dst))
      (else
       (compiler:compile:constant c o dst)))
     ))
@@ -267,6 +269,8 @@
     (cond
      ((eq? (car o) 'quote)
       (compiler:compile:constant c (cadr o) dst))
+     ((eq? (car o) '&root)
+      (compiler:compile:pair c (list ''get &root (cadr o)) dst))
      ((eq? (car o) 'if)
       (let ((Lfalse (compiler:label c))
 	    (Lend   (compiler:label c))
@@ -308,11 +312,18 @@
 	(compiler:emit c Lend ":")
 	))
      ((eq? (car o) 'begin)
-	(for-each (lambda (stmt)
+      (for-each (lambda (stmt)
 		    (compiler:compile:expr-dst c stmt dst))
-		  (cdr o)))
+		(cdr o)))
      (else
-      (compiler:compile:send c (car o) (cadr o) (cddr o))
+      (let ((sel (car o))
+	    (rcvr (cadr o))
+	    (args (cddr o)))
+	(cond
+	 ((and (pair? sel) (eq? (car sel) 'quote) (symbol? (cadr sel)))
+	  (compiler:compile:send c sel rcvr args))
+	 (else
+	  (compiler:compile:send c sel rcvr args))))
       ;; send always emits to dst=rtn-reg.
       (cond
        ((eq? dst 'STACK)
@@ -320,9 +331,18 @@
        ((eq? dst rtn-reg))
        (else
 	(compiler:emit c "movq  " rtn-reg ", " dst)))
-      ))
-     ))
+      )
+     )))
 
+(define compiler:compile:symbol
+  (lambda (c o dst)
+    (cond
+     ((eq? o '&root)
+      (compiler:compile:constant c &root dst))
+     (else
+      (compiler:compile:constant c o dst)))
+    ))
+      
 (define compiler:compile:number
   (lambda (c o dst)
     (compiler:compile:literal c (string-append "$" (object->string (| (+ o o) 1))) dst))) ;|

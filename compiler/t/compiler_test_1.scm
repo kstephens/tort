@@ -46,13 +46,20 @@
     )
    (
     () ; args 
-    (quote (while #t ('_write *standard-output* "Hello, World!\n")))
+    &root
+    )
+   (
+    () ; args 
+    (&root stdout)
     )
    (
     () ; args 
     ;; body
-    ('_inspect "Hello World!" *standard-output*) ; FAILS
-    ('_write *standard-output* "\n") ; FAILS
+    ('_write (&root stdout) "Hello World!\n")
+    )
+   (
+    () ; args 
+    (quote (while #t ('_write *standard-output* "Hello, World!\n")))
     )
    ))
 
