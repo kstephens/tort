@@ -25,6 +25,53 @@ tort_v _tort_m_ptr___ccall(tort_tp tort_v p)
   return ((tort_v(*)(void)) ptr)();
 }
 
+tort_v _tort_m_ptr___ccallv(tort_tp tort_v p, tort_vector *args)
+{
+  void *ptr = tort_P(p);
+#define a(i) tort_vector_data(args)[i]
+#define T tort_v
+  switch ( tort_vector_size(args) ) {
+  case 0:
+    return ((T(*)(void)) ptr)
+      ();
+  case 1:
+    return ((T(*)(T)) ptr)
+      (a(0));
+  case 2:
+    return ((T(*)(T,T)) ptr)
+      (a(0), a(1));
+  case 3:
+    return ((T(*)(T,T,T)) ptr)
+      (a(0), a(1), a(2));
+  case 4:
+    return ((T(*)(T,T,T,T)) ptr)
+      (a(0), a(1), a(2), a(3));
+  case 5:
+    return ((T(*)(T,T,T,T,T)) ptr)
+      (a(0), a(1), a(2), a(3), a(4));
+  case 6:
+    return ((T(*)(T,T,T,T,T,T)) ptr)
+      (a(0), a(1), a(2), a(3), a(4), a(5));
+  case 7:
+    return ((T(*)(T,T,T,T,T,T,T)) ptr)
+      (a(0), a(1), a(2), a(3), a(4), a(5), a(6));
+  case 8:
+    return ((T(*)(T,T,T,T,T,T,T,T)) ptr)
+      (a(0), a(1), a(2), a(3), a(4), a(5), a(6), a(7));
+  case 9:
+    return ((T(*)(T,T,T,T,T,T,T,T,T)) ptr)
+      (a(0), a(1), a(2), a(3), a(4), a(5), a(6), a(7), a(8));
+  case 10:
+    return ((T(*)(T,T,T,T,T,T,T,T,T,T)) ptr)
+      (a(0), a(1), a(2), a(3), a(4), a(5), a(6), a(7), a(8), a(9));
+#undef a
+#undef T
+  default:
+    abort();
+    return tort_nil;
+  }
+}
+
 tort_v _tort_m_object___object_ptr(tort_tp tort_v obj)
 {
   return tort_ptr_new(obj);
