@@ -13,7 +13,8 @@ LIBTOOL=$(GC)/libtool #
 CC=gcc-4.3# # for -fnested-functions support
 CC=gcc#
 #CC=gcc-mp-4.3#
-CC_BASE=$(CC) $(CFLAGS) $(CPPFLAGS) $(TARGET_ARCH)#
+CC_VERBOSE= #--verbose#
+CC_BASE=$(CC) $(CFLAGS) $(CPPFLAGS) $(TARGET_ARCH) $(CC_VERBOSE)#
 COMPILE.c = $(LIBTOOL) --tag=CC --mode=compile $(CC_BASE) -c #
 CFLAGS_SHARED=-shared -export-dynamic # 
 CFLAGS += $(CFLAGS_SHARED) #
