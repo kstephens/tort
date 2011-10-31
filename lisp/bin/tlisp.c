@@ -34,11 +34,16 @@ int main(int argc, char **argv, char **environ)
   }
 
   for ( argi = 1; argi < argc; ++ argi ) {
-    in = tort_string_new_cstr(argv[argi]);
-    tort_printf(out, ";; %s: reading %T\n", argv[0], in);
-    io = tort_send(tort_s(__create), tort__mt(io), (FILE*) 0);
-    io = tort_send(tort_s(open), io, in, tort_string_new_cstr("r"));
-    in = io;
+    char *arg = argv[argi];
+    if ( ! strcmp(arg, "-") ) {
+      in = stdin;
+    } else {
+      in = tort_string_new_cstr(arg);
+      tort_printf(out, ";; %s: reading %T\n", argv[0], in);
+      io = tort_send(tort_s(__create), tort__mt(io), (FILE*) 0);
+      io = tort_send(tort_s(open), io, in, tort_string_new_cstr("r"));
+      in = io;
+    }
     out = tort_stdout;
     env = tort_send(tort_s(lisp_repl), in, out, tort_nil, env);
   }

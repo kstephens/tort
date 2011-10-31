@@ -66,7 +66,7 @@ tort_v _tort_m_lisp_formals__lisp_write(tort_thread_param tort_lisp_formals *rcv
 tort_v _tort_M_lisp_closure___apply(tort_tp tort_v rcvr, ...)
 {
   tort_lisp_closure *obj = (tort_v) _tort_message->method;
-  int argc = _tort_message->argc >= 0 ? _tort_message->argc : tort_I(obj->formals->argc);
+  int argc = tort_I(_tort_message->argc) >= 0 ? tort_I(_tort_message->argc) : tort_I(obj->formals->argc);
   tort_vector *argv = tort_vector_new(0, argc > 0 ? argc : 1);
   tort_lisp_environment *env;
   {
@@ -258,11 +258,13 @@ tort_v _tort_m_object__lisp_eval(tort_tp tort_v obj, tort_v env)
 tort_v _tort_m_cons__lisp_eval(tort_tp tort_cons *obj, tort_v env)
 {
   tort_v val = obj->car;
+  extern tort_v _tort_debug_expr;
   if ( _tort_lisp_trace ) tort_printf(tort_stderr, "\n  lisp_eval %O\n", obj);
   if ( val == tort_s(quote) ) {
     return tort_car(obj->cdr);
   }
-  else if ( val == tort_s(define) ) {
+  _tort_debug_expr = obj;
+  if ( val == tort_s(define) ) {
     tort_v name = tort_car(obj->cdr);
     val = tort_car(tort_cdr(obj->cdr));
     val = tort_send(tort_s(lisp_eval), val, env);
@@ -285,6 +287,16 @@ tort_v _tort_m_cons__lisp_eval(tort_tp tort_cons *obj, tort_v env)
       val = tort_cadr(obj->cdr);
     }
     return_tort_send(tort_s(lisp_eval), val, env);
+  }
+  else if ( val == tort_s(cond) ) {
+    val = obj;
+    while ( (obj = obj->cdr) != tort_nil ) {
+      val = obj->car;
+      if ( obj->cdr == tort_nil || 
+	   tort_send(tort_s(lisp_eval), tort_car(val), env) != tort_false )
+	break;
+    }
+    return_tort_send(tort_s(lisp_eval_body), tort_cdr(val), env);
   }
   else if ( val == tort_s(begin) ) {
     return_tort_send(tort_s(lisp_eval_body), obj->cdr, env);
@@ -429,16 +441,16 @@ tort_v _tort_m_io__lisp_repl(tort_tp tort_v io, tort_v out, tort_v prompt, tort_
 		    tort_nil, tort_nil, tort_nil, tort_nil);
   }
   do {
-    if ( prompt != tort_nil ) tort_printf(prompt, " >  ");
+    if ( prompt != tort_nil ) tort_printf(prompt, " > ");
     expr = tort_send(tort_s(lisp_read), io);
     if ( expr == tort_eos ) break;
     if ( prompt != tort_nil ) {
-      tort_printf(prompt, " == ");
+      tort_printf(prompt, "  == ");
       tort_send(tort_s(lisp_write), expr, out);
       tort_printf(prompt, "\n");
     }
     result = tort_send(tort_s(lisp_eval), expr, env);
-    if ( prompt != tort_nil ) tort_printf(prompt, " => ");
+    if ( prompt != tort_nil ) tort_printf(prompt, "  => ");
     if ( out != tort_nil ) {
       tort_send(tort_s(lisp_write), result, out);
       tort_printf(out, "\n");

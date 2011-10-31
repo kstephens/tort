@@ -1,5 +1,8 @@
 (define nil '())
-(define send (lambda (sym rcvr . args) (sym rcvr . args)))
+(define send (lambda (sel rcvr . args) (sel rcvr . args)))
+
+(define current-environment (lambda () &globals))
+(define eval (lambda (o e) ('lisp_eval o e)))
 
 (define %root (lambda (sym) ('get &root sym)))
 (define %mtable-by-name (lambda (sym) ('get (%root 'mtable) sym)))
@@ -22,6 +25,16 @@
 (define set-car! (lambda (o v) ('set-car! o v)))
 (define set-cdr! (lambda (o v) ('set-cdr! o v)))
 (define list (lambda args args))
+(define length (lambda (o) ('size o)))
+(define reverse 
+  (lambda (l)
+    (let ((r nil))
+      (while (pair? l)
+	(set! r (cons (car l) r))
+	(set! l (cdr l))
+	)
+      r)))
+
 (define map 
   (lambda (f l)
     (if (null? l)
@@ -35,6 +48,26 @@
       (begin
        (f (car l))
        (for-each f (cdr l))))))
+
+(define caar (lambda (o) ('car ('car o))))
+(define cadr (lambda (o) ('car ('cdr o))))
+(define cdar (lambda (o) ('cdr ('car o))))
+(define cddr (lambda (o) ('cdr ('cdr o))))
+
+(define caaar (lambda (o) ('car ('car ('car o)))))
+(define caadr (lambda (o) ('car ('car ('cdr o)))))
+(define cadar (lambda (o) ('car ('cdr ('car o)))))
+(define caddr (lambda (o) ('car ('cdr ('cdr o)))))
+(define cdaar (lambda (o) ('cdr ('car ('car o)))))
+(define cdadr (lambda (o) ('cdr ('car ('cdr o)))))
+(define cddar (lambda (o) ('cdr ('cdr ('car o)))))
+(define cdddr (lambda (o) ('cdr ('cdr ('cdr o)))))
+
+(define <vector> (%mtable-by-name 'string))
+(define vector? (lambda (o) (eq? (%get-type o) <vector>)))
+(define vector-length (lambda (s) ('size s)))
+(define vector-ref (lambda (s i) ('get s i)))
+(define vector-set! (lambda (s i v) ('set s i v)))
 
 (define <string> (%mtable-by-name 'string))
 (define string? 
@@ -55,6 +88,12 @@
   (lambda (s) ('_create <symbol> s)))
 (define string->symbol 
   (lambda (s) ('new <symbol> s)))
+(define symbol->string
+  (lambda (s) 
+    (let ((s ('name s)))
+      (if (null? s)
+	  s
+	('clone s)))))
 
 (define *standard-input*  (%root 'stdin))
 (define *standard-output* (%root 'stdout))
@@ -156,7 +195,15 @@
   (lambda (first . args)
     ('^ first (%reduce (lambda (a b) ('^ a b)) args))))
 
+(define %bin-op 
+  (lambda (op)
+    (lambda (a b) (op a b))))
+
 (define = eq?)
+(define < (%bin-op '<))
+(define > (%bin-op '>))
+(define <= (%bin-op '<=))
+(define >= (%bin-op '>=))
 
 (define *load-debug* #f)
 (define load 
@@ -172,6 +219,7 @@
     (let ((s (string-new)))
       ('_inspect o s)
       s)))
+(define number->string object->string)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -181,18 +229,18 @@
 (define <map> (%mtable-by-name 'map))
 (define map? (lambda (o) (eq? (%get-type o) <map>)))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(define <message> (%mtable-by-name 'message))
+(define message? (lambda (o) (eq? (%get-type o) <message>)))
 
-(define posix ('allocate <posix>))
-(define posix:system (lambda (str) ('system posix str)))
+(define <method> (%mtable-by-name 'method))
+(define method? (lambda (o) (eq? (%get-type o) <method>)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define <posix> (%mtable-by-name 'posix))
 (define posix ('allocate <posix>))
 (define posix:system (lambda (str) ('system posix str)))
-
-(posix:system "hostname")
+;; (posix:system "hostname")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
