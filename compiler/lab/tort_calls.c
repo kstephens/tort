@@ -36,6 +36,24 @@ tort_v _tort_plain_c(void *arg0, tort_v arg1, tort_v arg2, tort_v arg3, tort_v a
   return arg0;
 }
 
+const char * _tort_if_stmt(tort_v x)
+{
+  if ( x != tort_false ) {
+    printf("true %p\n", x);
+  } else {
+    printf("false %p\n", x);
+  }
+  return x;
+}
+
+const char * _tort_while_stmt(tort_pair *x)
+{
+  while ( x != tort_false ) {
+    printf("true %p\n", x);
+    x = x->second;
+  }
+  return x;
+}
 
 /* 
 x86 64: calling sequence:
