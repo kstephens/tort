@@ -2,6 +2,26 @@
 #include <unistd.h>
 #include <stdlib.h>
 
+tort_v _tort_m_posix__getpid(tort_tp tort_v rcvr)
+{
+  return tort_i(getpid());
+}
+
+tort_v _tort_m_posix__getppid(tort_tp tort_v rcvr)
+{
+  return tort_i(getppid());
+}
+
+tort_v _tort_m_posix__geteuid(tort_tp tort_v rcvr)
+{
+  return tort_i(geteuid());
+}
+
+tort_v _tort_m_posix__getegid(tort_tp tort_v rcvr)
+{
+  return tort_i(getegid());
+}
+
 tort_v _tort_m_posix__fork(tort_tp tort_v rcvr)
 {
   return tort_i(fork());
