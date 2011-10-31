@@ -170,7 +170,7 @@ tort_lookup_decl(_tort_m_mtable__lookup)
 	    message,
 	    _tort_lookup_trace_level, "",
 	    tort_object_name(mtable), 
-	    tort_symbol_data(sel),
+	    tort_object_name(sel),
 	    tort_object_name(method));
   
   }
@@ -204,6 +204,7 @@ tort_message* _tort_lookup (tort_tp tort_v rcvr, tort_message *message)
 
   message->_h[-1].alloc_size = sizeof(tort_message);
   message->_h[-1].mtable = tort__mt(message);
+  // message->previous_message = _tort_message;
   message->mtable = tort_nil; 
   message->method = tort_nil;
   message->fiber = message->previous_message ? message->previous_message->fiber : _tort_fiber;
@@ -214,7 +215,7 @@ tort_message* _tort_lookup (tort_tp tort_v rcvr, tort_message *message)
 	    message,
 	    _tort_lookup_trace_level, "",
 	    tort_object_name(message->receiver), 
-	    tort_symbol_data(sel));
+	    tort_object_name(sel));
   }
 
 #if TORT_GLOBAL_MCACHE
@@ -247,11 +248,11 @@ tort_message* _tort_lookup (tort_tp tort_v rcvr, tort_message *message)
     
     if ( message->method == tort_nil ) {
       if ( _tort_lookup_trace )  {
-	fprintf(stderr, "  %p %*s_tort_lookup(%s, %s) => method_not_found\n", 
+	fprintf(stderr, "  %p %*s_tort_lookup(rcvr = %s, sel = %s) => method_not_found\n", 
 		message,
 		_tort_lookup_trace_level, "",
 		tort_object_name(message->receiver), 
-		tort_symbol_data(sel));
+		tort_object_name(sel));
       }
 
       message->mtable = MTABLE;
@@ -281,7 +282,7 @@ tort_message* _tort_lookup (tort_tp tort_v rcvr, tort_message *message)
 	    message,
 	    _tort_lookup_trace_level, "",
 	    tort_object_name(message->receiver), 
-	    tort_symbol_data(sel),
+	    tort_object_name(sel),
 	    tort_object_name(message->method));
     _tort_lookup_trace_level --;
   }
