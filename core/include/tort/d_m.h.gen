@@ -1,7 +1,19 @@
 #!/bin/sh
-set -e
+srcs="$(ls src/*.c include/tort/*.h 2>/dev/null)"
+# ${CC} ${CFLAGS} -E -o - ${srcs} | tr ";}" "\n" | less # 
+set -e # x
 (
     cat "$1.begin"
+    cat <<EOF
+/* Sources:
+$srcs
+*/
+EOF
+    for f in $srcs
+    do
+      ${CC} ${CFLAGS} -E -o - "${f}" || :
+    done |
+    tr ";}" "\n" | 
     perl -ne '
 if ( ! /^\s*static\b/ && /^\s*[a-zA-Z0-9_]+?.*?\s+(_tort_m_([a-zA-Z0-9_]+?)__([a-zA-Z0-9_]+))\s*[(].*?[)]\s*(;|$)/ ) { 
   print "tort_d_m(tort__mt(", $2, "), tort__s(", $3, "), $1)\n";
@@ -9,7 +21,7 @@ if ( ! /^\s*static\b/ && /^\s*[a-zA-Z0-9_]+?.*?\s+(_tort_m_([a-zA-Z0-9_]+?)__([a
 if ( ! /^\s*static\b/ && /^\s*[a-zA-Z0-9_]+?.*?\s+(_tort_M_([a-zA-Z0-9_]+?)__([a-zA-Z0-9_]+))\s*[(].*?[)]\s*(;|$)/ ) { 
   print "tort_d_m(tort_h_ref(tort__mt(", $2, "))->mtable, tort__s(", $3, "), $1)\n";
 }
-' src/*.c include/tort/*.h | 
+' - /dev/null | 
     sort -u # | tee /dev/tty
     cat "$1.end"
 ) > "$2"

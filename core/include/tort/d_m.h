@@ -1,4 +1,41 @@
 /* -*- c -*- */
+/* Sources:
+include/tort/box.h
+include/tort/config.h
+include/tort/core.h
+include/tort/d_m.h
+include/tort/d_mt.h
+include/tort/d_s.h
+include/tort/init.h
+include/tort/integer.h
+include/tort/internal.h
+include/tort/ops.h
+include/tort/symtab.h
+include/tort/tort.h
+src/debug.c
+src/dl.c
+src/error.c
+src/gc.c
+src/gc_null.c
+src/init.c
+src/integer.c
+src/io.c
+src/lookup.c
+src/map.c
+src/message.c
+src/method.c
+src/mtable.c
+src/object.c
+src/pair.c
+src/printf.c
+src/ptr.c
+src/string.c
+src/symbol.c
+src/symbol_encoding.c
+src/symtab.c
+src/vector.c
+src/write.c
+*/
 tort_d_m(tort__mt(boolean), tort__s(_inspect), _tort_m_boolean___inspect)
 tort_d_m(tort__mt(io), tort__s(__finalize), _tort_m_io____finalize)
 tort_d_m(tort__mt(io), tort__s(__write), _tort_m_io____write)
@@ -26,10 +63,36 @@ tort_d_m(tort__mt(map), tort__s(get_string), _tort_m_map__get_string)
 tort_d_m(tort__mt(map), tort__s(initialize), _tort_m_map__initialize)
 tort_d_m(tort__mt(map), tort__s(set), _tort_m_map__set)
 tort_d_m(tort__mt(message), tort__s(_inspect), _tort_m_message___inspect)
+tort_d_m(tort__mt(message), tort__s(argc), _tort_m_message__argc)
 tort_d_m(tort__mt(message), tort__s(backtrace), _tort_m_message__backtrace)
+tort_d_m(tort__mt(message), tort__s(fiber), _tort_m_message__fiber)
+tort_d_m(tort__mt(message), tort__s(file), _tort_m_message__file)
+tort_d_m(tort__mt(message), tort__s(initialize), _tort_m_message__initialize)
+tort_d_m(tort__mt(message), tort__s(line), _tort_m_message__line)
+tort_d_m(tort__mt(message), tort__s(method), _tort_m_message__method)
+tort_d_m(tort__mt(message), tort__s(mtable), _tort_m_message__mtable)
+tort_d_m(tort__mt(message), tort__s(previous_message), _tort_m_message__previous_message)
+tort_d_m(tort__mt(message), tort__s(receiver), _tort_m_message__receiver)
+tort_d_m(tort__mt(message), tort__s(selector), _tort_m_message__selector)
+tort_d_m(tort__mt(message), tort__s(set_argc), _tort_m_message__set_argc)
+tort_d_m(tort__mt(message), tort__s(set_fiber), _tort_m_message__set_fiber)
+tort_d_m(tort__mt(message), tort__s(set_file), _tort_m_message__set_file)
+tort_d_m(tort__mt(message), tort__s(set_line), _tort_m_message__set_line)
+tort_d_m(tort__mt(message), tort__s(set_method), _tort_m_message__set_method)
+tort_d_m(tort__mt(message), tort__s(set_mtable), _tort_m_message__set_mtable)
+tort_d_m(tort__mt(message), tort__s(set_previous_message), _tort_m_message__set_previous_message)
+tort_d_m(tort__mt(message), tort__s(set_receiver), _tort_m_message__set_receiver)
+tort_d_m(tort__mt(message), tort__s(set_selector), _tort_m_message__set_selector)
 tort_d_m(tort__mt(method), tort__s(_inspect), _tort_m_method___inspect)
+tort_d_m(tort__mt(method), tort__s(applyf), _tort_m_method__applyf)
+tort_d_m(tort__mt(method), tort__s(data), _tort_m_method__data)
+tort_d_m(tort__mt(method), tort__s(name), _tort_m_method__name)
+tort_d_m(tort__mt(method), tort__s(set_applyf), _tort_m_method__set_applyf)
+tort_d_m(tort__mt(method), tort__s(set_data), _tort_m_method__set_data)
+tort_d_m(tort__mt(method), tort__s(set_name), _tort_m_method__set_name)
 tort_d_m(tort__mt(mtable), tort__s(_allocate), _tort_m_mtable___allocate)
 tort_d_m(tort__mt(mtable), tort__s(_delegate_changed), _tort_m_mtable___delegate_changed)
+tort_d_m(tort__mt(mtable), tort__s(_instance_size), _tort_m_mtable___instance_size)
 tort_d_m(tort__mt(mtable), tort__s(_method_changed), _tort_m_mtable___method_changed)
 tort_d_m(tort__mt(mtable), tort__s(add_method), _tort_m_mtable__add_method)
 tort_d_m(tort__mt(mtable), tort__s(alias_method), _tort_m_mtable__alias_method)
@@ -51,6 +114,7 @@ tort_d_m(tort__mt(object), tort__s(_inspect), _tort_m_object___inspect)
 tort_d_m(tort__mt(object), tort__s(_method_not_found), _tort_m_object___method_not_found)
 tort_d_m(tort__mt(object), tort__s(_mtable), _tort_m_object___mtable)
 tort_d_m(tort__mt(object), tort__s(_name), _tort_m_object___name)
+tort_d_m(tort__mt(object), tort__s(_object_header_size), _tort_m_object___object_header_size)
 tort_d_m(tort__mt(object), tort__s(_object_ptr), _tort_m_object___object_ptr)
 tort_d_m(tort__mt(object), tort__s(_printfv), _tort_m_object___printfv)
 tort_d_m(tort__mt(object), tort__s(_set_slot_at), _tort_m_object___set_slot_at)
@@ -139,14 +203,35 @@ tort_d_m(tort_h_ref(tort__mt(io))->mtable, tort__s(__create), _tort_M_io____crea
 tort_d_m(tort_h_ref(tort__mt(io))->mtable, tort__s(__stat), _tort_M_io____stat)
 tort_d_m(tort_h_ref(tort__mt(io))->mtable, tort__s(create), _tort_M_io__create)
 tort_d_m(tort_h_ref(tort__mt(map))->mtable, tort__s(new), _tort_M_map__new)
+tort_d_m(tort_h_ref(tort__mt(message))->mtable, tort__s(_offset_argc), _tort_M_message___offset_argc)
+tort_d_m(tort_h_ref(tort__mt(message))->mtable, tort__s(_offset_fiber), _tort_M_message___offset_fiber)
+tort_d_m(tort_h_ref(tort__mt(message))->mtable, tort__s(_offset_file), _tort_M_message___offset_file)
+tort_d_m(tort_h_ref(tort__mt(message))->mtable, tort__s(_offset_line), _tort_M_message___offset_line)
+tort_d_m(tort_h_ref(tort__mt(message))->mtable, tort__s(_offset_method), _tort_M_message___offset_method)
+tort_d_m(tort_h_ref(tort__mt(message))->mtable, tort__s(_offset_mtable), _tort_M_message___offset_mtable)
+tort_d_m(tort_h_ref(tort__mt(message))->mtable, tort__s(_offset_previous_message), _tort_M_message___offset_previous_message)
+tort_d_m(tort_h_ref(tort__mt(message))->mtable, tort__s(_offset_receiver), _tort_M_message___offset_receiver)
+tort_d_m(tort_h_ref(tort__mt(message))->mtable, tort__s(_offset_selector), _tort_M_message___offset_selector)
+tort_d_m(tort_h_ref(tort__mt(message))->mtable, tort__s(new), _tort_M_message__new)
+tort_d_m(tort_h_ref(tort__mt(method))->mtable, tort__s(_offset_applyf), _tort_M_method___offset_applyf)
+tort_d_m(tort_h_ref(tort__mt(method))->mtable, tort__s(_offset_data), _tort_M_method___offset_data)
+tort_d_m(tort_h_ref(tort__mt(method))->mtable, tort__s(_offset_name), _tort_M_method___offset_name)
+tort_d_m(tort_h_ref(tort__mt(pair))->mtable, tort__s(_offset_first), _tort_M_pair___offset_first)
+tort_d_m(tort_h_ref(tort__mt(pair))->mtable, tort__s(_offset_second), _tort_M_pair___offset_second)
 tort_d_m(tort_h_ref(tort__mt(pair))->mtable, tort__s(new), _tort_M_pair__new)
 tort_d_m(tort_h_ref(tort__mt(string))->mtable, tort__s(_new), _tort_M_string___new)
 tort_d_m(tort_h_ref(tort__mt(string))->mtable, tort__s(new), _tort_M_string__new)
 tort_d_m(tort_h_ref(tort__mt(symbol))->mtable, tort__s(_create), _tort_M_symbol___create)
+tort_d_m(tort_h_ref(tort__mt(symbol))->mtable, tort__s(_offset_mtable_method_map), _tort_M_symbol___offset_mtable_method_map)
+tort_d_m(tort_h_ref(tort__mt(symbol))->mtable, tort__s(_offset_name), _tort_M_symbol___offset_name)
+tort_d_m(tort_h_ref(tort__mt(symbol))->mtable, tort__s(_offset_version), _tort_M_symbol___offset_version)
 tort_d_m(tort_h_ref(tort__mt(symbol))->mtable, tort__s(new), _tort_M_symbol__new)
 tort_d_m(tort_h_ref(tort__mt(vector))->mtable, tort__s(_new), _tort_M_vector___new)
 tort_d_m(tort_h_ref(tort__mt(vector))->mtable, tort__s(new), _tort_M_vector__new)
 tort_d_m(tort_h_ref(tort__mt(vector_base))->mtable, tort__s(_new), _tort_M_vector_base___new)
+tort_d_m(tort_h_ref(tort__mt(vector_base))->mtable, tort__s(_offset_alloc_size), _tort_M_vector_base___offset_alloc_size)
+tort_d_m(tort_h_ref(tort__mt(vector_base))->mtable, tort__s(_offset_element_size), _tort_M_vector_base___offset_element_size)
+tort_d_m(tort_h_ref(tort__mt(vector_base))->mtable, tort__s(_offset_size), _tort_M_vector_base___offset_size)
 /* -*- c -*- */
 #undef tort_d_m
 

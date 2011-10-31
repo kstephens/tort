@@ -40,8 +40,14 @@ typedef struct tort_method tort_method;
 #define tort_lookup_decl(X) tort_message* X (tort_tp tort_mtable *mtable, tort_message *message)
 #define tort_apply_decl(X)  tort_v X (tort_tp tort_v rcvr, ...)
 
-#define tort_GETTER(MT,T,N) tort_v _tort_m_##MT##__##N( tort_tp tort_##MT *rcvr ) { return tort_box_(T,rcvr->N); }
-#define tort_SETTER(MT,T,N) tort_v _tort_m_##MT##__set_##N( tort_tp tort_##MT *rcvr, tort_v val ) { rcvr->N = tort_unbox_(T,val); return rcvr; }
+#define tort_GETTER(MT,T,N) \
+  tort_v _tort_M_##MT##___offset_##N ( tort_tp tort_mtable *mtable ) { return tort_i(&((tort_##MT*) 0)->N); } \
+  tort_v _tort_m_##MT##__##N ( tort_tp tort_##MT *rcvr ) { return tort_box_(T,rcvr->N); }
+#define tort_SETTER(MT,T,N) \
+  tort_v _tort_m_##MT##__set_##N ( tort_tp tort_##MT *rcvr, tort_v val ) { rcvr->N = tort_unbox_(T,val); return rcvr; }
+#define tort_ACCESSOR(MT,T,N) \
+  tort_GETTER(MT,T,N); \
+  tort_SETTER(MT,T,N)
 
 typedef
 struct tort_header {
@@ -81,12 +87,13 @@ struct tort_message { tort_H;
   tort_symbol  *selector;
   tort_object  *receiver;
   tort_message *previous_message;
-  tort_v       fiber; /* the sending fiber */
+  tort_v        fiber;  /* the sending fiber */
   tort_method  *method; /* the found method. */
   tort_mtable  *mtable; /* the mtable where the method was found. */
-  short argc;  /* number of arguments, including reciever.  >= 0 if specified by caller. */
+  tort_v        argc;   /* number of arguments, including reciever.  >= 0 if specified by caller. */
 #if TORT_MESSAGE_FILE_LINE
-  const char *file; int line;
+  const char   *file; 
+  int           line;
 #endif
 };
 tort_h_struct(tort_message);
@@ -204,8 +211,8 @@ tort_symbol* tort_symbol_make_encode(const char *string);
 
 struct tort_method { tort_H;
   tort_apply_decl((*applyf));
-  tort_v name;
   tort_v data;
+  tort_v name;
 };
 tort_h_struct(tort_method);
 
@@ -310,7 +317,7 @@ tort_lookup_decl(_tort_m_mtable__lookup);
 #define _tort_sendn(SEL, ARGC, RCVR_AND_ARGS...)			\
   ({									\
     _tort_send_msg_init(SEL, RCVR_AND_ARGS);				\
-    __tort_msg._.argc = (ARGC);						\
+    __tort_msg._.argc = tort_i(ARGC);					\
     _tort_lookup(_tort_message, __tort_msg._.receiver, &__tort_msg._)-> \
       method->applyf(&__tort_msg._, _tort_send_RCVR_ARGS(__tort_msg._.receiver, RCVR_AND_ARGS)); \
   })
@@ -322,7 +329,7 @@ tort_lookup_decl(_tort_m_mtable__lookup);
   do {									\
     _tort_message->selector = (tort_v) (SEL);				\
     _tort_message->receiver = (tort_v) _tort_send_RCVR(RCVR_AND_ARGS);	\
-    _tort_message->argc = (ARGC);					\
+    _tort_message->argc = tort_i(ARGC);					\
     _tort_send_msg_file_line_t();					\
     return								\
       _tort_lookup(_tort_message, _tort_message->receiver, _tort_message)-> \
