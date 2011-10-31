@@ -1,7 +1,7 @@
 (define compiler:make
   (lambda args 
     (list 
-     ""   ; output stream
+     (string-new)   ; output stream
      nil  ; output name
      0    ; next label id
      0    ; saves-ar-offset
@@ -115,7 +115,8 @@
     (let ((mname (compiler:method:label c o)))
       (compiler:set-output-name! c mname)
       (set! mname (compiler:global-symbol c mname))
-      (compiler:emit c ".text")
+      (compiler:emit c "  .text")
+      (compiler:emit c "  .align 4,0x90") ; ???
       (compiler:emit c ".globl " mname)
       (compiler:emit c mname ':)
       ;; C method(_tort_message:%rdi->%rbx, rcvr:%rsi->%r12, ...args)
@@ -265,7 +266,7 @@
   (lambda (c o dst)
     (cond
      ((eq? (car o) 'quote)
-      (compiler:compile:constant (cadr o) dst))
+      (compiler:compile:constant c (cadr o) dst))
      ((eq? (car o) 'if)
       (let ((Lfalse (compiler:label c))
 	    (Lend   (compiler:label c))
@@ -280,9 +281,11 @@
 	(cond 
 	 ((pair? false-expr)	
 	  (compiler:emit c "jmp   " Lend)
+	  (compiler:emit c "  .align 4,0x90")
 	  (compiler:emit c Lfalse ":")
 	  (compiler:compile:expr-dst c (car false-expr) dst))
 	 (else
+	  (compiler:emit c "  .align 4,0x90")
 	  (compiler:emit c Lfalse ":")))
 	(compiler:emit c Lend ":")
 	))
@@ -291,6 +294,7 @@
 	    (Lagain   (compiler:label c))
 	    (test-expr  (cdr o))
 	    (body-expr  (cddr o)))
+	(compiler:emit c "  .align 4,0x90")
 	(compiler:emit c Lagain ":")
 	(compiler:compile:expr-dst c (car test-expr) rtn-reg)
 	(compiler:compile:expr-dst c #f tmp0-reg)
@@ -300,8 +304,13 @@
 		    (compiler:compile:expr-dst c stmt dst))
 		  body-expr)
 	(compiler:emit c "jmp   " Lagain)
+	(compiler:emit c "  .align 4,0x90")
 	(compiler:emit c Lend ":")
 	))
+     ((eq? (car o) 'begin)
+	(for-each (lambda (stmt)
+		    (compiler:compile:expr-dst c stmt dst))
+		  (cdr o)))
      (else
       (compiler:compile:send c (car o) (cadr o) (cddr o))
       ;; send always emits to dst=rtn-reg.
@@ -375,12 +384,13 @@
 
 	  (posix:system (string-append "gcc "
 				       (if verbose "--verbose" "")
-				       " -export-dynamic -fno-common -DPIC -c -o " ofile " " sfile))
-	  ;; (if verbose (posix:system (string-append "otool -tv " ofile)))
+				       " -D__DYNAMIC__ -fPIC -DPIC "
+				       " -export-dynamic -fno-common -c -o " ofile " " sfile))
+	  (if verbose (posix:system (string-append "otool -tv " ofile)))
 	  (posix:system (string-append "gcc "
 				       (if verbose "--verbose" "")
 				       " -dynamiclib -Wl,-undefined -Wl,dynamic_lookup -o " dfile " " ofile " -compatibility_version 1 -current_version 1.0 -Wl,-single_module"))
-	  ;; (if verbose (posix:system (string-append "otool -tv " dfile)))
+	  ; (if verbose (posix:system (string-append "otool -tv " dfile)))
 	  (set! result dfile)
 	  (display "compile:assemble => ")(write result)(newline)
 	  result

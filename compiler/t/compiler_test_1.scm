@@ -1,36 +1,58 @@
 ;;;;;
 ; (load "compiler/lisp/compiler")
 
-(define m 
-  '(
-    ;; args
-    () 
+(for-each 
+ (lambda (meth)
+   (let ((c (compiler:make))
+	 (m meth))
+     (display "Testing ")(write m)(newline)
+     ;; (set! &trace 1)
+     (compiler:compile:method c m)
+     ;; (set! &trace 0)
+     ;; (compiler:stream c)
+     (compiler:assemble c 'verbose)
+     (compiler:load c)
+     (read)
+     )
+   )
+ '(
+   (
+    () ; args 
+    1
+    )
+   (
+    () ; args 
+    'symbol
+    )
+   (
+    () ; args 
+    (if #t 'ok)
+    )
+   (
+    () ; args 
+    (if #t 'ok 'not-ok)
+    )
+   (
+    () ; args 
+    (if #f 'not-ok 'ok)
+    )
+   (
+    () ; args 
+    (if #f (+ 1 2) (+ 3 4))
+    )
+   (
+    () ; args 
+    (begin #f (+ 1 2) (+ 3 4))
+    )
+   (
+    () ; args 
+    (quote (while #t ('_write *standard-output* "Hello, World!\n")))
+    )
+   (
+    () ; args 
     ;; body
     ('_inspect "Hello World!" *standard-output*) ; FAILS
     ('_write *standard-output* "\n") ; FAILS
-    ))
-
-(define m 
-  '(
-    ;; args
-    () 
-    ;; body
-    (if #f (+ 1 2) (+ 3 4))
-    ))
-
-(define m 
-  '(
-    ;; args
-    () 
-    ;; body
-    (while #t ('_write *standard-output* "Hello, World!\n"))
-    ))
-
-(define c (compiler:make))
-;; (set! &trace 1)
-(compiler:compile:method c m)
-;; (set! &trace 0)
-;; (compiler:stream c)
-(compiler:assemble c)
-(compiler:load c)
+    )
+   ))
 
