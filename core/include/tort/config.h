@@ -38,7 +38,11 @@
 #endif
 
 #ifndef TORT_LOOKUP_TRACE
-#define TORT_LOOKUP_TRACE 0
+#define TORT_LOOKUP_TRACE 1
+#endif
+
+#ifndef TORT_GC_STATS
+#define TORT_GC_STATS 1
 #endif
 
 #endif
