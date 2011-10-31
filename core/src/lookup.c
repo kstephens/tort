@@ -7,6 +7,12 @@
 #include <stdio.h>
 #include <assert.h>
 
+int _tort_lookup_trace = 0;
+#if TORT_LOOKUP_TRACE
+#else
+#define _tort_lookup_trace 0
+#endif
+
 int _tort_lookup_trace_level = 0;
 
 tort_message *_tort_message;
@@ -111,11 +117,7 @@ tort_v _tort_m_mtable__set_delegate(tort_tp tort_mtable *rcvr, tort_v delegate)
   return rcvr;
 }
 
-#if 1
 #define s_lookup tort__s(lookup)
-#else
-#define s_lookup tort_s(lookup)
-#endif
 
 tort_v _tort_m_mtable___method_changed(tort_tp tort_mtable *rcvr, tort_v sym, tort_v meth)
 {
@@ -153,7 +155,7 @@ tort_lookup_decl(_tort_m_mtable__lookup)
   tort_v method = tort_nil;
   tort_symbol *sel = message->selector;
 
-  if ( TORT_LOOKUP_TRACE ) 
+  if ( _tort_lookup_trace ) 
     _tort_lookup_trace_level ++;
 
 #if TORT_ANON_SYMBOL_MTABLE
@@ -163,7 +165,7 @@ tort_lookup_decl(_tort_m_mtable__lookup)
 #endif
     method = _tort_m_map__get(tort_ta (tort_v) mtable, sel);
 
-  if ( TORT_LOOKUP_TRACE ) {
+  if ( _tort_lookup_trace ) {
     fprintf(stderr, "  %p %*s_tort_m_mtable__lookup: mtable = %s, sel = %s, meth = %s\n", 
 	    message,
 	    _tort_lookup_trace_level, "",
@@ -177,12 +179,12 @@ tort_lookup_decl(_tort_m_mtable__lookup)
     message->method = method;
     message->mtable = mtable;
 
-    if ( TORT_LOOKUP_TRACE ) 
+    if ( _tort_lookup_trace ) 
       _tort_lookup_trace_level --;
   }
   else if ( (mtable = mtable->delegate) != tort_nil ) {
     (void) TORT_MCACHE_STAT(mcache_stats.delegate_traverse_n ++);
-    if ( TORT_LOOKUP_TRACE ) {
+    if ( _tort_lookup_trace ) {
       message = tort_send(s_lookup, mtable, message);
       _tort_lookup_trace_level --;
     } else {
@@ -206,9 +208,9 @@ tort_message* _tort_lookup (tort_tp tort_v rcvr, tort_message *message)
   message->method = tort_nil;
   message->fiber = message->previous_message ? message->previous_message->fiber : _tort_fiber;
 
-  if ( TORT_LOOKUP_TRACE )  {
+  if ( _tort_lookup_trace )  {
     _tort_lookup_trace_level ++;
-    fprintf(stderr, "  %p %*s_tort_lookup: rcvr = %s, sel = %s\n",
+    fprintf(stderr, "  %p %*s_tort_lookup(rcvr = %s, sel = %s):\n",
 	    message,
 	    _tort_lookup_trace_level, "",
 	    tort_object_name(message->receiver), 
@@ -244,8 +246,8 @@ tort_message* _tort_lookup (tort_tp tort_v rcvr, tort_message *message)
     }
     
     if ( message->method == tort_nil ) {
-      if ( TORT_LOOKUP_TRACE )  {
-	fprintf(stderr, "  %p %*s_tort_lookup: method_not_found: %s, %s\n", 
+      if ( _tort_lookup_trace )  {
+	fprintf(stderr, "  %p %*s_tort_lookup(%s, %s) => method_not_found\n", 
 		message,
 		_tort_lookup_trace_level, "",
 		tort_object_name(message->receiver), 
@@ -266,7 +268,7 @@ tort_message* _tort_lookup (tort_tp tort_v rcvr, tort_message *message)
 #endif
 
 #if TORT_GLOBAL_MCACHE_STATS
-    if ( mce->method )
+    if ( mce->method != message->method )
       (void) TORT_MCACHE_STAT(++ mcache_stats.collision_n);
 #endif
     mce->method = message->method;
@@ -274,15 +276,38 @@ tort_message* _tort_lookup (tort_tp tort_v rcvr, tort_message *message)
   }
 #endif
 
-  if ( TORT_LOOKUP_TRACE )
+  if ( _tort_lookup_trace )  {
+    fprintf(stderr, "  %p %*s_tort_lookup(rcvr = %s, sel = %s) => %s\n",
+	    message,
+	    _tort_lookup_trace_level, "",
+	    tort_object_name(message->receiver), 
+	    tort_symbol_data(sel),
+	    tort_object_name(message->method));
     _tort_lookup_trace_level --;
+  }
 
 #undef MTABLE
   return message;
 }
 
+#ifdef _tort_lookup_trace
+#undef _tort_lookup_trace
+#endif
+
+tort_message* _tort_lookup_debug (tort_tp tort_v rcvr, tort_message *message)
+{
+  ++ _tort_lookup_trace;
+
+  message = _tort_lookup(tort_ta rcvr, message);
+
+  -- _tort_lookup_trace;
+
+  return message;
+}
+
 tort_apply_decl(_tort_m_object___method_not_found) 
 {
+  extern void tort_debug_stop_at();
   tort_error_message("cannot apply selector %s to", 
 		     (char *) tort_object_name(_tort_message->selector)
 		     );
@@ -294,6 +319,7 @@ tort_apply_decl(_tort_m_object___method_not_found)
 		     tort_h(rcvr).alloc_id);
 #endif
   tort_error_message("  message %T", _tort_message);
+  tort_debug_stop_at();
   tort_error(tort_ta ": not applicable");
   return tort_nil;
 }
@@ -308,3 +334,4 @@ tort_v tort_runtime_initialize_lookup()
 #endif
   return 0;
 }
+
