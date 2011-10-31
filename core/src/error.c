@@ -1,6 +1,5 @@
 #include "tort/core.h"
 
-
 tort_v tort_error_messagev(const char *type, const char *format, va_list *vapp)
 {
   if ( tort_(_in_error) ) {
@@ -15,7 +14,6 @@ tort_v tort_error_messagev(const char *type, const char *format, va_list *vapp)
   fflush(stderr);
   return 0;
 }
-
 
 tort_v tort_error_message(const char *format, ...)
 {
@@ -33,14 +31,12 @@ tort_v _tort_fatal(tort_tp const char *format, va_list *vapp)
   return 0;
 }
 
-
 tort_v _tort_error(tort_tp const char *format, va_list *vapp)
 {
   tort_error_messagev("error", format, vapp);
   tort_send(tort__s(__debugger), _tort_message);
   return 0;
 }
-
 
 tort_v tort_fatal (tort_tp const char *format, ...)
 {
@@ -54,7 +50,6 @@ tort_v tort_fatal (tort_tp const char *format, ...)
   return 0;
 }
 
-
 tort_v tort_error (tort_tp const char *format, ...)
 {
   va_list vap;
@@ -64,7 +59,6 @@ tort_v tort_error (tort_tp const char *format, ...)
   return 0;
 }
 
-
 tort_v tort_runtime_initialize_error()
 {
   tort_(_in_error) = 0;
@@ -73,5 +67,3 @@ tort_v tort_runtime_initialize_error()
 
   return 0;
 }
-
-
