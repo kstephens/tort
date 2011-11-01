@@ -267,7 +267,14 @@ tort_v _tort_m_cons__lisp_eval(tort_tp tort_cons *obj, tort_v env)
   _tort_debug_expr = obj;
   if ( val == tort_s(define) ) {
     tort_v name = tort_car(obj->cdr);
-    val = tort_car(tort_cdr(obj->cdr));
+    if ( tort_h_mtable(name) == tort__mt(symbol) ) {
+      /* (define name val) */
+      val = tort_car(tort_cdr(obj->cdr));
+    } else {
+      /* (define (name . lambda-args) . lambda-body) */
+      val = tort_cons(tort_s(lambda), tort_cons(tort_cdr(name), tort_cdr(obj->cdr)));
+      name = tort_car(name);
+    }
     val = tort_send(tort_s(lisp_eval), val, env);
     tort_send(tort_s(define), env, name, val);
     return name;
@@ -353,13 +360,21 @@ tort_v _tort_m_cons__lisp_eval(tort_tp tort_cons *obj, tort_v env)
 
 tort_v _tort_m_symbol__lisp_eval_car(tort_tp tort_v obj, tort_v env)
 {
-  if ( _tort_lisp_trace ) tort_printf(tort_stderr, "\n  symbol::lisp_eval_car: %O\n", obj);
+  if ( _tort_lisp_trace ) {
+    tort_v val = tort_send(tort_s(get), env, obj);
+    tort_printf(tort_stderr, "\n  symbol::lisp_eval_car: %O => %O\n", obj, val);
+    return val;
+  } else
   return_tort_send(tort_s(get), env, obj);
 }
 
 tort_v _tort_m_object__lisp_eval_car(tort_tp tort_v obj, tort_v env)
 {
-  if ( _tort_lisp_trace ) tort_printf(tort_stderr, "\n  object::lisp_eval_car: %O\n", obj);
+  if ( _tort_lisp_trace ) {
+    tort_v val = tort_send(tort_s(lisp_eval), obj, env);
+    tort_printf(tort_stderr, "\n  object::lisp_eval_car: %O => %O\n", obj, val);
+    return val;
+  } else
   return_tort_send(tort_s(lisp_eval), obj, env);
 }
 
