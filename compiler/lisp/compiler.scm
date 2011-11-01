@@ -1,84 +1,54 @@
-(define compiler:make
-  (lambda args 
-    (list 
-     (string-new)   ; output stream
-     nil  ; output name
-     0    ; next label id
-     0    ; saves-ar-offset
-     nil  ; saves
-     )))
+(define (compiler:make . args)
+  (list 
+   (string-new)   ; output stream
+   nil  ; output name
+   0    ; next label id
+   0    ; saves-ar-offset
+   nil  ; saves
+   ))
 
-(define compiler:output-name 
-  (lambda (c)
-    (car (cdr c))))
+(define (compiler:output-name c) (car (cdr c)))
+(define (compiler:set-output-name! c v) (set-car! (cdr c) v))
+(define (compiler:stream c) (car c))
+(define (compiler:set-stream! c s) (set-car! c s))
+(define (compiler:label-id c) (caddr c))
+(define (compiler:set-label-id! c v) (set-car! (cddr c) v))
+(define (compiler:saves-ar-offset c) (car (cdddr c)))
+(define (compiler:set-saves-ar-offset! c v) (set-car! (cdddr c) v))
 
-(define compiler:set-output-name!
-  (lambda (c v)
-    (set-car! (cdr c) v)))
-
-(define compiler:stream
-  (lambda (c)
-    (car c)))
-
-(define compiler:set-stream!
-  (lambda (c s)
-    (set-car! c s)))
-
-(define compiler:label-id
-  (lambda (c)
-    (caddr c)))
-
-(define compiler:set-label-id!
-  (lambda (c v)
-    (set-car! (cddr c) v)))
-
-(define compiler:saves-ar-offset
-  (lambda (c)
-    (car (cdddr c))))
-
-(define compiler:set-saves-ar-offset!
-  (lambda (c v)
-    (set-car! (cdddr c) v)))
-
-(define compiler:label
-  (lambda (c)
+(define (compiler:label c)
     (let ((id (compiler:label-id c)))
       (let ((label (string-append "L" (number->string id))))
 	(compiler:set-label-id! c (+ id 1))
-	label))))
+	label)))
 
-(define compiler:emit 
-  (lambda (c . args)
+(define (compiler:emit c . args)
     (set! c (compiler:stream c))
     (for-each (lambda (x)
 		(display x c)) 
 	      args)
     (newline c)
-    ))
+    )
 
-(define compiler:global-symbol
-  (lambda (c o)
+(define (compiler:global-symbol c o)
     (if (symbol? o)
 	(set! o (symbol->string o)))
     (string->symbol 
-     (string-append "_" o))))
+     (string-append "_" o)))
 
-(define compiler:method:label
-  (lambda (c o)
-     (string-append "_tort_x_" ('_to_string ('_object_ptr o)))))
+(define (compiler:method:label c o)
+     (string-append "_tort_x_" ('_to_string ('_object_ptr o))))
 
 (define compiler:object:header-size ('_object_header_size '()))
 (define compiler:message:alloc-size (+ compiler:object:header-size ('_alloc_size ('new <message>))))
-(define compiler:type:slot-offset
-  (lambda (type slot)
-    ((string->symbol (string-append "_offset_" (symbol->string slot))) type)))
+(define (compiler:type:slot-offset type slot)
+    ((string->symbol (string-append "_offset_" (symbol->string slot))) type))
 
-(define compiler:reg:offset 
-  (lambda (reg type slot)
+(define (compiler:reg:offset reg type slot)
     (string-append
      (object->string (compiler:type:slot-offset type slot))
      "(" reg ")"
-     )))
+     ))
 
 (let ((_msg "%rbx")
       (_rcvr "%r12")
@@ -102,16 +72,14 @@
 	(meth->applyf          (compiler:reg:offset meth <method> 'applyf))
 	)
 
-(define compiler:save-reg
-  (lambda (c reg)
+(define (compiler:save-reg c reg)
     (let ((offset (compiler:saves-frame-offset c)))
       (set! offset (- offset 8))
       (compiler:emit c "movq  " reg ", $" offset "(" ar-reg ")")
       (compiler:set-saves-frame-offset! offset)
-    )))
+    ))
 
-(define compiler:compile:method 
-  (lambda (c o)
+(define (compiler:compile:method c o)
     (let ((mname (compiler:method:label c o)))
       (compiler:set-output-name! c mname)
       (set! mname (compiler:global-symbol c mname))
@@ -151,22 +119,19 @@
       (compiler:emit c "leave")
       (compiler:emit c "ret")
       c
-      )))
+      ))
 
-(define compiler:compile:method:body 
-  (lambda (c o)
+(define (compiler:compile:method:body c o)
     (let ((args (car o))
 	  (body (cdr o)))
       (for-each (lambda (stmt)
 		  (compiler:compile:expr c stmt))
-		body))))
+		body)))
 
-(define compiler:compile:expr
-  (lambda (c o)
-    (compiler:compile:expr-dst c o rtn-reg)))
+(define (compiler:compile:expr c o)
+    (compiler:compile:expr-dst c o rtn-reg))
 
-(define compiler:compile:expr-dst
-  (lambda (c o dst)
+(define (compiler:compile:expr-dst c o dst)
      (cond
      ((number? o)
       (compiler:compile:number c o dst))
@@ -176,10 +141,9 @@
       (compiler:compile:symbol c o dst))
      (else
       (compiler:compile:reference c o dst)))
-    ))
+    )
 
-(define compiler:compile:send
-   (lambda (c sel rcvr args)
+(define (compiler:compile:send c sel rcvr args)
      ;; (compiler:emit c "  // (send " sel " " rcvr " " args ")")
      ;; Create message object on stack:
      ;;   
@@ -247,10 +211,9 @@
       (compiler:emit c "addq  $" compiler:message:alloc-size ", " sp-reg)
       ;;   Restore msg reg:
       (compiler:emit c "popq  " msg)
-    ))
+    )
 
-(define compiler:compile:caller-arg 
-  (lambda (c arg)
+(define (compiler:compile:caller-arg c arg)
     (let ((arg-i    (car arg))
 	  (arg-expr (cadr arg))
 	  (arg-type #f))
@@ -259,10 +222,9 @@
 				     (vector-ref arg-regs arg-i)
 				     'STACK))
       (compiler:compile:expr-dst c arg-expr arg-type)
-      arg-type)))
+      arg-type))
 
-(define compiler:compile:pair
-  (lambda (c o dst)
+(define (compiler:compile:pair c o dst)
     (cond
      ((eq? (car o) 'quote)
       (compiler:compile:quote c (cadr o) dst))
@@ -297,10 +259,9 @@
        (else
 	(compiler:emit c "movq  " rtn-reg ", " dst)))
       )
-     )))
+     ))
 
-(define compiler:compile:or
-  (lambda (c o dst)
+(define (compiler:compile:or c o dst)
     (let ((Lend (compiler:label c))
 	  (exprs (cdr o)))
       (while (not (null? exprs))
@@ -312,10 +273,9 @@
 	(set! exprs (cdr exprs)))
       (compiler:compile:expr-dst c #f dst)
       (compiler:emit c "  .align 4,0x90")
-      (compiler:emit c "  " Lend ":"))))
+      (compiler:emit c "  " Lend ":")))
 
-(define compiler:compile:and
-  (lambda (c o dst)
+(define (compiler:compile:and  c o dst)
     (let ((Lend (compiler:label c))
 	  (exprs (cdr o)))
       (compiler:compile:expr-dst c #f dst)
@@ -327,10 +287,9 @@
 	(compiler:emit c "je    " Lend)
 	(set! exprs (cdr exprs)))
       (compiler:emit c "  .align 4,0x90")
-      (compiler:emit c "  " Lend ":"))))
- 
-(define compiler:compile:if
-  (lambda (c o dst)
+      (compiler:emit c "  " Lend ":")))
+
+(define (compiler:compile:if  c o dst)
     (let ((Lfalse (compiler:label c))
 	  (Lend   (compiler:label c))
 	  (test-expr  (cdr o))
@@ -354,10 +313,9 @@
        (else
 	(compiler:emit c "  .align 4,0x90")
 	(compiler:emit c "  " Lfalse ":")))
-      (compiler:emit c "  " Lend ":"))))
-  
-(define compiler:compile:while
-  (lambda (c o dst)
+      (compiler:emit c "  " Lend ":")))
+
+(define (compiler:compile:while c o dst)
     (let ((Lend (compiler:label c))
 	  (Lagain   (compiler:label c))
 	  (test-expr  (cdr o))
@@ -377,59 +335,50 @@
 		body-expr)
       (compiler:emit c "jmp   " Lagain)
       (compiler:emit c "  .align 4,0x90")
-      (compiler:emit c "  " Lend ":"))))
+      (compiler:emit c "  " Lend ":")))
 
-(define compiler:compile:symbol
-  (lambda (c o dst)
+(define (compiler:compile:symbol c o dst)
     (cond
      ((eq? o '&root)
       (compiler:compile:reference c &root dst))
      (else
-      (compiler:compile:reference c o dst)))))
+      (compiler:compile:reference c o dst))))
 
-(define compiler:compile:quote
-  (lambda (c o dst)
+(define (compiler:compile:quote c o dst)
     (cond
      ((number? o)
       (compiler:compile:number c o dst))
      (else
-      (compiler:compile:reference c o dst)))))
+      (compiler:compile:reference c o dst))))
 
-(define compiler:compile:number
-  (lambda (c o dst)
-    (compiler:compile:literal c (compiler:constant:number c o) dst)))
+(define (compiler:compile:number c o dst)
+    (compiler:compile:literal c (compiler:constant:number c o) dst))
 
-(define compiler:compile:reference
-  (lambda (c o dst)
-    (compiler:compile:literal c (compiler:constant:reference c o) dst)))
+(define (compiler:compile:reference c o dst)
+    (compiler:compile:literal c (compiler:constant:reference c o) dst))
 
-(define compiler:compile:literal
-  (lambda (c o dst)
+(define (compiler:compile:literal c o dst)
     (if (eq? dst 'STACK)
 	(compiler:emit c "pushq " o)
-        (compiler:emit c "movq  " o ", " dst))))
+        (compiler:emit c "movq  " o ", " dst)))
 
-(define compiler:constant:object
-  (lambda (c o)
+(define (compiler:constant:object c o)
     (cond
      ((number? o)
       (compiler:constant:number c o))
      (else
-      (compiler:constant:reference c o)))))
+      (compiler:constant:reference c o))))
 
-(define compiler:constant:number
-  (lambda (c o)
-    (string-append "$" (object->string (| (+ o o) 1))))) ; |
+(define (compiler:constant:number c o)
+    (string-append "$" (object->string (| (+ o o) 1)))) ; |
 
-(define compiler:constant:reference
-  (lambda (c o)
-    (string-append "$0x" ('_to_string ('_object_ptr o)))))
+(define (compiler:constant:reference c o)
+    (string-append "$0x" ('_to_string ('_object_ptr o))))
 
 )) ; let) let)
 
 
-(define compiler:compile:literal:string
-  (lambda (c o)
+(define (compiler:compile:literal:string c o)
     (let ((v   (compiler:label c))
 	  (s   (compiler:label c)))
       (compiler:emit c "  .data")
@@ -438,21 +387,18 @@
       (compiler:emit c "  " s ":")
       (compiler:emit c "  .qword $0")
       (compiler:emit c "  .text")
-      )))
+      ))
 
-(define compiler:box:int
-  (lambda (c dst)
+(define (compiler:box:int c dst)
     ; int expression is in dst,
     (compiler:emit c "addq  " dst ", " dst)
-    (compiler:emit c "orq   $1, " dst)))
+    (compiler:emit c "orq   $1, " dst))
 
-(define compiler:unbox:int
-  (lambda (c dst)
+(define (compiler:unbox:int c dst)
     ; int expression is in dst,
-    (compiler:emit c "sarq  " dst)))
+    (compiler:emit c "sarq  " dst))
 
-(define compiler:assemble
-  (lambda (c . options)
+(define (compiler:assemble c . options)
     (let ((name (compiler:output-name c))
 	  (verbose (not (null? options)))
 	  (fname nil))
@@ -487,10 +433,9 @@
 	  (set! result dfile)
 	  (display "compile:assemble => ")(write result)(newline)
 	  result
-	)))))
+	))))
 
-(define compiler:load 
-  (lambda (c . options)
+(define (compiler:load c . options)
     (let ((name (compiler:output-name c))
 	  (verbose (not (null? options)))
 	  (fname nil))
@@ -513,6 +458,6 @@
 	  (set! result ('_ccall func-ptr))
 	  (display "result = ")(write result)(newline)
 	  result
-    )))))
+    ))))
 
 ;;;;
