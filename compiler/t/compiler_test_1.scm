@@ -2,68 +2,77 @@
 ; (load "compiler/lisp/compiler")
 
 (for-each 
- (lambda (meth)
+ (lambda (case)
    (let ((c (compiler:make))
-	 (m meth))
-     (display "Testing ")(write m)(newline)
+	 (m (car case))
+	 (expected (cadr case))
+	 )
+     (display "===========================\n  Testing ")(write m)(newline)
      ;; (set! &trace 1)
      (compiler:compile:method c m)
      ;; (set! &trace 0)
      ;; (compiler:stream c)
      (compiler:assemble c 'verbose)
      (compiler:load c)
-     (read)
-     )
-   )
+     ; (read)
+     ))
  '(
    (
-    () ; args 
-    1
-    )
+    (() ; args 
+     1)
+    1)
    (
-    () ; args 
-    'symbol
-    )
+    (() ; args 
+     'two)
+    'two)
    (
-    () ; args 
-    (if #t 'ok)
-    )
+    (() ; args 
+     (if #t 'three))
+    'three)
    (
-    () ; args 
-    (if #t 'ok 'not-ok)
-    )
+    (() ; args 
+     (if #t 'four 'not-ok))
+    'four)
    (
-    () ; args 
-    (if #f 'not-ok 'ok)
-    )
+    (() ; args 
+     (if #f 'not-ok 'five))
+    'five)
    (
-    () ; args 
-    ('- -1 2)
-    )
+    (() ; args 
+     ('- -1 5))
+    -6)
    (
-    () ; args 
-    (if #f (+ 1 2) (+ 3 4))
-    )
+    (() ; args 
+     (if #f (+ 1 2) (+ 3 4)))
+    7)
    (
-    () ; args 
-    (begin #f (+ 1 2) (+ 3 4))
-    )
+    (() ; args 
+     (begin #f (+ 1 2) (+ 3 5)))
+    8)
    (
-    () ; args 
-    &root
-    )
+    (() ; args 
+     (or #f 9 10))
+    9)
    (
-    () ; args 
-    (&root stdout)
-    )
+    (() ; args 
+     (and 9 10))
+    10)
    (
-    () ; args 
-    ;; body
-    ('_write (&root stdout) "Hello World!\n")
-    )
+    (() ; args 
+     &root)
+    &root)
    (
-    () ; args 
-    (quote (while #t ('_write *standard-output* "Hello, World!\n")))
+    (() ; args 
+     (&root stdout))
+    *standard-output*)
+   (
+    (() ; args 
+     ('_write (&root stdout) "Hello World!\n"))
+    #f)
+   (
+    (() ; args 
+     (quote (while #t ('_write *standard-output* "Hello, World!\n"))))
+    #f
     )
    ))
 

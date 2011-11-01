@@ -55,6 +55,16 @@ const char * _tort_while_stmt(tort_pair *x)
   return x;
 }
 
+tort_v _tort_box_int(tort_vi i)
+{
+  return tort_i(i);
+}
+
+tort_vi _tort_unbox_int(tort_v o)
+{
+  return tort_I(o);
+}
+
 /* 
 x86 64: calling sequence:
 

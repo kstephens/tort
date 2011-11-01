@@ -117,8 +117,8 @@
       (set! mname (compiler:global-symbol c mname))
       (compiler:emit c "  .text")
       (compiler:emit c "  .align 4,0x90") ; ???
-      (compiler:emit c ".globl " mname)
-      (compiler:emit c mname ':)
+      (compiler:emit c "  .globl " mname)
+      (compiler:emit c "  " mname ':)
       ;; C method(_tort_message:%rdi->%rbx, rcvr:%rsi->%r12, ...args)
 
       ;; save caller's frame pointer:
@@ -180,39 +180,35 @@
 
 (define compiler:compile:send
    (lambda (c sel rcvr args)
+     ;; (compiler:emit c "  // (send " sel " " rcvr " " args ")")
+     ;; Create message object on stack:
+     ;;   
+     ;;   Save msg reg:
+     (compiler:emit c "pushq " msg)
+     ;;   Allocate new message object on stack:
+     (compiler:emit c "subq  $" compiler:message:alloc-size ", " sp-reg)
+     (compiler:emit c "movq  " sp-reg "," msg)
+     ;;   Add object header offset:
+     (compiler:emit c "addq  $" compiler:object:header-size ", " msg)
+     
      (set! args
-	   (let ((arg-i 1))
+	   (let ((arg-i 1)) ; skip first real args: (_msg rcvr)
 	     (map (lambda (arg-expr)
 		    (set! arg-i (+ arg-i 1))
 		    (list arg-i arg-expr))
 		  args)))
-     ;; (compiler:emit c "  // (send " sel " " rcvr " " args ")")
-      ;; Create message object on stack:
-      ;;   
-      ;;   Save msg reg:
-      (compiler:emit c "pushq " msg)
-      ;;   Allocate new message object on stack:
-      (compiler:emit c "subq  $" compiler:message:alloc-size ", " sp-reg)
-      (compiler:emit c "movq  " sp-reg "," msg)
-      ;;   Add object header offset:
-      (compiler:emit c "addq  $" compiler:object:header-size ", " msg)
-
+     
       ;; Initialize message object:
       ;;
       ;;   previous_message:
-      (compiler:emit c "  // _msg => msg->previous_message")
       (compiler:emit c "movq  " _msg ", " msg->previous_message)
       ;;   selector:
-      ;; (compiler:emit c "  // sel " (object->string sel) " => msg->selector")
       (compiler:compile:expr c sel)
       (compiler:emit c "movq  " rtn-reg ", " msg->selector)
-      ;(compiler:compile:expr-dst c sel msg->selector)
       ;;   argc:
       (let ((argc (+ (length args) 1))) ; + 1 for rcvr
-	(compiler:emit c "  // (length args) " argc " => msg->argc")
 	(compiler:compile:expr-dst c argc msg->argc))
       ;;   receiver:
-      ;; (compiler:emit c "  // rcvr " (object->string rcvr) " => msg->receiver")
       (compiler:compile:expr c rcvr)
       (compiler:emit c "movq  " rtn-reg ", " msg->receiver)
 
@@ -221,7 +217,7 @@
       (compiler:emit c "movq  " rtn-reg ", " arg1-reg " // rcvr")
       (compiler:emit c "movq  " msg     ", " arg2-reg " // message")
       (compiler:emit c "movq  " _msg    ", " arg0-reg " // _tort_message")
-      (compiler:emit c "call  " (compiler:global-symbol c '_tort_lookup_debug))
+      (compiler:emit c "call  " (compiler:global-symbol c '_tort_lookup))
       (compiler:emit c "movq  " rtn-reg ", " msg " // -> message")
 
       ;; Invoke method->func(message, rcvr, args ...):
@@ -233,7 +229,6 @@
 			(set! stack-arg-count (+ stack-arg-count 1))
 			))
 		  (reverse args))
-	
 	;; receiver:
 	(compiler:emit c "movq  " msg->receiver ", " arg1-reg " // => rcvr")
 	;; message:
@@ -243,14 +238,12 @@
 	(compiler:emit c "movq  " msg->method ", " meth " // msg->method => meth")
 	(compiler:emit c "call  *" meth->applyf " // apply() ")
 	
-	;; 
 	;; Pop args sp:
 	(if (> stack-arg-count 0)
 	    (compiler:emit c "addq $" (* 8 stack-arg-count) ", " sp-reg))
 	)
 
       ;; Reclaim message space:
-      ;;   Pop message space:
       (compiler:emit c "addq  $" compiler:message:alloc-size ", " sp-reg)
       ;;   Restore msg reg:
       (compiler:emit c "popq  " msg)
@@ -261,7 +254,7 @@
     (let ((arg-i    (car arg))
 	  (arg-expr (cadr arg))
 	  (arg-type #f))
-      (compiler:emit c "  // arg #" arg-i)
+      ; (compiler:emit c "  // arg #" arg-i)
       (set! arg-type (if (< arg-i (vector-length arg-regs))
 				     (vector-ref arg-regs arg-i)
 				     'STACK))
@@ -276,56 +269,16 @@
      ((eq? (car o) '&root)
       (compiler:compile:pair c (list ''get &root (cadr o)) dst))
      ((eq? (car o) 'if)
-      (let ((Lfalse (compiler:label c))
-	    (Lend   (compiler:label c))
-	    (test-expr  (cdr o))
-	    (true-expr  (cddr o))
-	    (false-expr (cdddr o))
-	    (false-value (compiler:constant:object c #f))
-	    )
-	;; cmpq expects 16-bit constant, so use a register for #f value.
-	(compiler:compile:expr-dst c #f tmp0-reg)
-	(set! false-value tmp0-reg)
-	(compiler:compile:expr-dst c (car test-expr) rtn-reg)
-	(compiler:emit c "cmpq  " false-value ", " rtn-reg)
-	(compiler:emit c "je    " Lfalse)
-	(compiler:compile:expr-dst c (car true-expr) dst)
-	(cond 
-	 ((pair? false-expr)	
-	  (compiler:emit c "jmp   " Lend)
-	  (compiler:emit c "  .align 4,0x90")
-	  (compiler:emit c Lfalse ":")
-	  (compiler:compile:expr-dst c (car false-expr) dst))
-	 (else
-	  (compiler:emit c "  .align 4,0x90")
-	  (compiler:emit c Lfalse ":")))
-	(compiler:emit c Lend ":")
-	))
+      (compiler:compile:if c o dst))
      ((eq? (car o) 'while)
-      (let ((Lend (compiler:label c))
-	    (Lagain   (compiler:label c))
-	    (test-expr  (cdr o))
-	    (body-expr  (cddr o))
-	    (false-value (compiler:constant:object c #f))
-	    )
-	(compiler:emit c "  .align 4,0x90")
-	(compiler:emit c Lagain ":")
-	;; cmpq expects 16-bit constant, so use a register for #f value.
-	(compiler:compile:expr-dst c #f tmp0-reg)
-	(set! false-value tmp0-reg)
-	(compiler:compile:expr-dst c (car test-expr) rtn-reg)
-	(compiler:emit c "cmpq  " false-value ", " rtn-reg)
-	(compiler:emit c "je    " Lend)
-	(for-each (lambda (stmt)
-		    (compiler:compile:expr-dst c stmt dst))
-		  body-expr)
-	(compiler:emit c "jmp   " Lagain)
-	(compiler:emit c "  .align 4,0x90")
-	(compiler:emit c Lend ":")
-	))
+      (compiler:compile:while c o dst))
+     ((eq? (car o) 'or)
+      (compiler:compile:or c o dst))
+     ((eq? (car o) 'and)
+      (compiler:compile:and c o dst))
      ((eq? (car o) 'begin)
       (for-each (lambda (stmt)
-		    (compiler:compile:expr-dst c stmt dst))
+		  (compiler:compile:expr-dst c stmt dst))
 		(cdr o)))
      (else
       (let ((sel (car o))
@@ -345,6 +298,86 @@
 	(compiler:emit c "movq  " rtn-reg ", " dst)))
       )
      )))
+
+(define compiler:compile:or
+  (lambda (c o dst)
+    (let ((Lend (compiler:label c))
+	  (exprs (cdr o)))
+      (while (not (null? exprs))
+	;; cmpq expects 16-bit constant, so use a register for #f value.
+	(compiler:compile:expr-dst c #f tmp0-reg)
+	(compiler:compile:expr-dst c (car exprs) dst)
+	(compiler:emit c "cmpq  " tmp0-reg ", " dst)
+	(compiler:emit c "jne   " Lend)
+	(set! exprs (cdr exprs)))
+      (compiler:compile:expr-dst c #f dst)
+      (compiler:emit c "  .align 4,0x90")
+      (compiler:emit c "  " Lend ":"))))
+
+(define compiler:compile:and
+  (lambda (c o dst)
+    (let ((Lend (compiler:label c))
+	  (exprs (cdr o)))
+      (compiler:compile:expr-dst c #f dst)
+      (while (not (null? exprs))
+	;; cmpq expects 16-bit constant, so use a register for #f value.
+	(compiler:compile:expr-dst c #f tmp0-reg)
+	(compiler:compile:expr-dst c (car exprs) dst)
+	(compiler:emit c "cmpq  " tmp0-reg ", " dst)
+	(compiler:emit c "je    " Lend)
+	(set! exprs (cdr exprs)))
+      (compiler:emit c "  .align 4,0x90")
+      (compiler:emit c "  " Lend ":"))))
+ 
+(define compiler:compile:if
+  (lambda (c o dst)
+    (let ((Lfalse (compiler:label c))
+	  (Lend   (compiler:label c))
+	  (test-expr  (cdr o))
+	  (true-expr  (cddr o))
+	  (false-expr (cdddr o))
+	  (false-value (compiler:constant:object c #f))
+	  )
+      ;; cmpq expects 16-bit constant, so use a register for #f value.
+      (compiler:compile:expr-dst c #f tmp0-reg)
+      (set! false-value tmp0-reg)
+      (compiler:compile:expr-dst c (car test-expr) dst)
+      (compiler:emit c "cmpq  " false-value ", " dst)
+      (compiler:emit c "je    " Lfalse)
+      (compiler:compile:expr-dst c (car true-expr) dst)
+      (cond 
+       ((pair? false-expr)	
+	(compiler:emit c "jmp   " Lend)
+	(compiler:emit c "  .align 4,0x90")
+	(compiler:emit c "  " Lfalse ":")
+	(compiler:compile:expr-dst c (car false-expr) dst))
+       (else
+	(compiler:emit c "  .align 4,0x90")
+	(compiler:emit c "  " Lfalse ":")))
+      (compiler:emit c "  " Lend ":"))))
+  
+(define compiler:compile:while
+  (lambda (c o dst)
+    (let ((Lend (compiler:label c))
+	  (Lagain   (compiler:label c))
+	  (test-expr  (cdr o))
+	  (body-expr  (cddr o))
+	  (false-value (compiler:constant:object c #f))
+	  )
+      (compiler:emit c "  .align 4,0x90")
+      (compiler:emit c "  " Lagain ":")
+      ;; cmpq expects 16-bit constant, so use a register for #f value.
+      (compiler:compile:expr-dst c #f tmp0-reg)
+      (set! false-value tmp0-reg)
+      (compiler:compile:expr-dst c (car test-expr) dst)
+      (compiler:emit c "cmpq  " false-value ", " dst)
+      (compiler:emit c "je    " Lend)
+      (for-each (lambda (stmt)
+		  (compiler:compile:expr-dst c stmt dst))
+		body-expr)
+      (compiler:emit c "jmp   " Lagain)
+      (compiler:emit c "  .align 4,0x90")
+      (compiler:emit c "  " Lend ":"))))
 
 (define compiler:compile:symbol
   (lambda (c o dst)
@@ -399,20 +432,24 @@
   (lambda (c o)
     (let ((v   (compiler:label c))
 	  (s   (compiler:label c)))
-      (compiler:emit c ".data")
-      (compiler:emit c v ":")
-      (compiler:emit c ".asciiz" (object->string o))
-      (compiler:emit c s ":")
-      (compiler:emit c ".qword $0")
-      (compiler:emit c ".text")
+      (compiler:emit c "  .data")
+      (compiler:emit c "  " v ":")
+      (compiler:emit c "  .asciiz" (object->string o))
+      (compiler:emit c "  " s ":")
+      (compiler:emit c "  .qword $0")
+      (compiler:emit c "  .text")
       )))
 
-(define compiler:compile:expr:from-word
-  (lambda (c o)
-    ; int expression is in %rax,
-    ; (compiler:emit c "movq $42, %rax")
-    (compiler:emit c "addq  %rax, %rax")
-    (compiler:emit c "orq   $1, %rax")))
+(define compiler:box:int
+  (lambda (c dst)
+    ; int expression is in dst,
+    (compiler:emit c "addq  " dst ", " dst)
+    (compiler:emit c "orq   $1, " dst)))
+
+(define compiler:unbox:int
+  (lambda (c dst)
+    ; int expression is in dst,
+    (compiler:emit c "sarq  " dst)))
 
 (define compiler:assemble
   (lambda (c . options)
