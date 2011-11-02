@@ -1,3 +1,4 @@
+;; -*- scheme -*-
 (define (eq? a b) ('eq? a b))
 
 (define nil '())
@@ -28,24 +29,24 @@
 (define (list . args) args)
 (define (length o) ('size o))
 (define (reverse l)
-    (let ((r nil))
-      (while (pair? l)
-	(set! r (cons (car l) r))
-	(set! l (cdr l))
-	)
-      r))
+  (let ((r nil))
+    (while (pair? l)
+	   (set! r (cons (car l) r))
+	   (set! l (cdr l))
+	   )
+    r))
 
 (define (map f l)
-    (if (null? l)
-	l
+  (if (null? l)
+      l
       (cons (f (car l))
 	    (map f (cdr l)))))
 (define (for-each f l)
-    (if (null? l)
-	l
+  (if (null? l)
+      l
       (begin
-       (f (car l))
-       (for-each f (cdr l)))))
+	(f (car l))
+	(for-each f (cdr l)))))
 
 (define (caar o) ('car ('car o)))
 (define (cadr o) ('car ('cdr o)))
@@ -68,17 +69,17 @@
 			(let ((obj (car l)))
 			  (if (and (pair? obj) (eq? (car obj) 'unquote-splicing))
 			      (list 'concat-list (cadr obj)      (qq-list (cdr l)))
-			    (list   'cons        (qq-object obj) (qq-list (cdr l)))))
-		      (list 'quote l))))
+			      (list   'cons        (qq-object obj) (qq-list (cdr l)))))
+			(list 'quote l))))
     (set! qq-element (lambda (l)
 		       (let ((head (car l)))
 			 (if (eq? head 'unquote)
 			     (cadr l)
-			   (qq-list l)))))
+			     (qq-list l)))))
     (set! qq-object (lambda (object)
 		      (if (pair? object)
 			  (qq-element object)
-			(list 'quote object))))
+			  (list 'quote object))))
     (lambda (expr)
       (qq-object expr))))
 
@@ -102,17 +103,17 @@
 (define (string-ref s i) ('get s i))
 (define (string-set! s i v) ('set s i v))
 (define (string-append . args)
-    (set-car! args ('clone (car args)))
-    (%reduce 'append args))
+  (set-car! args ('clone (car args)))
+  (%reduce 'append args))
 
 (define <symbol> (%mtable-by-name 'symbol))
 (define (symbol? o) (eq? (%get-type o) <symbol>))
 (define (make-symbol s) ('_create <symbol> s))
 (define (string->symbol s) ('new <symbol> s))
 (define (symbol->string s) 
-    (let ((s ('name s)))
-      (if (null? s)
-	  s
+  (let ((s ('name s)))
+    (if (null? s)
+	s
 	('clone s))))
 
 (define *standard-input*  (%root 'stdin))
@@ -120,74 +121,74 @@
 (define *standard-error*  (%root 'stderr))
 (define <io> (%mtable-by-name 'io))
 (define (open-output-file fname)
-    ('open ('create <io>) fname "w+"))
+  ('open ('create <io>) fname "w+"))
 (define (close-output-file f) ('close f))
 (define (open-input-file fname)
-    ('open ('create <io>) fname "r"))
+  ('open ('create <io>) fname "r"))
 (define (close-input-file f) ('close f))
 (define (call-with-input-file file proc)
-    (let ((f (open-input-file file))
-	  (r nil))
-      (set! r (proc f))
-      (close-input-file f)
-      r))
+  (let ((f (open-input-file file))
+	(r nil))
+    (set! r (proc f))
+    (close-input-file f)
+    r))
 (define (call-with-output-file file proc)
-    (let ((f (open-output-file file))
-	  (r nil))
-      (set! r (proc f))
-      (close-output-file f)
-      r))
+  (let ((f (open-output-file file))
+	(r nil))
+    (set! r (proc f))
+    (close-output-file f)
+    r))
 
 (define (newline . port)
-    ('_write (if (pair? port) (car port) *standard-output*) "\n"))
+  ('_write (if (pair? port) (car port) *standard-output*) "\n"))
 
 (define (write obj . port)
-    ('lisp_write obj 
-		 (if (pair? port) (car port) *standard-output*)))
+  ('lisp_write obj 
+	       (if (pair? port) (car port) *standard-output*)))
 
 (define (display obj . port)
-    (set! port (if (pair? port) (car port) *standard-output*)) 
-    (if (string? obj)
-	('_write port obj)
-        (write obj port)))
+  (set! port (if (pair? port) (car port) *standard-output*)) 
+  (if (string? obj)
+      ('_write port obj)
+      (write obj port)))
 
 (define (read . port)
-    (set! port (if (pair? port) (car port) *standard-input*))
-    ('lisp_read port))
+  (set! port (if (pair? port) (car port) *standard-input*))
+  ('lisp_read port))
 
 (define (%reduce f l)
-    (let ((a (car l)))
-      (set! l (cdr l))
-      (while (not (null? l))
-	; (write 'a=)(write a)(write "\n")
-	; (write 'l=)(write l)(write "\n")
-	(set! a (f a (car l)))
-	(set! l (cdr l))
-	)
-      a))
+  (let ((a (car l)))
+    (set! l (cdr l))
+    (while (not (null? l))
+	   ;; (write 'a=)(write a)(write "\n")
+	   ;; (write 'l=)(write l)(write "\n")
+	   (set! a (f a (car l)))
+	   (set! l (cdr l))
+	   )
+    a))
 
 (define <tagged> (%mtable-by-name 'tagged))
 (define (tagged? o) (eq? (%get-type o) <tagged>))
 (define number? tagged?)
 
 (define (+ . args)
-    (if (null? args)
-	0
+  (if (null? args)
+      0
       (%reduce (lambda (a b) ('+ a b)) args)))
 
 (define (* . args)
-    (if (null? args)
-	1
+  (if (null? args)
+      1
       (%reduce (lambda (a b) ('* a b)) args)))
 
 (define (- first . args)
-    (if (null? args)
-	('@- first)
+  (if (null? args)
+      ('@- first)
       ('- first (%reduce (lambda (a b) ('+ a b)) args))))
 
 (define (/ first . args)
-    (if (null? args)
-	('/ 1 first)
+  (if (null? args)
+      ('/ 1 first)
       ('/ first (%reduce (lambda (a b) ('* a b)) args))))
 
 ;; BITWISE OPERATORS.
@@ -195,13 +196,13 @@
     ('| first (%reduce (lambda (a b) ('| a b)) args)))
 
 (define (& first . args)
-    ('& first (%reduce (lambda (a b) ('& a b)) args)))
+  ('& first (%reduce (lambda (a b) ('& a b)) args)))
 
 (define (^ first . args)
-    ('^ first (%reduce (lambda (a b) ('^ a b)) args)))
+  ('^ first (%reduce (lambda (a b) ('^ a b)) args)))
 
 (define (%bin-op op)
-    (lambda (a b) (op a b)))
+  (lambda (a b) (op a b)))
 
 (define = eq?)
 (define < (%bin-op '<))
@@ -211,16 +212,16 @@
 
 (define *load-debug* #f)
 (define (load fname . env)
-    (let ((out (if *load-debug* *standard-error* nil))
-	  (env (if (null? env) &env (car env))))
-      (call-with-input-file fname (lambda (f) ('lisp_repl f out out env)))))
+  (let ((out (if *load-debug* *standard-error* nil))
+	(env (if (null? env) &env (car env))))
+    (call-with-input-file fname (lambda (f) ('lisp_repl f out out env)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define (object->string o)
-    (let ((s (string-new)))
-      ('_inspect o s)
-      s))
+  (let ((s (string-new)))
+    ('_inspect o s)
+    s))
 (define number->string object->string)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -244,12 +245,12 @@
 (define (posix:system str) ('system posix str))
 ;; (posix:system "hostname")
 
-; ('add_method <tagged> '+ (lambda (a b) (+ a b)))
+;; ('add_method <tagged> '+ (lambda (a b) (+ a b)))
 ('add_method <string> '+ (lambda (a b) ('append ('clone a) b)))
 
 (display "boot.lisp complete!")(newline)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-; (set! *load-debug* #t)
+;; (set! *load-debug* #t)
 (load "compiler/lisp/compiler.scm")
 
