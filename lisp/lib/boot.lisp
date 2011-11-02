@@ -10,7 +10,7 @@
 (define (%root sym) ('get &root sym))
 (define (%mtable-by-name sym) ('get (%root 'mtable) sym))
 
-(define (%get-type o) ('_mtable o))
+(define (%mtable o) ('_mtable o))
 
 (define (make mt . args) ('new mt . args))
 
@@ -20,7 +20,7 @@
 
 (define (null? o) (eq? o '()))
 (define <cons> (%mtable-by-name 'cons))
-(define (pair? o) (eq? (%get-type o) <cons>))
+(define (pair? o) (eq? (%mtable o) <cons>))
 (define (cons a d) ('new <cons> a d))
 (define (car o) ('car o))
 (define (cdr o) ('cdr o))
@@ -28,6 +28,7 @@
 (define (set-cdr! o v) ('set-cdr! o v))
 (define (list . args) args)
 (define (length o) ('size o))
+(define list-length length)
 (define (reverse l)
   (let ((r nil))
     (while (pair? l)
@@ -41,12 +42,30 @@
       l
       (cons (f (car l))
 	    (map f (cdr l)))))
+
 (define (for-each f l)
   (if (null? l)
       l
       (begin
 	(f (car l))
 	(for-each f (cdr l)))))
+
+(define (append . lists)
+  (let ((result (cons #f '()))
+	(r #f)
+	(l '())
+	(c '()))
+    (set! r result)
+    (while (not (null? lists))
+	   (set! l (car lists))
+	   (set! lists (cdr lists))
+	   (while (not (null? l))
+		  (set! c (cons (car l) '()))
+		  (set-cdr! r c)
+		  (set! r c)
+		  (set! l (cdr l))
+		  ))
+    (cdr result)))
 
 (define (caar o) ('car ('car o)))
 (define (cadr o) ('car ('cdr o)))
@@ -63,25 +82,43 @@
 (define (cdddr o) ('cdr ('cdr ('cdr o))))
 
 (define &quasiquote
-  (let ((qq-list #f) (qq-element #f) (qq-object #f))
-    (set! qq-list (lambda (l)
-		    (if (pair? l)
-			(let ((obj (car l)))
-			  (if (and (pair? obj) (eq? (car obj) 'unquote-splicing))
-			      (list 'concat-list (cadr obj)      (qq-list (cdr l)))
-			      (list   'cons        (qq-object obj) (qq-list (cdr l)))))
-			(list 'quote l))))
-    (set! qq-element (lambda (l)
-		       (let ((head (car l)))
-			 (if (eq? head 'unquote)
-			     (cadr l)
-			     (qq-list l)))))
-    (set! qq-object (lambda (object)
-		      (if (pair? object)
-			  (qq-element object)
-			  (list 'quote object))))
+  ;; Quasiquotation in Lisp -- http://people.csail.mit.edu/alan/ftp/quasiquote-v59.ps.gz
+  (let ((quasiquote? #f) 
+	(unquote? #f) 
+	(unquote-splicing? #f)
+	(tag-data #f)
+	(qq-expand #f) 
+	(qq-expand-list #f))
+    (set! quasiquote?       (lambda (x) (and (pair? x) (eq? (car x) 'quasiquote))))
+    (set! unquote?          (lambda (x) (and (pair? x) (eq? (car x) 'unquote))))
+    (set! unquote-splicing? (lambda (x) (and (pair? x) (eq? (car x) 'unquote-splicing))))
+    (set! tag-data          cadr)
+    (set! qq-expand
+	  (lambda (x depth)
+	    (cond 
+	     ((unquote? x) (tag-data x))
+	     ((unquote-splicing? x) (error "Illegal %O" x))
+	     ((quasiquote? x) (qq-expand (qq-expand (tag-data x))))
+	     ((pair? x)
+	      (list 'append 
+		    (qq-expand-list (car x))
+		    (qq-expand (cdr x))))
+	     (list 'quote x))))
+    (set! qq-expand-list
+	  (lambda (x)
+	    (cond
+	     ((unquote? x)          (list 'list (tag-data x)))
+	     ((unquote-splicing? x) (tag-data x))
+	     ((quasiquote? x)       (qq-expand-list (qq-expand (tag-data x))))
+	     ((pair? x)
+	      (list 'list 
+		    (list 'append 
+			  (qq-expand-list (car x))
+			  (qq-expand (cdr x)))))
+	     (else
+	      (list x)))))
     (lambda (expr)
-      (qq-object expr))))
+      (qq-expand expr))))
 
 (let ((a 1) (b 2))
   (set! &trace 1)
@@ -90,14 +127,22 @@
   (set! &trace 0)
   )
 
-(define <vector> (%mtable-by-name 'string))
-(define (vector? o) (eq? (%get-type o) <vector>))
+(define <vector> (%mtable-by-name 'vector))
+(define (vector? o) (eq? (%mtable o) <vector>))
+(define (vector . vals)
+  (let ((v ('new <vector> (list-length vals)))
+	(i 0))
+    (while (not (null? vals))
+	   (vector-set! v i (car vals))
+	   (set! i (+ i 1))
+	   (set! vals (cdr vals)))
+    v))
 (define (vector-length s) ('size s))
 (define (vector-ref s i) ('get s i))
 (define (vector-set! s i v) ('set s i v))
 
 (define <string> (%mtable-by-name 'string))
-(define (string? o) (eq? (%get-type o) <string>))
+(define (string? o) (eq? (%mtable o) <string>))
 (define (string-new . size) ('new <string> (if (pair? size) (car size) 0)))
 (define (string-length s) ('size s))
 (define (string-ref s i) ('get s i))
@@ -107,7 +152,7 @@
   (%reduce 'append args))
 
 (define <symbol> (%mtable-by-name 'symbol))
-(define (symbol? o) (eq? (%get-type o) <symbol>))
+(define (symbol? o) (eq? (%mtable o) <symbol>))
 (define (make-symbol s) ('_create <symbol> s))
 (define (string->symbol s) ('new <symbol> s))
 (define (symbol->string s) 
@@ -168,7 +213,7 @@
     a))
 
 (define <tagged> (%mtable-by-name 'tagged))
-(define (tagged? o) (eq? (%get-type o) <tagged>))
+(define (tagged? o) (eq? (%mtable o) <tagged>))
 (define number? tagged?)
 
 (define (+ . args)
@@ -227,16 +272,16 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define <mtable> (%mtable-by-name 'mtable))
-(define (mtable? o) (eq? (%get-type o) <mtable>))
+(define (mtable? o) (eq? (%mtable o) <mtable>))
 
 (define <map> (%mtable-by-name 'map))
-(define (map? o) (eq? (%get-type o) <map>))
+(define (map? o) (eq? (%mtable o) <map>))
 
 (define <message> (%mtable-by-name 'message))
-(define (message? o) (eq? (%get-type o) <message>))
+(define (message? o) (eq? (%mtable o) <message>))
 
 (define <method> (%mtable-by-name 'method))
-(define (method? o) (eq? (%get-type o) <method>))
+(define (method? o) (eq? (%mtable o) <method>))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
