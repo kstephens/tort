@@ -1,22 +1,28 @@
 (define-struct compiler
-  (stream      (string-new))
-  (output-name nil)
-  (label-id    0)
-  (ar-offset- '(0))
-  (saves      nil)
-  (env        nil))
+  (stream        (string-new))
+  (output-name   nil)
+  (label-id      0)
+  (ar-offset-    (list 0))
+  (ar-offset-max 0)
+  (saves         nil)
+  (env           nil))
 (define compiler:make compiler:new)
 
 (define (compiler:ar-offset c) 
   (car (compiler:ar-offset- c)))
 (define (compiler:set-ar-offset! c v)
+  (if (> v (compiler:ar-offset-max c))
+      (compiler:set-ar-offset-max! c v))
   (set-car! (compiler:ar-offset- c) v))
-(define (compiler:push-ar-offset c) 
+(define (compiler:ar-offset:push c) 
   (compiler:set-ar-offset-! c 
 			    (cons (compiler:ar-offset c) (compiler:ar-offset- c))))
-(define (compiler:pop-ar-offset c) 
+(define (compiler:ar-offset:push c) 
   (compiler:set-ar-offset-! c 
 			    (cdr (compiler:ar-offset- c))))
+(define (compiler:env:push c b)
+  (compiler:set-env! c
+		     (cons b (compiler:env c))))
 
 (define (compiler:label c)
   (let ((id (compiler:label-id c)))
@@ -50,16 +56,16 @@
    (object->string (compiler:type:slot-offset type slot))
    "(" reg ")"))
 
-(let ((_msg "%rbx")
-      (_rcvr "%r12")
-      (ar-reg "%rbp")
-      (sp-reg "%rsp")
+(let ((word-size 8)
+      (_msg     "%rbx")
+      (_rcvr    "%r12")
+      (ar-reg   "%rbp")
+      (sp-reg   "%rsp")
       (tmp0-reg "%r14")
-      (msg "%r15")
-      (meth "%rax")
+      (msg      "%r15")
+      (meth     "%rax")
       (rtn-reg  "%rax")
-      (arg-regs '#("%rdi" "%rsi" "%rdx" "%rcx" "%r8" "%r9"))
-      )
+      (arg-regs '#("%rdi" "%rsi" "%rdx" "%rcx" "%r8" "%r9")))
   (let (
 	(arg0-reg (vector-ref arg-regs 0))
 	(arg1-reg (vector-ref arg-regs 1))
@@ -72,15 +78,29 @@
 	(meth->applyf          (compiler:reg:offset meth <method> 'applyf))
 	)
 
-    (define (compiler:save-reg c reg)
-      (let ((offset (compiler:saves-frame-offset c)))
-	(set! offset (- offset 8))
-	(compiler:emit c "movq  " reg ", $" offset "(" ar-reg ")")
-	(compiler:set-saves-frame-offset! offset)
-	))
+    (define (compiler:bind c name)
+      (let ((ar-offset (- (compiler:ar-offset c) word-size))
+	    (loc #f)
+	    (binding #f))
+	(compiler:set-ar-offset! c ar-offset)
+	(set! loc (string-append (number->string ar-offset) "(" ar-reg ")"))
+	(set! binding 
+	      (vector 
+	       name      ; 0 env-name
+	       loc       ; 1 reg or dest
+	       ar-offset ; 2 ar-offset
+	       nil       ; 3 restore reg
+	       ))
+	(compiler:env:push c binding)
+	;;(display "  binding = ")(write binding)(newline)
+	binding))
+
+    (define (compiler:env:binding c n)
+      (for-each (lambda)))
 
     (define (compiler:compile:method c o)
-      (let ((mname (compiler:method:label c o)))
+      (let ((mname (compiler:method:label c o))
+	    (save-regs (list _msg _rcvr tmp0-reg)))
 	(compiler:set-output-name! c mname)
 	(set! mname (compiler:global-symbol c mname))
 	(compiler:emit c "  .text")
@@ -94,26 +114,34 @@
 	;; set frame pointer to current stack pointer:
 	(compiler:emit c "movq  " sp-reg ", " ar-reg)
 
-					; Save registers:
-	(compiler:emit c "movq  " _msg ", -8(" ar-reg ")")
-	(compiler:emit c "movq  " _rcvr ", -16(" ar-reg ")")
-	(compiler:emit c "movq  " tmp0-reg ", -24(" ar-reg ")")
+	;; Save registers:
+	(for-each (lambda (reg)
+		    (let ((binding (compiler:bind c nil)))
+		      (vector-set! binding 3 (string-append "movq  " (vector-ref binding 1) ", " reg))
+		      (display "  binding = ")(write binding)(newline)
+		      (compiler:emit c "movq  " reg ", " (vector-ref binding 1))))
+		  save-regs)
 
-					; Space for register saves:
-	(compiler:emit c "subq  $32, " sp-reg) ; align to 16-byte stack frames.
-					;(compiler:emit c "subq $xxx, " sp-reg)         ; Save space for local variables.
+	;; Space for register saves:
+	(let ((ar-offset (compiler:ar-offset c)))
+	  ;; align to 16-byte stack frames.
+	  (set! ar-offset (/ (+ 15 ar-offset) 16) 16)
+	  (compiler:emit c "subq  $" ar-offset ", " sp-reg))
 
-					; Move _tort_message to %rbx
+	;; Move _tort_message (arg0) to _msg reg:
 	(compiler:emit c "movq  " arg0-reg ", " _msg " // _tort_message")
-					; Move rcvr to %r12:
+	;; Move rcvr (arg1) to _rcvr reg:
 	(compiler:emit c "movq  " arg1-reg ", " _rcvr " // _tort_rcvr")
-
+	
+	;; Compile method body:
 	(compiler:compile:method:body c o)
 
-	;; Restore registers:
-	(compiler:emit c "movq   -8(" ar-reg "), " _msg)
-	(compiler:emit c "movq  -16(" ar-reg "), " _rcvr)
-	(compiler:emit c "movq  -24(" ar-reg "), " tmp0-reg)
+	;; Restore bindings:
+	(for-each (lambda (binding)
+		    (let ((restore-reg (vector-ref binding 3)))
+		      (if restore-reg
+			  (compiler:emit c restore-reg))))
+		  (compiler:env c))
 
 	;; Restore caller's frame pointer and return.
 	(compiler:emit c "leave")
