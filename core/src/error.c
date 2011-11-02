@@ -33,9 +33,13 @@ tort_v _tort_fatal(tort_tp const char *format, va_list *vapp)
 
 tort_v _tort_error(tort_tp const char *format, va_list *vapp)
 {
+  tort_v result;
   tort_error_messagev("error", format, vapp);
-  tort_send(tort__s(__debugger), _tort_message);
-  return 0;
+  result = tort_send(tort__s(__debugger), _tort_message);
+  if ( tort_(error_catch) != tort_nil ) {
+    result = tort_sendn(tort_s(value), 1, tort_(error_catch), result);
+  }
+  return result;
 }
 
 tort_v tort_fatal (tort_tp const char *format, ...)
@@ -84,6 +88,7 @@ tort_v tort_runtime_initialize_error()
   tort_(_in_error) = 0;
   tort_(error) = _tort_error;
   tort_(fatal) = _tort_fatal;
+  tort_(error_catch) = tort_nil;
 
   return 0;
 }

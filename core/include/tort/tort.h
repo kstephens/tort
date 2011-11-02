@@ -208,9 +208,8 @@ tort_symbol* tort_symbol_make(const char *string);
 const char *tort_symbol_encode(const char *in);
 tort_symbol* tort_symbol_make_encode(const char *string);
 
-
 struct tort_method { tort_H;
-  tort_apply_decl((*applyf));
+  tort_apply_decl((*applyf)); /* Must be first element */
   tort_v name;
   tort_v data;
 };
@@ -226,6 +225,9 @@ struct tort_io { tort_H;
 
 typedef
 struct tort_runtime { tort_H;
+  tort_header nil_header; /** Header for tort_nil object. */
+  tort_header tagged_header; /** Header for tagged object (integers). */
+
 #if ! TORT_NIL_IS_ZERO
   tort_v nil;
 #endif
@@ -241,9 +243,8 @@ struct tort_runtime { tort_H;
 #define tort_error_decl(X)  tort_v X (tort_tp const char *format, va_list *vapp)
   tort_error_decl((*error));
   tort_error_decl((*fatal));
-
-  tort_header nil_header; /** Header for tort_nil object. */
-  tort_header tagged_header; /** Header for tagged object (integers). */
+  tort_v error_catch;
+  tort_v top_catch;
 
   int _argc; /** Process argument count from main(). */
   char **_argv;/** Process argument vector from main(). */
@@ -322,7 +323,7 @@ tort_lookup_decl(_tort_m_mtable__lookup);
       method->applyf(&__tort_msg._, _tort_send_RCVR_ARGS(__tort_msg._.receiver, RCVR_AND_ARGS)); \
   })
 #define tort_send(SEL, RCVR_AND_ARGS...)_tort_sendn(SEL, -1, RCVR_AND_ARGS)
-#define tort_sendn(SEL, ARGC, RCVR_AND_ARGS...)_tort_sendn(SEL, ARGSC, RCVR_AND_ARGS)
+#define tort_sendn(SEL, ARGC, RCVR_AND_ARGS...)_tort_sendn(SEL, ARGC, RCVR_AND_ARGS)
 
 /* Tail call, reuse current message object. */
 #define _tort_sendnt(SEL, ARGC, RCVR_AND_ARGS...)			\
