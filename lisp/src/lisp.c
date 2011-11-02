@@ -1,6 +1,6 @@
 #include "tort/lisp.h"
 
-tort_v _tort_M_cons__new(tort_thread_param tort_v cons_mt, tort_v a, tort_v d)
+tort_v _tort_M_cons__new(tort_tp tort_v cons_mt, tort_v a, tort_v d)
 {
   tort_cons *cons = tort_send(tort__s(_allocate), cons_mt, sizeof(*cons));
   assert(cons);
@@ -10,14 +10,14 @@ tort_v _tort_M_cons__new(tort_thread_param tort_v cons_mt, tort_v a, tort_v d)
 }
 
 #define ACCESSOR(X)							\
-  tort_v _tort_m_cons__##X(tort_thread_param tort_cons *rcvr)		\
+  tort_v _tort_m_cons__##X(tort_tp tort_cons *rcvr)		\
   {									\
     return rcvr->X;							\
   }									\
   tort_v tort_##X(tort_v rcvr) {					\
     return tort_send(tort_s(X), rcvr);					\
   }									\
-  tort_v _tort_m_cons__setD##X##E(tort_thread_param tort_cons *rcvr,	\
+  tort_v _tort_m_cons__setD##X##E(tort_tp tort_cons *rcvr,	\
 			       tort_v val)				\
   {									\
     rcvr->X = val;							\
@@ -64,7 +64,7 @@ tort_v _tort_m_list__size(tort_tp tort_cons *rcvr) /**/
   return tort_i(i);
 }
 
-tort_v _tort_m_list__lisp_write(tort_thread_param tort_v rcvr, tort_v io) /**/
+tort_v _tort_m_list__lisp_write(tort_tp tort_v rcvr, tort_v io) /**/
 {
   tort_printf(io, "(");
   while ( rcvr != tort_nil ) {
@@ -83,7 +83,7 @@ tort_v _tort_m_list__lisp_write(tort_thread_param tort_v rcvr, tort_v io) /**/
   return tort_nil;
 }
 
-tort_v _tort_m_list__list_TO_vector(tort_thread_param tort_v rcvr, tort_v io) /**/
+tort_v _tort_m_list__list_TO_vector(tort_tp tort_v rcvr, tort_v io) /**/
 {
   tort_v size = tort_send(tort__s(size), rcvr);
   tort_v vec = tort_vector_new(0, tort_I(size));
@@ -103,7 +103,7 @@ tort_v _tort_m_list__list_TO_vector(tort_thread_param tort_v rcvr, tort_v io) /*
 #define IO (io != tort_nil ? io : tort_stdout)
 #define printf(fmt, args...) tort_printf(IO, fmt, ##args)
 
-tort_v _tort_m_object__lisp_write(tort_thread_param tort_v rcvr, tort_v io)
+tort_v _tort_m_object__lisp_write(tort_tp tort_v rcvr, tort_v io)
 {
   printf("(make <object> @%p)", (void *) rcvr);
   return tort_nil;
@@ -136,13 +136,13 @@ tort_v _tort_m_ptr__lisp_write(tort_tp tort_v rcvr, tort_v io)
   return tort_nil;
 }
 
-tort_v _tort_m_boolean__lisp_write(tort_thread_param tort_v rcvr, tort_v io)
+tort_v _tort_m_boolean__lisp_write(tort_tp tort_v rcvr, tort_v io)
 {
   printf(rcvr == tort_false ? "#f" : "#t");
   return tort_nil;
 }
 
-tort_v _tort_m_map__lisp_write(tort_thread_param tort_v rcvr, tort_v io)
+tort_v _tort_m_map__lisp_write(tort_tp tort_v rcvr, tort_v io)
 {
   size_t entry_i = 0;
   printf("(make <map> ");
@@ -157,7 +157,13 @@ tort_v _tort_m_map__lisp_write(tort_thread_param tort_v rcvr, tort_v io)
   return tort_nil;
 }
 
-tort_v _tort_m_eos__lisp_write(tort_thread_param tort_v rcvr, tort_v io)
+tort_v _tort_m_mtable__lisp_write(tort_tp tort_v rcvr, tort_v io)
+{
+  printf("#<mtable %s>", tort_object_name(rcvr));
+  return tort_nil;
+}
+
+tort_v _tort_m_eos__lisp_write(tort_tp tort_v rcvr, tort_v io)
 {
   printf("#e");
   return tort_nil;
@@ -170,13 +176,13 @@ tort_v _tort_m_eos__lisp_write(tort_thread_param tort_v rcvr, tort_v io)
 /********************************************************************/
 
 extern 
-tort_v _tort_m_io__lisp_read (tort_thread_param tort_v stream)
+tort_v _tort_m_io__lisp_read (tort_tp tort_v stream)
   ;
 
 #define FP(s) tort_ref(tort_io, s)->fp
 
 #define VALUE tort_v
-#define READ_DECL VALUE _tort_m_io__lisp_read (tort_thread_param tort_v stream)
+#define READ_DECL VALUE _tort_m_io__lisp_read (tort_tp tort_v stream)
 #define READ_CALL() tort_send(tort_s(lisp_read), stream)
 #define MALLOC(s) tort_malloc(s)
 #define REALLOC(p, s) tort_realloc(p, s)
@@ -190,7 +196,11 @@ tort_v _tort_m_io__lisp_read (tort_thread_param tort_v stream)
 #define ESCAPE_STRING(X) tort_send(tort_s(unescapeE), X)
 #define LIST_2_VECTOR(X) tort_send(tort_s(list_TO_vector), X)
 #define SYMBOL_DOT tort_s(DOT)
-#define SYMBOL(NAME) tort_s(NAME)
+#define SYMBOL_quote() tort_s(quote)
+#define SYMBOL_quasiquote() tort_s(quasiquote)
+#define SYMBOL_unquote() tort_s(unquote)
+#define SYMBOL_unquote_splicing() tort_s(unquoteSUBsplicing)
+#define SYMBOL(NAME) SYMBOL_##NAME()
 #define STRING_2_NUMBER(s, radix) _tort_string_to_number(s, radix)
 #define STRING_2_SYMBOL(s) tort_symbol_make(tort_string_data(s))
 #define EQ(X, Y) ((X) == (Y))
@@ -230,6 +240,7 @@ tort_v tort_runtime_initialize_lisp()
   tort_add_method(_mt_cons, "value", _tort_m_cons__car);
 
   tort_add_method(_mt_cons, "lisp_write", _tort_m_list__lisp_write);
+  tort_add_method(_mt_cons, "_inspect", _tort_m_list__lisp_write);
   tort_add_method(tort__mt(nil),  "lisp_write", _tort_m_list__lisp_write);
   tort_add_method(_mt_cons, "size", _tort_m_list__size);
   tort_add_method(tort__mt(nil),  "size", _tort_m_list__size);
