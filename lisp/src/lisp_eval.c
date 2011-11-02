@@ -29,6 +29,7 @@ typedef struct tort_lisp_environment { tort_H;
   tort_v parent;
   tort_v macros;
   tort_v globals;
+  tort_v msg;
 } tort_lisp_environment;
 
 tort_v _tort_M_lisp_formals__new(tort_tp tort_mtable *mtable, tort_v formals)
@@ -81,6 +82,7 @@ tort_v _tort_M_lisp_closure___applyv(tort_tp tort_lisp_closure *obj, int argc, v
   // tort_printf(tort_stderr, "\n  apply (%O argc %d expected-argc %d %O)\n", _tort_message->selector, (int) argc, (int) tort_I(obj->formals->argc), argv);
   env = tort_send(tort__s(new), tort_mt(lisp_environment), 
 		  obj->formals, obj->environment, argv, tort_i(argc));
+  env->msg = _tort_message;
   return_tort_send(tort_s(lisp_eval_body), obj->body, env);
 }
 
@@ -89,7 +91,7 @@ tort_v _tort_M_lisp_closure___apply(tort_tp ...)
 {
   va_list vap;
   va_start(vap, _tort_message);
-  return _tort_M_lisp_closure___applyv(tort_ta (void*) _tort_message->method, 1, &vap);
+  return _tort_M_lisp_closure___applyv(tort_ta (void*) _tort_message->method, 0, &vap);
 }
 
 /* block interface. */
@@ -172,6 +174,8 @@ tort_v _tort_M_lisp_environment__new(tort_tp tort_mtable *mtable, tort_lisp_form
     }
   }
   env->parent = parent_env;
+  if ( parent_env != tort_nil )
+    env->msg = ((tort_lisp_environment *)parent_env)->msg;
   env->macros = tort_nil;
   env->globals = tort_false;
   return env;
@@ -195,6 +199,9 @@ tort_v _tort_m_lisp_environment__get(tort_tp tort_lisp_environment *env, tort_v 
   }
   else if ( name == tort_s(ANDglobals) ) {
     return_tort_send(tort_s(globals), env);
+  }
+  else if ( name == tort_s(ANDmsg) ) {
+    return env->msg;
   }
   else if ( env->formals->rest == name ) {
     if ( env->rest == tort_false ) {
@@ -515,6 +522,7 @@ tort_v _tort_m_io__lisp_repl(tort_tp tort_v io, tort_v out, tort_v prompt, tort_
     env = tort_send(tort__s(new), tort_mt(lisp_environment), 
 		    tort_nil, tort_nil, tort_nil, tort_nil);
   }
+  ((tort_lisp_environment*) env)->msg = _tort_message;
   do {
     if ( prompt != tort_nil ) tort_printf(prompt, " > ");
     expr = tort_send(tort_s(lisp_read), io);
