@@ -1,20 +1,35 @@
 (define (compiler:make . args)
-  (list 
+  (vector
+   'compiler:
    (string-new)   ; output stream
    nil  ; output name
    0    ; next label id
-   0    ; saves-ar-offset
+   (0)  ; ar-offset
    nil  ; saves
+   env  ; ( (name dst) ... )
    ))
+(define (compiler:stream c) (vector-ref c 1))
+(define (compiler:set-stream! c v) (vector-set! c 1 v))
+(define (compiler:output-name c) (vector-ref c 2))
+(define (compiler:set-output-name! c v) (vector-set! c 2 v))
+(define (compiler:label-id c) (vector-ref c 3)
+(define (compiler:set-label-id! c v) (vector-set! c 3 v))
+(define (compiler:ar-offset- c) (vector-ref c 4)
+(define (compiler:set-ar-offset-! c v) (vector-set! c 4 v)
+(define (compiler:saves c) (vector-ref c 5)
+(define (compiler:set-saves! c v) (vector-set! c 5 v))
+(define (compiler:env c) (vector-ref c 6))
+(define (compiler:set-env! c v) (vector-set! c 6 v))
+;;(define (compiler:env c) (vector-ref c 7))
+;;(define (compiler:set-env! c v) (vector-set! c 7 v))
 
-(define (compiler:output-name c) (car (cdr c)))
-(define (compiler:set-output-name! c v) (set-car! (cdr c) v))
-(define (compiler:stream c) (car c))
-(define (compiler:set-stream! c s) (set-car! c s))
-(define (compiler:label-id c) (caddr c))
-(define (compiler:set-label-id! c v) (set-car! (cddr c) v))
-(define (compiler:saves-ar-offset c) (car (cdddr c)))
-(define (compiler:set-saves-ar-offset! c v) (set-car! (cdddr c) v))
+(define (compiler:ar-offset c) 
+  (car (compiler:ar-offset- c)))
+(define (compiler:set-ar-offset! c v)
+  (set-car! (compiler:ar-offset- c) v))
+(define (compiler:push-ar-offset c) 
+  (compiler:set-ar-offset-! c 
+			    (cons (compiler:ar-offset c) (compiler:ar-offset- c)))
 
 (define (compiler:label c)
   (let ((id (compiler:label-id c)))
