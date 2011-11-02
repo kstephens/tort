@@ -74,5 +74,47 @@
      (quote (while #t ('_write *standard-output* "Hello, World!\n"))))
     #f
     )
+   (
+    ((a) ; args 
+     (if #f ('list a))
+     (set! a 1))
+    #f
+    )
+   (
+    ((a b) ; args 
+     (if #f ('list a b))
+     (set! b 2))
+    #f
+    )
+   (
+    ((a b c) ; args 
+     (if #f ('list a b c))
+     (set! c 3))
+    #f
+    )
+   (
+    ((a b c d) ; args 
+     (if #f ('list a b c d))
+     (set! d 4))
+    #f
+    )
+   (
+    ((a b c d e) ; args 
+     (if #f ('list a b c d e))
+     (set! e 5))
+    #f
+    )
+   (
+    ((a b c d e f) ; args 
+     (if #f ('list a b c d e f))
+     (set! f 6))
+    #f
+    )
+   (
+    ((a b c d e f g) ; args 
+     (if #f ('list a b c d e f g))
+     (set! g 7))
+    #f
+    )
    ))
 

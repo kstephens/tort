@@ -11,7 +11,7 @@
 (define (compiler:ar-offset c) 
   (car (compiler:ar-offset- c)))
 (define (compiler:set-ar-offset! c v)
-  (if (> v (compiler:ar-offset-max c))
+  (if (< v (compiler:ar-offset-max c))
       (compiler:set-ar-offset-max! c v))
   (set-car! (compiler:ar-offset- c) v))
 (define (compiler:ar-offset:push c) 
@@ -65,8 +65,13 @@
       (msg      "%r15")
       (meth     "%rax")
       (rtn-reg  "%rax")
-      (arg-regs '#("%rdi" "%rsi" "%rdx" "%rcx" "%r8" "%r9")))
+      (arg-regs '#("%rdi" "%rsi" "%rdx" "%rcx" "%r8" "%r9"))
+      (callee-regs '#()))
   (let (
+	(_msg->selector        (compiler:reg:offset _msg <message> 'selector))
+	(_msg->argc            (compiler:reg:offset _msg <message> 'argc))
+	(_msg->mtable          (compiler:reg:offset _msg <message> 'mtable))
+	(_msg->method          (compiler:reg:offset _msg <message> 'method))
 	(arg0-reg (vector-ref arg-regs 0))
 	(arg1-reg (vector-ref arg-regs 1))
 	(arg2-reg (vector-ref arg-regs 2))
@@ -78,29 +83,48 @@
 	(meth->applyf          (compiler:reg:offset meth <method> 'applyf))
 	)
 
-    (define (compiler:bind c name)
-      (let ((ar-offset (- (compiler:ar-offset c) word-size))
-	    (loc #f)
+    (define (compiler:bind c name . ar-offset)
+      (let ((loc #f)
 	    (binding #f))
-	(compiler:set-ar-offset! c ar-offset)
-	(set! loc (string-append (number->string ar-offset) "(" ar-reg ")"))
+	;; Allocate offset?
+	(set! ar-offset (and (pair? ar-offset) (car ar-offset)))
+	(if (or (not ar-offset) (null? ar-offset))
+	    (begin
+	      (set! ar-offset (- (compiler:ar-offset c) word-size))
+	      (compiler:set-ar-offset! c ar-offset)))
+	(if (number? ar-offset)
+	    (set! loc (string-append (number->string ar-offset) "(" ar-reg ")"))
+	    (set! loc ar-offset))
+	    
 	(set! binding 
 	      (vector 
 	       name      ; 0 env-name
-	       loc       ; 1 reg or dest
+	       loc       ; 1 reg or dst
 	       ar-offset ; 2 ar-offset
-	       nil       ; 3 restore reg
+	       #f        ; 3 restore reg
 	       ))
 	(compiler:env:push c binding)
 	;;(display "  binding = ")(write binding)(newline)
 	binding))
 
     (define (compiler:env:binding c n)
-      (for-each (lambda)))
+      (let ((l (compiler:env c))
+	    (e #f)
+	    (b #f))
+	(while (not (null? l))
+	       (set! e (car l))
+	       (if (eq? n (vector-ref e 0))
+		   (begin
+		     (set! b e)
+		     (set! l '()))
+		   (set! l (cdr l))))
+	b))
 
     (define (compiler:compile:method c o)
       (let ((mname (compiler:method:label c o))
+	    (args (car o))
 	    (save-regs (list _msg _rcvr tmp0-reg)))
+	(set! args (cons '&msg args))
 	(compiler:set-output-name! c mname)
 	(set! mname (compiler:global-symbol c mname))
 	(compiler:emit c "  .text")
@@ -114,7 +138,53 @@
 	;; set frame pointer to current stack pointer:
 	(compiler:emit c "movq  " sp-reg ", " ar-reg)
 
-	;; Save registers:
+	;; Save parameter registers as unnamed bindings:
+	(let ((a args)
+	      (rest-arg #f)
+	      (arg nil)
+	      (loc nil)
+	      (binding nil)
+	      (arg-i -1)
+	      (reg #f)
+	      (arg-offset word-size))
+	  ;; (display "args = ")(write args)(newline)
+	  ;; (display "  (vector-length arg-regs) = ")(write (vector-length arg-regs))(newline)
+	  (while (not (null? a))
+	    (set! arg-i (+ arg-i 1))
+	    ;; (display "  a = ")(write a)(newline)
+	    ;; (display "  arg-i = ")(write arg-i)(newline)
+	    (cond
+	     ((symbol? a)
+	      (set! arg a)
+	      (set! a '())
+	      (set! rest-arg a)
+	      (set! loc nil)
+	      (set! reg #f))
+	     (else
+	      (set! arg (car a))
+	      (set! a (cdr a))
+	      (cond
+	       ((< arg-i (vector-length arg-regs))
+		(set! loc #f) ;; allocate temporary on stack.
+		(set! reg (vector-ref arg-regs arg-i)))
+	       (else
+		(set! loc arg-offset) ;; location is relative to ar-reg.
+		(set! reg #f)
+		(set! arg-offset (+ arg-offset word-size))))))
+	    ;; (display "    arg = ")(write arg)(newline)
+	    ;; (display "    loc = ")(write loc)(newline)
+	    ;; (display "    reg = ")(write reg)(newline)
+	    (set! binding (compiler:bind c arg loc))
+	    ;; (display "      binding = ")(write binding)(newline)
+	    ;; save reg to stack binding.
+	    (if reg
+		(compiler:emit c "movq  " reg ", " (vector-ref binding 1) " \t// -> " binding)
+	        (compiler:emit c "                      \t// -> " binding))
+	    )
+	  ;; FIXME: handle rest-arg.
+	  )
+	
+	;; Save registers as unnamed bindings:
 	(for-each (lambda (reg)
 		    (let ((binding (compiler:bind c nil)))
 		      (vector-set! binding 3 (string-append "movq  " (vector-ref binding 1) ", " reg))
@@ -123,7 +193,7 @@
 		  save-regs)
 
 	;; Space for register saves:
-	(let ((ar-offset (compiler:ar-offset c)))
+	(let ((ar-offset (compiler:ar-offset-max c)))
 	  ;; (display "ar-offset = ")(write ar-offset)(newline) 
 	  ;; align to 16-byte stack frames.
 	  (set! ar-offset (* (/ (+ ar-offset -15) 16) 16))
@@ -208,11 +278,11 @@
 
       ;; Invoke _tort_lookup:
       ;; message = _tort_lookup(_tort_message, rcvr, message)
-      (compiler:emit c "movq  " rtn-reg ", " arg1-reg " // rcvr")
-      (compiler:emit c "movq  " msg     ", " arg2-reg " // message")
-      (compiler:emit c "movq  " _msg    ", " arg0-reg " // _tort_message")
+      (compiler:emit c "movq  " rtn-reg ", " arg1-reg " \t// <- rcvr")
+      (compiler:emit c "movq  " msg     ", " arg2-reg " \t// <- message")
+      (compiler:emit c "movq  " _msg    ", " arg0-reg " \t// <- _tort_message")
       (compiler:emit c "call  " (compiler:global-symbol c '_tort_lookup))
-      (compiler:emit c "movq  " rtn-reg ", " msg " // -> message")
+      (compiler:emit c "movq  " rtn-reg ", " msg " \t// -> message")
 
       ;; Invoke method->func(message, rcvr, args ...):
       ;;
@@ -224,21 +294,21 @@
 			))
 		  (reverse args))
 	;; receiver:
-	(compiler:emit c "movq  " msg->receiver ", " arg1-reg " // => rcvr")
+	(compiler:emit c "movq  " msg->receiver ", " arg1-reg " \t// <- rcvr")
 	;; message:
-	(compiler:emit c "movq  " msg ", " arg0-reg " // => msg")
+	(compiler:emit c "movq  " msg ", " arg0-reg " \t// <- msg")
 	
 	;; msg->method->applyf(msg, rcvr, ...) 
-	(compiler:emit c "movq  " msg->method ", " meth " // msg->method => meth")
-	(compiler:emit c "call  *" meth->applyf " // apply() ")
+	(compiler:emit c "movq  " msg->method ", " meth " \t// msg->method => meth")
+	(compiler:emit c "call  *" meth->applyf "      \t// meth->apply(msg, rcvr, args...) ")
 	
 	;; Pop args sp:
 	(if (> stack-arg-count 0)
-	    (compiler:emit c "addq $" (* 8 stack-arg-count) ", " sp-reg))
+	    (compiler:emit c "addq  $" (* 8 stack-arg-count) ", " sp-reg "    \t// pop args"))
 	)
 
       ;; Reclaim message space:
-      (compiler:emit c "addq  $" compiler:message:alloc-size ", " sp-reg)
+      (compiler:emit c "addq  $" compiler:message:alloc-size ", " sp-reg "    \t// pop *msg")
       ;;   Restore msg reg:
       (compiler:emit c "popq  " msg)
       )
@@ -258,6 +328,8 @@
       (cond
        ((eq? (car o) 'quote)
 	(compiler:compile:quote c (cadr o) dst))
+       ((eq? (car o) 'set!)
+	(compiler:compile:set! c (cadr o) (caddr o) dst))
        ((eq? (car o) '&root)
 	(compiler:compile:pair c (list ''get &root (cadr o)) dst))
        ((eq? (car o) 'if)
@@ -319,7 +391,7 @@
 	(compiler:emit c "  .align 4,0x90")
 	(compiler:emit c "  " Lend ":")))
 
-    (define (compiler:compile:if  c o dst)
+    (define (compiler:compile:if c o dst)
       (let ((Lfalse (compiler:label c))
 	    (Lend   (compiler:label c))
 	    (test-expr  (cdr o))
@@ -372,7 +444,35 @@
        ((eq? o '&root)
 	(compiler:compile:reference c &root dst))
        (else
-	(compiler:compile:reference c o dst))))
+	(let ((b (compiler:env:binding c o)))
+	  (if b
+	      (cond
+	       ((eq? dst 'STACK)
+		(compiler:emit c "pushq " (vector-ref b 1) "       \t// <- " b))
+	       (else
+		(compiler:emit c "movq " (vector-ref b 1) ", " dst " \t// <- " b)))
+	      (compiler:compile:global c o dst)
+	      )))))
+
+    (define (compiler:compile:set! c o v dst)
+      (compiler:emit c "  // (set! " o " " v ") using " dst)
+      (compiler:compile:expr-dst c v dst)
+      (let ((b (compiler:env:binding c o)))
+	(if b
+	    (compiler:emit c "movq  " dst ", " (vector-ref b 1) " \t// -> " b)
+	    (compiler:compile:set-global! c o dst) ; FIXME: global?
+	    ))
+      (cond
+       ((eq? dst 'STACK)
+	(compiler:emit c "pushq " dst))))
+
+    (define (compiler:compile:global c o dst)
+      (compiler:compile:reference c o dst) ; FIXME: global?
+      )
+
+    (define (compiler:compile:set-global! c o dst)
+      (compiler:compile:reference c o dst) ; FIXME: global?
+      )
 
     (define (compiler:compile:quote c o dst)
       (cond
@@ -484,9 +584,9 @@
 			     ;;(display "name-sym class = ")(write (%get-type name-sym))(newline)
 			     ;;('__debugger st) (set! &trace 1)
 			     (set! func-ptr ('get st name-sym))
-			     (if verbose (begin (display "func-ptr = ")(write func-ptr)(newline)))
-			     (set! result ('_ccall func-ptr))
-			     (display "result = ")(write result)(newline)
+			     (if (or #t verbose) (begin (display "  func-ptr = ")(write func-ptr)(newline)))
+			     (set! result ('_ccallv func-ptr (vector &msg 1 2 3 4 5 6 7 8))
+			     (display "  _ccallv result = ")(write result)(newline)
 			     result
 			     ))))
 

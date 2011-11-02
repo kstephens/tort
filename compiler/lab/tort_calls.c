@@ -26,13 +26,14 @@ tort_v _tort_plain_c(void *arg0, tort_v arg1, tort_v arg2, tort_v arg3, tort_v a
   ip(2, arg2);
   ip(3, arg3);
   ip(4, arg4);
-  ip(5, arg5);
+  ip(6, arg6);
   pp((void*) 0, arg0);
   pp((void*) 1, arg1);
   pp((void*) 2, arg2);
   pp((void*) 3, arg3);
   pp((void*) 4, arg4);
   pp((void*) 5, arg5);
+  pp((void*) 6, arg6);
   return arg0;
 }
 
