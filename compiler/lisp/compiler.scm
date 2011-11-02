@@ -118,15 +118,17 @@
 	(for-each (lambda (reg)
 		    (let ((binding (compiler:bind c nil)))
 		      (vector-set! binding 3 (string-append "movq  " (vector-ref binding 1) ", " reg))
-		      (display "  binding = ")(write binding)(newline)
+		      ;; (display "  binding = ")(write binding)(newline)
 		      (compiler:emit c "movq  " reg ", " (vector-ref binding 1))))
 		  save-regs)
 
 	;; Space for register saves:
 	(let ((ar-offset (compiler:ar-offset c)))
+	  ;; (display "ar-offset = ")(write ar-offset)(newline) 
 	  ;; align to 16-byte stack frames.
-	  (set! ar-offset (/ (+ 15 ar-offset) 16) 16)
-	  (compiler:emit c "subq  $" ar-offset ", " sp-reg))
+	  (set! ar-offset (* (/ (+ ar-offset -15) 16) 16))
+	  ;; (display "ar-offset aligned = ")(write ar-offset)(newline) 
+	  (compiler:emit c "subq  $" (- ar-offset) ", " sp-reg))
 
 	;; Move _tort_message (arg0) to _msg reg:
 	(compiler:emit c "movq  " arg0-reg ", " _msg " // _tort_message")
