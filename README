@@ -39,9 +39,15 @@ Extensions are dynamically loaded:
 ** Lexical blocks using GCC nested functions.
 ** Fibers.
 ** Object graphing using graphviz/dot.
+** catch/throw support.
 * LISP Extension Library.
 ** Conses.
 ** Lisp reader.
 ** Lisp writer.
-** Lexcial evaluator.
+** Lexicial evaluator.
 ** Call-in and call-out to tort primitives.
+*** Lambdas can be used as object methods.
+*** Lambdas can be used as object blocks.
+*** Methods can be called using ('symbol rcvr . args) syntax.
+** PRELIMINARY x86-64 JIT compiler.
+
