@@ -107,7 +107,7 @@ tort_v _tort_M_vector___new(tort_tp tort_v mtable, const void *data, size_t size
   tort_v val = _tort_M_vector_base___new(tort_ta mtable, data, size, sizeof(tort_v));
   if ( ! data ) {
     size_t i;
-    for ( i = 0; i < (size + 1); ++ i )
+    for ( i = 0; i <= size; ++ i )
       tort_vector_data(val)[i] = tort_nil;
   }
   return val;
