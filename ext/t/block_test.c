@@ -19,7 +19,7 @@ int main(int argc, char **argv, char **environ)
     printf("  block a obj = %lld\n", (long long) tort_I(obj));
     return tort_i(tort_I(obj) << 2);
   } tort_block_END(a);
-  v = tort_send(tort_s(value), a, tort_i(5));
+  v = tort_sendn(tort_s(value), 1, a, tort_i(5));
   tort_printf(io, "\nv = ", v);
   tort_inspect(io, v);
   tort_printf(io, "\n\n");
