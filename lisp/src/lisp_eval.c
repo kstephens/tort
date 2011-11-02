@@ -2,6 +2,7 @@
 #include <stdarg.h>
 
 int _tort_lisp_trace = 0;
+int _tort_lisp_macro_trace = 0;
 
 typedef struct tort_lisp_formals { tort_H;
   tort_v formals;
@@ -225,6 +226,9 @@ tort_v _tort_m_lisp_environment__set(tort_tp tort_lisp_environment *env, tort_v 
   if ( name == tort_s(ANDtrace) ) {
     _tort_lisp_trace = tort_I(value);
   } else
+  if ( name == tort_s(ANDmacroSUBtrace) ) {
+    _tort_lisp_macro_trace = tort_I(value);
+  } else
   if ( env->formals->rest == name ) {
     env->rest = value;
   } else {
@@ -307,11 +311,6 @@ tort_v _tort_m_cons__lisp_eval(tort_tp tort_cons *obj, tort_v env)
   if ( _tort_lisp_trace ) tort_printf(tort_stderr, "\n  lisp_eval %O\n", obj);
   if ( val == tort_s(quote) ) {
     return tort_car(obj->cdr);
-  } else if ( val == tort_s(quasiquote) ) {
-    val = tort_cons(tort_s(ANDquasiquote), tort_cons(tort_cons(tort_s(quote), obj->cdr), tort_nil));
-    val = tort_send(tort_s(lisp_eval), val, env);
-    tort_printf(tort_stderr, "\n  %O => %O\n", obj, val);
-    return_tort_send(tort_s(lisp_eval), val, env);
   }
   _tort_debug_expr = obj;
   if ( val == tort_s(define) ) {
@@ -389,7 +388,7 @@ tort_v _tort_m_cons__lisp_eval(tort_tp tort_cons *obj, tort_v env)
   else if ( val == tort_s(let) ) {
     val = tort_car(obj->cdr); /* bindings */
     if ( val != tort_nil )
-      env = tort_send(tort__s(new), tort_mt(lisp_environment), 
+      env = tort_send(tort__s(new), tort_mt(lisp_environment),
 		      tort_send(tort__s(new), tort_mt(lisp_formals), 
 				tort_send(tort_s(lisp_eval_let_names), val, env) /* bindings => names => */ ), /* formals */
 		      env, /* parent environment. */
@@ -403,6 +402,9 @@ tort_v _tort_m_cons__lisp_eval(tort_tp tort_cons *obj, tort_v env)
       val = args;
       args = obj->cdr;
       val = tort_send(tort_s(lisp_apply), val, args, env);
+      if ( _tort_lisp_macro_trace ) {
+	tort_printf(tort_stderr, "\nmacro expand:\n   %O\n  =>\n  %O\n", obj, val);
+      }
       return_tort_send(tort_s(lisp_eval), val, env);
     } else {
       val  = tort_send(tort_s(lisp_eval_car), val, env);
