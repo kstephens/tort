@@ -59,6 +59,26 @@ tort_v tort_error (tort_tp const char *format, ...)
   return 0;
 }
 
+tort_v _tort_m_string___error(tort_tp tort_string *fmt, ...)
+{
+  tort_v result;
+  va_list vap;
+  va_start(vap, fmt);
+  result = _tort_error(tort_ta fmt->data, &vap);
+  va_end(vap);
+  return result;
+}
+
+tort_v _tort_m_string___fatal(tort_tp tort_string *fmt, ...)
+{
+  tort_v result;
+  va_list vap;
+  va_start(vap, fmt);
+  result = _tort_fatal(tort_ta fmt->data, &vap);
+  va_end(vap);
+  return result;
+}
+
 tort_v tort_runtime_initialize_error()
 {
   tort_(_in_error) = 0;
