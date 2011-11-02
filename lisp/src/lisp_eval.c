@@ -63,21 +63,18 @@ tort_v _tort_m_lisp_formals__lisp_write(tort_tp tort_lisp_formals *rcvr, tort_v 
   return tort_printf(io, "#f(%O . %O)", rcvr->formals, rcvr->rest);
 }
 
-tort_v _tort_M_lisp_closure___apply(tort_tp tort_v rcvr, ...)
+tort_v _tort_M_lisp_closure___applyv(tort_tp tort_lisp_closure *obj, int argc, va_list *vap)
 {
-  tort_lisp_closure *obj = (tort_v) _tort_message->method;
-  int argc = tort_I(_tort_message->argc) >= 0 ? tort_I(_tort_message->argc) : tort_I(obj->formals->argc);
-  tort_vector *argv = tort_vector_new(0, argc > 0 ? argc : 1);
+  tort_vector *argv;
+  argc += tort_I(_tort_message->argc) >= 0 ? tort_I(_tort_message->argc) : tort_I(obj->formals->argc);
+  argv = tort_vector_new(0, argc > 0 ? argc : 1);
   tort_lisp_environment *env;
   {
-  va_list vap;
-  int i = 0;
-  va_start(vap, rcvr);
-  tort_vector_data(argv)[i ++] = rcvr;
-  while ( i < argc ) {
-    tort_vector_data(argv)[i ++] = va_arg(vap, tort_v);
-  }
-  va_end(vap);
+    int i = 0;
+    while ( i < argc ) {
+      tort_vector_data(argv)[i ++] = va_arg(*vap, tort_v);
+    }
+    va_end(*vap);
   }
   // tort_printf(tort_stderr, "\n  apply (%O argc %d expected-argc %d %O)\n", _tort_message->selector, (int) argc, (int) tort_I(obj->formals->argc), argv);
   env = tort_send(tort__s(new), tort_mt(lisp_environment), 
@@ -85,12 +82,31 @@ tort_v _tort_M_lisp_closure___apply(tort_tp tort_v rcvr, ...)
   return_tort_send(tort_s(lisp_eval_body), obj->body, env);
 }
 
+/* method interface. */
+tort_v _tort_M_lisp_closure___apply(tort_tp ...)
+{
+  va_list vap;
+  va_start(vap, _tort_message);
+  return _tort_M_lisp_closure___applyv(tort_ta (void*) _tort_message->method, 1, &vap);
+}
+
+/* block interface. */
+tort_v _tort_m_lisp_closure__value(tort_tp tort_lisp_closure *obj, ...)
+{
+  va_list vap;
+  va_start(vap, obj);
+  return _tort_M_lisp_closure___applyv(tort_ta obj, 0, &vap);
+}
+
 tort_v _tort_M_lisp_closure__new(tort_tp tort_mtable *mtable, tort_v formals, tort_v body, tort_v env)
 {
   tort_lisp_closure *meth = tort_allocate(tort_mt(lisp_closure), sizeof(*meth));
-  meth->applyf = _tort_M_lisp_closure___apply;
+  meth->applyf = (void*) _tort_M_lisp_closure___apply;
   formals = tort_send(tort__s(new), tort_mt(lisp_formals), formals);
   body = tort_send(tort_s(list_TO_vector), body);
+  if ( tort_vector_size(body) == 0 ) {
+    tort_error(tort_ta "empty lambda body");
+  }
   meth->name = tort_nil;
   meth->formals = formals;
   meth->body = body;
@@ -438,11 +454,12 @@ tort_v _tort_m_object__lisp_eval_args(tort_tp tort_v obj, tort_v env)
 
 tort_v _tort_m_vector__lisp_eval_body(tort_tp tort_vector *obj, tort_v env)
 {
-  tort_v val = tort_nil;
-  tort_vector_loop(obj, expr); {
-    val = tort_send(tort_s(lisp_eval), expr, env);
-  } tort_vector_loop_end(obj);
-  return val;
+  size_t i = 0;
+  if ( ! obj->size ) return tort_nil;
+  while ( i < obj->size - 1 ) {
+    tort_send(tort_s(lisp_eval), obj->data[i ++], env);
+  }
+  return_tort_send(tort_s(lisp_eval), obj->data[i], env);
 }
 
 tort_v _tort_m_object__lisp_eval_body(tort_tp tort_cons *obj, tort_v env)

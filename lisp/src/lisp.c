@@ -214,7 +214,7 @@ tort_v _tort_string_to_number(tort_v s, int radix) /**/
 
 tort_v tort_runtime_initialize_lisp()
 {
-  tort_v _mt_cons = tort_mtable_make("cons", 0);
+  tort_v _mt_cons = tort_mtable_make("cons", tort_mt(pair));
   tort_mtable_make("list", 0);
 
   /* Dependency. */
