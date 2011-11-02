@@ -37,7 +37,7 @@ int invalidate_catches_til(tort_catch *catch)
     while ( c->unwinds != tort_nil ) {
       tort_v block = c->unwinds->first;
       c->unwinds = c->unwinds->second;
-      tort_sendn(tort_s(value), 0, block);
+      tort_sendn(tort_s(value), 1, block);
     }
 
     // Stop now.
@@ -125,7 +125,7 @@ tort_v _tort_m_catch__begin(tort_tp tort_catch *catch, tort_v block)
     catch->result = tort_nil;
     catch->previous_catch = tort_(top_catch); /* NOT THREAD-SAFE */
     tort_(top_catch) = catch; /* NOT THREAD-SAFE */
-    result = tort_sendn(tort__s(value), 1, block, catch);
+    result = tort_sendn(tort__s(value), 2, block, catch);
     break;
   case 1:
     catch->jbp = 0;
