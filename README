@@ -1,7 +1,7 @@
 
 tort - Tiny Object RunTime
 
-Inspired by Ian Piumarta's idst and other small runtimes.
+Inspired by Ian Piumarta's idst, maru and other small runtimes.
 
 Core is under 3000 lines of C.
 
@@ -45,9 +45,12 @@ Extensions are dynamically loaded:
 ** Lisp reader.
 ** Lisp writer.
 ** Lexicial evaluator.
+** Simple macro support.
 ** Call-in and call-out to tort primitives.
 *** Lambdas can be used as object methods.
 *** Lambdas can be used as object blocks.
 *** Methods can be called using ('symbol rcvr . args) syntax.
-** PRELIMINARY x86-64 JIT compiler.
+** Basic Scheme-like semantics boot-strapped from objects and lisp.
+** PRELIMINARY x86-64 JIT compiler written in scheme.
+
 
