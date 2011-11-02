@@ -129,15 +129,16 @@ const char *tort_object_name(tort_v val)
     static int bufi = 0;
     static char bufa[16][S + 1];
     char *buf = bufa[bufi = (bufi + 1) % 16];
-    
+    tort_v mt = tort_h_mtable(val);
+
     buf[S] = '\0';
     
     if ( 0 ) {
     }
-#define tort_d_mt(N) else if ( tort_h_mtable(val) == tort__mt(N) ) { snprintf(str = buf, S, "!%s(@%p)", #N, (void*) val); }
+#define tort_d_mt(N) else if ( mt == tort__mt(N) ) { snprintf(str = buf, S, "!%s(@%p)", #N, (void*) val); }
 #include "tort/d_mt.h"
     else {
-      snprintf(str = buf, S, "@?(@%p)", (void*) val);
+      snprintf(str = buf, S, "@%p(@%p)", (void*) mt, (void*) val);
     }
 
     if ( buf[S] != '\0' ) {
