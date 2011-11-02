@@ -3,8 +3,8 @@
 
 #include "tort/core.h"
 
-typedef struct tort_cons { tort_H;
-  tort_v car, cdr;
+typedef struct tort_cons { tort_H; /* same layout as tort_pair. */
+  tort_v car, cdr; 
 } tort_cons;
 
 #define tort_cons(A,R) tort_send(tort__s(new), tort_mt(cons), A, R)

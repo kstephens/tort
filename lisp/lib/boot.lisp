@@ -27,6 +27,16 @@
 (define (set-car! o v) ('set-car! o v))
 (define (set-cdr! o v) ('set-cdr! o v))
 (define (list . args) args)
+
+(define (%define-macro name transformer)
+  ('define_macro &env name transformer))
+
+(%define-macro 'define-macro 
+  (lambda (name . body)
+    (if (pair? name)
+	(list '%define-macro (list 'quote (car name)) (cons 'lambda (cons (cdr name) body)))
+	(cons '%define-macro (cons (list 'quote name) body)))))
+
 (define (length o) ('size o))
 (define list-length length)
 (define (reverse l)
@@ -40,8 +50,8 @@
 (define (map f l)
   (if (null? l)
       l
-      (cons (f (car l))
-	    (map f (cdr l)))))
+      (let ((a (f (car l))))
+	(cons a (map f (cdr l))))))
 
 (define (for-each f l)
   (if (null? l)
@@ -56,7 +66,7 @@
 	(l '())
 	(c '()))
     (set! r result)
-    (while (not (null? lists))
+    (while (not (null? (cdr lists)))
 	   (set! l (car lists))
 	   (set! lists (cdr lists))
 	   (while (not (null? l))
@@ -65,6 +75,7 @@
 		  (set! r c)
 		  (set! l (cdr l))
 		  ))
+    (set-cdr! r (car lists))
     (cdr result)))
 
 (define (caar o) ('car ('car o)))
@@ -82,49 +93,35 @@
 (define (cdddr o) ('cdr ('cdr ('cdr o))))
 
 (define &quasiquote
-  ;; Quasiquotation in Lisp -- http://people.csail.mit.edu/alan/ftp/quasiquote-v59.ps.gz
-  (let ((quasiquote? #f) 
-	(unquote? #f) 
-	(unquote-splicing? #f)
-	(tag-data #f)
-	(qq-expand #f) 
-	(qq-expand-list #f))
-    (set! quasiquote?       (lambda (x) (and (pair? x) (eq? (car x) 'quasiquote))))
-    (set! unquote?          (lambda (x) (and (pair? x) (eq? (car x) 'unquote))))
-    (set! unquote-splicing? (lambda (x) (and (pair? x) (eq? (car x) 'unquote-splicing))))
-    (set! tag-data          cadr)
-    (set! qq-expand
-	  (lambda (x depth)
-	    (cond 
-	     ((unquote? x) (tag-data x))
-	     ((unquote-splicing? x) (error "Illegal %O" x))
-	     ((quasiquote? x) (qq-expand (qq-expand (tag-data x))))
-	     ((pair? x)
-	      (list 'append 
-		    (qq-expand-list (car x))
-		    (qq-expand (cdr x))))
-	     (list 'quote x))))
-    (set! qq-expand-list
-	  (lambda (x)
-	    (cond
-	     ((unquote? x)          (list 'list (tag-data x)))
-	     ((unquote-splicing? x) (tag-data x))
-	     ((quasiquote? x)       (qq-expand-list (qq-expand (tag-data x))))
-	     ((pair? x)
-	      (list 'list 
-		    (list 'append 
-			  (qq-expand-list (car x))
-			  (qq-expand (cdr x)))))
-	     (else
-	      (list x)))))
+  (let ((qq-list #f) (qq-element #f) (qq-object #f))
+    (set! qq-list (lambda (l)
+		    (if (pair? l)
+			(let ((obj (car l)))
+			  (if (and (pair? obj) (eq? (car obj) 'unquote-splicing))
+			      (if (cdr l)
+				  (list 'append (cadr obj) (qq-list (cdr l)))
+				  (cadr obj))
+			      (list 'cons (qq-object obj) (qq-list (cdr l)))))
+			(list 'quote l))))
+    (set! qq-element (lambda (l)
+		       (let ((head (car l)))
+			 (if (eq? head 'unquote)
+			     (cadr l)
+			     (qq-list l)))))
+    (set! qq-object (lambda (object)
+		      (if (pair? object)
+			  (qq-element object)
+			  (list 'quote object))))
     (lambda (expr)
-      (qq-expand expr))))
+      (qq-object expr))))
+
+(define-macro quasiquote &quasiquote)
 
 (let ((a 1) (b 2))
-  (set! &trace 1)
+  ;; (set! &trace 1)
   `(a b)
   `(a ,b)
-  (set! &trace 0)
+  ;; (set! &trace 0)
   )
 
 (define <vector> (%mtable-by-name 'vector))
@@ -283,13 +280,28 @@
 (define <method> (%mtable-by-name 'method))
 (define (method? o) (eq? (%mtable o) <method>))
 
+(define <catch> (%mtable-by-name 'catch))
+(define (catch? o) (eq? (%mtable o) <catch>))
+
+(if #f
+    (let ((the-catch ('new <catch>)))
+      ('begin the-catch 
+	      (lambda (c)
+		(display "testing catch/throw\n")
+		('unwind_protect <catch> 
+				 (lambda () (display "  throwing!!!\n")))
+		('throw c 'thrown)
+		'not-thrown))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define <posix> (%mtable-by-name 'posix))
 (define posix ('allocate <posix>))
 (define (posix:system str) ('system posix str))
+(define (posix:exit code) ('exit posix code))
 ;; (posix:system "hostname")
 
+;; Lambdas as methods:
 ;; ('add_method <tagged> '+ (lambda (a b) (+ a b)))
 ('add_method <string> '+ (lambda (a b) ('append ('clone a) b)))
 
@@ -297,5 +309,9 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; (set! *load-debug* #t)
+(load "lisp/lib/struct.lisp")
 (load "compiler/lisp/compiler.scm")
+
+;; define-macro macro should work now.
+;; (define-macro foo (lambda (a b) `(+ ,a ,b)))
 
