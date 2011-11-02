@@ -258,11 +258,17 @@ tort_v _tort_m_object__lisp_eval(tort_tp tort_v obj, tort_v env)
 
 tort_v _tort_m_cons__lisp_eval(tort_tp tort_cons *obj, tort_v env)
 {
-  tort_v val = obj->car;
+  tort_v val;
   extern tort_v _tort_debug_expr;
+  val = obj->car;
   if ( _tort_lisp_trace ) tort_printf(tort_stderr, "\n  lisp_eval %O\n", obj);
   if ( val == tort_s(quote) ) {
     return tort_car(obj->cdr);
+  } else if ( val == tort_s(quasiquote) ) {
+    val = tort_cons(tort_s(ANDquasiquote), tort_cons(tort_cons(tort_s(quote), obj->cdr), tort_nil));
+    val = tort_send(tort_s(lisp_eval), val, env);
+    tort_printf(tort_stderr, "\n  %O => %O\n", obj, val);
+    return_tort_send(tort_s(lisp_eval), val, env);
   }
   _tort_debug_expr = obj;
   if ( val == tort_s(define) ) {
@@ -350,7 +356,7 @@ tort_v _tort_m_cons__lisp_eval(tort_tp tort_cons *obj, tort_v env)
   }
   else {
     tort_v args;
-    val  = tort_send(tort_s(lisp_eval_car), obj->car, env);
+    val  = tort_send(tort_s(lisp_eval_car), val, env);
     args = tort_send(tort_s(lisp_eval_args), obj->cdr, env);
     // if ( _tort_lisp_trace || 1) tort_printf(tort_stderr, "\n  lisp_eval %O\n", obj);
     // if ( _tort_lisp_trace || 1) tort_printf(tort_stderr, "\n  f = %O, args = %O\n", val, args);

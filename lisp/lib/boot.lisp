@@ -1,3 +1,5 @@
+(define eq? (lambda (a b) ('eq? a b)))
+
 (define nil '())
 (define send (lambda (sel rcvr . args) (sel rcvr . args)))
 
@@ -8,7 +10,6 @@
 (define %mtable-by-name (lambda (sym) ('get (%root 'mtable) sym)))
 
 (define %get-type (lambda (o) ('_mtable o)))
-(define eq? (lambda (a b) ('eq? a b)))
 
 (define make (lambda (mt . args) ('new mt . args)))
 
@@ -62,6 +63,34 @@
 (define cdadr (lambda (o) ('cdr ('car ('cdr o)))))
 (define cddar (lambda (o) ('cdr ('cdr ('car o)))))
 (define cdddr (lambda (o) ('cdr ('cdr ('cdr o)))))
+
+(define &quasiquote
+  (let ((qq-list #f) (qq-element #f) (qq-object #f))
+    (set! qq-list (lambda (l)
+		    (if (pair? l)
+			(let ((obj (car l)))
+			  (if (and (pair? obj) (eq? (car obj) 'unquote-splicing))
+			      (list 'concat-list (cadr obj)      (qq-list (cdr l)))
+			    (list   'cons        (qq-object obj) (qq-list (cdr l)))))
+		      (list 'quote l))))
+    (set! qq-element (lambda (l)
+		       (let ((head (car l)))
+			 (if (eq? head 'unquote)
+			     (cadr l)
+			   (qq-list l)))))
+    (set! qq-object (lambda (object)
+		      (if (pair? object)
+			  (qq-element object)
+			(list 'quote object))))
+    (lambda (expr)
+      (qq-object expr))))
+
+(define a 1)
+(define b 1)
+(set! &trace 1)
+`(a b)
+`(a ,b)
+(set! &trace 0)
 
 (define <vector> (%mtable-by-name 'string))
 (define vector? (lambda (o) (eq? (%get-type o) <vector>)))
