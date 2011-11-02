@@ -9,8 +9,10 @@ LIBS_EARLY += gc #
 
 include $(BASE_DIR)/mk/target.mk
 
-bootstrap : clean
+bootstrap : very-clean clean
 	$(MAKE) -C core bootstrap
+	$(MAKE) clean 
+	$(MAKE)
 
 ######################################################################
 # libgc.a:
