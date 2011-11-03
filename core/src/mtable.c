@@ -142,6 +142,11 @@ tort_mtable* tort_mtable_create(tort_v delegate)
   return obj_mt;
 }
 
+tort_v _tort_M_mtable__new(tort_tp tort_mtable *mtable, tort_v delegate)
+{
+  return tort_mtable_create(delegate);
+}
+
 tort_mtable* tort_mtable_get(const char *name)
 {
   tort_v sym = tort_symbol_make(name);

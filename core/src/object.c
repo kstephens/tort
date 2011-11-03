@@ -1,4 +1,5 @@
 #include "tort/tort.h"
+#include <assert.h>
 
 tort_v _tort_m_object__eqQ (tort_tp tort_v rcvr, tort_v val)
 {
@@ -18,6 +19,14 @@ tort_v _tort_m_object___object_header_size (tort_tp tort_v rcvr)
 tort_v _tort_m_object___mtable (tort_tp tort_v rcvr)
 {
   return tort_h(rcvr)->mtable;
+}
+
+tort_v _tort_m_object___set_mtable (tort_tp tort_v rcvr, tort_v mtable)
+{
+  assert(rcvr != tort_nil);      // dont change nil's mtable.
+  assert(! tort_taggedQ(rcvr));  // dont change any tagged object's mtable, they are all constants!
+  tort_h(rcvr)->mtable = mtable;
+  return rcvr;
 }
 
 tort_v _tort_m_object___alloc_size (tort_tp tort_v rcvr)
