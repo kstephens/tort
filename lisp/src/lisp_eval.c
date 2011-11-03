@@ -99,7 +99,7 @@ tort_v _tort_m_lisp_closure__value(tort_tp tort_lisp_closure *obj, ...)
 {
   va_list vap;
   va_start(vap, obj);
-  return _tort_M_lisp_closure___applyv(tort_ta obj, 0, &vap);
+  return _tort_M_lisp_closure___applyv(tort_ta obj, -1, &vap);
 }
 
 tort_v _tort_M_lisp_closure__new(tort_tp tort_mtable *mtable, tort_v formals, tort_v body, tort_v env)
@@ -360,9 +360,6 @@ tort_v _tort_m_cons__lisp_eval(tort_tp tort_cons *obj, tort_v env)
 	break;
     }
     return_tort_send(tort_s(lisp_eval_body), tort_cdr(val), env);
-  }
-  else if ( val == tort_s(begin) ) {
-    return_tort_send(tort_s(lisp_eval_body), obj->cdr, env);
   }
   else if ( val == tort_s(or) ) {
     val = tort_false;
