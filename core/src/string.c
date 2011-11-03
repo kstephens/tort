@@ -3,14 +3,14 @@
 tort_v _tort_m_string__get (tort_thread_param tort_string *rcvr, tort_v _i)
 {
   long i = tort_I(_i);
-  return tort_i(rcvr->data[i]);
+  return tort_i(((unsigned char *)rcvr->data)[i]);
 }
 
 tort_v _tort_m_string__set (tort_thread_param tort_string *rcvr, tort_v _i, tort_v _v)
 {
   long i = tort_I(_i);
   long v = tort_I(_v);
-  rcvr->data[i] = v;
+  ((unsigned char *)(rcvr->data))[i] = v;
   return rcvr;
 }
 
@@ -29,7 +29,7 @@ tort_v _tort_M_string__new(tort_tp tort_mtable *mtable, tort_v size)
 
 tort_v _tort_m_string__unescapeE(tort_tp tort_string *str)
 {
-  char *dst, *src = str->data, *src_end = str->data + str->size;
+  unsigned char *dst, *src = (void*) str->data, *src_end = (void*) (str->data + str->size);
   dst = src;
   while ( src < src_end ) {
     int c = *(src ++);
@@ -63,16 +63,16 @@ tort_v _tort_m_string__unescapeE(tort_tp tort_string *str)
     *(dst ++) = c;
   }
   *dst = 0;
-  str->size = dst - str->data;
+  str->size = (char*) dst - (char*) str->data;
   return str;
 }
 
 tort_v _tort_m_string__escape(tort_tp tort_string *str, tort_v more)
 {
   tort_string *result = tort_send(tort__s(clone), str);
-  char *dst, *src = str->data, *src_end = str->data + str->size;
+  unsigned char *dst, *src = (void*) str->data, *src_end = (void*) (str->data + str->size);
   tort_send(tort__s(_resize), result, (size_t) str->size * 4); /* 4 = '\x00' or '\000' */
-  dst = result->data;
+  dst = (void*) result->data;
   while ( src < src_end ) {
     int c = *(src ++);
     if ( c == '\\' || (more != tort_nil && c == '"') ) {
@@ -95,7 +95,7 @@ tort_v _tort_m_string__escape(tort_tp tort_string *str, tort_v more)
     *(dst ++) = c;
   }
   *dst = 0;
-  return_tort_send(tort__s(_resize), result, dst - result->data);
+  return_tort_send(tort__s(_resize), result, (char*) dst - (char*) result->data);
 }
 
 tort_v tort_string_new(const char *ptr, size_t size)
