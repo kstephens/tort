@@ -117,15 +117,48 @@
 
 (define-macro quasiquote &quasiquote)
 
-(let ((a 1) (b 2))
-  ;; (set! &trace 1)
-  `(a b)
-  `(a ,b)
-  ;; (set! &trace 0)
-  )
+(define-macro (define-method mtable name-and-args . body)
+  (let ((name (car name-and-args))
+	(args (cdr name-and-args)))
+    `(begin
+       ('add_method ,mtable ',name 
+		    (lambda ',args ,@body))
+       (list ,mtable ,name))))
 
-(define <vector> (%mtable-by-name 'vector))
-(define (vector? o) (eq? (%mtable o) <vector>))
+(define (%reduce f l)
+  (let ((a (car l)))
+    (set! l (cdr l))
+    (while (not (null? l))
+	   ;; (write 'a=)(write a)(write "\n")
+	   ;; (write 'l=)(write l)(write "\n")
+	   (set! a (f a (car l)))
+	   (set! l (cdr l))
+	   )
+    a))
+
+(define (string->symbol s) ('new <symbol> s))
+(define (symbol->string s) 
+  (let ((s ('name s)))
+    (if (null? s)
+	s
+	('clone s))))
+(define (string-append . args)
+  (set-car! args ('clone (car args)))
+  (%reduce 'append args))
+(define <symbol> (%mtable-by-name 'symbol)) ;; bootstrap
+(define-macro (define-mtable-class name)
+  (let ((name-s (symbol->string name))
+	(mtable (%mtable-by-name name)))
+    `(begin
+       (define ,(string->symbol (string-append "<" name-s ">")) ',mtable)
+       (define (,(string->symbol (string-append name-s "?")) o) (eq? (%mtable o) ',mtable)))))
+(define-mtable-class string)
+(define (string-new . size) ('new <string> (if (pair? size) (car size) 0)))
+(define (string-length s) ('size s))
+(define (string-ref s i) ('get s i))
+(define (string-set! s i v) ('set s i v))
+
+(define-mtable-class vector)
 (define (vector . vals)
   (let ((v ('new <vector> (list-length vals)))
 	(i 0))
@@ -138,30 +171,13 @@
 (define (vector-ref s i) ('get s i))
 (define (vector-set! s i v) ('set s i v))
 
-(define <string> (%mtable-by-name 'string))
-(define (string? o) (eq? (%mtable o) <string>))
-(define (string-new . size) ('new <string> (if (pair? size) (car size) 0)))
-(define (string-length s) ('size s))
-(define (string-ref s i) ('get s i))
-(define (string-set! s i v) ('set s i v))
-(define (string-append . args)
-  (set-car! args ('clone (car args)))
-  (%reduce 'append args))
-
-(define <symbol> (%mtable-by-name 'symbol))
-(define (symbol? o) (eq? (%mtable o) <symbol>))
+(define-mtable-class symbol)
 (define (make-symbol s) ('_create <symbol> s))
-(define (string->symbol s) ('new <symbol> s))
-(define (symbol->string s) 
-  (let ((s ('name s)))
-    (if (null? s)
-	s
-	('clone s))))
 
 (define *standard-input*  (%root 'stdin))
 (define *standard-output* (%root 'stdout))
 (define *standard-error*  (%root 'stderr))
-(define <io> (%mtable-by-name 'io))
+(define-mtable-class io)
 (define (open-output-file fname)
   ('open ('create <io>) fname "w+"))
 (define (close-output-file f) ('close f))
@@ -198,19 +214,8 @@
   (set! port (if (pair? port) (car port) *standard-input*))
   ('lisp_read port))
 
-(define (%reduce f l)
-  (let ((a (car l)))
-    (set! l (cdr l))
-    (while (not (null? l))
-	   ;; (write 'a=)(write a)(write "\n")
-	   ;; (write 'l=)(write l)(write "\n")
-	   (set! a (f a (car l)))
-	   (set! l (cdr l))
-	   )
-    a))
-
-(define <tagged> (%mtable-by-name 'tagged))
-(define (tagged? o) (eq? (%mtable o) <tagged>))
+(define-mtable-class tagged)
+(define <number> <tagged>)
 (define number? tagged?)
 
 (define (+ . args)
@@ -268,20 +273,11 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(define <mtable> (%mtable-by-name 'mtable))
-(define (mtable? o) (eq? (%mtable o) <mtable>))
-
-(define <map> (%mtable-by-name 'map))
-(define (map? o) (eq? (%mtable o) <map>))
-
-(define <message> (%mtable-by-name 'message))
-(define (message? o) (eq? (%mtable o) <message>))
-
-(define <method> (%mtable-by-name 'method))
-(define (method? o) (eq? (%mtable o) <method>))
-
-(define <catch> (%mtable-by-name 'catch))
-(define (catch? o) (eq? (%mtable o) <catch>))
+(define-mtable-class mtable)
+(define-mtable-class map)
+(define-mtable-class message)
+(define-mtable-class method)
+(define-mtable-class catch)
 
 (if #f
     (let ((the-catch ('new <catch>)))
@@ -295,7 +291,7 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(define <posix> (%mtable-by-name 'posix))
+(define-mtable-class posix)
 (define posix ('allocate <posix>))
 (define (posix:system str) ('system posix str))
 (define (posix:exit code) ('exit posix code))
