@@ -2,7 +2,6 @@
 (define (eq? a b) ('eq? a b))
 
 (define nil '())
-(define (send sel rcvr . args) (sel rcvr . args))
 
 (define (current-environment) &globals)
 (define (eval o e) ('lisp_eval o e))
@@ -36,6 +35,8 @@
     (if (pair? name)
 	(list '%define-macro (list 'quote (car name)) (cons 'lambda (cons (cdr name) body)))
 	(cons '%define-macro (cons (list 'quote name) body)))))
+
+(define-macro (send sel rcvr . args) `(,sel ,rcvr ,@args))
 
 (define (length o) ('size o))
 (define list-length length)
@@ -301,7 +302,7 @@
 ;; ('add_method <tagged> '+ (lambda (a b) (+ a b)))
 ('add_method <string> '+ (lambda (a b) ('append ('clone a) b)))
 
-(display "boot.lisp complete!")(newline)
+(display ";; boot.lisp complete!")(newline)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; (set! *load-debug* #t)
