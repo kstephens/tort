@@ -240,14 +240,12 @@
       ('/ first (%reduce (lambda (a b) ('* a b)) args))))
 
 ;; BITWISE OPERATORS.
-(define (| first . args)
-    ('| first (%reduce (lambda (a b) ('| a b)) args)))
-
-(define (& first . args)
-  ('& first (%reduce (lambda (a b) ('& a b)) args)))
-
-(define (^ first . args)
-  ('^ first (%reduce (lambda (a b) ('^ a b)) args)))
+(define-macro (define-binary-operator op)
+  `(define (,op first . args)
+    (',op first (%reduce (lambda (a b) (',op a b)) args))))
+(define-binary-operator |)
+(define-binary-operator &)
+(define-binary-operator ^)
 
 (define (%bin-op op)
   (lambda (a b) (op a b)))
@@ -278,6 +276,7 @@
 (define-mtable-class map)
 (define-mtable-class message)
 (define-mtable-class method)
+(define-mtable-class slotted_object)
 (define-mtable-class catch)
 
 (if #f
