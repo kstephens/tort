@@ -1,6 +1,10 @@
 #ifndef _tort_CONFIG_H
 #define _tort_CONFIG_H
 
+#ifndef TORT_TAG_BITS
+#define TORT_TAG_BITS 1
+#endif
+
 #ifndef TORT_MULTIPLICITY
 #define TORT_MULTIPLICITY 0 /* if true, allow multiple tort_runtime instances. */
 #endif
