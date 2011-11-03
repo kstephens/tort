@@ -33,8 +33,8 @@
 (%define-macro 'define-macro 
   (lambda (name . body)
     (if (pair? name)
-	(list '%define-macro (list 'quote (car name)) (cons 'lambda (cons (cdr name) body)))
-	(cons '%define-macro (cons (list 'quote name) body)))))
+      (list '%define-macro (list 'quote (car name)) (cons 'lambda (cons (cdr name) body)))
+      (cons '%define-macro (cons (list 'quote name) body)))))
 
 (define-macro (send sel rcvr . args) `(,sel ,rcvr ,@args))
 
@@ -43,40 +43,42 @@
 (define (reverse l)
   (let ((r nil))
     (while (pair? l)
-	   (set! r (cons (car l) r))
-	   (set! l (cdr l))
-	   )
+      (set! r (cons (car l) r))
+      (set! l (cdr l)))
     r))
 
 (define (map f l)
-  (if (null? l)
-      l
-      (let ((a (f (car l))))
-	(cons a (map f (cdr l))))))
+  (if (null? l) l
+    (let ((a (f (car l))))
+      (cons a (map f (cdr l))))))
+
+(define (map! f l)
+  (while (pair? l)
+    (set-car! l (f (car l)))
+    (set! l (cdr l))))
 
 (define (for-each f l)
   (if (null? l)
-      l
-      (begin
-	(f (car l))
-	(for-each f (cdr l)))))
+    l
+    (let () ; begin
+      (f (car l))
+      (for-each f (cdr l)))))
 
 (define (append . lists)
-  (let ((result (cons #f '()))
-	(r #f)
-	(l '())
-	(c '()))
-    (set! r result)
-    (while (not (null? (cdr lists)))
-	   (set! l (car lists))
-	   (set! lists (cdr lists))
-	   (while (not (null? l))
-		  (set! c (cons (car l) '()))
-		  (set-cdr! r c)
-		  (set! r c)
-		  (set! l (cdr l))
-		  ))
-    (set-cdr! r (car lists))
+  (let ((result (cons #f '())))
+    (if (pair? lists)
+      (let ((r result) (l '()) (c '()))
+	(while (not (null? (cdr lists)))
+	  (set! l (car lists))
+	  (set! lists (cdr lists))
+	  (while (not (null? l))
+	    (set! c (cons (car l) '()))
+	    (set-cdr! r c)
+	    (set! r c)
+	    (set! l (cdr l))
+	    ))
+	(set-cdr! r (car lists))
+	))
     (cdr result)))
 
 (define (caar o) ('car ('car o)))
@@ -97,59 +99,77 @@
   (let ((qq-list #f) (qq-element #f) (qq-object #f))
     (set! qq-list (lambda (l)
 		    (if (pair? l)
-			(let ((obj (car l)))
-			  (if (and (pair? obj) (eq? (car obj) 'unquote-splicing))
-			      (if (cdr l)
-				  (list 'append (cadr obj) (qq-list (cdr l)))
-				  (cadr obj))
-			      (list 'cons (qq-object obj) (qq-list (cdr l)))))
-			(list 'quote l))))
+		      (let ((obj (car l)))
+			(if (and (pair? obj) (eq? (car obj) 'unquote-splicing))
+			  (if (cdr l)
+			    (list 'append (cadr obj) (qq-list (cdr l)))
+			    (cadr obj))
+			  (list 'cons (qq-object obj) (qq-list (cdr l)))))
+		      (list 'quote l))))
     (set! qq-element (lambda (l)
 		       (let ((head (car l)))
 			 (if (eq? head 'unquote)
-			     (cadr l)
-			     (qq-list l)))))
+			   (cadr l)
+			   (qq-list l)))))
     (set! qq-object (lambda (object)
 		      (if (pair? object)
-			  (qq-element object)
-			  (list 'quote object))))
+			(qq-element object)
+			(list 'quote object))))
     (lambda (expr)
       (qq-object expr))))
 
 (define-macro quasiquote &quasiquote)
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define-macro (begin . body)
+  `(let () ,@body))
+
+(define-macro (let* bindings . body)
+  (cond
+    ((null? bindings) `(let () ,@body))
+    ((pair? bindings)
+      `(let (,(car bindings)) (let* (,@(cdr bindings)) ,@body)))))
+
+(define-macro (letrec bindings . body)
+  `(let ,(map (lambda (binding) `(,(car binding) #f)) bindings)
+     ,@(map (lambda (binding) (set! ,(car binding) ,@(cdr binding))) bindings)
+     ,@(body)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (define-macro (define-method mtable name-and-args . body)
   (let ((name (car name-and-args))
-	(args (cdr name-and-args)))
+	 (args (cdr name-and-args)))
     `(begin
        ('add_method ,mtable ',name 
-		    (lambda ',args ,@body))
+	 (lambda ',args ,@body))
        (list ,mtable ,name))))
 
 (define (%reduce f l)
   (let ((a (car l)))
     (set! l (cdr l))
     (while (not (null? l))
-	   ;; (write 'a=)(write a)(write "\n")
-	   ;; (write 'l=)(write l)(write "\n")
-	   (set! a (f a (car l)))
-	   (set! l (cdr l))
-	   )
+      ;; (write 'a=)(write a)(write "\n")
+      ;; (write 'l=)(write l)(write "\n")
+      (set! a (f a (car l)))
+      (set! l (cdr l))
+      )
     a))
 
 (define (string->symbol s) ('new <symbol> s))
 (define (symbol->string s) 
   (let ((s ('name s)))
     (if (null? s)
-	s
-	('clone s))))
+      s
+      ('clone s))))
 (define (string-append . args)
   (set-car! args ('clone (car args)))
   (%reduce 'append args))
 (define <symbol> (%mtable-by-name 'symbol)) ;; bootstrap
 (define-macro (define-mtable-class name)
   (let ((name-s (symbol->string name))
-	(mtable (%mtable-by-name name)))
+	 (mtable (%mtable-by-name name)))
     `(begin
        (define ,(string->symbol (string-append "<" name-s ">")) ',mtable)
        (define (,(string->symbol (string-append name-s "?")) o) (eq? (%mtable o) ',mtable)))))
@@ -162,11 +182,11 @@
 (define-mtable-class vector)
 (define (vector . vals)
   (let ((v ('new <vector> (list-length vals)))
-	(i 0))
+	 (i 0))
     (while (not (null? vals))
-	   (vector-set! v i (car vals))
-	   (set! i (+ i 1))
-	   (set! vals (cdr vals)))
+      (vector-set! v i (car vals))
+      (set! i (+ i 1))
+      (set! vals (cdr vals)))
     v))
 (define (vector-length s) ('size s))
 (define (vector-ref s i) ('get s i))
@@ -187,13 +207,13 @@
 (define (close-input-file f) ('close f))
 (define (call-with-input-file file proc)
   (let ((f (open-input-file file))
-	(r nil))
+	 (r nil))
     (set! r (proc f))
     (close-input-file f)
     r))
 (define (call-with-output-file file proc)
   (let ((f (open-output-file file))
-	(r nil))
+	 (r nil))
     (set! r (proc f))
     (close-output-file f)
     r))
@@ -203,13 +223,13 @@
 
 (define (write obj . port)
   ('lisp_write obj 
-	       (if (pair? port) (car port) *standard-output*)))
+    (if (pair? port) (car port) *standard-output*)))
 
 (define (display obj . port)
   (set! port (if (pair? port) (car port) *standard-output*)) 
   (if (string? obj)
-      ('_write port obj)
-      (write obj port)))
+    ('_write port obj)
+    (write obj port)))
 
 (define (read . port)
   (set! port (if (pair? port) (car port) *standard-input*))
@@ -221,28 +241,28 @@
 
 (define (+ . args)
   (if (null? args)
-      0
-      (%reduce (lambda (a b) ('+ a b)) args)))
+    0
+    (%reduce (lambda (a b) ('+ a b)) args)))
 
 (define (* . args)
   (if (null? args)
-      1
-      (%reduce (lambda (a b) ('* a b)) args)))
+    1
+    (%reduce (lambda (a b) ('* a b)) args)))
 
 (define (- first . args)
   (if (null? args)
-      ('@- first)
-      ('- first (%reduce (lambda (a b) ('+ a b)) args))))
+    ('@- first)
+    ('- first (%reduce (lambda (a b) ('+ a b)) args))))
 
 (define (/ first . args)
   (if (null? args)
-      ('/ 1 first)
-      ('/ first (%reduce (lambda (a b) ('* a b)) args))))
+    ('/ 1 first)
+    ('/ first (%reduce (lambda (a b) ('* a b)) args))))
 
 ;; BITWISE OPERATORS.
 (define-macro (define-binary-operator op)
   `(define (,op first . args)
-    (',op first (%reduce (lambda (a b) (',op a b)) args))))
+     (',op first (%reduce (lambda (a b) (',op a b)) args))))
 (define-binary-operator |)
 (define-binary-operator &)
 (define-binary-operator ^)
@@ -259,7 +279,7 @@
 (define *load-debug* #f)
 (define (load fname . env)
   (let ((out (if *load-debug* *standard-error* nil))
-	(env (if (null? env) &env (car env))))
+	 (env (if (null? env) &env (car env))))
     (call-with-input-file fname (lambda (f) ('lisp_repl f out out env)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -280,14 +300,14 @@
 (define-mtable-class catch)
 
 (if #f
-    (let ((the-catch ('new <catch>)))
-      ('begin the-catch 
-	      (lambda (c)
-		(display "testing catch/throw\n")
-		('unwind_protect <catch> 
-				 (lambda () (display "  throwing!!!\n")))
-		('throw c 'thrown)
-		'not-thrown))))
+  (let ((the-catch ('new <catch>)))
+    ('begin the-catch 
+      (lambda (c)
+	(display "testing catch/throw\n")
+	('unwind_protect <catch> 
+	  (lambda () (display "  throwing!!!\n")))
+	('throw c 'thrown)
+	'not-thrown))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
