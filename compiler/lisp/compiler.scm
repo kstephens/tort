@@ -6,7 +6,7 @@
   (ar-offset-max 0)
   (saves         nil)
   (env           nil))
-(define compiler:make compiler:new)
+(define compiler:make compiler:new) ;; alias
 
 (define (compiler:ar-offset c) 
   (car (compiler:ar-offset- c)))
