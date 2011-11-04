@@ -2,20 +2,23 @@
 ; (load "compiler/lisp/compiler")
 
 (for-each 
- (lambda (case)
-   (let ((c (compiler:make))
-	 (m (car case))
-	 (expected (cadr case))
-	 )
-     (display "===========================\n  Testing ")(write m)(newline)
-     ;; (set! &trace 1)
-     (compiler:compile:method c m)
-     ;; (set! &trace 0)
-     ;; (compiler:stream c)
-     (compiler:assemble c 'verbose)
-     (compiler:load c)
-     ; (read)
-     ))
+  (lambda (case)
+    (let ((c (compiler:make))
+	   (m (car case))
+	   (expected (cadr case))
+	   )
+      (if expected
+	(begin
+	  (display "===========================\n  Testing ")(write m)(newline)
+	  ;; (set! &trace 1)
+	  (compiler:compile:method c m)
+	  ;; (set! &trace 0)
+	  ;; (compiler:stream c)
+	  (compiler:assemble c 'verbose)
+	  (compiler:load c)
+	  ;; (read)
+	  ))))
+    ;; Cases:
  '(
    (
     (() ; args 
@@ -57,6 +60,7 @@
     (() ; args 
      (and 9 10))
     10)
+
    (
     (() ; args 
      &root)
@@ -68,53 +72,82 @@
    (
     (() ; args 
      ('_write (&root stdout) "Hello World!\n"))
-    #f)
+    #t)
    (
     (() ; args 
      (quote (while #t ('_write *standard-output* "Hello, World!\n"))))
-    #f
-    )
+    #t)
+
+   (
+    ((a) ; args 
+     (if #f ('list a))
+     a)
+    #t)
+   (
+    ((a b) ; args 
+     (if #f ('list a b))
+     b)
+    #t)
+   (
+    ((a b c) ; args 
+     (if #f ('list a b c))
+     c)
+     #t)
+   (
+    ((a b c d) ; args 
+     (if #f ('list a b c d))
+     d)
+    #t)
+   (
+    ((a b c d e) ; args 
+     (if #f ('list a b c d e))
+     e)
+    #t)
+   (
+    ((a b c d e f) ; args 
+     (if #f ('list a b c d e f))
+     f)
+    #t)
+   (
+    ((a b c d e f g) ; args 
+     (if #f ('list a b c d e f g))
+     g)
+    #t)
+
    (
     ((a) ; args 
      (if #f ('list a))
      (set! a 1))
-    #f
-    )
+    #f)
    (
     ((a b) ; args 
      (if #f ('list a b))
      (set! b 2))
-    #f
-    )
+    #f)
    (
     ((a b c) ; args 
      (if #f ('list a b c))
      (set! c 3))
-    #f
-    )
+    #f)
    (
     ((a b c d) ; args 
      (if #f ('list a b c d))
      (set! d 4))
-    #f
-    )
+    #f)
    (
     ((a b c d e) ; args 
      (if #f ('list a b c d e))
      (set! e 5))
-    #f
-    )
+    #f)
    (
     ((a b c d e f) ; args 
      (if #f ('list a b c d e f))
      (set! f 6))
-    #f
-    )
+    #f)
    (
     ((a b c d e f g) ; args 
      (if #f ('list a b c d e f g))
      (set! g 7))
-    #f
-    )
-   ))
+    #f)
+   )
 

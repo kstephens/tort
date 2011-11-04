@@ -325,6 +325,7 @@
 	arg-type))
 
     (define (compiler:compile:pair c o dst)
+      (compiler:emit c "// pair => " dst)
       (cond
        ((eq? (car o) 'quote)
 	(compiler:compile:quote c (cadr o) dst))
@@ -464,7 +465,9 @@
 	    ))
       (cond
        ((eq? dst 'STACK)
-	(compiler:emit c "pushq " dst))))
+	 (compiler:emit c "// dst = " dst)
+	 ;; (compiler:emit c "pushq " dst)
+	 )))
 
     (define (compiler:compile:global c o dst)
       (compiler:compile:reference c o dst) ; FIXME: global?
@@ -502,23 +505,23 @@
     (define (compiler:constant:number c o)
       (string-append "$" (object->string (| (+ o o) 1)))) ; |
 
-					  (define (compiler:constant:reference c o)
-					    (string-append "$0x" ('_to_string ('_object_ptr o))))
+    (define (compiler:constant:reference c o)
+      (string-append "$0x" ('_to_string ('_object_ptr o))))
 
-					  )) ; let) let)
+)) ; let) let)
 
 
-		     (define (compiler:compile:literal:string c o)
-		       (let ((v   (compiler:label c))
-			     (s   (compiler:label c)))
-			 (compiler:emit c "  .data")
-			 (compiler:emit c "  " v ":")
-			 (compiler:emit c "  .asciiz" (object->string o))
-			 (compiler:emit c "  " s ":")
-			 (compiler:emit c "  .qword $0")
-			 (compiler:emit c "  .text")
-			 ))
-
+	(define (compiler:compile:literal:string c o)
+	  (let ((v   (compiler:label c))
+		 (s   (compiler:label c)))
+	    (compiler:emit c "  .data")
+	    (compiler:emit c "  " v ":")
+	    (compiler:emit c "  .asciiz" (object->string o))
+	    (compiler:emit c "  " s ":")
+	    (compiler:emit c "  .qword $0")
+	    (compiler:emit c "  .text")
+	    ))
+	
 		     (define (compiler:box:int c dst)
 					; int expression is in dst,
 		       (compiler:emit c "addq  " dst ", " dst)
@@ -585,7 +588,7 @@
 			     ;;('__debugger st) (set! &trace 1)
 			     (set! func-ptr ('get st name-sym))
 			     (if (or #t verbose) (begin (display "  func-ptr = ")(write func-ptr)(newline)))
-			     (set! result ('_ccallv func-ptr (vector &msg 1 2 3 4 5 6 7 8))
+			     (set! result ('_ccallv func-ptr (vector &msg 1 2 3 4 5 6 7 8)))
 			     (display "  _ccallv result = ")(write result)(newline)
 			     result
 			     ))))
