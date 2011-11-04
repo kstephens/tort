@@ -191,8 +191,8 @@ tort_v tort_runtime_initialize_mtable()
 
   /* Initialize tagged object header. */
   tort__mt(tagged)      = tort_mtable_create(tort__mt(object));
-  tort_(tagged_header).alloc_size = 0;
-  tort_(tagged_header).mtable  = tort__mt(tagged);
+  tort_(tagged_header[1]).alloc_size = 0;
+  tort_(tagged_header[1]).mtable  = tort__mt(tagged);
 
   /* Other core. */
   tort__mt(ptr)         = tort_mtable_create(tort__mt(object));

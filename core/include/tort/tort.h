@@ -65,7 +65,7 @@ struct tort_header {
 #define tort_h_struct(X) typedef struct X##_ { tort_header _h; X _; } X##_
 
 #define tort_h_ref(X)    (((struct tort_header*) (X))-1)
-#define tort_h_tagged(X) (tort_taggedQ(X) ? &tort_(tagged_header) : tort_h_ref(X))
+#define tort_h_tagged(X) (tort_taggedQ(X) ? &tort_(tagged_header[1]) : tort_h_ref(X))
 
 typedef
 struct tort_object { tort_H;
@@ -227,7 +227,7 @@ struct tort_io { tort_H;
 typedef
 struct tort_runtime { tort_H;
   tort_header nil_header; /** Header for tort_nil object. */
-  tort_header tagged_header; /** Header for tagged object (integers). */
+  tort_header tagged_header[1 << TORT_TAG_BITS]; /** Header for tagged object (integers). */
 
 #if ! TORT_NIL_IS_ZERO
   tort_v nil;
