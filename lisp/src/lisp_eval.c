@@ -153,9 +153,9 @@ tort_v _tort_M_lisp_environment__new(tort_tp tort_mtable *mtable, tort_lisp_form
     argc = tort_send(tort_s(size), args);
   env->argc = argc;
   if ( argc < formals->argc )
-    tort_error(tort_ta "not enough args: expected %O, given %O", formals->argc, argc);
+    tort_error(tort_ta "not enough args: expected %O, given %O to %O", formals->argc, argc, formals);
   if ( formals->rest == tort_false && env->argc > formals->argc )
-    tort_error(tort_ta "too many args: expected %O, given %O", formals->argc, argc);
+    tort_error(tort_ta "too many args: expected %O, given %O to %O", formals->argc, argc, formals);
   if ( tort_h_mtable(args) == tort_mt(vector) ) {
     env->argv = args;
     env->rest = tort_false; /* Lazy: see get below. */
