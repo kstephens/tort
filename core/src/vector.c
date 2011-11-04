@@ -149,9 +149,10 @@ tort_v _tort_m_vector__each (tort_tp tort_v rcvr, tort_v block)
   return rcvr;
 }
 
-tort_v _tort_m_vector__map (tort_tp tort_v rcvr, tort_v block)
+tort_v _tort_m_vector__map (tort_tp tort_vector *rcvr, tort_v block)
 {
-  tort_v new_vec = tort_send(tort__s(clone), rcvr);
+  // was clone, but then ('map map) wouldn't work.
+  tort_v new_vec = tort_send(tort__s(new), tort__mt(vector), tort_i(rcvr->size));
   tort_vector_loop(rcvr, x) {
     x = tort_sendn(tort__s(value), 2, block, x);
     tort_send(tort__s(set), new_vec, tort_i(x_i), x);

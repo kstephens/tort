@@ -180,7 +180,8 @@ tort_v tort_runtime_initialize_mtable()
 
   tort__mt(vector_base) = tort_mtable_create(tort__mt(object));
   tort__mt(pair)        = tort_mtable_create(tort__mt(object));
-  tort__mt(map)         = tort_mtable_create(tort__mt(vector_base));
+  tort__mt(vector)      = tort_mtable_create(tort__mt(vector_base));
+  tort__mt(map)         = tort_mtable_create(tort__mt(vector));
   _tort_m_mtable__set_delegate(tort_ta tort__mt(mtable), tort__mt(map));
 
   /* Initialize nil object header. */
@@ -196,7 +197,6 @@ tort_v tort_runtime_initialize_mtable()
   /* Other core. */
   tort__mt(ptr)         = tort_mtable_create(tort__mt(object));
   tort__mt(string)      = tort_mtable_create(tort__mt(vector_base));
-  tort__mt(vector)      = tort_mtable_create(tort__mt(vector_base));
   tort__mt(symbol)      = tort_mtable_create(tort__mt(object));
   tort__mt(method)      = tort_mtable_create(tort__mt(object));
   tort__mt(message)     = tort_mtable_create(tort__mt(object));

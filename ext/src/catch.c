@@ -11,14 +11,12 @@ typedef struct tort_catch { tort_H;
   tort_pair *unwinds;
   struct tort_catch *previous_catch;
 } tort_catch;
-tort_h_struct(tort_catch);
 
-#if 0
-TORT_GETTER(catch,voidP,jbp);
-TORT_ACCESSOR(catch,tort_v,applied);
-TORT_ACCESSOR(catch,tort_v,result);
-TORT_ACCESSOR(catch,tort_v,previous_catch);
-#endif
+tort_GETTER(catch,voidP,jbp);
+tort_ACCESSOR(catch,tort_v,applied);
+tort_ACCESSOR(catch,tort_v,result);
+tort_ACCESSOR(catch,tort_v,unwinds);
+tort_ACCESSOR(catch,tort_v,previous_catch);
 
 static
 int invalidate_catches_til(tort_catch *catch)
