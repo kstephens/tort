@@ -14,7 +14,7 @@ tort_v _tort_m_object___inspect(tort_tp tort_v rcvr, tort_v io)
   return tort_nil;
 }
 
-tort_v _tort_m_tagged___inspect(tort_tp tort_v rcvr, tort_v io)
+tort_v _tort_m_fixnum___inspect(tort_tp tort_v rcvr, tort_v io)
 {
   if ( sizeof(tort_v) == sizeof(long long) ) {
     printf("%lld", (long long) tort_tagged_data(rcvr));
@@ -131,7 +131,7 @@ tort_v _tort_m_symbol___to_string(tort_tp tort_symbol *rcvr)
   return rcvr->name;
 }
 
-tort_v _tort_m_tagged___to_string(tort_tp tort_v rcvr)
+tort_v _tort_m_fixnum___to_string(tort_tp tort_v rcvr)
 {
   char buf[64];
   if ( sizeof(tort_v) == sizeof(long long) ) {

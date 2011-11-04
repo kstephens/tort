@@ -2,6 +2,7 @@
 tort_d_mt(block)
 tort_d_mt(boolean)
 tort_d_mt(eos)
+tort_d_mt(fixnum)
 tort_d_mt(io)
 tort_d_mt(map)
 tort_d_mt(message)

@@ -20,11 +20,13 @@ typedef ssize_t tort_vi;
 #define tort_ref(T, X)      ((struct T *)(X))
 #define tort_ref_box(PTR)   ((tort_v)(PTR))
 
+#define tort_tag(X) ((short) tort_taggedQ(X))
 #define tort_taggedQ(X)     ((size_t)(X) & ((1 << TORT_TAG_BITS) - 1))
 #define tort_tagged_box(V,TAG)  ((tort_v) ((((ssize_t) (V)) << TORT_TAG_BITS) | TAG))
 #define tort_tagged_data(X) (((ssize_t) (X)) >> TORT_TAG_BITS)
 #define tort_tagged_udata(X) (((size_t) (X)) >> TORT_TAG_BITS)
 
+#define tort_tag_fixnum 1
 #define tort_i(V) tort_tagged_box(V,1)
 #define tort_I(X) tort_tagged_data(X)
 
@@ -65,7 +67,11 @@ struct tort_header {
 #define tort_h_struct(X) typedef struct X##_ { tort_header _h; X _; } X##_
 
 #define tort_h_ref(X)    (((struct tort_header*) (X))-1)
+#if TORT_TAG_BITS == 1
 #define tort_h_tagged(X) (tort_taggedQ(X) ? &tort_(tagged_header[1]) : tort_h_ref(X))
+#else
+#define tort_h_tagged(X) (tort_taggedQ(X) ? &tort_(tagged_header[tort_tag(X)]) : tort_h_ref(X))
+#endif
 
 typedef
 struct tort_object { tort_H;

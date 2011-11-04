@@ -236,8 +236,14 @@
   ('lisp_read port))
 
 (define-mtable-class tagged)
-(define <number> <tagged>)
-(define number? tagged?)
+(define tagged? (lambda (x) (not (eq? ('_tag x) 0)))) 
+(define-mtable-class fixnum)
+(define <integer> <fixnum>)
+(define integer? fixnum?)
+(define <rational> <fixnum>)
+(define rational? fixnum?)
+(define <number> <fixnum>)
+(define number? fixnum?)
 
 (define (+ . args)
   (if (null? args)

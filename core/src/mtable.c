@@ -189,10 +189,18 @@ tort_v tort_runtime_initialize_mtable()
   tort_(nil_header).alloc_size = 0;
   tort_(nil_header).mtable  = tort__mt(nil);
 
-  /* Initialize tagged object header. */
+  /* Initialize tagged object headers. */
   tort__mt(tagged)      = tort_mtable_create(tort__mt(object));
-  tort_(tagged_header[1]).alloc_size = 0;
-  tort_(tagged_header[1]).mtable  = tort__mt(tagged);
+  {
+    int i;
+    for ( i = 0; i < 1 << TORT_TAG_BITS; ++ i ) {
+      tort_(tagged_header[i]).alloc_size = 0;
+      tort_(tagged_header[i]).mtable = tort_mtable_create(tort__mt(tagged));
+    }
+  }
+#ifdef tort_tag_fixnum 
+  tort__mt(fixnum) = tort_(tagged_header[tort_tag_fixnum]).mtable;
+#endif
 
   /* Other core. */
   tort__mt(ptr)         = tort_mtable_create(tort__mt(object));
