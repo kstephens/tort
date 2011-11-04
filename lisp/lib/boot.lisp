@@ -236,7 +236,7 @@
   ('lisp_read port))
 
 (define-mtable-class tagged)
-(define tagged? (lambda (x) (not (eq? ('_tag x) 0)))) 
+(define tagged? (lambda (x) ('!= ('_tag x) 0)))
 (define-mtable-class fixnum)
 (define <integer> <fixnum>)
 (define integer? fixnum?)
