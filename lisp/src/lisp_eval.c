@@ -134,7 +134,7 @@ tort_v _tort_m_lisp_closure__lisp_apply(tort_tp tort_lisp_closure *obj, tort_v a
 
 tort_v _tort_m_lisp_environment__lisp_write(tort_tp tort_lisp_environment *rcvr, tort_v io)
 {
-  return tort_printf(io, "#e(%O %O . %O)", 
+  return tort_printf(io, "#&env(%O %O . %O)", 
 		     rcvr->formals->map, 
 		     rcvr->macros,
 		     rcvr->parent);
@@ -398,7 +398,7 @@ tort_v _tort_m_cons__lisp_eval(tort_tp tort_cons *obj, tort_v env)
       args = obj->cdr;
       val = tort_send(tort_s(lisp_apply), val, args, env);
       if ( _tort_lisp_macro_trace )
-	tort_printf(tort_stderr, "   EM %O =>\n      %O\n", obj, val);
+	tort_printf(tort_stderr, "   EM %O =>\n    %O\n", obj, val);
       return_tort_send(tort_s(lisp_eval), val, env);
     } else {
       val  = tort_send(tort_s(lisp_eval_car), val, env);
