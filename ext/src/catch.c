@@ -95,6 +95,11 @@ tort_v _tort_M_catch__new(tort_tp tort_mtable *mtable)
   return catch;
 }
 
+tort_v _tort_m_catch__active(tort_tp tort_catch *catch)
+{
+  return catch->jbp ? tort_true : tort_false;
+}
+
 tort_v _tort_m_catch__unwind_protect(tort_tp tort_catch *catch, tort_v block)
 {
   catch->unwinds = tort_send(tort_s(new), tort__mt(pair), block, catch->unwinds);
