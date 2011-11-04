@@ -213,7 +213,7 @@ tort_v _tort_m_io__lisp_read (tort_tp tort_v stream)
 tort_v _tort_string_to_number(tort_v s, int radix) /**/
 {
   long long d = 0;
-  if ( radix == 10 && sscanf(tort_string_data(s), "%lld", &d) == 1 ) {
+  if ( radix == 10 /* FIXME */ && sscanf(tort_string_data(s), "%lld", &d) == 1 ) {
     return tort_i(d);
   } else {
     return tort_false;
