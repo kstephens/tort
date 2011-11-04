@@ -231,7 +231,7 @@ tort_v tort_runtime_initialize_lisp()
   tort_send(tort_s(_dlopen), tort_string_new_cstr("libtortext"));
 
   /* Reused methods. */
-  tort_add_method(tort__mt(tagged), "lisp_write", _tort_m_fixnum___inspect);
+  tort_add_method(tort__mt(fixnum), "lisp_write", _tort_m_fixnum___inspect);
   tort_add_method(tort__mt(string), "lisp_write", _tort_m_string___inspect);
   tort_add_method(tort__mt(method), "lisp_write", _tort_m_method___inspect);
   tort_add_method(tort__mt(message), "lisp_write", _tort_m_message___inspect);
