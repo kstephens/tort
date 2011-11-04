@@ -512,6 +512,7 @@ tort_v _tort_m_lisp_repl__new_environment(tort_tp tort_repl *repl)
   tort_lisp_environment *env = 
     tort_send(tort__s(new), tort_mt(lisp_environment), 
 	      tort_nil, tort_nil, tort_nil, tort_nil);
+  tort_send(tort_s(add), env, tort_s(ANDrepl), repl);
   repl->env = env;
   env->msg = _tort_message->previous_message; // FIXME?
   return repl;
