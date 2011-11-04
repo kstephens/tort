@@ -146,7 +146,7 @@
 	      (binding nil)
 	      (arg-i -1)
 	      (reg #f)
-	      (arg-offset word-size))
+	      (arg-offset (+ word-size word-size))) ; prev-ar rtn-addr
 	  ;; (display "args = ")(write args)(newline)
 	  ;; (display "  (vector-length arg-regs) = ")(write (vector-length arg-regs))(newline)
 	  (while (not (null? a))
