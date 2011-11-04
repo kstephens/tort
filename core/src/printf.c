@@ -82,6 +82,14 @@ tort_v _tort_m_object___printfv(tort_tp tort_io *io, const char *format, const c
 	case 'T':
 	  tort_send(tort__s(_inspect), va_arg(vap, tort_v), io);
 	  done = 1; break;
+	case 'S':
+	  {
+	    tort_v val = va_arg(vap, tort_v);
+	    if ( (val = tort_send(tort__s(_to_string), val)) != tort_nil ) {
+	      tort_send(tort__s(_write), io, val);
+	    }
+	  }
+	  done = 1; break;
 	case 'O':
 	  tort_send(tort_s(lisp_write), va_arg(vap, tort_v), io);
 	  done = 1; break;
