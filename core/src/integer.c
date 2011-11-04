@@ -24,3 +24,18 @@
 #define LOP(N,OP) ROP(N,OP)
 #include "tort/ops.h"
 
+tort_v _tort_M_fixnum___ops(tort_tp tort_mtable *mtable)
+{
+  tort_v result = tort_vector_new(0, 0);
+  tort_v op[4];
+
+#define X(NA,N,OP,K) op[2] = tort_i(NA); op[3] = tort_s(K); op[1] = tort_symbol_make(#N); op[0] = tort_s(N); tort_send(tort_s(add), result, tort_vector_new(op, 4));
+#define UOP(N,OP) X(1,N,OP,uop)
+#define BOP(N,OP) X(2,N,OP,bop)
+#define LUP(N,OP) X(2,N,OP,lup)
+#define LOP(N,OP) X(2,N,OP,lop)
+#define ROP(N,OP) X(2,N,OP,rop)
+#include "tort/ops.h"
+  return result;
+}
+
