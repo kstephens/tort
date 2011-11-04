@@ -19,7 +19,7 @@
 
 (define (null? o) (eq? o '()))
 (define <cons> (%mtable-by-name 'cons))
-(define (pair? o) (eq? (%mtable o) <cons>))
+(define (pair? o) (eq? ('_mtable o) <cons>)) ;; bootstrap
 (define (cons a d) ('new <cons> a d))
 (define (car o) ('car o))
 (define (cdr o) ('cdr o))
@@ -184,7 +184,7 @@
 	 (mtable (%mtable-by-name name)))
     `(begin
        (define ,(string->symbol (string-append "<" name-s ">")) ',mtable)
-       (define (,(string->symbol (string-append name-s "?")) o) (eq? (%mtable o) ',mtable)))))
+       (define (,(string->symbol (string-append name-s "?")) o) (eq? ('_mtable o) ',mtable)))))
 (define-mtable-class string)
 (define (string-new . size) ('new <string> (if (pair? size) (car size) 0)))
 (define (string-length s) ('size s))
