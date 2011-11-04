@@ -42,10 +42,10 @@ typedef struct tort_method tort_method;
 #define tort_apply_decl(X)  tort_v X (tort_tp tort_v rcvr, ...)
 
 #define tort_GETTER(MT,T,N) \
-  tort_v _tort_M_##MT##___offset_##N ( tort_tp tort_mtable *mtable ) { return tort_i(&((tort_##MT*) 0)->N); } \
-  tort_v _tort_m_##MT##__##N ( tort_tp tort_##MT *rcvr ) { return tort_box_(T,rcvr->N); }
+  tort_v _tort_M_##MT##___offset_##N ( tort_tp tort_mtable *mtable ) { return tort_i(&((struct tort_##MT*) 0)->N); } \
+  tort_v _tort_m_##MT##__##N ( tort_tp struct tort_##MT *rcvr ) { return tort_box_(T,rcvr->N); }
 #define tort_SETTER(MT,T,N) \
-  tort_v _tort_m_##MT##__set_##N ( tort_tp tort_##MT *rcvr, tort_v val ) { rcvr->N = tort_unbox_(T,val); return rcvr; }
+  tort_v _tort_m_##MT##__set_##N ( tort_tp struct tort_##MT *rcvr, tort_v val ) { rcvr->N = tort_unbox_(T,val); return rcvr; }
 #define tort_ACCESSOR(MT,T,N) \
   tort_GETTER(MT,T,N); \
   tort_SETTER(MT,T,N)
@@ -357,8 +357,12 @@ extern tort_v _tort_fiber;
 void *tort_malloc(size_t size);
 void *tort_malloc_atomic(size_t size);
 void  tort_free(void *ptr);
+#define tort_free_atomic tort_free
 void *tort_realloc(void *ptr, size_t size);
 void *tort_realloc_atomic(void *ptr, size_t size);
+#define tort_gc_mark(referrer, referred) (void)0 // TODO
+#define tort_gc_add_root(referencep) (void)0 // TODO
+#define tort_gc_remove_root(referencep) (void)0
 
 tort_v tort_map_create();
 
