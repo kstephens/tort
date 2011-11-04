@@ -11,3 +11,14 @@ tort_GETTER(pair,tort_v,first);
 tort_SETTER(pair,tort_v,first);
 tort_GETTER(pair,tort_v,second);
 tort_SETTER(pair,tort_v,second);
+
+tort_v _tort_m_pair___gc_mark(tort_tp tort_pair *o)
+{
+  tort_gc_mark(o, o->first);
+  return o->second;
+}
+
+tort_v _tort_m_pair___gc_free(tort_tp tort_pair *o)
+{
+  return 0;
+}

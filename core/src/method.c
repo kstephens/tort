@@ -1,5 +1,16 @@
 #include "tort/core.h"
 
+tort_v _tort_m_method___gc_mark(tort_tp tort_method *o)
+{
+  // tort_gc_mark(o, o->applyf); // when compiler is on-line.
+  tort_gc_mark(o, o->name);
+  return o->data;
+}
+
+tort_v _tort_m_method___gc_free(tort_tp tort_method *o)
+{
+  return 0;
+}
 tort_ACCESSOR(method,voidP,applyf);
 tort_ACCESSOR(method,tort_v,name);
 tort_ACCESSOR(method,tort_v,data);

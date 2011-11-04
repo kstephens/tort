@@ -1,6 +1,22 @@
 /* -*- c -*- */
 #include "tort/core.h"
 
+tort_v _tort_m_symbol___gc_mark(tort_tp tort_symbol *o)
+{
+  tort_gc_mark(o, o->version); // Necessary?
+#if TORT_ANON_SYMBOL_MTABLE
+  tort_gc_mark(o, o->name);
+  return o->mtable_method_map;
+#else
+  return o->name;
+#endif
+}
+
+tort_v _tort_m_symbol___gc_free(tort_tp tort_symbol *o)
+{
+  return 0;
+}
+
 tort_GETTER(symbol,tort_v,name);
 tort_GETTER(symbol,tort_v,version);
 #if TORT_ANON_SYMBOL_MTABLE

@@ -2,6 +2,16 @@
 
 unsigned long _tort_alloc_id = 0;
 
+tort_v _tort_m_mtable___gc_mark(tort_tp tort_mtable *o)
+{
+  return o->delegate;
+}
+
+tort_v _tort_m_mtable___gc_free(tort_tp tort_mtable *o)
+{
+  return 0;
+}
+
 tort_v _tort_allocate(tort_thread_param tort_v mtable, size_t size
 #if TORT_ALLOC_DEBUG
 		      ,const char *alloc_file, int alloc_line
