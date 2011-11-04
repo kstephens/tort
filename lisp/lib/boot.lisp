@@ -309,17 +309,8 @@
 (define-mtable-class message)
 (define-mtable-class method)
 (define-mtable-class slotted_object)
+(define <slotted-object> <slotted_object>) ; FIXME
 (define-mtable-class catch)
-
-(if #f
-  (let ((the-catch ('new <catch>)))
-    ('begin the-catch 
-      (lambda (c)
-	(display "testing catch/throw\n")
-	('unwind_protect <catch> 
-	  (lambda () (display "  throwing!!!\n")))
-	('throw c 'thrown)
-	'not-thrown))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -337,9 +328,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; (set! *load-debug* #t)
+; (set! &trace 1)
 (load "lisp/lib/struct.lisp")
 (load "compiler/lisp/compiler.scm")
 
-;; define-macro macro should work now.
-;; (define-macro foo (lambda (a b) `(+ ,a ,b)))
 

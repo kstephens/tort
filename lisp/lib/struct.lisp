@@ -1,5 +1,5 @@
 ;; -*- scheme -*-
-(set! &macro-trace 1)
+
 (define (%define-struct name slots)
   (let ((name-s (symbol->string name))
 	(name- (string-append (symbol->string name) ":"))
