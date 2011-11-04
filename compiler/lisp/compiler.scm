@@ -10,24 +10,24 @@
 
 (define (compiler:ar-offset c) 
   (car (compiler:ar-offset- c)))
-(define (compiler:set-ar-offset! c v)
+(define (compiler:ar-offset= c v)
   (if (< v (compiler:ar-offset-max c))
-      (compiler:set-ar-offset-max! c v))
+      (compiler:ar-offset-max= c v))
   (set-car! (compiler:ar-offset- c) v))
 (define (compiler:ar-offset:push c) 
-  (compiler:set-ar-offset-! c 
+  (compiler:ar-offset-= c 
 			    (cons (compiler:ar-offset c) (compiler:ar-offset- c))))
 (define (compiler:ar-offset:push c) 
-  (compiler:set-ar-offset-! c 
+  (compiler:ar-offset-= c 
 			    (cdr (compiler:ar-offset- c))))
 (define (compiler:env:push c b)
-  (compiler:set-env! c
+  (compiler:env= c
 		     (cons b (compiler:env c))))
 
 (define (compiler:label c)
   (let ((id (compiler:label-id c)))
     (let ((label (string-append "L" (number->string id))))
-      (compiler:set-label-id! c (+ id 1))
+      (compiler:label-id= c (+ id 1))
       label)))
 
 (define (compiler:emit c . args)
@@ -91,7 +91,7 @@
 	(if (or (not ar-offset) (null? ar-offset))
 	    (begin
 	      (set! ar-offset (- (compiler:ar-offset c) word-size))
-	      (compiler:set-ar-offset! c ar-offset)))
+	      (compiler:ar-offset= c ar-offset)))
 	(if (number? ar-offset)
 	    (set! loc (string-append (number->string ar-offset) "(" ar-reg ")"))
 	    (set! loc ar-offset))
@@ -125,7 +125,7 @@
 	    (args (car o))
 	    (save-regs (list _msg _rcvr tmp0-reg)))
 	(set! args (cons '&msg args))
-	(compiler:set-output-name! c mname)
+	(compiler:output-name= c mname)
 	(set! mname (compiler:global-symbol c mname))
 	(compiler:emit c "  .text")
 	(compiler:emit c "  .align 4,0x90") ; ???
@@ -461,7 +461,7 @@
       (let ((b (compiler:env:binding c o)))
 	(if b
 	    (compiler:emit c "movq  " dst ", " (vector-ref b 1) " \t// -> " b)
-	    (compiler:compile:set-global! c o dst) ; FIXME: global?
+	    (compiler:compile:set!:global c o dst) ; FIXME: global?
 	    ))
       (cond
        ((eq? dst 'STACK)
@@ -473,7 +473,7 @@
       (compiler:compile:reference c o dst) ; FIXME: global?
       )
 
-    (define (compiler:compile:set-global! c o dst)
+    (define (compiler:compile:set!:global c o dst)
       (compiler:compile:reference c o dst) ; FIXME: global?
       )
 
