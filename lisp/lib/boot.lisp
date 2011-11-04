@@ -48,9 +48,16 @@
     r))
 
 (define (map f l)
-  (if (null? l) l
-    (let ((a (f (car l))))
-      (cons a (map f (cdr l))))))
+  (let ((result (cons #f '()))
+	 (r #f)
+	 (c '()))
+    (set! r result)
+    (while (pair? l)
+      (set! c (cons (f (car l)) '()))
+      (set-cdr! r c)
+      (set! r c)
+      (set! l (cdr l)))
+    (cdr result)))
 
 (define (map! f l)
   (while (pair? l)
@@ -58,11 +65,9 @@
     (set! l (cdr l))))
 
 (define (for-each f l)
-  (if (null? l)
-    l
-    (let () ; begin
-      (f (car l))
-      (for-each f (cdr l)))))
+  (while (pair? l)
+    (f (car l))
+    (set! l (cdr l))))
 
 (define (append . lists)
   (let ((result (cons #f '())))
