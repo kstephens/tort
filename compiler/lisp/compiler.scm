@@ -451,7 +451,7 @@
 	       ((eq? dst 'STACK)
 		(compiler:emit c "pushq " (vector-ref b 1) "       \t// <- " b))
 	       (else
-		(compiler:emit c "movq " (vector-ref b 1) ", " dst " \t// <- " b)))
+		(compiler:emit c "movq  " (vector-ref b 1) ", " dst " \t// <- " b)))
 	      (compiler:compile:global c o dst)
 	      )))))
 
