@@ -1,16 +1,22 @@
 #include "tort/tort.h"
+#include "tort/repl.h"
 
 int main(int argc, char **argv, char **environ)
 {
   int argi;
   tort_v in, out, io;
-  tort_v env;
+  tort_repl *repl;
  
   tort_runtime_create();
   tort_send(tort_s(_dlopen), tort_string_new_cstr("libtortlisp"));
 
   in = tort_stdin;
   out = tort_stdout;
+
+  repl = tort_send(tort_s(new), tort_mt(lisp_repl));
+  if ( repl->catch == tort_nil && tort_mt(catch) ) {
+    repl->catch = tort_send(tort__s(new), tort_mt(catch));
+  }
 
   {
     extern int _tort_lisp_trace;
@@ -28,7 +34,9 @@ int main(int argc, char **argv, char **environ)
     tort_printf(out, ";; %s: reading %T\n", argv[0], boot);
     io = tort_send(tort_s(__create), tort__mt(io), (FILE*) 0);
     io = tort_send(tort_s(open), io, boot, tort_string_new_cstr("r"));
-    env = tort_send(tort_s(lisp_repl), io, out_io, tort_nil, tort_nil);
+    repl->input = io;
+    repl->output = out_io;
+    tort_send(tort_s(run), repl);
 
     if ( boot_debug ) -- _tort_lisp_trace;
   }
@@ -45,15 +53,20 @@ int main(int argc, char **argv, char **environ)
       in = io;
     }
     out = tort_stdout;
-    env = tort_send(tort_s(lisp_repl), in, out, tort_nil, env);
+    repl->input = io;
+    repl->output = out;
+    tort_send(tort_s(run), repl);
   }
   if ( argc == 1 ) {
     in = tort_stdin;
     out = tort_stdout;
-    env = tort_send(tort_s(lisp_repl), in, out, out, env);
+    repl->input = in;
+    repl->output = out;
+    repl->prompt = out;
+    tort_send(tort_s(run), repl);
   }
 
-  tort_printf(out, "%O\n", env);
+  tort_send(tort_s(print), repl, repl->result);
 
   return 0;
 }

@@ -277,10 +277,22 @@
 (define >= (%bin-op '>=))
 
 (define *load-debug* #f)
+(define-mtable-class lisp_repl)
+(define <lisp-repl> <lisp_repl>) ; FIXME
 (define (load fname . env)
   (let ((out (if *load-debug* *standard-error* nil))
-	 (env (if (null? env) &env (car env))))
-    (call-with-input-file fname (lambda (f) ('lisp_repl f out out env)))))
+	 (env (if (pair? env) (car env) &env))
+	 (repl nil))
+    (set! repl ('new <lisp-repl>))
+    ('set_output repl out)
+    ('set_prompt repl out)
+    ('set_env repl env)
+    (call-with-input-file fname 
+      (lambda (f)
+	('set_input repl f)
+	('run repl)))
+    ;; ('result repl) ; FIXME
+    ))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
