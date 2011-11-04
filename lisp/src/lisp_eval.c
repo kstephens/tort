@@ -352,16 +352,6 @@ tort_v _tort_m_cons__lisp_eval(tort_tp tort_cons *obj, tort_v env)
     }
     return_tort_send(tort_s(lisp_eval), val, env);
   }
-  else if ( val == tort_s(cond) ) {
-    val = obj;
-    while ( (obj = obj->cdr) != tort_nil ) {
-      val = obj->car;
-      if ( obj->cdr == tort_nil || 
-	   tort_send(tort_s(lisp_eval), tort_car(val), env) != tort_false )
-	break;
-    }
-    return_tort_send(tort_s(lisp_eval_body), tort_cdr(val), env);
-  }
   else if ( val == tort_s(or) ) {
     val = tort_false;
     while ( (obj = obj->cdr) != tort_nil ) {

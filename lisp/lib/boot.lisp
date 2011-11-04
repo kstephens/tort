@@ -125,6 +125,13 @@
 (define-macro (begin . body)
   `(let () ,@body))
 
+(define-macro (cond case . cases)
+  (if (null? cases)
+    `(begin ,@(cdr case))
+    `(if ,(car case) 
+       (begin ,@(cdr case))
+       (cond ,@cases))))
+
 (define-macro (let* bindings . body)
   (cond
     ((null? bindings) `(let () ,@body))
