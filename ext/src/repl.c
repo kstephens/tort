@@ -45,7 +45,6 @@ tort_v _tort_m_repl__value(tort_tp tort_repl *repl, tort_v catch)
       tort_printf(repl->prompt, "  == ");
       if ( repl->output != tort_nil )
 	tort_send(tort_s(print), repl, repl->expr);
-      tort_printf(repl->prompt, "\n");
     }
     tort_send(tort_s(eval), repl);
     if ( repl->output != tort_nil ) {
