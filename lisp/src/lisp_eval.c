@@ -315,7 +315,7 @@ tort_v _tort_m_cons__lisp_eval(tort_tp tort_cons *obj, tort_v env)
   tort_v val;
   extern tort_v _tort_debug_expr;
   val = obj->car;
-  if ( _tort_lisp_trace ) tort_printf(tort_stderr, "\n  lisp_eval %O\n", obj);
+  if ( _tort_lisp_trace ) tort_printf(tort_stderr, "  E %O\n", obj);
   if ( val == tort_s(quote) ) {
     return tort_car(obj->cdr);
   }
@@ -406,9 +406,8 @@ tort_v _tort_m_cons__lisp_eval(tort_tp tort_cons *obj, tort_v env)
       val = args;
       args = obj->cdr;
       val = tort_send(tort_s(lisp_apply), val, args, env);
-      if ( _tort_lisp_macro_trace ) {
-	tort_printf(tort_stderr, "\nmacro expand:\n   %O\n  =>\n  %O\n", obj, val);
-      }
+      if ( _tort_lisp_macro_trace )
+	tort_printf(tort_stderr, "   EM %O =>\n      %O\n", obj, val);
       return_tort_send(tort_s(lisp_eval), val, env);
     } else {
       val  = tort_send(tort_s(lisp_eval_car), val, env);
@@ -422,9 +421,9 @@ tort_v _tort_m_cons__lisp_eval(tort_tp tort_cons *obj, tort_v env)
 
 tort_v _tort_m_symbol__lisp_eval_car(tort_tp tort_v obj, tort_v env)
 {
-  if ( _tort_lisp_trace ) {
+  if ( _tort_lisp_trace > 1 ) {
     tort_v val = tort_send(tort_s(get), env, obj);
-    tort_printf(tort_stderr, "\n  symbol::lisp_eval_car: %O => %O\n", obj, val);
+    tort_printf(tort_stderr, "   EC %O => %O\n", obj, val);
     return val;
   } else
   return_tort_send(tort_s(get), env, obj);
@@ -434,7 +433,7 @@ tort_v _tort_m_object__lisp_eval_car(tort_tp tort_v obj, tort_v env)
 {
   if ( _tort_lisp_trace ) {
     tort_v val = tort_send(tort_s(lisp_eval), obj, env);
-    tort_printf(tort_stderr, "\n  object::lisp_eval_car: %O => %O\n", obj, val);
+    tort_printf(tort_stderr, "   EC %O => %O\n", obj, val);
     return val;
   } else
   return_tort_send(tort_s(lisp_eval), obj, env);
@@ -465,13 +464,13 @@ tort_v _tort_m_object__lisp_eval_let_values(tort_tp tort_v obj, tort_v env)
 tort_v _tort_m_symbol__lisp_apply(tort_tp tort_v obj, tort_v args, tort_v env)
 {
   tort_vector *argv = tort_send(tort_s(list_TO_vector), args);
-  if ( _tort_lisp_trace ) tort_printf(tort_stderr, "\n  symbol::lisp_apply: %O %O\n", obj, argv);
+  if ( _tort_lisp_trace > 2 ) tort_printf(tort_stderr, "    EA %O %O\n", obj, argv);
   return_tort_send(tort_s(_sendv), obj, tort_vector_data(argv), tort_vector_size(argv));
 }
 
 tort_v _tort_m_object__lisp_apply(tort_tp tort_cons *obj, tort_v args, tort_v env)
 {
-  if ( _tort_lisp_trace ) tort_printf(tort_stderr, "\n  object::lisp_apply: %O %O\n", obj, args);
+  if ( _tort_lisp_trace > 2 ) tort_printf(tort_stderr, "    EA %O %O\n", obj, args);
   return_tort_send(tort_s(__debugger), obj);
 }
 
