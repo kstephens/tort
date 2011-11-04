@@ -6,6 +6,8 @@
     (let ((c (compiler:make))
 	   (m (car case))
 	   (expected (cadr case))
+	   (func-ptr nil)
+	   (result nil)
 	   )
       (if expected
 	(begin
@@ -15,7 +17,9 @@
 	  ;; (set! &trace 0)
 	  ;; (compiler:stream c)
 	  (compiler:assemble c 'verbose)
-	  (compiler:load c)
+	  (set! func-ptr (compiler:load c))
+	  (set! result ('_ccallv func-ptr (vector &msg 1 2 3 4 5 6 7 8)))
+	  (display "  _ccallv result = ")(write result)(newline)
 	  ;; (read)
 	  ))))
     ;; Cases:

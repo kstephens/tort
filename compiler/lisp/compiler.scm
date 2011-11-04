@@ -588,8 +588,7 @@
 			     ;;('__debugger st) (set! &trace 1)
 			     (set! func-ptr ('get st name-sym))
 			     (if (or #t verbose) (begin (display "  func-ptr = ")(write func-ptr)(newline)))
-			     (set! result ('_ccallv func-ptr (vector &msg 1 2 3 4 5 6 7 8)))
-			     (display "  _ccallv result = ")(write result)(newline)
+			     (set! result func-ptr)
 			     result
 			     ))))
 
