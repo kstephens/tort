@@ -154,8 +154,7 @@
   (let ((name (car name-and-args))
 	 (args (cdr name-and-args)))
     `(begin
-       ('add_method ,mtable ',name 
-	 (lambda ',args ,@body))
+       ('add_method ,mtable ,name (lambda ',args ,@body))
        (list ,mtable ,name))))
 
 (define (%reduce f l)
