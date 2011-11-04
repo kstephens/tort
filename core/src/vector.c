@@ -17,7 +17,7 @@ tort_v tort_vector_base_new(tort_v mtable, const void *data, size_t size, size_t
 
 tort_v _tort_m_vector_base___initialize(tort_tp tort_vector_base *v, size_t size, size_t element_size)
 {
-  v->data = (v->_h[-1].mtable == tort__mt(string) ? tort_malloc_atomic : tort_malloc)
+  v->data = (element_size == 1 ? tort_malloc_atomic : tort_malloc)
     (
      v->alloc_size = 
      (v->element_size = element_size) *
@@ -30,7 +30,7 @@ tort_v _tort_m_vector_base___initialize(tort_tp tort_vector_base *v, size_t size
 tort_v _tort_m_vector_base__clone (tort_tp tort_vector_base *v)
 {
   tort_vector_base *v2 = _tort_m_object__clone(tort_ta v);
-  v2->data = (v->_h[-1].mtable == tort__mt(string) ? tort_malloc_atomic : tort_malloc)(v2->alloc_size);
+  v2->data = (v->element_size == 1 ? tort_malloc_atomic : tort_malloc)(v2->alloc_size);
   memcpy(v2->data, v->data, v2->element_size * (v2->size + 1));
   return v2;
 }
@@ -62,7 +62,7 @@ tort_v _tort_m_vector_base___resize (tort_tp tort_vector_base *v, size_t size)
   size_t old_alloc_size = v->alloc_size;
   if ( size > old_size || size < old_size / 2 ) {
     v->alloc_size = v->element_size * (size + 1); /* + 1 null terminator */
-    if ( v->_h[-1].mtable == tort__mt(string) ) { /* HACK */
+    if ( v->element_size == 1 ) {
       v->data = 
 	old_alloc_size ? tort_realloc_atomic(v->data, v->alloc_size) :
 	tort_malloc_atomic(v->alloc_size);
