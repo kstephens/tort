@@ -6,6 +6,7 @@ tort_SETTER(repl,tort_v,output);
 tort_SETTER(repl,tort_v,prompt);
 tort_SETTER(repl,tort_v,env);
 tort_SETTER(repl,tort_v,catch);
+tort_SETTER(repl,tort_v,caught);
 tort_SETTER(repl,tort_v,running);
 tort_SETTER(repl,tort_v,expr);
 tort_SETTER(repl,tort_v,result);
@@ -18,6 +19,7 @@ tort_v _tort_M_repl__new(tort_tp tort_mtable *mtable)
   repl->prompt = tort_nil;
   repl->env = tort_nil;
   repl->catch = tort_nil;
+  repl->caught = tort_nil;
   repl->running = tort_false;
   repl->expr = tort_nil;
   repl->result = tort_nil;
@@ -66,7 +68,12 @@ tort_v _tort_m_repl__run(tort_tp tort_repl *repl)
     if ( repl->catch == tort_nil ) {
       tort_send(tort_s(value), repl, repl->catch);
     } else {
-      tort_send(tort_s(begin), repl->catch, repl);
+      repl->caught = tort_send(tort_s(begin), repl->catch, repl);
+      if ( tort_send(tort_s(applied), repl->catch) != tort_false ) {
+	if ( repl->prompt != tort_nil ) {
+	  tort_printf(repl->prompt, "\nExpression aborted\n");
+	}
+      }
     }
   } while ( repl->running != tort_false );
   return repl;

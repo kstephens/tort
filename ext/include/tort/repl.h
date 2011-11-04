@@ -9,6 +9,7 @@ typedef struct tort_repl {
   tort_v prompt;
   tort_v env;
   tort_v catch;
+  tort_v caught;
   tort_v running;
   tort_v expr;
   tort_v result;
