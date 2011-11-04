@@ -35,7 +35,7 @@ TEST_OUT_FILES = $(TEST_C_FILES:.c=.out)
 #
 
 all : components tests
-	@for d in $(SUBDIRS) .; do [ $$d = '.' ] && break; $(MAKE) -C "$$d" all; done
+	@for d in $(SUBDIRS) .; do [ $$d = '.' ] && break; $(MAKE) -wC "$$d" all; done
 
 components : early $(GEN_H_FILES) $(GEN_C_FILES) libs bins
 
@@ -135,24 +135,24 @@ run-test : tests
 	@set -ex; for f in $(TEST_T_FILES); do \
 	  $$f ;\
 	done
-	@for d in $(SUBDIRS) .; do [ $$d = '.' ] && break; $(MAKE) -C "$$d" run-test; done
+	@for d in $(SUBDIRS) .; do [ $$d = '.' ] && break; $(MAKE) -wC "$$d" run-test; done
 
 test : tests
 	@echo "Testing:"
 	$(BASE_DIR)/tool/t run $(TEST_FILES)
-	@for d in $(SUBDIRS) .; do [ $$d = '.' ] && break; $(MAKE) -C "$$d" test; done
+	@for d in $(SUBDIRS) .; do [ $$d = '.' ] && break; $(MAKE) -wC "$$d" test; done
 
 valgrind : tests
 	@echo "Valgrind:"
 	$(BASE_DIR)/tool/t valgrind $(TEST_FILES)
-	@for d in $(SUBDIRS) .; do [ $$d = '.' ] && break; $(MAKE) -C "$$d" valgrind; done
+	@for d in $(SUBDIRS) .; do [ $$d = '.' ] && break; $(MAKE) -wC "$$d" valgrind; done
 
 accept-test : tests
 	$(BASE_DIR)/tool/t accept $(TEST_FILES)
 
 accept-all-test : tests
 	$(BASE_DIR)/tool/t accept $(TEST_FILES)
-	@for d in $(SUBDIRS) .; do [ $$d = '.' ] && break; $(MAKE) -C "$$d" accept-all-test; done
+	@for d in $(SUBDIRS) .; do [ $$d = '.' ] && break; $(MAKE) -wC "$$d" accept-all-test; done
 
 ######################################################################
 # maint:
@@ -162,8 +162,9 @@ clean :
 	rm -f $(TEST_T_FILES) $(GEN_LIBS) $(GEN_BINS) src/*{.o,.lo,.la} t/*.{t,out} $(GEN_C_FILES) $(GEN_H_FILES) .stats/*
 	rm -rf boot/include
 	find . -name '*.dSYM' -type d -print0 | xargs -0 rm -rf
-	@for d in $(SUBDIRS) .; do [ "$$d" = '.' ] && break; $(MAKE) -C "$$d" clean; done
+	@for d in $(SUBDIRS) .; do [ "$$d" = '.' ] && break; $(MAKE) -wC "$$d" clean; done
 
+veryclean : very-clean
 very-clean : clean
 
 FIND_STAT_FILES= \
@@ -189,4 +190,4 @@ stats :
 	  sort -u > .stats/files.t
 	@comm -23 .stats/files.t .stats/files_gen > .stats/files_t
 	@xargs wc -l < .stats/files_t
-	@for d in $(SUBDIRS) .; do [ "$$d" = '.' ] && break; $(MAKE) -C "$$d" stats; done
+	@for d in $(SUBDIRS) .; do [ "$$d" = '.' ] && break; $(MAKE) -wC "$$d" stats; done
