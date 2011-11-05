@@ -532,10 +532,10 @@ tort_v _tort_m_lisp_repl__print(tort_tp tort_repl *repl, tort_v thing)
 tort_v tort_runtime_initialize_lisp_eval()
 {
   tort_send(tort_s(_dlopen), tort_string_new_cstr("libtortext"));
-  tort_mtable_make("lisp_repl", tort_mt(repl));
-  tort_mtable_make("lisp_formals", 0);
-  tort_mtable_make("lisp_closure", 0);
-  tort_mtable_make("lisp_environment", 0);
+  tort_mtable_new("lisp_repl", tort_mt(repl));
+  tort_mtable_new("lisp_formals", 0);
+  tort_mtable_new("lisp_closure", 0);
+  tort_mtable_new("lisp_environment", 0);
   return 0;
 }
 

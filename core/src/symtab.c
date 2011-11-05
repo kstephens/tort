@@ -86,7 +86,7 @@ tort_v _tort_m_map___load_symtab(tort_thread_param tort_v st, const char *file, 
 		c_name,
 		c_fileline);
 #endif
-	tort_v t_name = tort_symbol_make(c_name);
+	tort_v t_name = tort_symbol_new(c_name);
 	tort_v t_addr = tort_ptr_new(c_addr);
 	if ( c_addr == (void*) tort_ptr_data(t_addr) ) {
 	  tort_send(tort__s(set), st, t_name, t_addr);

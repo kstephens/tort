@@ -62,14 +62,14 @@ tort_v tort_runtime_create_ (int *argcp, char ***argvp, char ***envp)
   /* Create the symbol table. */
   tort_(symbols) = tort_map_create();
   
-  tort__s(lookup) = tort_symbol_make("lookup");
+  tort__s(lookup) = tort_symbol_new("lookup");
   tort_add_method(tort__mt(mtable), "lookup", _tort_m_mtable__lookup);
 
-  tort__s(add_method) = tort_symbol_make("add_method");
+  tort__s(add_method) = tort_symbol_new("add_method");
   tort_add_method(tort__mt(mtable), "add_method", _tort_m_mtable__add_method);
 
-  tort__s(allocate) = tort_symbol_make("allocate");
-  tort_send(tort__s(add_method), tort__mt(mtable), tort__s(allocate), tort_method_make(_tort_m_mtable__allocate, 0));
+  tort__s(allocate) = tort_symbol_new("allocate");
+  tort_send(tort__s(add_method), tort__mt(mtable), tort__s(allocate), tort_method_new(_tort_m_mtable__allocate, 0));
 
   /******************************************************/
 
@@ -103,16 +103,16 @@ tort_v tort_runtime_create_ (int *argcp, char ***argvp, char ***envp)
   tort_(m_mtable) = tort_map_create();
   
   /* Setup the root namespace. */
-  // tort_send(tort__s(set), tort_(root), tort_symbol_make("root"), tort_(root));
-  tort_send(tort__s(set), tort_(root), tort_symbol_make("nil"), tort_nil);
-  tort_send(tort__s(set), tort_(root), tort_symbol_make("true"), tort_true);
-  tort_send(tort__s(set), tort_(root), tort_symbol_make("false"), tort_false);
-  tort_send(tort__s(set), tort_(root), tort_symbol_make("mtable"), tort_(m_mtable));
-  tort_send(tort__s(set), tort_(root), tort_symbol_make("TAG_BITS"), tort_i(TORT_TAG_BITS));
-  tort_send(tort__s(set), tort_(root), tort_symbol_make("WORD_SIZE"), tort_i(sizeof(tort_v)));
+  // tort_send(tort__s(set), tort_(root), tort_symbol_new("root"), tort_(root));
+  tort_send(tort__s(set), tort_(root), tort_symbol_new("nil"), tort_nil);
+  tort_send(tort__s(set), tort_(root), tort_symbol_new("true"), tort_true);
+  tort_send(tort__s(set), tort_(root), tort_symbol_new("false"), tort_false);
+  tort_send(tort__s(set), tort_(root), tort_symbol_new("mtable"), tort_(m_mtable));
+  tort_send(tort__s(set), tort_(root), tort_symbol_new("TAG_BITS"), tort_i(TORT_TAG_BITS));
+  tort_send(tort__s(set), tort_(root), tort_symbol_new("WORD_SIZE"), tort_i(sizeof(tort_v)));
 
 #define tort_d_mt(X) \
-  if ( tort__mt(X) ) tort_send(tort__s(set), tort_(m_mtable), tort_symbol_make(#X), tort__mt(X));
+  if ( tort__mt(X) ) tort_send(tort__s(set), tort_(m_mtable), tort_symbol_new(#X), tort__mt(X));
 #include "tort/d_mt.h"
 
   tort_runtime_initialize_io();

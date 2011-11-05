@@ -3,7 +3,7 @@
 
 (for-each 
   (lambda (case)
-    (let ((c (compiler:make))
+    (let ((c (compiler:new))
 	   (m (car case))
 	   (expected (cadr case))
 	   (func-ptr nil)

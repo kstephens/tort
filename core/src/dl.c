@@ -72,7 +72,7 @@ tort_v _tort_m_string___dlopen(tort_tp tort_string *rcvr)
     st = tort_map_create();
     tort_send(tort_s(_load_symtab), st, file, base_ptr);
     
-    tort_send(tort_s(set), tort_(dl_maps), tort_symbol_make(file), st);
+    tort_send(tort_s(set), tort_(dl_maps), tort_symbol_new(file), st);
 
     tort_send(tort_s(_run_initializers), st);
     tort_send(tort_s(_load_methods), st);

@@ -49,14 +49,14 @@ tort_v _tort_m_slotted_object___add_slot(tort_tp tort_slotted_object *o, tort_v 
     tort_send(tort_s(add), o->_values, value);
   }
 
-  m = tort_method_make(_tort_getter__applyf, tort_i(i));
+  m = tort_method_new(_tort_getter__applyf, tort_i(i));
   // m->name = name;
   tort_send(tort__s(add_method), mtable, name, m);
   // append "=" to name for setter.
   {
     char *setter_str = tort_malloc_atomic(strlen(tort_symbol_charP(name) + 2));
-    tort_v setter_name = tort_symbol_make(strcat(strcpy(setter_str, tort_symbol_charP(name)), "="));
-    m = tort_method_make(_tort_setter__applyf, tort_i(i));
+    tort_v setter_name = tort_symbol_new(strcat(strcpy(setter_str, tort_symbol_charP(name)), "="));
+    m = tort_method_new(_tort_setter__applyf, tort_i(i));
     // m->name = setter_name;
     tort_send(tort__s(add_method), mtable, setter_name, m);
     tort_free_atomic(setter_str);
@@ -98,7 +98,7 @@ tort_v _tort_M_slotted_object__new(tort_tp tort_mtable *mtable, ...)
 
 tort_v tort_runtime_initialize_slotted_object()
 {
-  tort_mtable_make("slotted_object", 0);
+  tort_mtable_new("slotted_object", 0);
   return tort_true;
 }
 

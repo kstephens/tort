@@ -202,7 +202,7 @@ tort_v _tort_m_io__lisp_read (tort_tp tort_v stream)
 #define SYMBOL_unquote_splicing() tort_s(unquoteSUBsplicing)
 #define SYMBOL(NAME) SYMBOL_##NAME()
 #define STRING_2_NUMBER(s, radix) _tort_string_to_number(s, radix)
-#define STRING_2_SYMBOL(s) tort_symbol_make(tort_string_data(s))
+#define STRING_2_SYMBOL(s) tort_symbol_new(tort_string_data(s))
 #define EQ(X, Y) ((X) == (Y))
 #define NIL tort_nil
 #define T  tort_true
@@ -224,8 +224,8 @@ tort_v _tort_string_to_number(tort_v s, int radix) /**/
 
 tort_v tort_runtime_initialize_lisp()
 {
-  tort_v _mt_cons = tort_mtable_make("cons", tort_mt(pair));
-  tort_mtable_make("list", 0);
+  tort_v _mt_cons = tort_mtable_new("cons", tort_mt(pair));
+  tort_mtable_new("list", 0);
 
   /* Dependency. */
   tort_send(tort_s(_dlopen), tort_string_new_cstr("libtortext"));

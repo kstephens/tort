@@ -56,7 +56,7 @@ static void *allocate(size_t size)
 
 tort_v tort_runtime_initialize_fiber()
 {
-  tort_v _mt_fiber = tort_mtable_make("fiber", tort_mt(object));
+  tort_v _mt_fiber = tort_mtable_new("fiber", tort_mt(object));
 
   __tort_fiber_allocate = allocate;
 

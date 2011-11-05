@@ -25,10 +25,10 @@ tort_symbol* _tort_M_symbol___create(tort_tp tort_mtable *mtable, tort_v name)
 
 tort_symbol* _tort_M_symbol__new(tort_tp tort_mtable *mtable, tort_v name)
 {
-  return tort_symbol_make(name != tort_nil ? tort_string_data(name) : 0);
+  return tort_symbol_new(name != tort_nil ? tort_string_data(name) : 0);
 }
 
-tort_symbol* tort_symbol_make(const char *string)
+tort_symbol* tort_symbol_new(const char *string)
 {
   if ( string ) {
     tort_pair *e = _tort_m_map__get_entry_cstr(tort_ta tort_(symbols), string);
@@ -49,7 +49,7 @@ tort_symbol* tort_symbol_make(const char *string)
 
 tort_v tort_runtime_initialize_symbol()
 {
-#define tort_d_s(N) tort__s(N) = tort_symbol_make(tort_symbol_encode(#N));
+#define tort_d_s(N) tort__s(N) = tort_symbol_new(tort_symbol_encode(#N));
 #include "tort/d_s.h"
 
   /* Prepare special symbol table get method. */

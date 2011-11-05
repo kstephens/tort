@@ -155,6 +155,7 @@
 	 (args (cdr name-and-args)))
     `(begin
        ('add_method ,mtable ,name (lambda ',args ,@body))
+       (display `(method ,mtable ,name))(newline)
        (list ,mtable ,name))))
 
 (define (%reduce f l)

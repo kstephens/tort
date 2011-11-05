@@ -23,7 +23,7 @@ int main(int argc, char **argv, char **environ)
   P(tort_i(123));
   P(tort_string_new_cstr("cstring"));
   P(tort__s(new));
-  P(tort_object_make());
+  P(tort_object_new());
 
   P(_tort);
   P(tort_(root));

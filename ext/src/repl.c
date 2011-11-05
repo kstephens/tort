@@ -82,7 +82,7 @@ tort_v _tort_m_repl__run(tort_tp tort_repl *repl)
 
 tort_v tort_runtime_initialize_repl()
 {
-  tort_mtable_make("repl", 0);
+  tort_mtable_new("repl", 0);
   return tort_nil;
 }
 

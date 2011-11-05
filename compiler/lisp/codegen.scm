@@ -1,40 +1,51 @@
 (define-struct reg
-  (name  "")
+  (name  'UNKNOWN)
   (width 8))
 (set! &trace 1)
 (set! &macro-trace 1)
-(define-method reg ('_emit self stream args)
-  ('emit stream name))
+(define-method reg ('_emit self stream)
+  ('emit stream ('name self)))
 (set! &macro-trace 0)
 (set! &trace 0)
 
 (define-struct reg-off
-  (reg nil)
-  (offset nil))
-(define-method reg-off ('_emit self stream args) 
+  (reg    'UNKNOWN-REG)
+  (offset 0))
+(define-method reg-off ('_emit self stream) 
   ('emit stream ('offset self) "(" ('reg self) ")"))
 
-(define-struct isn
-  (name #f)
-  (nargs 2))
-(define-method isn ('new self name args)
+(define-struct opcode
+  (name    'UNKNOWN)
+  (n-param 2))
+(define-method opcode ('new self name n-param)
   ('name= self name)
-  ('nargs= self args))
+  ('n-param= self n-param))
 
-(define-method isn ('_emit self stream args)
-  ('emit stream ('name self) " ")
-  (let ((sep " ") (arg-i 0))
-    (for-each (lambda (arg)
-		('emit stream sep arg)
-		(set! arg-i (+ arg-i 1))
-		(cond
-		  ((= arg-i (isn-nargs self))
-		    (set! sep " // "))
-		  ((> arg-i (isn-nargs self))
-		    (set! sep " "))
-		  (else
-		    (set! sep ", "))))
-      args))
+(define-method opcode ('_emit self stream)
+  ('emit stream ('name self) " "))
+
+(define-struct isn
+  (opcode 'UNKNOWN)
+  (args   '()))
+(define-method isn ('new self opcode args)
+  ('opcode= self opcode)
+  ('args= self args))
+(define-method isn ('_emit self stream)
+  (let ((sep " ") (arg-i 0) (opcode ('opcode self)))
+    ('emit stream opcode)
+    (for-each
+      (lambda (arg)
+	('emit stream sep arg)
+	(set! arg-i (+ arg-i 1))
+	(set! sep 
+	  (cond
+	    ((< arg-i ('n-param opcode))
+	      ", ")
+	    ((= arg-i ('n-param opcode))
+	      " // ")
+	    (else
+	      " "))))
+      ('args self)))
   ('emit stream "\n"))
 
 (define-struct label
@@ -42,24 +53,30 @@
   (position #f)
   (references '())
   )
-(define-method label ('_emit self stream args)
-  ('emit stream (label:name self))
-  ('emit stream ":\n" self))
+(define-method label ('_emit self stream)
+  ('emit stream ('name self) ":\n")
+  ('labels= stream (cons self ('labels stream))))
 
 (define-struct isn-stream
-  (body (string-new))
+  (body    (string-new))
   (labels '()))
-(define-method isn-stream ('emit self obj . args)
-  (cond
-    ((string? obj)
-      (display obj (isn-stream:body self)))
-    ((or (symbol? obj) (number? obj))
-      (display obj (isn-stream:body self)))
-    (else
-      ('_emit obj self args))))
+(set! &trace 1)
+(define-method isn-stream ('emit self . objs)
+  (for-each 
+    (lambda (obj)
+      (cond
+	((or (string? obj) (symbol? obj) (number? obj))
+	  (display obj ('body self)))
+	(else
+	  ('_emit obj self))))
+    objs)
+  self)
+(set! &trace 0)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define s ('new isn-stream))
+(set! &trace 0)
+(display "\ns=\n")(write s)(newline)
 ('emit s "// hello, world\n")
 (display "\nCode:\n")(display ('body s))(display "\n")

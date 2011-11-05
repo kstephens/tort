@@ -211,9 +211,9 @@ const char *tort_symbol_charP(tort_v sym)
 }
 #define tort_symbol_data(X) tort_symbol_charP(X)
 
-tort_symbol* tort_symbol_make(const char *string);
+tort_symbol* tort_symbol_new(const char *string);
 const char *tort_symbol_encode(const char *in);
-tort_symbol* tort_symbol_make_encode(const char *string);
+tort_symbol* tort_symbol_new_encode(const char *string);
 
 struct tort_method { tort_H;
   tort_apply_decl((*applyf)); /* Must be first element */
@@ -381,26 +381,26 @@ tort_v _tort_allocate (tort_tp tort_v meth_table, size_t size);
 #endif
 
 #if TORT_MULTIPLICITY
-#define tort_s(X) tort_symbol_make_encode(#X)
+#define tort_s(X) tort_symbol_new_encode(#X)
 #define tort_mt(X) tort_mtable_get(#X)
 #else
-#define tort_s(X)  ({ static tort_v _s_##X;  _s_##X ?  _s_##X :  (_s_##X  = tort_symbol_make_encode(#X)); })
+#define tort_s(X)  ({ static tort_v _s_##X;  _s_##X ?  _s_##X :  (_s_##X  = tort_symbol_new_encode(#X)); })
 #define tort_mt(X) ({ static tort_v _mt_##X; _mt_##X ? _mt_##X : (_mt_##X = tort_mtable_get(#X)); })
 #endif
 #define tort__s(X) tort_(_s_##X)
 #define tort__mt(X) tort_(_mt_##X)
 
-tort_v tort_object_make ();
+tort_v tort_object_new ();
 
 tort_mtable* tort_mtable_create();
 tort_mtable* tort_mtable_get (const char *string);
 tort_mtable* tort_mtable_set (const char *string, tort_v mtable);
-tort_mtable* tort_mtable_make (const char *string, tort_v parent);
+tort_mtable* tort_mtable_new (const char *string, tort_v parent);
 
-tort_method* tort_method_make (void *applyf, tort_v data);
-tort_method* tort_offset_getter_make (tort_v offset);
-tort_method* tort_offset_setter_make (tort_v offset);
-tort_method* tort_constant_getter_make (tort_v value);
+tort_method* tort_method_new (void *applyf, tort_v data);
+tort_method* tort_offset_getter_new (tort_v offset);
+tort_method* tort_offset_setter_new (tort_v offset);
+tort_method* tort_constant_getter_new (tort_v value);
 
 tort_v tort_add_method(tort_v map, const char *name, void *applyf);
 tort_v tort_add_class_method(tort_v map, const char *name, void *applyf);

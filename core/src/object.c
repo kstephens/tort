@@ -58,7 +58,7 @@ tort_v _tort_m_object___set_slot_at (tort_tp tort_v rcvr, tort_v offset, tort_v 
   return ((tort_v*) rcvr)[tort_I(offset)] = value;
 }
 
-tort_v tort_object_make()
+tort_v tort_object_new()
 {
   tort_v obj = tort_allocate(tort__mt(object), sizeof(tort_object));
   return obj;

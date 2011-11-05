@@ -61,7 +61,7 @@ tort_v _tort_m_mtable__add_method (tort_tp tort_mtable *mtable, tort_symbol *sym
   if ( method->name == tort_nil || method->name == 0 ) {
     char *buf = tort_malloc(strlen(tort_mtable_name_(mtable)) + 2 + strlen(tort_symbol_charP(symbol)) + 1);
     sprintf(buf, "%s::%s", tort_mtable_name_(mtable), tort_symbol_charP(symbol));
-    method->name = tort_symbol_make(buf);
+    method->name = tort_symbol_new(buf);
   }
   _tort_m_symbol___version_change(tort_ta symbol);
 #if TORT_ANON_SYMBOL_MTABLE
@@ -102,8 +102,8 @@ tort_v _tort_m_mtable__alias_method (tort_tp tort_mtable *mtable, tort_symbol *s
 
 tort_v tort_add_method(tort_v mtable, const char *name, void *applyf)
 {
-  tort_v sym = tort_symbol_make(name);
-  tort_v meth = tort_method_make(applyf, 0);
+  tort_v sym = tort_symbol_new(name);
+  tort_v meth = tort_method_new(applyf, 0);
   return _tort_m_mtable__add_method(tort_thread_arg mtable, sym, meth);
 }
 
@@ -149,14 +149,14 @@ tort_v _tort_M_mtable__new(tort_tp tort_mtable *mtable, tort_v delegate)
 
 tort_mtable* tort_mtable_get(const char *name)
 {
-  tort_v sym = tort_symbol_make(name);
+  tort_v sym = tort_symbol_new(name);
   tort_v mt = tort_send(tort__s(get), tort_(m_mtable), sym);
   return mt;
 }
 
-tort_mtable* tort_mtable_make(const char *name, tort_v parent)
+tort_mtable* tort_mtable_new(const char *name, tort_v parent)
 {
-  tort_v sym = tort_symbol_make(name);
+  tort_v sym = tort_symbol_new(name);
   tort_v mt = tort_send(tort__s(get), tort_(m_mtable), sym);
   if ( mt == tort_nil ) {
     mt = tort_mtable_create(parent ? parent : tort__mt(object));

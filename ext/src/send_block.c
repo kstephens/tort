@@ -29,7 +29,7 @@ tort_v _tort_M_send_block__new(tort_tp tort_mtable* mtable, tort_v selector) /* 
 
 tort_v tort_runtime_initialize_send_block()
 {
-  tort_mtable_make("send_block", 0);
+  tort_mtable_new("send_block", 0);
   return tort_true;
 }
 
