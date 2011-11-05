@@ -14,7 +14,7 @@ int main(int argc, char **argv, char **environ)
 {
   tort_v io;
   tort_runtime_create();
-  tort_(_m_method_not_found) = tort_method_make(not_found);
+  tort_(_m_method_not_found) = tort_method_make(not_found, 0);
   io = tort_stdout;
   tort_send(tort_s(foobar), io);
   assert(not_found_rcvr == io);

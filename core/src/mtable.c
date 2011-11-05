@@ -2,13 +2,13 @@
 
 unsigned long _tort_alloc_id = 0;
 
-tort_v _tort_allocate(tort_thread_param tort_v mtable, size_t size
+tort_v _tort_allocate(tort_tp tort_v mtable, size_t size
 #if TORT_ALLOC_DEBUG
 		      ,const char *alloc_file, int alloc_line
 #endif
 )
 {
-  tort_v val = _tort_m_mtable___allocate(tort_thread_arg mtable, size);
+  tort_v val = _tort_m_mtable___allocate(tort_ta mtable, size);
 #if TORT_ALLOC_DEBUG
   tort_h_ref(val)->alloc_file = alloc_file;
   tort_h_ref(val)->alloc_line = alloc_line;
@@ -103,7 +103,7 @@ tort_v _tort_m_mtable__alias_method (tort_tp tort_mtable *mtable, tort_symbol *s
 tort_v tort_add_method(tort_v mtable, const char *name, void *applyf)
 {
   tort_v sym = tort_symbol_make(name);
-  tort_v meth = tort_method_make(applyf);
+  tort_v meth = tort_method_make(applyf, 0);
   return _tort_m_mtable__add_method(tort_thread_arg mtable, sym, meth);
 }
 

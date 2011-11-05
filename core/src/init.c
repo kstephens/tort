@@ -69,7 +69,7 @@ tort_v tort_runtime_create_ (int *argcp, char ***argvp, char ***envp)
   tort_add_method(tort__mt(mtable), "add_method", _tort_m_mtable__add_method);
 
   tort__s(allocate) = tort_symbol_make("allocate");
-  tort_send(tort__s(add_method), tort__mt(mtable), tort__s(allocate), tort_method_make(_tort_m_mtable__allocate));
+  tort_send(tort__s(add_method), tort__mt(mtable), tort__s(allocate), tort_method_make(_tort_m_mtable__allocate, 0));
 
   /******************************************************/
 

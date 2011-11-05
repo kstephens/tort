@@ -33,43 +33,32 @@ static tort_v _tort_setter__applyf(tort_tp tort_slotted_object *o, tort_v v)
   return o;
 }
 
-tort_v _tort_M_slotted_object__make_slot_getter(tort_tp tort_mtable *mtable, tort_v name, tort_v i)
-{
-  tort_method *m = tort_method_make(_tort_getter__applyf);
-  m->name = name;
-  m->data = i;
-  return m;
-}
-
-tort_v _tort_M_slotted_object__make_slot_setter(tort_tp tort_mtable *mtable, tort_v name, tort_v i)
-{
-  tort_method *m = tort_method_make(_tort_setter__applyf);
-  m->name = name;
-  m->data = i;
-  return m;
-}
-
 tort_v _tort_m_slotted_object___add_slot(tort_tp tort_slotted_object *o, tort_v name, tort_v value)
 {
   tort_vi i = o->_names == tort_nil ? 0 : tort_vector_size(o->_names);
   tort_mtable *mtable = tort_h_mtable(o);
   tort_v mmtable = tort_h_mtable(mtable);
+  tort_method *m;
+
   mmtable = mtable->delegate; // ???
   if ( o->_names == tort_nil ) {
-    o->_names = tort_vector_new(&name,  i + 1);
+    o->_names  = tort_vector_new(&name,  i + 1);
     o->_values = tort_vector_new(&value, i + 1);
   } else {
-    tort_send(tort_s(add), o->_names, name);
+    tort_send(tort_s(add), o->_names,  name);
     tort_send(tort_s(add), o->_values, value);
   }
-  tort_send(tort__s(add_method), mtable, name, 
-	    tort_send(tort_s(make_slot_getter), mmtable, name, tort_i(i)));
+
+  m = tort_method_make(_tort_getter__applyf, tort_i(i));
+  // m->name = name;
+  tort_send(tort__s(add_method), mtable, name, m);
   // append "=" to name for setter.
   {
     char *setter_str = tort_malloc_atomic(strlen(tort_symbol_charP(name) + 2));
     tort_v setter_name = tort_symbol_make(strcat(strcpy(setter_str, tort_symbol_charP(name)), "="));
-    tort_send(tort__s(add_method), mtable, setter_name,
-	      tort_send(tort_s(make_slot_setter), mmtable, setter_name, tort_i(i)));
+    m = tort_method_make(_tort_setter__applyf, tort_i(i));
+    // m->name = setter_name;
+    tort_send(tort__s(add_method), mtable, setter_name, m);
     tort_free_atomic(setter_str);
   }
   return o;
