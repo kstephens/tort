@@ -23,7 +23,7 @@ LIB_FLAGS += -rpath $(libdir) #
 CFLAGS_DEBUG = -g #
 CFLAGS_OPTIMIZE = -O2
 CFLAGS_OPTIMIZE = -O3
-CFLAGS_OPTIMIZE = 
+#CFLAGS_OPTIMIZE = 
 CFLAGS += -DTORT_DLIB_DIR='"$(libdir)"' #
 CFLAGS += -DTORT_GC=$(TORT_GC) #
 CFLAGS += -fnested-functions #
