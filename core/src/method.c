@@ -13,6 +13,36 @@ tort_method* tort_method_make(void *applyf, tort_v data)
   return meth;
 }
 
+tort_method* tort_offset_getter_make(tort_v offset)
+{
+  return tort_method_make(_tort_offset_getter__applyf, offset);
+}
+tort_v _tort_offset_getter__applyf(tort_tp void *o)
+{
+  assert(_tort_message->argc >= tort_i(1));
+  return *(tort_v*)(o + tort_I(_tort_message->method->data));
+}
+
+tort_method* tort_offset_setter_make(tort_v offset)
+{
+  return tort_method_make(_tort_offset_setter__applyf, offset);
+}
+tort_v _tort_offset_setter__applyf(tort_tp void *o, tort_v v)
+{
+  assert(_tort_message->argc >= tort_i(2));
+  *(tort_v*)(o + tort_I(_tort_message->method->data)) = v;
+  return o;
+}
+
+tort_v _tort_constant_getter__applyf(tort_tp tort_v *o, tort_v v)
+{
+  return _tort_message->method->data;
+}
+tort_method* tort_constant_getter_make(tort_v value)
+{
+  return tort_method_make(_tort_constant_getter__applyf, value);
+}
+
 tort_v tort_runtime_initialize_method()
 {
 #define tort_d_m(MT, S, F) \
