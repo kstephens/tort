@@ -68,7 +68,10 @@
        ;; (set! &trace 0)
        args)
      ;; (set! &trace 0)
-     ('add_method ',mtable 'new 'new_lambda_name)
+     ('add_method ',('_mtable mtable) 'new 
+       (lambda (mtable . args)
+	 (,new_lambda_name)))
+     (display `(struct ,name))(display " => ")(write ',mtable)(newline)
      ',mtable
      )))
 
