@@ -422,7 +422,7 @@ tort_v _tort_m_symbol__lisp_eval_car(tort_tp tort_v obj, tort_v env)
 
 tort_v _tort_m_object__lisp_eval_car(tort_tp tort_v obj, tort_v env)
 {
-  if ( _tort_lisp_trace ) {
+  if ( _tort_lisp_trace > 1 ) {
     tort_v val = tort_send(tort_s(lisp_eval), obj, env);
     tort_printf(tort_stderr, "   EC %O => %O\n", obj, val);
     return val;
