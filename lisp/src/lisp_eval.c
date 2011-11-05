@@ -221,7 +221,7 @@ tort_v _tort_m_lisp_environment__get(tort_tp tort_lisp_environment *env, tort_v 
       return_tort_send(tort__s(get), env->argv, index);
     } else {
       if ( env->parent == tort_nil ) {
-	return tort_error(tort_ta "get: symbol %O is unbound", name);
+	return tort_error(tort_ta "get: symbol '%O is unbound.", name);
       } else {
 	return_tort_send(tort__s(get), env->parent, name);
       }
@@ -245,7 +245,7 @@ tort_v _tort_m_lisp_environment__set(tort_tp tort_lisp_environment *env, tort_v 
       tort_send(tort__s(set), env->argv, index, value);
     } else {
       if ( env->parent == tort_nil ) {
-	tort_error(tort_ta "set!: symbol %O is unbound", name);
+	tort_error(tort_ta "set!: symbol '%O is unbound.", name);
       } else {
 	tort_send(tort__s(set), env->parent, name, value);
       }
