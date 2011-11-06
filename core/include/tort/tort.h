@@ -268,6 +268,7 @@ struct tort_runtime { tort_H;
   tort_v _io_stdout;
   tort_v _io_stderr;
   tort_v _io_eos;
+  tort_v _printf_dispatch;
 
   /* globals */
   tort_v m_mtable; /* map of symbol to mtable. */

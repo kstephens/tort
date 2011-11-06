@@ -13,23 +13,17 @@ tort_v _tort_m_object___printfv(tort_tp tort_io *io, const char *format, const c
 {
 #define vap (*vapp)
   const char *b = format, *e;
-
   while ( b < fe ) {
     size_t size;
-
     e = b;
     while ( e < fe && *e != '%' )
       ++ e;
-
     if ( (size = e - b) )
       tort_send(tort__s(__write), io, b, size);
-
     b = e;
     if ( b >= fe ) break;
-
     if ( *b == '%' ) {
-      int l = 0;
-      int done = 0;
+      int l = 0, done = 0, c;
       char fmt[16], *fp = fmt;
       *(fp ++) = *(b ++);
 #define FMT (*fp = 0, fmt)
@@ -37,10 +31,11 @@ tort_v _tort_m_object___printfv(tort_tp tort_io *io, const char *format, const c
 	if ( fp >= fmt + sizeof(fmt) ) abort();
 	if ( ! (b < fe) ) break;
 	fp[1] = 0;
-	switch ( (*(fp ++) = *(b ++)) ) {
+	switch ( (c = (*(fp ++) = *(b ++))) ) {
 	case 0:
 	  abort();
 	  break;
+	case '-': case '0' ... '9': break;
 	case 'l':
 	  ++ l;
 	  break;
@@ -82,24 +77,23 @@ tort_v _tort_m_object___printfv(tort_tp tort_io *io, const char *format, const c
 	case 'T':
 	  tort_send(tort__s(_inspect), va_arg(vap, tort_v), io);
 	  done = 1; break;
-	case 'S':
+	default:
 	  {
-	    tort_v val = va_arg(vap, tort_v);
-	    if ( (val = tort_send(tort__s(_to_string), val)) != tort_nil ) {
-	      tort_send(tort__s(_write), io, val);
+	    char name[2] = { c, 0 }; 
+	    tort_v sym = tort_symbol_new(name);
+	    sym = tort_send(tort__s(get), tort_(_printf_dispatch), sym);
+	    if ( sym != tort_nil ) {
+	      tort_send(sym, io, va_arg(vap, tort_v));
+	      done = 1;
+	    } else {
+	      return tort_error(tort_ta "invalid format char '%c'", c);
 	    }
 	  }
-	  done = 1; break;
-	case 'O':
-	  tort_send(tort_s(lisp_write), va_arg(vap, tort_v), io);
-	  done = 1; break;
-	default:
 	  break;
 	}
       } while ( ! done );
     }
   }
-
 #undef vap
   return io;
 }
@@ -204,7 +198,16 @@ tort_v _tort_m_object____printfs(tort_tp tort_v io, const char *fmt, ...)
   return io;
 }
 
+tort_v _tort_m_io__printf_as_string(tort_tp tort_v io, tort_v val)
+{
+  if ( (val = tort_send(tort__s(_to_string), val)) != tort_nil )
+    return_tort_send(tort__s(_write), io, val);
+  return tort_nil;
+}
+
 tort_v tort_runtime_initialize_printf()
 {
+  tort_v map = tort_(_printf_dispatch) = tort_map_create();  // FIXME: tort_map_new()
+  tort_send(tort_s(set), map, tort_s(S), tort_s(printf_as_string));
   return tort__mt(io);
 }
