@@ -3,7 +3,7 @@ tort - Tiny Object RunTime
 
 Inspired by Ian Piumarta's idst, maru and other small runtimes.
 
-Core is under 3000 lines of C.
+Core is approx. 3700 lines of C.
 
 Supports:
 
@@ -28,18 +28,20 @@ Supports:
 ** Fully recursive lookup() delegation.
 ** Message objects allocated on C stack.
 ** Supports tail recursion.
-** Support method aliasing.
+** Supports method aliasing.
 * Can be linked against BDW GC library.
 * Configurable.
 
 Extensions are dynamically loaded:
 
-* Dynamic library loading with automatic initialization, method discovery and installation.
+* Dynamic library loading with automatic initialization, method installation.
+
 * Example Extension Library.
-** Lexical blocks using GCC nested functions.
+** Lexical blocks in C using GCC nested functions.
 ** Fibers.
 ** Object graphing using graphviz/dot.
-** catch/throw support.
+** Catch/throw support.
+
 * LISP Extension Library.
 ** Conses.
 ** Lisp reader.
@@ -51,4 +53,4 @@ Extensions are dynamically loaded:
 *** Lambdas can be used as object blocks.
 *** Methods can be called using ('symbol rcvr . args) syntax.
 ** Basic Scheme-like semantics boot-strapped from objects and lisp.
-** PRELIMINARY x86-64 JIT compiler written in scheme.
+** PRELIMINARY x86-64 compiler written in scheme.
