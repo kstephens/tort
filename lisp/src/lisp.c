@@ -105,7 +105,7 @@ tort_v _tort_m_list__list_TO_vector(tort_tp tort_v rcvr, tort_v io) /**/
 
 tort_v _tort_m_object__lisp_write(tort_tp tort_v rcvr, tort_v io)
 {
-  printf("(make <object> @%p)", (void *) rcvr);
+  printf("#@%p", (void *) rcvr);
   return tort_nil;
 }
 
@@ -125,7 +125,7 @@ tort_v _tort_m_symbol__lisp_write(tort_tp tort_symbol *rcvr, tort_v io)
   if ( rcvr->name != tort_nil ) {
     printf("%s", (char *) tort_symbol_data(rcvr));
   } else {
-    printf("(make <symbol> @%p)", (void*) rcvr);
+    printf("#<<symbol> #@%p>", (void*) rcvr);
   }
   return tort_nil;
 }
@@ -145,7 +145,7 @@ tort_v _tort_m_boolean__lisp_write(tort_tp tort_v rcvr, tort_v io)
 tort_v _tort_m_map__lisp_write(tort_tp tort_v rcvr, tort_v io)
 {
   size_t entry_i = 0;
-  printf("(make <map> ");
+  printf("('new <map> ");
   tort_map_EACH(rcvr, entry) {
     if ( entry_i > 0 ) printf(" ");
     tort_send(tort_s(lisp_write), entry->first, IO);
@@ -171,7 +171,6 @@ tort_v _tort_m_eos__lisp_write(tort_tp tort_v rcvr, tort_v io)
 
 #undef printf
 #undef IO
-
 
 /********************************************************************/
 
