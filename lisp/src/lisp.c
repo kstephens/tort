@@ -183,8 +183,8 @@ tort_v _tort_m_io__lisp_read (tort_tp tort_v stream)
 #define VALUE tort_v
 #define READ_DECL VALUE _tort_m_io__lisp_read (tort_tp tort_v stream)
 #define READ_CALL() tort_send(tort_s(lisp_read), stream)
-#define MALLOC(s) tort_malloc(s)
-#define REALLOC(p, s) tort_realloc(p, s)
+#define MALLOC(s) tort_malloc_atomic(s)
+#define REALLOC(p, s) tort_realloc_atomic(p, s)
 #define GETC(s) fgetc(FP(s))
 #define UNGETC(s, c) ungetc(c, FP(s))
 #define EOS tort_eos
