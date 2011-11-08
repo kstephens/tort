@@ -75,6 +75,11 @@ tort_v _tort_m_vector_base___resize (tort_tp tort_vector_base *v, size_t size)
   return v;
 }
 
+tort_v _tort_m_vector_base__emptyE (tort_tp tort_vector_base *v)
+{
+  return_tort_send(tort__s(_resize), v, 0);
+}
+
 tort_v _tort_m_vector_base___append (tort_tp tort_vector_base *v, const void *datap, size_t data_count)
 {
   size_t size = v->size;

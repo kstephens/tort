@@ -423,5 +423,14 @@ void tort_gc_collect();
 void tort_gc_dump_stats();
 void tort_gc_invoke_finalizers();
 
+typedef struct tort_dynlib { tort_H;
+  tort_map _map; /* same layout as map. */
+  tort_v name;
+  tort_v path;
+  tort_v error;
+  tort_v base_sym;
+  tort_v base_ptr;
+} tort_dynlib;
+
 #endif
 

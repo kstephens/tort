@@ -1,8 +1,6 @@
 #include "tort/tort.h"
 #include "tort/internal.h"
 #include "tort/init.h"
-#include "tort/symtab.h"
-
 
 #if TORT_MULTIPLICITY
 tort_runtime *_tort;
@@ -118,16 +116,12 @@ tort_v tort_runtime_create_ (int *argcp, char ***argvp, char ***envp)
   tort_runtime_initialize_io();
   tort_runtime_initialize_write();
   tort_runtime_initialize_debug();
-
-  tort_runtime_initialize_symtab();
+  tort_runtime_initialize_dynlib();
 
   tort_(_initialized) = tort_true;
 
   // fprintf(stderr, "\ntort: initialized\n");
 
-  tort_runtime_initialize_dl();
-
   return tort_ref_box(_tort);
 }
-
 

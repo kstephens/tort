@@ -214,6 +214,9 @@ tort_v tort_runtime_initialize_mtable()
   tort__mt(io)     = tort_mtable_create(tort__mt(object));
   tort__mt(eos)    = tort_mtable_create(tort__mt(object));
 
+  /* dynlib */
+  tort__mt(dynlib) = tort_mtable_create(tort__mt(map));
+
   /* force references for extensions. */
   (void) tort__mt(block);
 

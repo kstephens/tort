@@ -10,10 +10,9 @@ include/tort/init.h
 include/tort/integer.h
 include/tort/internal.h
 include/tort/ops.h
-include/tort/symtab.h
 include/tort/tort.h
 src/debug.c
-src/dl.c
+src/dynlib.c
 src/error.c
 src/gc.c
 src/gc_null.c
@@ -38,6 +37,8 @@ src/vector.c
 src/write.c
 */
 tort_d_m(tort__mt(boolean), tort__s(_inspect), _tort_m_boolean___inspect)
+tort_d_m(tort__mt(dynlib), tort__s(_load_symtab), _tort_m_dynlib___load_symtab)
+tort_d_m(tort__mt(dynlib), tort__s(dlopen), _tort_m_dynlib__dlopen)
 tort_d_m(tort__mt(fixnum), tort__s(ADD), _tort_m_fixnum__ADD)
 tort_d_m(tort__mt(fixnum), tort__s(AND), _tort_m_fixnum__AND)
 tort_d_m(tort__mt(fixnum), tort__s(DIV), _tort_m_fixnum__DIV)
@@ -74,7 +75,6 @@ tort_d_m(tort__mt(io), tort__s(popen), _tort_m_io__popen)
 tort_d_m(tort__mt(io), tort__s(printf_as_string), _tort_m_io__printf_as_string)
 tort_d_m(tort__mt(io), tort__s(read), _tort_m_io__read)
 tort_d_m(tort__mt(map), tort__s(_inspect), _tort_m_map___inspect)
-tort_d_m(tort__mt(map), tort__s(_load_symtab), _tort_m_map___load_symtab)
 tort_d_m(tort__mt(map), tort__s(add), _tort_m_map__add)
 tort_d_m(tort__mt(map), tort__s(clone), _tort_m_map__clone)
 tort_d_m(tort__mt(map), tort__s(delete), _tort_m_map__delete)
@@ -209,7 +209,9 @@ tort_d_m(tort__mt(vector_base), tort__s(alloc_size), _tort_m_vector_base__alloc_
 tort_d_m(tort__mt(vector_base), tort__s(append), _tort_m_vector_base__append)
 tort_d_m(tort__mt(vector_base), tort__s(clone), _tort_m_vector_base__clone)
 tort_d_m(tort__mt(vector_base), tort__s(element_size), _tort_m_vector_base__element_size)
+tort_d_m(tort__mt(vector_base), tort__s(emptyE), _tort_m_vector_base__emptyE)
 tort_d_m(tort__mt(vector_base), tort__s(size), _tort_m_vector_base__size)
+tort_d_m(tort_h_ref(tort__mt(dynlib))->mtable, tort__s(new), _tort_M_dynlib__new)
 tort_d_m(tort_h_ref(tort__mt(fixnum))->mtable, tort__s(_ops), _tort_M_fixnum___ops)
 tort_d_m(tort_h_ref(tort__mt(io))->mtable, tort__s(__create), _tort_M_io____create)
 tort_d_m(tort_h_ref(tort__mt(io))->mtable, tort__s(__stat), _tort_M_io____stat)
