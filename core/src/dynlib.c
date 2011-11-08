@@ -278,9 +278,6 @@ tort_v _tort_m_dynlib___load_symtab(tort_tp tort_v st, const char *file, void *p
 tort_v tort_runtime_initialize_dynlib()
 {
   tort_v st;
-
-  _tort_dl_debug = 9;
-
   {
     const char *s = getenv("TORT_DL_DEBUG");
     _tort_dl_debug = s && *s ? atoi(s) : 0;
@@ -293,7 +290,6 @@ tort_v tort_runtime_initialize_dynlib()
   st = tort_send(tort__s(new), tort__mt(dynlib));
   _tort_m_dynlib___load_symtab(tort_ta st, tort_(_argv)[0], 0);
   tort_send(tort__s(set), tort_(root), tort_s(core_symtab), st);
-
   return st;
 }
 
