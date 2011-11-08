@@ -309,6 +309,15 @@ void og_object(tort_og_context *context, tort_v obj)
     SLOT(delegate);
     goto map;
   }
+  else if ( mt == tort__mt(dynlib) ) {
+    tort_dynlib *o = obj;
+    SLOT(name);
+    SLOT(path);
+    SLOT(error);
+    SLOT(base_sym);
+    SLOT(base_ptr);
+    goto map;
+  }
   else if ( mt == tort__mt(map) ) {
     int slot_i;
   map: 
