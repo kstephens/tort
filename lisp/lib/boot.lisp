@@ -302,12 +302,12 @@
 	 (env (if (pair? env) (car env) &env))
 	 (repl nil))
     (set! repl ('new <lisp-repl>))
-    ('set_output repl out)
-    ('set_prompt repl out)
-    ('set_env repl env)
+    ('output= repl out)
+    ('prompt= repl out)
+    ('env= repl env)
     (call-with-input-file fname 
       (lambda (f)
-	('set_input repl f)
+	('input= repl f)
 	('run repl)))
     ;; ('result repl) ; FIXME
     ))

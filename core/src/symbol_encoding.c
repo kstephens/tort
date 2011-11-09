@@ -12,6 +12,7 @@ static tort_symbol_mapping mappings[] =
   {
     { "_TO_", "->" },
     { "DOT",  "." },
+    { "SET",  "=" },
 #define UOP(N,OP) { #N, #OP },
 #define LUP(N,OP) { #N, #OP },
 #define BOP(N,OP) { #N, #OP },

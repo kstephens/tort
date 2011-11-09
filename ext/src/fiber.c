@@ -2,15 +2,7 @@
 #include "tort/fiber.h"
 #include <assert.h>
 
-tort_v _tort_m_message__fiber(tort_thread_param tort_message *msg)
-{
-  return msg->fiber;
-}
-
-tort_v _tort_m_message__set_fiber(tort_thread_param tort_message *msg, tort_v fiber)
-{
-  return msg->fiber = fiber;
-}
+tort_ACCESSOR(message,tort_v,fiber);
 
 struct tort_fiber_data
 {
