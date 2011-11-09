@@ -1,12 +1,8 @@
 (define-struct reg
   (name  'UNKNOWN)
   (width 8))
-(set! &trace 1)
-(set! &macro-trace 1)
 (define-method reg ('_emit self stream)
   ('emit stream ('name self)))
-(set! &macro-trace 0)
-(set! &trace 0)
 
 (define-struct reg-off
   (reg    'UNKNOWN-REG)
@@ -60,7 +56,6 @@
 (define-struct isn-stream
   (body    (string-new))
   (labels '()))
-(set! &trace 1)
 (define-method isn-stream ('emit self . objs)
   (for-each 
     (lambda (obj)
@@ -71,12 +66,34 @@
 	  ('_emit obj self))))
     objs)
   self)
-(set! &trace 0)
+
+(for-each 
+  (lambda (x)
+    (define-method isn-stream ((car x) self src dst)
+      ('emit self (cadr x) " " src ", " dst "\n")))
+  '((MOV movq) (SUB subq) (ADD addq) (OR orq) (AND andq)))
+
+(for-each 
+  (lambda (x)
+    (define-method isn-stream ((car x) self src)
+      ('emit self (cadr x) " " src "\n")))
+  '((PUSH pushq) (POP popq) (CALL call))
+
+(define-method isn-stream ('cfunc self env func args)
+  #f
+)
+
+(define-method isn-stream ('ccall self env func args)
+  #f
+)
+
+(define-method isn-stream ('send self env func args)
+  #f
+)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define s ('new isn-stream))
-(set! &trace 0)
 (display "\ns=\n")(write s)(newline)
 ('emit s "// hello, world\n")
 (display "\nCode:\n")(display ('body s))(display "\n")

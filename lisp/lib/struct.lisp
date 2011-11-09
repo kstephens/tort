@@ -71,7 +71,7 @@
      ('add_method ',('_mtable mtable) 'new 
        (lambda (mtable . args)
 	 (,new_lambda_name)))
-     (display `(struct ,name))(display " => ")(write ',mtable)(newline)
+     ;; (display `(struct ,name))(display " => ")(write ',mtable)(newline)
      ',mtable
      )))
 
