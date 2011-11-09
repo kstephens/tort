@@ -343,11 +343,10 @@
 ('add_method <string> '+ (lambda (a b) ('append ('clone a) b)))
 
 (display ";; boot.lisp complete!")(newline)
+;; ('_inspect ('get &root '_printf_dispatch) *standard-output*)(newline)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; (set! *load-debug* #t)
 ; (set! &trace 1)
 (load "lisp/lib/struct.lisp")
 (load "compiler/lisp/compiler.scm")
-
-

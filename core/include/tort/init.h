@@ -7,6 +7,7 @@ tort_v tort_runtime_initialize_mtable();
 tort_v tort_runtime_initialize_symbol();
 tort_v tort_runtime_initialize_gc();
 tort_v tort_runtime_initialize_io();
+tort_v tort_runtime_initialize_printf();
 tort_v tort_runtime_initialize_write();
 tort_v tort_runtime_initialize_debug();
 tort_v tort_runtime_initialize_method();

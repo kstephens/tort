@@ -114,6 +114,7 @@ tort_v tort_runtime_create_ (int *argcp, char ***argvp, char ***envp)
 #include "tort/d_mt.h"
 
   tort_runtime_initialize_io();
+  tort_runtime_initialize_printf();
   tort_runtime_initialize_write();
   tort_runtime_initialize_debug();
   tort_runtime_initialize_dynlib();

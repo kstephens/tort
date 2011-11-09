@@ -251,7 +251,7 @@ tort_v tort_runtime_initialize_lisp()
   tort_add_method(_mt_cons, "list->vector", _tort_m_list__list_TO_vector);
   tort_add_method(tort__mt(nil),  "list->vector", _tort_m_list__list_TO_vector);
 
-  tort_send(tort_s(set), tort_(_printf_dispatch), tort_s(O), tort_s(printf_lisp_write));
+  tort_send(tort_s(set), tort_(_printf_dispatch), tort_i('O'), tort_s(printf_lisp_write));
 
   return _mt_cons;
 }
