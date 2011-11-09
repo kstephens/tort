@@ -1,6 +1,5 @@
 #include "tort/tort.h"
 #include "tort/init.h"
-#include "tort/symtab.h"
 
 #include <assert.h>
 
@@ -11,7 +10,7 @@ int main(int argc, char **argv, char **environ)
   tort_v st;
 
   tort_runtime_create();
-  st = tort_send(tort_s(get), tort_(root), tort_s(code_symbol));
+  st = tort_send(tort_s(get), tort_(root), tort_s(core_symtab));
   assert(st);
 
   io = tort_stdout;

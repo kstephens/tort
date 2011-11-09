@@ -32,7 +32,6 @@ src/ptr.c
 src/string.c
 src/symbol.c
 src/symbol_encoding.c
-src/symtab.c
 src/tagged.c
 src/vector.c
 src/write.c

@@ -324,6 +324,7 @@ tort_lookup_decl(_tort_m_mtable__lookup);
     };									\
     _tort_send_msg_file_line()
 
+/* ARGC = 1 (RCVR) + number of args, or -1 if unknown. */
 #define _tort_sendn(SEL, ARGC, RCVR_AND_ARGS...)			\
   ({									\
     _tort_send_msg_init(SEL, RCVR_AND_ARGS);				\

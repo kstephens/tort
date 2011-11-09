@@ -6,7 +6,6 @@
 #ifdef __APPLE__
 #define TORT_DLIB_SUFFIX ".dylib"
 #endif
-
 #include <dlfcn.h> /* dlopen() */
 
 tort_v _tort_M_dynlib__new(tort_tp tort_mtable *mtable)
@@ -52,35 +51,35 @@ tort_v _tort_m_dynlib__dlopen(tort_tp struct tort_dynlib *rcvr, tort_v name)
   base_ptr = tort_ptr_data(tort_map_data(rcvr)[0]->second);
   rcvr->base_ptr = tort_ptr_new(base_ptr);
   if ( _tort_dl_debug ) {
-    fprintf(stderr, "base_sym = '%s'\n", base_sym);
-    fprintf(stderr, "base_ptr = %p\n", base_ptr);
+    fprintf(stderr, "    base_sym = '%s'\n", base_sym);
+    fprintf(stderr, "    base_ptr = %p\n", base_ptr);
   }
   if ( (dl = dlopen(file, RTLD_NOW | RTLD_GLOBAL | RTLD_NODELETE)) ) {
     if ( _tort_dl_debug >= 2 ) {
-      fprintf(stderr, "dl = @%p\n", dl);
+      fprintf(stderr, "    dl = @%p\n", dl);
     }
     base_ptr = dlsym(dl, base_sym);
     if ( _tort_dl_debug ) {
-      fprintf(stderr, "dlsym(@%p, \"%s\") => @%p\n", dl, base_sym, base_ptr);
+      fprintf(stderr, "    dlsym(@%p, \"%s\") => @%p\n", dl, base_sym, base_ptr);
     }
     {
       Dl_info info;
       memset(&info, 0, sizeof(info));
       dladdr((void*) base_ptr, &info);
       if ( _tort_dl_debug > 1 ) {
-	fprintf(stderr, "dli_fname = %s\n", info.dli_fname);
-	fprintf(stderr, "dli_fbase = %p\n", info.dli_fbase);
-	fprintf(stderr, "dli_sname = %s\n", info.dli_sname);
-	fprintf(stderr, "dli_saddr = %p\n", info.dli_saddr);
+	fprintf(stderr, "    dli_fname = %s\n", info.dli_fname);
+	fprintf(stderr, "    dli_fbase = %p\n", info.dli_fbase);
+	fprintf(stderr, "    dli_sname = %s\n", info.dli_sname);
+	fprintf(stderr, "    dli_saddr = %p\n", info.dli_saddr);
       }
       base_ptr = info.dli_fbase;
     }
+    dlclose(dl);
     tort_send(tort_s(emptyE), rcvr);
     tort_send(tort_s(_load_symtab), rcvr, file, base_ptr);
     tort_send(tort_s(set), tort_(dl_maps), tort_string_new_cstr(file), rcvr);
     tort_send(tort_s(_run_initializers), rcvr);
     tort_send(tort_s(_load_methods), rcvr);
-    dlclose(dl);
   } else {
     rcvr->error = tort_string_new_cstr(dlerror());
     perror(dlerror());
@@ -90,8 +89,8 @@ tort_v _tort_m_dynlib__dlopen(tort_tp struct tort_dynlib *rcvr, tort_v name)
 
 tort_v _tort_m_string___dlopen(tort_tp tort_string *rcvr)
 {
-  tort_v st = tort_send(tort__s(new), tort__mt(dynlib));
-  return_tort_send(tort__s(dlopen), st, rcvr);
+  tort_v st = tort_send(tort_s(new), tort__mt(dynlib));
+  return_tort_send(tort_s(dlopen), st, rcvr);
 }
 
 tort_v tort_m_dynlib___run_initializers(tort_tp tort_v map)
@@ -199,14 +198,14 @@ tort_v _tort_m_dynlib___load_symtab(tort_tp tort_v st, const char *file, void *p
 	   file, file);
   system(cmd);
 
-  if ( _tort_dl_debug ) {
-  fprintf(stderr, "  load_symtab: cmd => %s\n", cmd);
+  if ( _tort_dl_debug >= 2 ) {
+    fprintf(stderr, "  load_symtab: cmd => %s\n", cmd);
   }
 
   snprintf(cmd, sizeof(cmd), "%s.sym", file);
 
-  if ( _tort_dl_debug ) {
-  fprintf(stderr, "  load_symtab: .sym file => %s\n", cmd);
+  if ( _tort_dl_debug >= 2 ) {
+    fprintf(stderr, "  load_symtab: .sym file => %s\n", cmd);
   }
 
   if ( (fp = fopen(cmd, "r")) ) {
@@ -221,8 +220,8 @@ tort_v _tort_m_dynlib___load_symtab(tort_tp tort_v st, const char *file, void *p
       char c_fileline[1024];
       int  c_tokens = 0;
 
-      if ( _tort_dl_debug ) {
-      fprintf(stderr, "  line => @%p '%s'\n", line, line);
+      if ( _tort_dl_debug >= 3 ) {
+	fprintf(stderr, "  line => @%p '%s'\n", line, line);
       }
 
       c_name[0] = c_fileline[0] = 0;
@@ -252,8 +251,8 @@ tort_v _tort_m_dynlib___load_symtab(tort_tp tort_v st, const char *file, void *p
 	tort_v t_name = tort_symbol_new(c_name);
 	tort_v t_addr = tort_ptr_new(c_addr);
 	if ( c_addr == (void*) tort_ptr_data(t_addr) ) {
-	  tort_send(tort__s(set), st, t_name, t_addr);
-	  tort_send(tort__s(set), st, t_addr, t_name);
+	  tort_send(tort_s(set), st, t_name, t_addr);
+	  tort_send(tort_s(set), st, t_addr, t_name);
 	} else {
 	  fprintf(stderr, "  tort: cannot store %s -> %p pointer in tort_ptr_data", c_name, c_addr);
 	}
@@ -285,11 +284,11 @@ tort_v tort_runtime_initialize_dynlib()
   tort_add_method(tort__mt(dynlib), "_run_initializers", tort_m_dynlib___run_initializers);
   tort_add_method(tort__mt(dynlib), "_load_methods", tort_m_dynlib___load_methods);
   tort_(dl_maps) = tort_map_create();
-  tort_send(tort__s(set), tort_(root), tort_s(dl_maps), tort_(dl_maps));
+  tort_send(tort_s(set), tort_(root), tort_s(dl_maps), tort_(dl_maps));
 
-  st = tort_send(tort__s(new), tort__mt(dynlib));
+  st = tort_send(tort_s(new), tort__mt(dynlib));
   _tort_m_dynlib___load_symtab(tort_ta st, tort_(_argv)[0], 0);
-  tort_send(tort__s(set), tort_(root), tort_s(core_symtab), st);
+  tort_send(tort_s(set), tort_(root), tort_s(core_symtab), st);
   return st;
 }
 
