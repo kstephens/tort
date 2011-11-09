@@ -37,6 +37,7 @@ int main(int argc, char **argv, char **environ)
   v = tort_send(tort_symbol_new("lisp_read"), tort_stdin);
   tort_printf(io, "(read o) => %O\n", v);
 
+  // FIXME!
   tort_send(tort_symbol_new("lisp_repl"), tort_stdin, tort_stdout, tort_stdout, tort_nil);
 
   tort_gc_dump_stats();

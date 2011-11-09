@@ -6,6 +6,7 @@ tort_v _tort_m_object__not (tort_tp tort_v rcvr)
   return rcvr == tort_false ? rcvr : tort_true;
 }
 
+// FIXME: remove use tort_(OBJECT_HEADER_SIZE)
 tort_v _tort_m_object___object_header_size (tort_tp tort_v rcvr)
 {
   return tort_i(sizeof(tort_header));

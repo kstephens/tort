@@ -373,7 +373,7 @@ void *tort_realloc_atomic(void *ptr, size_t size);
 #define tort_gc_add_root(referencep) (void)0 // TODO
 #define tort_gc_remove_root(referencep) (void)0
 
-tort_v tort_map_create();
+tort_v tort_map_create(); // FIXME
 
 #if TORT_ALLOC_DEBUG
 tort_v _tort_allocate (tort_tp tort_v meth_table, size_t size, const char *alloc_file, int alloc_line);
