@@ -161,6 +161,7 @@ struct tort_pair { tort_H;
 typedef
 struct tort_map { tort_H; /* Same layout as tort_vector_base. */
   tort_vector_base _vector_base;
+  tort_v equality;
 } tort_map;
 
 #define tort_map_data(X) ((tort_pair**)tort_vector_base_data(X))
@@ -240,7 +241,7 @@ struct tort_runtime { tort_H;
 #endif
   tort_v string_null, vector_null;
   tort_v b_true, b_false;
-  tort_v symbols; /** Symbol table map: string=>symbol. */
+  tort_map *symbols; /** Symbol table map: string=>symbol. */
   tort_v root; /** Root namespace. */
 
   tort_v message; /* Current message: not thread/fiber-safe. */

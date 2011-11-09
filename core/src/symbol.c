@@ -49,6 +49,7 @@ tort_symbol* tort_symbol_new(const char *string)
 
 tort_v tort_runtime_initialize_symbol()
 {
+  tort_(symbols)->equality = tort__s(equalQ);
 #define tort_d_s(N) tort__s(N) = tort_symbol_new(tort_symbol_encode(#N));
 #include "tort/d_s.h"
 

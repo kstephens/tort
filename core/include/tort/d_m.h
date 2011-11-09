@@ -13,6 +13,7 @@ include/tort/ops.h
 include/tort/tort.h
 src/debug.c
 src/dynlib.c
+src/eq.c
 src/error.c
 src/gc.c
 src/gc_null.c
@@ -151,9 +152,11 @@ tort_d_m(tort__mt(object), tort__s(_tag), _tort_m_object___tag)
 tort_d_m(tort__mt(object), tort__s(_to_string), _tort_m_object___to_string)
 tort_d_m(tort__mt(object), tort__s(clone), _tort_m_object__clone)
 tort_d_m(tort__mt(object), tort__s(eqQ), _tort_m_object__eqQ)
+tort_d_m(tort__mt(object), tort__s(equalQ), _tort_m_object__equalQ)
 tort_d_m(tort__mt(object), tort__s(identity), _tort_m_object__identity)
 tort_d_m(tort__mt(object), tort__s(not), _tort_m_object__not)
 tort_d_m(tort__mt(pair), tort__s(_inspect), _tort_m_pair___inspect)
+tort_d_m(tort__mt(pair), tort__s(equalQ), _tort_m_pair__equalQ)
 tort_d_m(tort__mt(pair), tort__s(first), _tort_m_pair__first)
 tort_d_m(tort__mt(pair), tort__s(firstSET), _tort_m_pair__firstSET)
 tort_d_m(tort__mt(pair), tort__s(second), _tort_m_pair__second)
@@ -197,6 +200,7 @@ tort_d_m(tort__mt(tagged), tort__s(_object_ptr), _tort_m_tagged___object_ptr)
 tort_d_m(tort__mt(vector), tort__s(_inspect), _tort_m_vector___inspect)
 tort_d_m(tort__mt(vector), tort__s(add), _tort_m_vector__add)
 tort_d_m(tort__mt(vector), tort__s(each), _tort_m_vector__each)
+tort_d_m(tort__mt(vector), tort__s(equalQ), _tort_m_vector__equalQ)
 tort_d_m(tort__mt(vector), tort__s(get), _tort_m_vector__get)
 tort_d_m(tort__mt(vector), tort__s(map), _tort_m_vector__map)
 tort_d_m(tort__mt(vector), tort__s(set), _tort_m_vector__set)
@@ -212,12 +216,14 @@ tort_d_m(tort__mt(vector_base), tort__s(append), _tort_m_vector_base__append)
 tort_d_m(tort__mt(vector_base), tort__s(clone), _tort_m_vector_base__clone)
 tort_d_m(tort__mt(vector_base), tort__s(element_size), _tort_m_vector_base__element_size)
 tort_d_m(tort__mt(vector_base), tort__s(emptyE), _tort_m_vector_base__emptyE)
+tort_d_m(tort__mt(vector_base), tort__s(equalQ), _tort_m_vector_base__equalQ)
 tort_d_m(tort__mt(vector_base), tort__s(size), _tort_m_vector_base__size)
 tort_d_m(tort_h_ref(tort__mt(dynlib))->mtable, tort__s(new), _tort_M_dynlib__new)
 tort_d_m(tort_h_ref(tort__mt(fixnum))->mtable, tort__s(_ops), _tort_M_fixnum___ops)
 tort_d_m(tort_h_ref(tort__mt(io))->mtable, tort__s(__create), _tort_M_io____create)
 tort_d_m(tort_h_ref(tort__mt(io))->mtable, tort__s(__stat), _tort_M_io____stat)
 tort_d_m(tort_h_ref(tort__mt(io))->mtable, tort__s(create), _tort_M_io__create)
+tort_d_m(tort_h_ref(tort__mt(map))->mtable, tort__s(_offset_equality), _tort_M_map___offset_equality)
 tort_d_m(tort_h_ref(tort__mt(map))->mtable, tort__s(new), _tort_M_map__new)
 tort_d_m(tort_h_ref(tort__mt(message))->mtable, tort__s(_offset_argc), _tort_M_message___offset_argc)
 tort_d_m(tort_h_ref(tort__mt(message))->mtable, tort__s(_offset_fiber), _tort_M_message___offset_fiber)

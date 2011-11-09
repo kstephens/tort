@@ -1,5 +1,8 @@
 #include "tort/core.h"
 
+tort_ACCESSOR(map,tort_v,equality);
+#define EQ(X,Y) (rcvr->equality != tort_nil ? tort_sendn(rcvr->equality, 2, (X), (Y)) != tort_false : (X) == (Y))
+
 tort_v _tort_M_map__new(tort_tp tort_v mtable)
 {
   tort_v val = tort_allocate(mtable, sizeof(tort_map));
@@ -8,6 +11,7 @@ tort_v _tort_M_map__new(tort_tp tort_v mtable)
 
 tort_v _tort_m_map__initialize(tort_tp tort_map *rcvr)
 {
+  rcvr->equality = tort_nil;
   return _tort_m_vector_base___initialize(tort_ta (tort_vector_base*) rcvr, 0, sizeof(tort_pair*));
 }
 
@@ -20,7 +24,7 @@ tort_v _tort_m_map__add(tort_tp tort_map *rcvr, tort_v key, tort_v value)
 tort_pair* _tort_m_map__get_entry(tort_tp tort_map *rcvr, tort_v key)
 {
   tort_map_EACH(rcvr, entry) {
-    if ( entry->first == key ) 
+    if ( EQ(entry->first, key) ) 
       return entry;
   } tort_map_EACH_END();
   return 0;
@@ -84,7 +88,7 @@ tort_v _tort_m_map__set(tort_tp tort_map *rcvr, tort_v key, tort_v value)
 tort_v _tort_m_map__delete(tort_tp tort_map *rcvr, tort_v key)
 {
   tort_map_EACH(rcvr, entry) {
-    if ( entry->first == key ) {
+    if ( EQ(entry->first, key) ) {
       tort_v value = entry->second;
       do {
 	entryp[-1] = entryp[0];

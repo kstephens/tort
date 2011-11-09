@@ -320,7 +320,10 @@ void og_object(tort_og_context *context, tort_v obj)
   }
   else if ( mt == tort__mt(map) ) {
     int slot_i;
+    tort_map *o;
   map: 
+    o = obj;
+    SLOT(equality);
     slot_i = -1;
     tort_map_EACH(obj, me) { 
       ++ slot_i;
@@ -328,7 +331,6 @@ void og_object(tort_og_context *context, tort_v obj)
       og_slot(context, obj, me->first, 0, " =", me->second, 0, 0, 0);
     } tort_map_EACH_END();
   }
-
 
 #undef SLOT
 
