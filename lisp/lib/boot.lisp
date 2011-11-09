@@ -1,5 +1,7 @@
 ;; -*- scheme -*-
 (define (eq? a b) ('eq? a b))
+(define equal? 'equal?)
+(define eqv? 'equal?)
 
 (define nil '())
 

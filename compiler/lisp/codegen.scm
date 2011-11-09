@@ -50,12 +50,33 @@
   (references '())
   )
 (define-method label ('_emit self stream)
+  (let ((id ('label stream)))
+    ('label-id= stream (+ id 1))
+    ('name= self (string-append "L" (number->string id))))
   ('emit stream ('name self) ":\n")
   ('labels= stream (cons self ('labels stream))))
 
+(define-struct binding
+  (name        'UNKNOWN)
+  (loc         nil)
+  (ar-offset   #f)
+  (restore-reg #f)
+  (closed-over #f)
+  (exported    #f)
+  )
+
+(define-struct environment
+  (ar-offset- (list 0))
+  (ar-offset-max 0)
+  (saves nil)
+  (bindings nil))
+  )
+
 (define-struct isn-stream
-  (body    (string-new))
-  (labels '()))
+  (body     (string-new))
+  (labels   '())
+  (label-id 0)
+  )
 (define-method isn-stream ('emit self . objs)
   (for-each 
     (lambda (obj)
