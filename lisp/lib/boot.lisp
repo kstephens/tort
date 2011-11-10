@@ -351,4 +351,4 @@
 ;; (set! *load-debug* #t)
 ; (set! &trace 1)
 (load "lisp/lib/struct.lisp")
-(load "compiler/lisp/compiler.scm")
+(load "compiler/lib/compiler.scm")
