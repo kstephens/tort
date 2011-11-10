@@ -172,7 +172,7 @@ void tort_gc_collect()
 static void (*_tort_gc_invoke_finalizers)() = 0;
 void tort_gc_invoke_finalizers()
 {
-  if ( ! _tort_gc_invoke_finalizers )
+  if ( _tort_gc_invoke_finalizers )
     _tort_gc_invoke_finalizers();
 }
 
