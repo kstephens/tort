@@ -104,7 +104,8 @@ tort_v tort_add_method(tort_v mtable, const char *name, void *applyf)
 {
   tort_v sym = tort_symbol_new(name);
   tort_v meth = tort_method_new(applyf, 0);
-  return _tort_m_mtable__add_method(tort_thread_arg mtable, sym, meth);
+  assert(mtable); assert(applyf);
+  return _tort_m_mtable__add_method(tort_ta mtable, sym, meth);
 }
 
 tort_v tort_add_class_method(tort_v mtable, const char *name, void *applyf)
