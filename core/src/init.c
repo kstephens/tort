@@ -93,6 +93,10 @@ tort_v tort_runtime_create_ (int *argcp, char ***argvp, char ***envp)
   /* Subsystem initialization. */
   tort_runtime_initialize_gc();
 
+  /* unknown caller_info */
+  tort_(unknown_caller_info) = tort_send(tort__s(_allocate), tort__mt(caller_info), sizeof(tort_caller_info));
+  tort_(unknown_caller_info)->file = "<unknown>";
+
   /* Create the mtable map. */
   tort_(m_mtable) = tort_map_create();
   
@@ -103,11 +107,10 @@ tort_v tort_runtime_create_ (int *argcp, char ***argvp, char ***envp)
   ROOT(true, tort_true);
   ROOT(false, tort_false);
   ROOT(mtable, tort_(m_mtable));
+  ROOT(unknown_caller_info, tort_(unknown_caller_info));
   ROOT(TAG_BITS, tort_i(TORT_TAG_BITS));
   ROOT(WORD_SIZE, tort_i(sizeof(tort_v)));
   ROOT(OBJECT_HEADER_SIZE, tort_i(sizeof(tort_header)));
-#undef ROOT
-
 #define tort_d_mt(X) \
   if ( tort__mt(X) ) tort_send(tort__s(set), tort_(m_mtable), tort_symbol_new(#X), tort__mt(X));
 #include "tort/d_mt.h"
@@ -121,6 +124,7 @@ tort_v tort_runtime_create_ (int *argcp, char ***argvp, char ***envp)
   tort_(_initialized) = tort_true;
 
   // fprintf(stderr, "\ntort: initialized\n");
+#undef ROOT
 
   return tort_ref_box(_tort);
 }
