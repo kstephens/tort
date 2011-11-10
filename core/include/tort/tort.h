@@ -98,10 +98,10 @@ struct tort_message { tort_H;
   tort_symbol  *selector;
   tort_object  *receiver;
   tort_message *previous_message;
-  tort_v        fiber;  /* the sending fiber */
+  tort_mtable  *mtable; /* the mtable to start searching from, the mtable where the method was found. */
   tort_method  *method; /* the found method. */
-  tort_mtable  *mtable; /* the mtable where the method was found. */
-  tort_v        argc;   /* number of arguments, including reciever.  >= 0 if specified by caller. */
+  tort_v        argc;   /* number of arguments, including receiver.  >= 0 if specified by caller. */
+  tort_v        fiber;  /* the sending fiber */
 #if TORT_MESSAGE_FILE_LINE
   const char   *file; 
   int           line;
@@ -323,6 +323,7 @@ tort_lookup_decl(_tort_m_mtable__lookup);
       { { }, (SEL),							\
 	(tort_v) _tort_send_RCVR(RCVR_AND_ARGS),			\
 	_tort_message,							\
+        0,								\
       }									\
     };									\
     _tort_send_msg_file_line()
@@ -343,6 +344,7 @@ tort_lookup_decl(_tort_m_mtable__lookup);
   do {									\
     _tort_message->selector = (tort_v) (SEL);				\
     _tort_message->receiver = (tort_v) _tort_send_RCVR(RCVR_AND_ARGS);	\
+    _tort_message->mtable = 0;						\
     _tort_message->argc = tort_i(ARGC);					\
     _tort_send_msg_file_line_t();					\
     return								\

@@ -199,13 +199,18 @@ tort_message* _tort_lookup (tort_tp tort_v rcvr, tort_message *message)
 {
   tort_v sel = message->selector;
   
-  rcvr = tort_h_mtable(rcvr); /* See tort_send* macros. */
+  /* See tort_send* macros. */
+  // Start from rcvr's mtable, if not specified.
+  if ( ! message->mtable )
+    rcvr = message->mtable = tort_h_mtable(rcvr);
+  else
+    rcvr = message->mtable;
+
 #define MTABLE ((tort_mtable*) rcvr)
 
   message->_h[-1].alloc_size = sizeof(tort_message);
   message->_h[-1].mtable = tort__mt(message);
   // message->previous_message = _tort_message;
-  message->mtable = tort_nil; 
   message->method = tort_nil;
   message->fiber = message->previous_message ? message->previous_message->fiber : _tort_fiber;
 
@@ -255,7 +260,7 @@ tort_message* _tort_lookup (tort_tp tort_v rcvr, tort_message *message)
 		tort_object_name(sel));
       }
 
-      message->mtable = MTABLE;
+      // message->mtable = MTABLE; // ???
       message->method = tort_(_m_method_not_found);
     }
 

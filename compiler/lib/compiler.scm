@@ -80,6 +80,7 @@
 	(msg->receiver         (compiler:reg:offset msg <message> 'receiver))
 	(msg->argc             (compiler:reg:offset msg <message> 'argc))
 	(msg->method           (compiler:reg:offset msg <message> 'method))
+	(msg->mtable           (compiler:reg:offset msg <message> 'mtable))
 	(meth->applyf          (compiler:reg:offset meth <method> 'applyf))
 	)
 
@@ -269,6 +270,8 @@
       ;;   selector:
       (compiler:compile:expr c sel)
       (compiler:emit c "movq  " rtn-reg ", " msg->selector)
+      ;;   mtable: set to 0; _tort_lookup() will fill it in with rcvr's mtable.
+      (compiler:emit c "movq  $0, " msg->mtable)
       ;;   argc:
       (let ((argc (+ (length args) 1))) ; + 1 for rcvr
 	(compiler:compile:expr-dst c argc msg->argc))
