@@ -98,6 +98,7 @@ tort_v tort_runtime_create_ (int *argcp, char ***argvp, char ***envp)
   
   /* Setup the root namespace. */
 #define ROOT(N,V) tort_send(tort__s(set), tort_(root), tort_symbol_new(#N), (V))
+  ROOT(runtime, tort_ref_box(_tort));
   ROOT(nil, tort_nil);
   ROOT(true, tort_true);
   ROOT(false, tort_false);
