@@ -107,6 +107,7 @@ tort_v tort_runtime_create_ (int *argcp, char ***argvp, char ***envp)
   ROOT(nil, tort_nil);
   ROOT(true, tort_true);
   ROOT(false, tort_false);
+  ROOT(symbols, tort_(symbols));
   ROOT(mtable, tort_(m_mtable));
   ROOT(unknown_caller_info, tort_(unknown_caller_info));
   ROOT(TAG_BITS, tort_i(TORT_TAG_BITS));
@@ -121,6 +122,25 @@ tort_v tort_runtime_create_ (int *argcp, char ***argvp, char ***envp)
   tort_runtime_initialize_write();
   tort_runtime_initialize_debug();
   tort_runtime_initialize_dynlib();
+
+  {
+    int i; tort_v m = tort_map_create();
+    for ( i = 0; i < 1 << TORT_TAG_BITS; ++ i ) {
+      tort_v k = tort_i(i), v = tort_(tagged_header)[i].mtable;
+      if ( ! v ) v = tort_nil;
+      tort_send(tort__s(set), m, k, v);
+      tort_send(tort__s(set), m, v, k);
+    }
+    ROOT(tagged_mtables, m);
+  }
+
+  {
+    int i; tort_v v = tort_vector_new(0, 0);
+    for ( i = 0; i < tort_(_argc) && tort_(_argv)[i]; ++ i ) {
+      tort_send(tort__s(add), v, tort_string_new_cstr(tort_(_argv)[i]));
+    }
+    ROOT(argv, v);
+  }
 
   tort_(_initialized) = tort_true;
 
