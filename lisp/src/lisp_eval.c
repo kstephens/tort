@@ -38,6 +38,7 @@ typedef struct tort_lisp_environment { tort_H;
   tort_v argc;
   tort_v argv;
   tort_v rest;
+  tort_v rest_ok;
   tort_v parent;
   tort_v macros;
   tort_v _globals;
@@ -48,6 +49,7 @@ tort_ACCESSOR(lisp_environment,tort_v,formals);
 tort_ACCESSOR(lisp_environment,tort_v,argc);
 tort_ACCESSOR(lisp_environment,tort_v,argv);
 tort_ACCESSOR(lisp_environment,tort_v,rest);
+tort_ACCESSOR(lisp_environment,tort_v,rest_ok);
 tort_ACCESSOR(lisp_environment,tort_v,parent);
 tort_ACCESSOR(lisp_environment,tort_v,_globals);
 tort_ACCESSOR(lisp_environment,tort_v,macros);
@@ -178,7 +180,7 @@ tort_v _tort_M_lisp_environment__new(tort_tp tort_mtable *mtable, tort_lisp_form
     tort_error(tort_ta "too many args: expected %O, given %O to %O", formals->argc, argc, formals);
   if ( tort_h_mtable(args) == tort_mt(vector) ) {
     env->argv = args;
-    env->rest = tort_false; /* Lazy: see get below. */
+    env->rest = env->rest_ok = tort_false; /* Lazy: see get below. */
   } else {
     argv = tort_vector_new(0, tort_I(formals->argc));
     env->argv = argv;
@@ -186,12 +188,13 @@ tort_v _tort_M_lisp_environment__new(tort_tp tort_mtable *mtable, tort_lisp_form
       int argi = 0;
       while ( args != tort_nil ) {
 	if ( argi >= tort_I(formals->argc) )
-	break;
+	  break;
 	tort_vector_data(argv)[argi] = tort_car(args);
 	args = tort_cdr(args);
 	argi ++;
       }
       env->rest = args;
+      env->rest_ok = tort_true;
     }
   }
   env->parent = parent_env;
@@ -225,7 +228,7 @@ tort_v _tort_m_lisp_environment__get(tort_tp tort_lisp_environment *env, tort_v 
     return env->msg;
   }
   else if ( env->formals->rest == name ) {
-    if ( env->rest == tort_false ) {
+    if ( env->rest_ok == tort_false ) {
       tort_v *tailp = &env->rest;
       int i;
       *tailp = tort_nil;
@@ -233,6 +236,7 @@ tort_v _tort_m_lisp_environment__get(tort_tp tort_lisp_environment *env, tort_v 
 	*tailp = tort_cons(tort_vector_data(env->argv)[i], tort_nil);
 	tailp = &((tort_cons*) *tailp)->cdr;
       }
+      env->rest_ok = tort_true;
     }
     return env->rest;
   } else {
@@ -259,6 +263,7 @@ tort_v _tort_m_lisp_environment__set(tort_tp tort_lisp_environment *env, tort_v 
   } else
   if ( env->formals->rest == name ) {
     env->rest = value;
+    env->rest_ok = tort_true;
   } else {
     tort_v index = tort_send(tort__s(get), env->formals->map, name);
     if ( index != tort_nil ) {
@@ -278,6 +283,7 @@ tort_v _tort_m_lisp_environment__add(tort_tp tort_lisp_environment *env, tort_v 
 {
   if ( env->formals->rest == name ) {
     env->rest = value;
+    env->rest_ok = tort_true;
   } else {
     tort_v index = tort_send(tort__s(get), env->formals->map, name);
     if ( index != tort_nil ) {
