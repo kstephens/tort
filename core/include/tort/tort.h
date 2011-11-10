@@ -29,6 +29,10 @@ typedef ssize_t tort_vi;
 #define tort_tag_fixnum 1
 #define tort_i(V) tort_tagged_box(V,1)
 #define tort_I(X) tort_tagged_data(X)
+#ifndef tort_c
+#define tort_c(V) tort_i(V)
+#define tort_C(X) tort_I(X)
+#endif
 
 typedef struct tort_symbol tort_symbol;
 typedef struct tort_mtable tort_mtable;

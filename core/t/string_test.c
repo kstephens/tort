@@ -27,7 +27,7 @@ int main(int argc, char **argv, char **environ)
   tort_inspect(io, c = tort_send(tort__s(get), v, tort_i(1)));
 
   printf("\n  (set v 2 +1) => ");
-  tort_inspect(io, tort_send(tort__s(set), v, tort_i(1), tort_i(tort_I(c) + 1)));
+  tort_inspect(io, tort_send(tort__s(set), v, tort_i(1), tort_c(tort_C(c) + 1)));
 
   printf("\n  (a = \"abc\") => ");
   tort_inspect(io, a = tort_string_new_cstr("abc"));

@@ -1,16 +1,15 @@
 #include "tort/core.h"
 
-tort_v _tort_m_string__get (tort_thread_param tort_string *rcvr, tort_v _i)
+tort_v _tort_m_string__get (tort_tp tort_string *rcvr, tort_v _i)
 {
-  long i = tort_I(_i);
-  return tort_i(((unsigned char *)rcvr->data)[i]);
+  size_t i = tort_I(_i);
+  return tort_c(((unsigned char *)rcvr->data)[i]);
 }
 
-tort_v _tort_m_string__set (tort_thread_param tort_string *rcvr, tort_v _i, tort_v _v)
+tort_v _tort_m_string__set (tort_tp tort_string *rcvr, tort_v _i, tort_v _v)
 {
-  long i = tort_I(_i);
-  long v = tort_I(_v);
-  ((unsigned char *)(rcvr->data))[i] = v;
+  size_t i = tort_I(_i);
+  ((unsigned char *)(rcvr->data))[i] = tort_C(_v);
   return rcvr;
 }
 

@@ -185,7 +185,7 @@ tort_v _tort_m_io__lisp_read (tort_tp tort_v stream)
 #define EOS tort_eos
 #define CONS(x,y) tort_send(tort_s(new), tort_mt(cons), x, y)
 #define SET_CDR(CONS,V) tort_send(tort_s(setDcdrE), CONS, V)
-#define MAKE_CHAR(I) tort_i(I)
+#define MAKE_CHAR(I) tort_c(I)
 #define STRING(b, l) tort_string_new(b, l)
 #define ESCAPE_STRING(X) tort_send(tort_s(unescapeE), X)
 #define LIST_2_VECTOR(X) tort_send(tort_s(list_TO_vector), X)
