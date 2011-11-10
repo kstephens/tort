@@ -11,7 +11,7 @@ $srcs
 EOF
     for f in $srcs
     do
-      ${CC} ${CFLAGS} -E -o - "${f}" || :
+      (set -x; ${CC} ${CFLAGS} -E -o - "${f}") || :
     done |
     tr ";}" "\n" | 
     perl -ne '
