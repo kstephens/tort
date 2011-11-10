@@ -77,10 +77,6 @@ tort_v tort_runtime_create_ (int *argcp, char ***argvp, char ***envp)
   /* Install core methods. */
   tort_runtime_initialize_method();
 
-  /* Create the empty containers. */
-  tort_string_null = tort_string_new(0, 0);
-  tort_vector_null = tort_vector_new(0, 0);
-
   /* Create the root table. */
   tort_(root) = tort_map_create();
 

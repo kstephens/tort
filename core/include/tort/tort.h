@@ -239,7 +239,6 @@ struct tort_runtime { tort_H;
 #if ! TORT_NIL_IS_ZERO
   tort_v nil;
 #endif
-  tort_v string_null, vector_null;
   tort_v b_true, b_false;
   tort_map *symbols; /** Symbol table map: string=>symbol. */
   tort_v root; /** Root namespace. */
