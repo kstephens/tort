@@ -101,13 +101,15 @@ tort_v tort_runtime_create_ (int *argcp, char ***argvp, char ***envp)
   tort_(m_mtable) = tort_map_create();
   
   /* Setup the root namespace. */
-  // tort_send(tort__s(set), tort_(root), tort_symbol_new("root"), tort_(root));
-  tort_send(tort__s(set), tort_(root), tort_symbol_new("nil"), tort_nil);
-  tort_send(tort__s(set), tort_(root), tort_symbol_new("true"), tort_true);
-  tort_send(tort__s(set), tort_(root), tort_symbol_new("false"), tort_false);
-  tort_send(tort__s(set), tort_(root), tort_symbol_new("mtable"), tort_(m_mtable));
-  tort_send(tort__s(set), tort_(root), tort_symbol_new("TAG_BITS"), tort_i(TORT_TAG_BITS));
-  tort_send(tort__s(set), tort_(root), tort_symbol_new("WORD_SIZE"), tort_i(sizeof(tort_v)));
+#define ROOT(N,V) tort_send(tort__s(set), tort_(root), tort_symbol_new(#N), (V))
+  ROOT(nil, tort_nil);
+  ROOT(true, tort_true);
+  ROOT(false, tort_false);
+  ROOT(mtable, tort_(m_mtable));
+  ROOT(TAG_BITS, tort_i(TORT_TAG_BITS));
+  ROOT(WORD_SIZE, tort_i(sizeof(tort_v)));
+  ROOT(OBJECT_HEADER_SIZE, tort_i(sizeof(tort_header)));
+#undef ROOT
 
 #define tort_d_mt(X) \
   if ( tort__mt(X) ) tort_send(tort__s(set), tort_(m_mtable), tort_symbol_new(#X), tort__mt(X));

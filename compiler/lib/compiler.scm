@@ -46,7 +46,7 @@
 (define (compiler:method:label c o)
   (string-append "_tort_x_" ('_to_string ('_object_ptr o))))
 
-(define compiler:object:header-size ('_object_header_size '()))
+(define compiler:object:header-size ('get &root 'OBJECT_HEADER_SIZE))
 (define compiler:message:alloc-size (+ compiler:object:header-size ('_alloc_size ('new <message>))))
 (define (compiler:type:slot-offset type slot)
   ((string->symbol (string-append "_offset_" (symbol->string slot))) type))
@@ -56,7 +56,7 @@
    (object->string (compiler:type:slot-offset type slot))
    "(" reg ")"))
 
-(let ((word-size 8)
+(let ((word-size ('get &root 'WORD_SIZE))
       (_msg     "%rbx")
       (_rcvr    "%r12")
       (ar-reg   "%rbp")
