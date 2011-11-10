@@ -380,9 +380,9 @@ tort_v _tort_m_cons__lisp_eval(tort_tp tort_cons *obj, tort_v env)
     tort_v body = tort_cdr(obj->cdr);
     return_tort_send(tort__s(new), tort_mt(lisp_closure), formals, body, env);
   }
-  else if ( val == tort_s(let) ) {
+  else if ( val == tort_s(let) || val == tort_s(ANDlet) ) {
     val = tort_car(obj->cdr); /* bindings */
-    if ( val != tort_nil )
+    if ( val != tort_nil || obj->car == tort_s(ANDlet) )
       env = tort_send(tort__s(new), tort_mt(lisp_environment),
 		      tort_send(tort__s(new), tort_mt(lisp_formals), 
 				tort_send(tort_s(lisp_eval_let_names), val, env) /* bindings => names => */ ), /* formals */

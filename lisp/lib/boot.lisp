@@ -127,6 +127,13 @@
 
 (define-macro quasiquote &quasiquote)
 
+(define-macro (let-macro bindings . body)
+  `(&let ()
+     ,@(map (lambda (binding)
+	      `('set_macro &env ',(caar binding) (lambda ,(cdar binding) ,@(cdr binding))))
+	 bindings)
+     ,@body))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define-macro (begin . body)
