@@ -1,8 +1,8 @@
 #include "tort/tort.h"
-#include <assert.h>
 
 #define EQUALQ(X,Y) (tort_sendn(tort__s(equalQ), 2, (X), (Y)) != tort_false)
 #define return_EQUALQ(X,Y) return_tort_sendn(tort__s(equalQ), 2, (X), (Y))
+
 tort_v _tort_m_object__eqQ (tort_tp tort_v rcvr, tort_v val)
 {
   return rcvr == val ? tort_true : tort_false;
@@ -13,8 +13,16 @@ tort_v _tort_m_object__equalQ (tort_tp tort_v rcvr, tort_v val)
   return rcvr == val ? tort_true : tort_false;
 }
 
+tort_v _tort_m_ptr__equalQ (tort_tp tort_ptr *rcvr, tort_ptr *val)
+{
+  if ( rcvr == val ) return tort_true;
+  if ( tort_h_mtable(rcvr) != tort_h_mtable(val) ) return tort_false;
+  return tort_P(rcvr) == tort_P(val) ? tort_true : tort_false;
+}
+
 tort_v _tort_m_vector_base__equalQ (tort_tp tort_vector_base *rcvr, tort_vector_base *val)
 {
+  if ( rcvr == val ) return tort_true;
   if ( tort_h_mtable(rcvr) != tort_h_mtable(val) ) return tort_false;
   if ( rcvr->element_size != val->element_size ) return tort_false;
   if ( rcvr->size != val->size ) return tort_false;
@@ -23,6 +31,7 @@ tort_v _tort_m_vector_base__equalQ (tort_tp tort_vector_base *rcvr, tort_vector_
 
 tort_v _tort_m_vector__equalQ (tort_tp tort_vector *rcvr, tort_vector *val)
 {
+  if ( rcvr == val ) return tort_true;
   if ( tort_h_mtable(rcvr) != tort_h_mtable(val) ) return tort_false;
   if ( rcvr->element_size != val->element_size ) return tort_false;
   if ( rcvr->size != val->size ) return tort_false;
@@ -34,9 +43,23 @@ tort_v _tort_m_vector__equalQ (tort_tp tort_vector *rcvr, tort_vector *val)
 
 tort_v _tort_m_pair__equalQ (tort_tp tort_pair *rcvr, tort_pair *val)
 {
+  if ( rcvr == val ) return tort_true;
   if ( tort_h_mtable(rcvr) != tort_h_mtable(val) ) return tort_false;
   if ( ! EQUALQ(rcvr->first, val->first) ) return tort_false;
   return_EQUALQ(rcvr->second, val->second);
+}
+
+tort_v _tort_m_map__equalQ (tort_tp tort_map *rcvr, tort_map *val)
+{
+  if ( rcvr == val ) return tort_true;
+  if ( tort_h_mtable(rcvr) != tort_h_mtable(val) ) return tort_false;
+  if ( tort_map_size(rcvr) != tort_map_size(val) ) return tort_false;
+  if ( rcvr->equality != val->equality ) return tort_false;
+  tort_map_EACH(rcvr, e) {
+    tort_v v = tort_send(tort__s(get), val, e->first);
+    if ( ! EQUALQ(e->second, v) ) return tort_false;
+  } tort_map_EACH_END();
+  return tort_true; // NOT TAIL-RECURSIVE
 }
 
 #undef EQUALQ
