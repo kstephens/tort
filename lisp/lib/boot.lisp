@@ -216,6 +216,8 @@
 (define-mtable-class symbol)
 (define (make-symbol s) ('_create <symbol> s))
 
+(define-mtable-class boolean)
+
 (define *standard-input*  (%root 'stdin))
 (define *standard-output* (%root 'stdout))
 (define *standard-error*  (%root 'stderr))
