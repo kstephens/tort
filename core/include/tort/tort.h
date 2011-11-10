@@ -369,12 +369,14 @@ extern tort_v _tort_fiber;
 void *tort_malloc(size_t size);
 void *tort_malloc_atomic(size_t size);
 void  tort_free(void *ptr);
-#define tort_free_atomic tort_free
+void  tort_free_atomic(void *ptr);
 void *tort_realloc(void *ptr, size_t size);
 void *tort_realloc_atomic(void *ptr, size_t size);
+void  tort_gc_collect();
 #define tort_gc_mark(referrer, referred) (void)0 // TODO
 #define tort_gc_add_root(referencep) (void)0 // TODO
 #define tort_gc_remove_root(referencep) (void)0
+#define tort_gc_add_callback(func) (void)0
 
 tort_v tort_map_create(); // FIXME
 

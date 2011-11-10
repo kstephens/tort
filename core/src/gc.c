@@ -14,6 +14,7 @@ struct {
     ,malloc_atomic_bytes
     ,realloc_atomic_n
     ,realloc_atomic_bytes
+    ,free_atomic_n
     ,finalizer_n
     ,finalize_n
     ;
@@ -89,6 +90,16 @@ void *tort_realloc_atomic(void *ptr, size_t size)
   return new_ptr;
 }
 
+static
+void (*_tort_free_atomic)(void *ptr) = free;
+void tort_free_atomic(void *ptr)
+{
+  if ( ! ptr )
+    tort_fatal(tort_ta "tort_free(%p): free null", ptr);
+  _tort_free_atomic(ptr);
+  TORT_GC_STAT(free_n ++);
+}
+
 static void _tort_finalization_proc (void * obj, void * client_data)
 {
   if ( ! _tort_gc_mode ) return;
@@ -97,7 +108,7 @@ static void _tort_finalization_proc (void * obj, void * client_data)
   tort_send(tort__s(__finalize), tort_ref_box(obj));
 }
 
-tort_v _tort_m_object____register_finalizer(tort_thread_param tort_v rcvr)
+tort_v _tort_m_object____register_finalizer(tort_tp tort_v rcvr)
 {
   if ( _tort_gc_mode ) {
     // fprintf(stderr, "\n  _tort_object___register_finalizer @%p\n", (void*) rcvr);
@@ -117,28 +128,6 @@ void tort_gc_atexit()
   tort_gc_collect();
   if ( getenv("TORT_GC_STATS") )
     tort_gc_dump_stats();
-}
-
-tort_v tort_runtime_initialize_malloc()
-{
-  const char *var;
-  _tort_gc_mode = atoi((var = getenv("TORT_GC")) ? var : "0"); // BOEHM GC is broken - kurt 2011/10/30
-  if ( _tort_gc_mode > 0 ) {
-    GC_finalize_on_demand = 1;
-    _tort_malloc  = GC_malloc;
-    _tort_malloc_atomic = GC_malloc_atomic;
-    _tort_free    = GC_free;
-    _tort_realloc = GC_realloc;
-    _tort_realloc_atomic = GC_realloc; /* ??? */
-  }
-  return 0;
-}
-
-tort_v tort_runtime_initialize_gc()
-{
-  tort_add_method(tort__mt(object), "__finalize",  _tort_m_object__identity);
-  atexit(tort_gc_atexit);
-  return 0;
 }
 
 void tort_gc_dump_stats()
@@ -164,6 +153,7 @@ void tort_gc_dump_stats()
   S(realloc_atomic_n);
   S(realloc_atomic_bytes);
   S(free_n);
+  S(free_atomic_n);
   S(finalizer_n);
   S(finalize_n);
 #undef S
@@ -171,16 +161,42 @@ void tort_gc_dump_stats()
   tort_flush(io);
 }
 
+static void (*_tort_gc_collect)() = 0;
 void tort_gc_collect()
 {
-  if ( ! _tort_gc_mode ) return;
-  GC_gcollect();
+  if ( _tort_gc_collect )
+    _tort_gc_collect();
   tort_gc_invoke_finalizers();
 }
 
+static void (*_tort_gc_invoke_finalizers)() = 0;
 void tort_gc_invoke_finalizers()
 {
-  if ( ! _tort_gc_mode ) return;
-  GC_invoke_finalizers();
+  if ( ! _tort_gc_invoke_finalizers )
+    _tort_gc_invoke_finalizers();
 }
 
+tort_v tort_runtime_initialize_malloc()
+{
+  const char *var;
+  _tort_gc_mode = atoi((var = getenv("TORT_GC")) ? var : "0"); // BOEHM GC is broken - kurt 2011/10/30
+  if ( _tort_gc_mode > 0 ) {
+    GC_finalize_on_demand = 1;
+    _tort_malloc  = GC_malloc;
+    _tort_malloc_atomic = GC_malloc_atomic;
+    _tort_free = GC_free;
+    _tort_free_atomic = GC_free; /* ??? */
+    _tort_realloc = GC_realloc;
+    _tort_realloc_atomic = GC_realloc; /* ??? */
+    _tort_gc_collect = GC_gcollect;
+    _tort_gc_invoke_finalizers = (void*) GC_invoke_finalizers;
+  }
+  return 0;
+}
+
+tort_v tort_runtime_initialize_gc()
+{
+  tort_add_method(tort__mt(object), "__finalize",  _tort_m_object__identity);
+  atexit(tort_gc_atexit);
+  return 0;
+}
