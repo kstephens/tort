@@ -267,6 +267,7 @@ struct tort_runtime { tort_H;
   int _argc; /** Process argument count from main(). */
   char **_argv;/** Process argument vector from main(). */
   char **_env;/** Process environment from main(). */
+  void *stack_bottom;
 
 #define tort_d_mt(N) tort_mtable *_mt_##N;
 #include "tort/d_mt.h"

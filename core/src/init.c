@@ -27,7 +27,8 @@ tort_v tort_runtime_create_ (int *argcp, char ***argvp, char ***envp)
   tort_(_argc) = *argcp;
   tort_(_argv) = *argvp;
   tort_(_env)  = *envp;
-
+  tort_(stack_bottom) = envp;
+  
   /* Allocate and initialize mtables */
   tort_runtime_initialize_mtable();
 
