@@ -13,6 +13,12 @@ typedef struct tort_lisp_formals { tort_H;
   tort_v rest;
 } tort_lisp_formals;
 
+tort_ACCESSOR(lisp_formals,tort_v,formals);
+tort_ACCESSOR(lisp_formals,tort_v,formals_n);
+tort_ACCESSOR(lisp_formals,tort_v,argc);
+tort_ACCESSOR(lisp_formals,tort_v,map);
+tort_ACCESSOR(lisp_formals,tort_v,rest);
+
 typedef struct tort_lisp_closure { tort_H;
   /* Same layout as tort_method. */
   tort_apply_decl((*applyf));
@@ -22,6 +28,11 @@ typedef struct tort_lisp_closure { tort_H;
   tort_v environment;
 } tort_lisp_closure;
 
+tort_ACCESSOR(lisp_closure,tort_v,name);
+tort_ACCESSOR(lisp_closure,tort_v,formals);
+tort_ACCESSOR(lisp_closure,tort_v,body);
+tort_ACCESSOR(lisp_closure,tort_v,environment);
+
 typedef struct tort_lisp_environment { tort_H;
   tort_lisp_formals *formals;
   tort_v argc;
@@ -29,9 +40,18 @@ typedef struct tort_lisp_environment { tort_H;
   tort_v rest;
   tort_v parent;
   tort_v macros;
-  tort_v globals;
+  tort_v _globals;
   tort_v msg;
 } tort_lisp_environment;
+
+tort_ACCESSOR(lisp_environment,tort_v,formals);
+tort_ACCESSOR(lisp_environment,tort_v,argc);
+tort_ACCESSOR(lisp_environment,tort_v,argv);
+tort_ACCESSOR(lisp_environment,tort_v,rest);
+tort_ACCESSOR(lisp_environment,tort_v,parent);
+tort_ACCESSOR(lisp_environment,tort_v,_globals);
+tort_ACCESSOR(lisp_environment,tort_v,macros);
+tort_ACCESSOR(lisp_environment,tort_v,msg);
 
 tort_v _tort_M_lisp_formals__new(tort_tp tort_mtable *mtable, tort_v formals)
 {
@@ -178,15 +198,15 @@ tort_v _tort_M_lisp_environment__new(tort_tp tort_mtable *mtable, tort_lisp_form
   if ( parent_env != tort_nil )
     env->msg = ((tort_lisp_environment *)parent_env)->msg;
   env->macros = tort_nil;
-  env->globals = tort_false;
+  env->_globals = tort_false;
   return env;
 }
 
 tort_v _tort_m_lisp_environment__globals(tort_tp tort_lisp_environment *env)
 {
-  if ( env->globals == tort_false )
-    env->globals = env->parent == tort_nil ? env : tort_send(tort_s(globals), env->parent);
-  return env->globals;
+  if ( env->_globals == tort_false )
+    env->_globals = env->parent == tort_nil ? env : tort_send(tort_s(globals), env->parent);
+  return env->_globals;
 }
 
 tort_v _tort_m_lisp_environment__get(tort_tp tort_lisp_environment *env, tort_v name)
