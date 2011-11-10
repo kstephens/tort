@@ -443,7 +443,12 @@ void tog(tort_v obj)
   og_digraph(obj, fp);
   fclose(fp);
 
-  sprintf(cmd, "dot -Tsvg:cairo:cairo -o %s %s", graph_svg, graph_gv);
+#if 0
+#define SVG_OPTS ":cairo:cairo" // crashes sometimes on macports.
+#else
+#define SVG_OPTS ""
+#endif
+  sprintf(cmd, "dot -Tsvg%s -o %s %s", SVG_OPTS, graph_svg, graph_gv);
   system(cmd);
 
   sprintf(cmd, "open -a Firefox %s", graph_svg);  
