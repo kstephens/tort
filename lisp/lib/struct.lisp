@@ -62,24 +62,26 @@
 	 slots)
      (define ,name ',mtable)
      (define (,(string->symbol (string-append name-s "?")) o) (eq? ('_mtable o) ',mtable))
-     (define (,new_lambda_name . args)
-       ;; (set! &trace 1)
-       (set! args ('_set_mtable (vector '<struct> ',name ',slots ,@(map slot-default slots)) ',mtable))
-       ;; (set! &trace 0)
-       args)
+     (define (,new_lambda_name . inits)
+       (let ((instance ('_set_mtable (vector '<struct> ',name ',slots ,@(map slot-default slots)) ',mtable)))
+	 (while (pair? inits)
+	   (let ((n (car inits))
+		 (v (cadr inits)))
+	     (cond
+	       ,@(map (lambda (slot)
+			`((eq? n ',(slot-name slot))
+			   (vector-set! instance ,(slot-offset slot) v)))
+		   slots)
+	       (else (error "invalid slot name")))
+	     (set! inits (cddr inits))))
+	 instance))
      ;; (set! &trace 0)
      ('add_method ',('_mtable mtable) 'new 
        (lambda (mtable . args)
-	 (,new_lambda_name)))
+	 (,new_lambda_name . args)))
      ;; (display `(struct ,name))(display " => ")(write ',mtable)(newline)
      ',mtable
      )))
 
 (define-macro (define-struct name . slots) (%define-struct name slots))
 
-(if #f
-  (begin
-    (write (%define-struct 'test-struct '(a (b) (c 'foo))))(newline)
-    (define-struct test-struct compiler a (b) (c 'foo))
-    (write (test-struct:new))(newline)
-    )
