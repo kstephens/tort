@@ -94,6 +94,13 @@ struct tort_object { tort_H;
 
 #define tort_h_mtable(X)  tort_h(X)->mtable
 
+typedef struct tort_caller_info { tort_H;
+  const char   *file; 
+  int           line;
+  tort_v        data;
+} tort_caller_info;
+tort_h_struct(tort_caller_info);
+
 struct tort_message { tort_H;
   tort_symbol  *selector;
   tort_object  *receiver;
@@ -103,8 +110,7 @@ struct tort_message { tort_H;
   tort_v        argc;   /* number of arguments, including receiver.  >= 0 if specified by caller. */
   tort_v        fiber;  /* the sending fiber */
 #if TORT_MESSAGE_FILE_LINE
-  const char   *file; 
-  int           line;
+  tort_caller_info *caller_info;
 #endif
 };
 tort_h_struct(tort_message);
@@ -310,11 +316,12 @@ tort_lookup_decl(_tort_m_mtable__lookup);
 #define _tort_send_ARGS(RCVR, ARGS...)ARGS
 #define _tort_send_RCVR_ARGS(RCVR, EATEN, ARGS...)RCVR, ##ARGS
 #if TORT_MESSAGE_FILE_LINE
-#define _tort_send_msg_file_line() __tort_msg._.file = __FILE__; __tort_msg._.line = __LINE__
-#define _tort_send_msg_file_line_t() _tort_message->file = __FILE__; _tort_message->line = __LINE__
+#define _tort_send_msg_file_line(MSG) {					\
+    static tort_caller_info_ __tort_caller_info = { { }, { { }, __FILE__, __LINE__ } }; \
+    (MSG)->caller_info = &__tort_caller_info._;				\
+  }
 #else
-#define _tort_send_msg_file_line() 
-#define _tort_send_msg_file_line_t() 
+#define _tort_send_msg_file_line(MSG) 
 #endif
 
 #define _tort_send_msg_init(SEL, RCVR_AND_ARGS...)			\
@@ -326,7 +333,7 @@ tort_lookup_decl(_tort_m_mtable__lookup);
         0,								\
       }									\
     };									\
-    _tort_send_msg_file_line()
+    _tort_send_msg_file_line(&__tort_msg._)
 
 /* ARGC = 1 (RCVR) + number of args, or -1 if unknown. */
 #define _tort_sendn(SEL, ARGC, RCVR_AND_ARGS...)			\
@@ -346,7 +353,7 @@ tort_lookup_decl(_tort_m_mtable__lookup);
     _tort_message->receiver = (tort_v) _tort_send_RCVR(RCVR_AND_ARGS);	\
     _tort_message->mtable = 0;						\
     _tort_message->argc = tort_i(ARGC);					\
-    _tort_send_msg_file_line_t();					\
+    _tort_send_msg_file_line(_tort_message);				\
     return								\
       _tort_lookup(_tort_message, _tort_message->receiver, _tort_message)-> \
       method->applyf(_tort_message, _tort_send_RCVR_ARGS(_tort_message->receiver, RCVR_AND_ARGS)); \

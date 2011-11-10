@@ -8,9 +8,12 @@ tort_ACCESSOR(message,tort_v,method);
 tort_ACCESSOR(message,tort_v,mtable);
 tort_ACCESSOR(message,tort_v,argc);
 #if TORT_MESSAGE_FILE_LINE
-tort_ACCESSOR(message,charP,file);
-tort_ACCESSOR(message,int,line);
+tort_ACCESSOR(message,tort_v,caller_info);
 #endif
+
+tort_ACCESSOR(caller_info,charP,file)
+tort_ACCESSOR(caller_info,int,line)
+tort_ACCESSOR(caller_info,tort_v,data)
 
 tort_v _tort_M_message__new(tort_tp tort_v mtable)
 {
@@ -28,8 +31,15 @@ tort_v _tort_m_message__initialize(tort_tp tort_message *rcvr)
   rcvr->mtable = 0;
   rcvr->argc = tort_i(0);
 #if TORT_MESSAGE_FILE_LINE
-  rcvr->file = "<unknown>";
-  rcvr->line = 0;
+  {
+    static tort_caller_info_ unknown = { { }, { { }, "<unknown>", 0 } };
+    if ( ! unknown._._h[-1].mtable ) {
+      unknown._._h[-1].alloc_size = sizeof(tort_caller_info);
+      unknown._._h[-1].mtable = tort__mt(caller_info);
+      unknown._.data = tort_nil;
+    }
+    rcvr->caller_info = &unknown._;
+  }
 #endif
   return rcvr;
 }

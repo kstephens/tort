@@ -208,6 +208,7 @@ tort_v tort_runtime_initialize_mtable()
   tort__mt(symbol)      = tort_mtable_create(tort__mt(object));
   tort__mt(method)      = tort_mtable_create(tort__mt(object));
   tort__mt(message)     = tort_mtable_create(tort__mt(object));
+  tort__mt(caller_info) = tort_mtable_create(tort__mt(object));
   tort__mt(boolean)     = tort_mtable_create(tort__mt(object));
 
   /* io */

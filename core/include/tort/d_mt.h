@@ -1,6 +1,7 @@
 /* -*- c -*- */
 tort_d_mt(block)
 tort_d_mt(boolean)
+tort_d_mt(caller_info)
 tort_d_mt(dynlib)
 tort_d_mt(eos)
 tort_d_mt(fixnum)
