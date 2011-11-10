@@ -3,30 +3,25 @@
 tort_v _tort_M_cons__new(tort_tp tort_v cons_mt, tort_v a, tort_v d)
 {
   tort_cons *cons = tort_send(tort__s(_allocate), cons_mt, sizeof(*cons));
-  assert(cons);
-  cons->car = a;
-  cons->cdr = d;
+  cons->car = a; cons->cdr = d;
   return cons;
 }
 
 #define ACCESSOR(X)							\
-  tort_v _tort_m_cons__##X(tort_tp tort_cons *rcvr)		\
+  tort_v _tort_m_cons__##X(tort_tp tort_cons *rcvr)			\
   {									\
     return rcvr->X;							\
   }									\
   tort_v tort_##X(tort_v rcvr) {					\
     return tort_send(tort_s(X), rcvr);					\
   }									\
-  tort_v _tort_m_cons__setD##X##E(tort_tp tort_cons *rcvr,	\
-			       tort_v val)				\
+  tort_v _tort_m_cons__setD##X##E(tort_tp tort_cons *rcvr, tort_v val)	\
   {									\
     rcvr->X = val;							\
     return rcvr;							\
   }
-
 ACCESSOR(car)
 ACCESSOR(cdr)
-
 #undef ACCESSOR
 
 tort_v tort_caar(tort_v v) 
