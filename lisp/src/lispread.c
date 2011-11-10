@@ -256,6 +256,25 @@ READ_DECL
 	}
     	goto try_again;
 
+	/* #| nesting comment. |# */
+      case '|':
+	{
+	  int level = 1;
+	  GETC(stream);
+	  while ( (c = GETC(stream)) != EOF && level > 0 ) {
+	    if ( c == '|' && PEEKC(stream) == '#' ) {
+	      GETC(stream);
+	      -- level;
+	    } else if ( c == '#' && PEEKC(stream) == '|' ) {
+	      GETC(stream);
+	      ++ level;
+	    }
+	  }
+	  if ( level > 0 )
+	    RETURN(ERROR("eos inside #| comment |#"));
+	}
+	goto try_again;
+
 	/* s-expr comment ala chez scheme */
       case ';':
 #if READ_DEBUG_WHITESPACE
