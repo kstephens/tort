@@ -38,6 +38,7 @@ SMAL=$(BASE_DIR)/../smal#
 CFLAGS += -I$(SMAL)/include
 LDFLAGS += -L$(SMAL)/src
 LIBS += -lsmal
+LINK_DEPS += $(SMAL)/src/libsmal.a
 
 LIB_TORT = $(BASE_DIR)/core/src/libtortcore.la
 

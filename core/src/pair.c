@@ -7,7 +7,5 @@ tort_v _tort_M_pair__new(tort_tp tort_mtable *mtable, tort_v first, tort_v secon
   e->second = second;
   return e;
 }
-tort_GETTER(pair,tort_v,first);
-tort_SETTER(pair,tort_v,first);
-tort_GETTER(pair,tort_v,second);
-tort_SETTER(pair,tort_v,second);
+tort_ACCESSOR(pair,tort_v,first);
+tort_ACCESSOR(pair,tort_v,second);

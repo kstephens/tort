@@ -13,11 +13,6 @@ tort_v _tort_allocate(tort_tp tort_v mtable, size_t size
   tort_h_ref(val)->alloc_file = alloc_file;
   tort_h_ref(val)->alloc_line = alloc_line;
   tort_h_ref(val)->alloc_id   = _tort_alloc_id;
-
-  if ( _tort_alloc_id == 0 ) {
-    fprintf(stderr, "\nSTOP AT ALLOC ID = %lu\n", _tort_alloc_id);
-    abort();
-  }
 #endif
   return val;
 }
@@ -35,18 +30,7 @@ tort_v _tort_m_mtable___instance_size (tort_tp tort_mtable *mtable)
 tort_v _tort_m_mtable___allocate (tort_tp tort_mtable *mtable, size_t size)
 {
   void *ptr;
-  size_t alloc_size = sizeof(tort_header) + size;
-
-  assert(alloc_size >= size);
-
-  ptr = tort_object_alloc(mtable, alloc_size);
-  ptr += sizeof(tort_header);
-
-  tort_h_ref(ptr)->alloc_size = size;
-  tort_h_ref(ptr)->mtable  = mtable;
-
-  ++ _tort_alloc_id;
-
+  ptr = tort_object_alloc(mtable, size);
   return ptr;
 }
 
@@ -126,6 +110,11 @@ static tort_mtable * tort_mtable_create_0(tort_v delegate)
   tort_mtable *mt = tort_allocate(tort__mt(mtable), sizeof(tort_mtable));
   _tort_m_map__initialize(tort_ta (tort_v) mt);
   mt->delegate = delegate;
+  mt->instance_size = 0;
+  mt->gc_data = 0;
+  mt->gc_mark_method = 0;
+  mt->gc_free_method = 0;
+  mt->data = 0;
   return mt;
 }
 

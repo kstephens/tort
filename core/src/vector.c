@@ -1,6 +1,15 @@
 #include "tort/core.h"
 #include <assert.h>
 
+tort_v _tort_m_vector_base___gc_free(tort_tp tort_vector *o)
+{
+  if ( o->element_size == 1 ) 
+    tort_free_atomic(o->data);
+  else 
+    tort_free(o->data);
+  return 0;
+}
+
 tort_v _tort_M_vector_base___new(tort_tp tort_v mtable, const void *data, size_t size, size_t element_size)
 {
   tort_vector_base *v = tort_allocate(mtable, sizeof(tort_vector_base));
@@ -173,3 +182,8 @@ tort_v _tort_m_vector__map (tort_tp tort_vector *rcvr, tort_v block)
   return new_vec;
 }
 
+tort_v _tort_m_vector___gc_mark(tort_tp tort_vector *o)
+{
+  tort_gc_mark_range(o->data, o->data + o->size);
+  return 0;
+}

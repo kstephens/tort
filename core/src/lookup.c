@@ -335,9 +335,16 @@ tort_apply_decl(_tort_m_object___method_not_found)
   return tort_nil;
 }
 
+static void mark_cache(void *data)
+{
+  tort_gc_mark_range(&mcache, ((void*) &mcache) + sizeof(mcache));
+}
+
 tort_v tort_runtime_initialize_lookup()
 {
   tort_(_m_method_not_found) = tort_method_new(_tort_m_object___method_not_found, 0);
+
+  tort_gc_add_callback(mark_cache, 0);
 
 #if TORT_GLOBAL_MCACHE && TORT_GLOBAL_MCACHE_STATS
   if ( getenv("TORT_MCACHE_STATS") )

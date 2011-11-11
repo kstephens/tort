@@ -8,6 +8,7 @@ int main(int argc, char **argv, char **environ)
   tort_v io;
   tort_v s, p, v;
   tort_v st;
+  extern tort_v tort_runtime_initialize_dynlib();
 
   tort_runtime_create();
   st = tort_send(tort_s(get), tort_(root), tort_s(core_symtab));

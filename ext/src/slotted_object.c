@@ -9,17 +9,6 @@ tort_h_struct(tort_slotted_object);
 tort_SETTER(slotted_object,tort_v,_names);
 tort_SETTER(slotted_object,tort_v,_values);
 
-tort_v _tort_m_slotted_object___gc_mark(tort_tp tort_slotted_object *o)
-{
-  tort_gc_mark(o, o->_names);
-  return o->_values;
-}
-
-tort_v _tort_m_slotted_object___gc_free(tort_tp tort_slotted_object *o)
-{
-  return 0;
-}
-
 static tort_v _tort_getter__applyf(tort_tp tort_slotted_object *o)
 {
   assert(_tort_message->argc >= tort_i(1));

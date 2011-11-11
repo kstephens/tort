@@ -6,15 +6,6 @@ typedef struct tort_send_block {
 
 tort_ACCESSOR(send_block,tort_v,selector);
 
-tort_v _tort_m_send_block___gc_mark(tort_tp tort_send_block *o) /* TORT_NO_INTERNAL */
-{
-  return o->selector;
-}
-tort_v _tort_m_send_block___gc_free(tort_tp tort_send_block *o)  /* TORT_NO_INTERNAL */
-{
-  return 0;
-}
-
 tort_v _tort_m_send_block__value(tort_tp tort_send_block *o, tort_v rcvr) /* TORT_NO_INTERNAL */
 {
   return_tort_send(o->selector, rcvr);

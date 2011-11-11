@@ -204,6 +204,8 @@ struct tort_mtable { tort_H;
   tort_mtable* delegate;
   size_t instance_size;
   void *gc_data;
+  tort_v gc_mark_method;
+  tort_v gc_free_method;
   tort_v data;
 };
 
@@ -387,10 +389,11 @@ void  tort_free_atomic(void *ptr);
 void *tort_realloc(void *ptr, size_t size);
 void *tort_realloc_atomic(void *ptr, size_t size);
 void  tort_gc_collect();
-#define tort_gc_mark(referrer, referred) (void)0 // TODO
+void  tort_gc_mark(tort_v referrer, tort_v referred);
 #define tort_gc_add_root(referencep) (void)0 // TODO
 #define tort_gc_remove_root(referencep) (void)0
-#define tort_gc_add_callback(func) (void)0
+void tort_gc_mark_range(void *b, void *e);
+void tort_gc_add_callback(void (*func)(void *data), void *data);
 
 tort_v tort_map_create(); // FIXME
 

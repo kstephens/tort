@@ -24,10 +24,9 @@ tort_v _tort_m_object___alloc_size (tort_tp tort_v rcvr)
 
 tort_v _tort_m_object__clone (tort_tp tort_v rcvr)
 {
-  size_t alloc_size = sizeof(tort_header) + tort_h(rcvr)->alloc_size;
+  size_t alloc_size = tort_h(rcvr)->alloc_size;
   void *ptr = tort_object_alloc(tort_h(rcvr)->mtable, alloc_size);
-  memcpy(ptr, tort_h(rcvr), alloc_size);
-  ptr += sizeof(tort_header);
+  memcpy(ptr, rcvr, alloc_size);
   return ptr;
 }
 
@@ -44,6 +43,20 @@ tort_v _tort_m_object___slot_at (tort_tp tort_v rcvr, tort_v offset)
 tort_v _tort_m_object___set_slot_at (tort_tp tort_v rcvr, tort_v offset, tort_v value)
 {
   return ((tort_v*) rcvr)[tort_I(offset)] = value;
+}
+
+tort_v _tort_m_object___gc_mark(tort_tp tort_v o)
+{
+  // Avoid sends to objects that do not have a _gc_mark method.  See gc.c.
+  tort_h_mtable(o)->gc_mark_method = tort_true;
+  return 0;
+}
+
+tort_v _tort_m_object___gc_free(tort_tp tort_v o)
+{
+  // Avoid sends to objects that do not have a _gc_free method.  See gc.c.
+  tort_h_mtable(o)->gc_free_method = tort_true;
+  return 0;
 }
 
 tort_v tort_object_new()

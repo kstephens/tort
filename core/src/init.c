@@ -9,6 +9,21 @@ tort_runtime_ __tort = { { sizeof(tort_runtime) } };
 tort_runtime *_tort = &__tort._;
 #endif
 
+tort_v tort_runtime_initialize_malloc();
+tort_v tort_runtime_initialize_error();
+tort_v tort_runtime_initialize_mtable();
+tort_v tort_runtime_initialize_symbol();
+tort_v tort_runtime_initialize_gc();
+tort_v tort_runtime_initialize_gc_ready();
+tort_v tort_runtime_initialize_io();
+tort_v tort_runtime_initialize_printf();
+tort_v tort_runtime_initialize_write();
+tort_v tort_runtime_initialize_debug();
+tort_v tort_runtime_initialize_method();
+tort_v tort_runtime_initialize_lookup();
+tort_v tort_runtime_initialize_tort();
+tort_v tort_runtime_initialize_dynlib();
+
 tort_v tort_runtime_create_ (int *argcp, char ***argvp, char ***envp)
 {
   tort_runtime_initialize_malloc();
@@ -141,6 +156,8 @@ tort_v tort_runtime_create_ (int *argcp, char ***argvp, char ***envp)
     }
     ROOT(argv, v);
   }
+
+  tort_runtime_initialize_gc_ready();
 
   tort_(_initialized) = tort_true;
 

@@ -43,6 +43,8 @@ libs : $(LIBS_EARLY) $(GEN_LIBS)
 
 bins : $(BINS_EARLY) $(GEN_BINS)
 
+$(BINS_EARLY) $(GEN_BINS) : $(LINK_DEPS)
+
 early : early-headers early-files check-gen-new
 
 early-headers: boot/include/.touch
@@ -110,7 +112,7 @@ srcs : $(GEN_C_FILES)
 # library:
 #
 
-$(LIB) : $(LIB_OFILES)
+$(LIB) : $(LIB_OFILES) $(LINK_DEPS)
 	$(LIBTOOL) --tag=LD --mode=link $(CC) $(LDFLAGS) $(LIB_FLAGS) -o $@ $(LIB_OFILES) $(LIBS)
 	$(LIBTOOL) --mode=install cp $@ $(libdir)
 
@@ -127,7 +129,7 @@ $(LIB_OFILES) : $(LIB_HFILES)
 
 tests : components $(TEST_T_FILES) 
 
-$(TEST_T_FILES) : $(TEST_LIBS)
+$(TEST_T_FILES) : $(TEST_LIBS) $(LINK_DEPS)
 
 $(TEST_T_FILES) $(LIB_OFILES) : $(GEN_H_FILES) include/tort/*.h 
 
