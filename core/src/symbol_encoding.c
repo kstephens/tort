@@ -63,7 +63,7 @@ tort_symbol_mapping *find_mapping(tort_symbol_mapping *sm, const char *s)
 const char *tort_symbol_encode(const char *in)
 {
   const char *s = in;
-  char *out = tort_malloc(sizeof(out[0]) * (strlen(in) + 1));
+  char *out = tort_malloc_atomic(sizeof(out[0]) * (strlen(in) + 1));
   char *t = out;
   int encoded = 0;
   static int sorted = 0;
@@ -90,7 +90,7 @@ const char *tort_symbol_encode(const char *in)
   if ( encoded ) {
     return out;
   } else {
-    tort_free(out);
+    tort_free_atomic(out);
     return in;
   }
 }

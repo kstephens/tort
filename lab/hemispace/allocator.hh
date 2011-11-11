@@ -249,7 +249,7 @@ namespace hemispace {
 	  fprintf(stderr, "      from %p copy to %p\n", r->ptr(), to_ptr);
 
 	  /* Leave a forwarding pointer in the "from" Space to the "to" Space. */
-	  r->forward_to_((Class*) to_ptr);
+	  r->forward_to_(to_ptr);
 	  
 	  /* Point ref into "to" Space. */
 	  r->ptr_(to_ptr);

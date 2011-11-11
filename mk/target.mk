@@ -111,7 +111,7 @@ srcs : $(GEN_C_FILES)
 #
 
 $(LIB) : $(LIB_OFILES)
-	$(LIBTOOL) --tag=LD --mode=link $(CC) $(LDFLAGS) $(LIB_FLAGS) -o $@ $(LIB_OFILES)
+	$(LIBTOOL) --tag=LD --mode=link $(CC) $(LDFLAGS) $(LIB_FLAGS) -o $@ $(LIB_OFILES) $(LIBS)
 	$(LIBTOOL) --mode=install cp $@ $(libdir)
 
 $(LIB_OFILES) : $(LIB_HFILES)

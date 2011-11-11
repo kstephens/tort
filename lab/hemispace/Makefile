@@ -1,4 +1,5 @@
-CFLAGS+= -O3 #
+#CFLAGS+= -O3 # segfaults
+#CFLAGS+= -O2 # segfaults
 CFLAGS+= -g #
 
 all : test-1.t

@@ -25,7 +25,7 @@ tort_v _tort_m_object___alloc_size (tort_tp tort_v rcvr)
 tort_v _tort_m_object__clone (tort_tp tort_v rcvr)
 {
   size_t alloc_size = sizeof(tort_header) + tort_h(rcvr)->alloc_size;
-  void *ptr = tort_malloc(alloc_size);
+  void *ptr = tort_object_alloc(tort_h(rcvr)->mtable, alloc_size);
   memcpy(ptr, tort_h(rcvr), alloc_size);
   ptr += sizeof(tort_header);
   return ptr;

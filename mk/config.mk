@@ -34,6 +34,10 @@ else
 LDFLAGS += -L$(PREFIX)/lib #
 LIBS += -lgc #
 endif
+SMAL=$(BASE_DIR)/../smal#
+CFLAGS += -I$(SMAL)/include
+LDFLAGS += -L$(SMAL)/src
+LIBS += -lsmal
 
 LIB_TORT = $(BASE_DIR)/core/src/libtortcore.la
 

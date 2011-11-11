@@ -1,4 +1,5 @@
 #include "tort/core.h"
+#include "smal/smal.h"
 
 size_t _tort_gc_finalize_count = 0;
 
@@ -17,6 +18,8 @@ struct {
     ,free_atomic_n
     ,finalizer_n
     ,finalize_n
+    ,object_alloc_n
+    ,object_alloc_bytes
     ;
 } gc_stats;
 
@@ -118,49 +121,6 @@ tort_v _tort_m_object____register_finalizer(tort_tp tort_v rcvr)
   return tort_nil;
 }
 
-static
-void tort_gc_atexit()
-{
-#if 0
-  fprintf(stderr, "\n  tort_gc_atexit()\n");
-  fflush(stderr);
-#endif
-  tort_gc_collect();
-  if ( getenv("TORT_GC_STATS") )
-    tort_gc_dump_stats();
-}
-
-void tort_gc_dump_stats()
-{
-  tort_v io = tort_stderr;
-  tort_flush(tort_stdout);
-  tort_flush(tort_stderr);
-  tort_printf(io, "\n");
-  if ( _tort_gc_mode ) {
-#define Pf(X) tort_printf(io, "tort: gc stats: %26s = %16lu\n", #X, GC_##X())
-#define Pl(X) tort_printf(io, "tort: gc stats: %26s = %16lu\n", #X, GC_##X)
-#include "gc_stats.h"
-  }
-#if TORT_GC_STATS
-#define S(N) \
-  tort_printf(io, "tort: gc stats: %26s = %16lu\n", #N, (unsigned long) gc_stats.N)
-  S(malloc_n);
-  S(malloc_bytes);
-  S(realloc_n);
-  S(realloc_bytes);
-  S(malloc_atomic_n);
-  S(malloc_atomic_bytes);
-  S(realloc_atomic_n);
-  S(realloc_atomic_bytes);
-  S(free_n);
-  S(free_atomic_n);
-  S(finalizer_n);
-  S(finalize_n);
-#undef S
-#endif
-  tort_flush(io);
-}
-
 static void (*_tort_gc_collect)() = 0;
 void tort_gc_collect()
 {
@@ -174,6 +134,87 @@ void tort_gc_invoke_finalizers()
 {
   if ( _tort_gc_invoke_finalizers )
     _tort_gc_invoke_finalizers();
+}
+
+/********************************************************************/
+
+void smal_collect_before_inner(void *top_of_stack)
+{
+  smal_thread *thr = smal_thread_self();
+  thr->top_of_stack = top_of_stack;
+  thr->bottom_of_stack = tort_(stack_bottom);
+}
+void smal_collect_before_mark()
+{
+}
+void smal_collect_mark_roots()
+{
+  smal_thread *thr = smal_thread_self();
+  smal_mark_ptr_range(0, thr->top_of_stack, thr->bottom_of_stack);
+}
+void smal_collect_after_mark()
+{
+}
+void smal_collect_before_sweep()
+{
+}
+void smal_collect_after_sweep()
+{
+}
+
+static
+void print_smal_stats(const char *msg)
+{
+  smal_stats stats = { 0 };
+  int i;
+  
+  smal_global_stats(&stats);
+  fprintf(stderr, "\nsmal stats %s:\n", msg ? msg : "");
+  for ( i = 0; smal_stats_names[i]; ++ i ) {
+    fprintf(stderr, "  %24llu %s\n", (unsigned long long) (((size_t*) &stats)[i]), smal_stats_names[i]);
+  }
+  fprintf(stderr, "\n");
+}
+
+static
+void *_tort_object_alloc_default(tort_mtable *mtable, size_t size)
+{
+  if ( mtable ) {
+    if ( ! mtable->gc_data ) {
+      smal_type_descriptor desc = { 0 };
+      desc.object_size = size;
+      desc.object_alignment = sizeof(tort_v);
+      mtable->gc_data = smal_type_for_desc(&desc);
+    }
+    return smal_alloc(mtable->gc_data);
+  }
+  return tort_malloc(size);
+}
+static void *(*_tort_object_alloc)() = _tort_object_alloc_default;
+void *tort_object_alloc(tort_mtable *mtable, size_t size)
+{
+  void *o;
+
+  /* Save the instance size in the mtable. */
+  if ( mtable ) {
+    if ( ! mtable->instance_size ) {
+      mtable->instance_size = size;
+    }
+    assert(mtable->instance_size == size);
+  } else {
+    fprintf(stderr, "tort_object_alloc: no mtable for %lu\n", (unsigned long) size);
+  }
+
+  o = _tort_object_alloc(mtable, size);
+  if ( o ) {
+    TORT_GC_STAT(object_alloc_n ++);
+    TORT_GC_STAT(object_alloc_bytes += size);
+
+    if ( gc_stats.object_alloc_n % 10000 == 0 ) {
+      print_smal_stats(0);
+    }
+  }
+  return o;
 }
 
 tort_v tort_runtime_initialize_malloc()
@@ -191,7 +232,58 @@ tort_v tort_runtime_initialize_malloc()
     _tort_gc_collect = GC_gcollect;
     _tort_gc_invoke_finalizers = (void*) GC_invoke_finalizers;
   }
+  smal_init();
   return 0;
+}
+
+static
+void tort_gc_atexit()
+{
+#if 0
+  fprintf(stderr, "\n  tort_gc_atexit()\n");
+  fflush(stderr);
+#endif
+  tort_gc_collect();
+  if ( getenv("TORT_GC_STATS") ) {
+    tort_gc_dump_stats();
+  }
+  print_smal_stats("before atexit");
+  smal_collect();
+  smal_collect_wait_for_sweep();
+  print_smal_stats("after atexit gc");
+}
+
+void tort_gc_dump_stats()
+{
+  tort_v io = tort_stderr;
+  tort_flush(tort_stdout);
+  tort_flush(tort_stderr);
+  tort_printf(io, "\n");
+  if ( _tort_gc_mode ) {
+#define Pf(X) tort_printf(io, "tort: gc stats: %26s = %16lu\n", #X, GC_##X())
+#define Pl(X) tort_printf(io, "tort: gc stats: %26s = %16lu\n", #X, GC_##X)
+#include "gc_stats.h"
+  }
+#if TORT_GC_STATS
+#define S(N) \
+  tort_printf(io, "tort: gc stats: %26s = %16lu\n", #N, (unsigned long) gc_stats.N)
+  S(object_alloc_n);
+  S(object_alloc_bytes);
+  S(malloc_n);
+  S(malloc_bytes);
+  S(realloc_n);
+  S(realloc_bytes);
+  S(malloc_atomic_n);
+  S(malloc_atomic_bytes);
+  S(realloc_atomic_n);
+  S(realloc_atomic_bytes);
+  S(free_n);
+  S(free_atomic_n);
+  S(finalizer_n);
+  S(finalize_n);
+#undef S
+#endif
+  tort_flush(io);
 }
 
 tort_v tort_runtime_initialize_gc()

@@ -200,9 +200,11 @@ tort_v tort_string_new(const char *d, size_t s);
 tort_v tort_string_new_cstr(const char *str);
 
 struct tort_mtable { tort_H;
-  tort_map _map;
+  tort_map _map; /* same layout as tort_map. */
   tort_mtable* delegate;
   size_t instance_size;
+  void *gc_data;
+  tort_v data;
 };
 
 struct tort_symbol { tort_H;
@@ -377,6 +379,7 @@ extern tort_v _tort_fiber;
 #define tort_false tort_(b_false)
 #endif
 
+void *tort_object_alloc(tort_mtable *mtable, size_t size);
 void *tort_malloc(size_t size);
 void *tort_malloc_atomic(size_t size);
 void  tort_free(void *ptr);
