@@ -4,7 +4,7 @@
 #define IO rcvr
 #define FP IO->fp
 
-#ifdef __LINUX__
+#ifdef __linux__
 #include <printf.h>
 #include <libio.h>
 /* Use hidden slot in FILE* to point back to a tort_io object. */
@@ -38,12 +38,14 @@ tort_v _tort_M_io____stat(tort_tp tort_mtable *mtable, tort_v name)
     ST(struct  timespec ,st_ctimespec);  /* time of last status change */
 #endif
 #else
+#ifndef __linux__ /* FIXME!!! */
     ST(time_t          ,st_atime);       /* [XSI] Time of last access */
     ST(long            ,st_atimensec);   /* nsec of last access */
     ST(time_t          ,st_mtime);       /* [XSI] Last data modification time */
     ST(long            ,st_mtimensec);   /* last data modification nsec */
     ST(time_t          ,st_ctime);       /* [XSI] Time of last status change */
     ST(long            ,st_ctimensec);   /* nsec of last status change */
+#endif
 #endif
     ST(off_t           ,st_size);        /* [XSI] file size, in bytes */
     ST(blkcnt_t        ,st_blocks);      /* [XSI] blocks allocated for file */
