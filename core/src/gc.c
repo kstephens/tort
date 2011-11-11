@@ -151,6 +151,7 @@ void smal_collect_mark_roots()
 {
   smal_thread *thr = smal_thread_self();
   smal_mark_ptr_range(0, thr->top_of_stack, thr->bottom_of_stack);
+  smal_mark_ptr_range(0, _tort, _tort + sizeof(_tort));
 }
 void smal_collect_after_mark()
 {
@@ -177,17 +178,36 @@ void print_smal_stats(const char *msg)
 }
 
 static
+void *mark_obj(void *obj)
+{
+  fprintf(stderr, "mark %p %s\n", obj, tort_object_name(obj));
+  smal_mark_ptr_range(obj, obj, obj + tort_h(obj)->alloc_size);
+  return tort_h_mtable(obj);
+}
+static
+void *_type_for_size(size_t size)
+{
+  smal_type_descriptor desc = { 0 };
+  desc.object_size = size;
+  desc.object_alignment = sizeof(tort_v);
+  desc.mark_func = mark_obj;
+  return smal_type_for_desc(&desc);
+}
+static
 void *_tort_object_alloc_default(tort_mtable *mtable, size_t size)
 {
   if ( mtable ) {
     if ( ! mtable->gc_data ) {
-      smal_type_descriptor desc = { 0 };
-      desc.object_size = size;
-      desc.object_alignment = sizeof(tort_v);
-      mtable->gc_data = smal_type_for_desc(&desc);
+      mtable->gc_data = _type_for_size(size);
+    }
+    if ( gc_stats.object_alloc_n % 10000 == 0 ) {
+      smal_collect();
+      smal_collect_wait_for_sweep();
+      print_smal_stats("after gc");
     }
     return smal_alloc(mtable->gc_data);
   }
+  return smal_alloc(_type_for_size(size));
   return tort_malloc(size);
 }
 static void *(*_tort_object_alloc)() = _tort_object_alloc_default;
@@ -210,9 +230,11 @@ void *tort_object_alloc(tort_mtable *mtable, size_t size)
     TORT_GC_STAT(object_alloc_n ++);
     TORT_GC_STAT(object_alloc_bytes += size);
 
+#if 0
     if ( gc_stats.object_alloc_n % 10000 == 0 ) {
       print_smal_stats(0);
     }
+#endif
   }
   return o;
 }
