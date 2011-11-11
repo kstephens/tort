@@ -157,6 +157,7 @@ void smal_collect_mark_roots()
   smal_thread *thr = smal_thread_self();
   fprintf(stderr, "  mark_roots: stack [@%p,@%p)\n", thr->top_of_stack, thr->bottom_of_stack);
   smal_mark_ptr_range(0, thr->top_of_stack, thr->bottom_of_stack);
+  smal_mark_ptr(0, _tort);
   smal_mark_ptr_range(0, _tort, _tort + 1);
   smal_roots_mark_chain();
 }
