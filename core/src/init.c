@@ -30,11 +30,8 @@ tort_v tort_runtime_create_ (int *argcp, char ***argvp, char ***envp)
 
   /* Create runtime object. */
 #if TORT_MULTIPLICITY
-  _tort = 
-#else
-    (void)
+  _tort = tort_ref(tort_runtime, tort_allocate(0, sizeof(tort_runtime)));
 #endif
-    tort_ref(tort_runtime, tort_allocate(0, sizeof(tort_runtime)));
 
   tort_runtime_initialize_error();
 
