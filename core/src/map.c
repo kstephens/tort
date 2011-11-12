@@ -100,15 +100,20 @@ tort_v _tort_m_map__delete(tort_tp tort_map *rcvr, tort_v key)
   return tort_nil;
 }
 
+tort_v _tort_m_map__emit(tort_tp tort_map *rcvr, tort_map *target)
+{
+  tort_map_EACH(rcvr, entry) {
+    // fprintf(stderr, "  entry => { %s, %p }\n", tort_symbol_data(entry->first), (void*) entry->second);
+    tort_send(tort__s(set), target, entry->first, entry->second);
+  } tort_map_EACH_END();
+  return target;
+}
+
 tort_v _tort_m_map__clone(tort_tp tort_map *rcvr)
 {
   tort_v new_map = _tort_m_object__clone(tort_ta rcvr);
   _tort_m_map__initialize(tort_ta new_map);
-  tort_map_EACH(rcvr, entry) {
-    // fprintf(stderr, "  entry => { %s, %p }\n", tort_symbol_data(entry->first), (void*) entry->second);
-    _tort_m_map__add(tort_ta new_map, entry->first, entry->second);
-  } tort_map_EACH_END();
-  return new_map;
+  return _tort_m_map__emit(tort_ta rcvr, new_map);
 }
 
 tort_v tort_map_create()
