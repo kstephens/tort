@@ -70,6 +70,7 @@ tort_v _tort_m_vector_base___resize (tort_tp tort_vector_base *v, size_t size)
   size_t old_size = v->size;
   size_t old_alloc_size = v->alloc_size;
   if ( size > old_size || size < old_size / 2 ) {
+    assert(v->data);
     v->alloc_size = v->element_size * (size + 1); /* + 1 null terminator */
     if ( v->element_size == 1 ) {
       v->data = 
@@ -81,6 +82,8 @@ tort_v _tort_m_vector_base___resize (tort_tp tort_vector_base *v, size_t size)
 	tort_malloc(v->alloc_size);
     }
   }
+  bzero(v->data + v->alloc_size - v->element_size, v->element_size); /* null terminator. */
+  v->size = size;
   return v;
 }
 
@@ -96,8 +99,6 @@ tort_v _tort_m_vector_base___append (tort_tp tort_vector_base *v, const void *da
   memcpy(v->data + v->element_size * size,
 	 datap,
 	 v->element_size * data_count);
-  v->size = size += data_count;
-  memset(v->data + v->element_size * size, 0, v->element_size); /* null terminator. */
   return v;
 }
 
