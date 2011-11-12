@@ -40,7 +40,7 @@ tort_v _tort_m_vector_base__clone (tort_tp tort_vector_base *v)
 {
   tort_vector_base *v2 = _tort_m_object__clone(tort_ta v);
   v2->data = (v->element_size == 1 ? tort_malloc_atomic : tort_malloc)(v2->alloc_size);
-  memcpy(v2->data, v->data, v2->element_size * (v2->size + 1));
+  memcpy(v2->data, v->data, v2->alloc_size);
   return v2;
 }
 
