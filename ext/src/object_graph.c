@@ -56,7 +56,7 @@ static int visitedQ(tort_og_context *context, void *ptr)
 static void visited(tort_og_context *context, void *ptr)
 {
   struct visited *v = malloc(sizeof(*v));
-  memset(v, 0, sizeof(*v));
+  bzero(v, sizeof(*v));
   v->ptr = ptr;
   v->next = context->visited;
   context->visited = v;
@@ -65,7 +65,7 @@ static void visited(tort_og_context *context, void *ptr)
 static void link(tort_og_context *context, tort_v src_obj, int src_port, tort_v dst_obj, int dst_port, const char *style)
 {
   struct link *link = malloc(sizeof(*link));
-  memset(link, 0, sizeof(*link));
+  bzero(link, sizeof(*link));
   link->src_obj = src_obj;
   link->src_port = src_port;
   link->dst_obj = dst_obj;
@@ -85,7 +85,7 @@ static char *sgml_encode(const char *s)
     char *o = t;
     int c;
     
-    memset(t, 0, size);
+    bzero(t, size);
     while ( (c = *(s ++)) ) {
       /**/ if ( c == '&' ) strcpy(o, "&amp;");
       else if ( c == '<' ) strcpy(o, "&lt;");
@@ -107,7 +107,7 @@ static char *slot_str(tort_og_context *context, struct slot *slot, tort_v val, i
 {
   tort_mtable *mt = tort_h_mtable(val);
   char buf[128], *e = buf + sizeof(buf) - 2;
-  memset(buf, 0, sizeof(buf));
+  bzero(buf, sizeof(buf));
 
   if ( ! port ) port = slot->port;
   if ( 0 ) {
@@ -196,7 +196,7 @@ void og_slot(tort_og_context *context,
 	     const char *link_style)
 {
   struct slot *slot = malloc(sizeof(*slot));
-  memset(slot, 0, sizeof(*slot));
+  bzero(slot, sizeof(*slot));
   assert(context);
   slot->obj = obj;
   slot->name = name;

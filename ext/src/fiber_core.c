@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stddef.h>
-#include <string.h> /* memset(). */
+#include <strings.h> /* bzero() */
 #include <sys/mman.h>
 #include <assert.h>
 
@@ -80,7 +80,7 @@ void *(*__tort_fiber_allocate)(size_t size) = malloc;
 void *__tort_fiber_new(tort_fiber_t *fiber_parent, tort_fiber_func func, void *func_data, size_t size)
 {
   tort_fiber_t *fiber = __tort_fiber_allocate(sizeof(*fiber));
-  memset(fiber, 0, sizeof(*fiber));
+  bzero(fiber, sizeof(*fiber));
   fiber->status = CREATED;
   fiber->parent = fiber_parent;
   fiber->func = func;

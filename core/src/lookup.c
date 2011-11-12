@@ -89,7 +89,7 @@ void _tort_mcache_stats()
 static void mcache_flush_all()
 {
   (void) TORT_MCACHE_STAT(++ mcache_stats.flush_all_n);
-  memset(&mcache, 0, sizeof(mcache));
+  bzero(&mcache, sizeof(mcache));
 }
 
 #endif
@@ -132,7 +132,7 @@ tort_v _tort_m_mtable___method_changed(tort_tp tort_mtable *rcvr, tort_v sym, to
     for ( i = 0; i < MCACHE_SIZE; ++ i ) {
       if ( mcache[i].sel == sym ) {
 	(void) TORT_MCACHE_STAT(++ mcache_stats.flush_symbol_n);
-	memset(&mcache[i], 0, sizeof(mcache[i]));
+	bzero(&mcache[i], sizeof(mcache[i]));
       }
     }
   }

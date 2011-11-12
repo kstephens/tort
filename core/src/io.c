@@ -20,7 +20,7 @@ tort_v _tort_M_io____stat(tort_tp tort_mtable *mtable, tort_v name)
 {
   int result;
   struct stat st;
-  memset(&st, 0, sizeof(st));
+  bzero(&st, sizeof(st));
   if ( (result = stat(tort_string_data(name), &st)) == 0 ) {
     tort_v map = tort_send(tort__s(new), tort__mt(map));
 #define ST(T,N) tort_send(tort__s(set), map, tort_s(N), tort_i((tort_vi) st.N))

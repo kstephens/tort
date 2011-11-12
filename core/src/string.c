@@ -17,7 +17,7 @@ tort_v _tort_M_string___new(tort_tp tort_mtable *mtable, const char *string, siz
 {
   tort_string *v = tort_vector_base_new(mtable, string, size, sizeof(string[0]));
   if ( ! string )
-    memset(v->data, 0, v->alloc_size);
+    bzero(v->data, v->alloc_size);
   return v;
 }
 

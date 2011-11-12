@@ -64,7 +64,7 @@ tort_v _tort_m_dynlib__dlopen(tort_tp struct tort_dynlib *rcvr, tort_v name)
     }
     {
       Dl_info info;
-      memset(&info, 0, sizeof(info));
+      bzero(&info, sizeof(info));
       dladdr((void*) base_ptr, &info);
       if ( _tort_dl_debug > 1 ) {
 	fprintf(stderr, "    dli_fname = %s\n", info.dli_fname);

@@ -31,8 +31,8 @@ tort_v _tort_m_vector_base___initialize(tort_tp tort_vector_base *v, size_t size
      v->alloc_size = 
      (v->element_size = element_size) *
      ((v->size = size) + 1) /* + 1 null terminator */
-     ); 
-  memset(v->data, 0, v->alloc_size); /* not if GC_malloc() */
+     );
+  bzero(v->data, v->alloc_size); /* not if GC_malloc() */
   return v;
 }
 

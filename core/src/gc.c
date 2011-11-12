@@ -39,8 +39,8 @@ void *tort_malloc(size_t size)
   void *ptr = _tort_malloc(size);
   if ( ! ptr )
     tort_fatal(tort_ta "tort_malloc(%lu): failed", (unsigned long) size);
-  if ( ! _tort_gc_mode )
-    memset(ptr, 0, size);
+  if ( ! _tort_alloc_bzero )
+    bzero(ptr, size);
   TORT_GC_STAT(malloc_n ++);
   TORT_GC_STAT(malloc_bytes += size);
   return ptr;
@@ -53,8 +53,8 @@ void *tort_malloc_atomic(size_t size)
   void *ptr = _tort_malloc_atomic(size);
   if ( ! ptr )
     tort_fatal(tort_ta "tort_malloc_atomic(%lu): failed", (unsigned long) size);
-  if ( ! _tort_gc_mode )
-    memset(ptr, 0, size);
+  if ( ! _tort_alloc_bzero )
+    bzero(ptr, size);
   TORT_GC_STAT(malloc_atomic_n ++);
   TORT_GC_STAT(malloc_atomic_bytes += size);
   return ptr;
