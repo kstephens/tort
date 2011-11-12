@@ -1,3 +1,4 @@
+UNAME_S:=$(shell uname -s 2>/dev/null)#
 BASE_DIR:=$(shell cd "$(BASE_DIR)" && /bin/pwd)#
 GC_VERSION=gc-20101223-cvs#
 GC_VERSION=gc-7.2alpha6#
@@ -26,7 +27,11 @@ CFLAGS_OPTIMIZE = -O3
 #CFLAGS_OPTIMIZE = 
 CFLAGS += -DTORT_DLIB_DIR='"$(libdir)"' #
 CFLAGS += -DTORT_GC=$(TORT_GC) #
-#CFLAGS += -fnested-functions # FIXME: remove on linux gcc 4.4.5
+CFLAGS += -DTORT_SMAL=$(TORT_SMAL) #
+ifneq "$(UNAME_S)" "Linux"
+# FIXME: -fnested-functions not supported on linux gcc 4.4.5
+CFLAGS += -fnested-functions
+endif
 CFLAGS += $(CFLAGS_INC) -Iinclude -I$(BASE_DIR)/core/include -I$(BASE_DIR)/core/boot/include -I$(GC)/include -Wall -Werror $(CFLAGS_OPTIMIZE)
 
 ifeq "$(TORT_GC)" "0"
