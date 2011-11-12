@@ -442,7 +442,7 @@ const char *tort_mtable_name_(tort_v val);
 const char *tort_object_name_(tort_v val);
 const char *tort_object_name(tort_v val);
 
-extern int _tort_gc_mode;
+extern const char *_tort_gc_mode;
 void tort_gc_collect();
 void tort_gc_dump_stats();
 void tort_gc_invoke_finalizers();

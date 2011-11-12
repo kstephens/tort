@@ -16,7 +16,6 @@ src/dynlib.c
 src/eq.c
 src/error.c
 src/gc.c
-src/gc_null.c
 src/init.c
 src/integer.c
 src/io.c
@@ -233,6 +232,9 @@ tort_d_m(tort_h_ref(tort__mt(caller_info))->mtable, tort__s(_offset_file), _tort
 tort_d_m(tort_h_ref(tort__mt(caller_info))->mtable, tort__s(_offset_line), _tort_M_caller_info___offset_line)
 tort_d_m(tort_h_ref(tort__mt(dynlib))->mtable, tort__s(new), _tort_M_dynlib__new)
 tort_d_m(tort_h_ref(tort__mt(fixnum))->mtable, tort__s(_ops), _tort_M_fixnum___ops)
+tort_d_m(tort_h_ref(tort__mt(gc))->mtable, tort__s(gc_collect), _tort_M_gc__gc_collect)
+tort_d_m(tort_h_ref(tort__mt(gc))->mtable, tort__s(gc_stats), _tort_M_gc__gc_stats)
+tort_d_m(tort_h_ref(tort__mt(gc))->mtable, tort__s(mark), _tort_M_gc__mark)
 tort_d_m(tort_h_ref(tort__mt(io))->mtable, tort__s(__create), _tort_M_io____create)
 tort_d_m(tort_h_ref(tort__mt(io))->mtable, tort__s(__stat), _tort_M_io____stat)
 tort_d_m(tort_h_ref(tort__mt(io))->mtable, tort__s(create), _tort_M_io__create)

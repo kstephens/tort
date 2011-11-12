@@ -2,6 +2,14 @@
 #include "smal/smal.h"
 #include "smal/roots.h"
 
+#ifndef TORT_GC
+#define TORT_GC 0
+#endif
+#ifndef TORT_SMAL
+#define TORT_SMAL 0
+#endif
+
+extern int _tort_lookup_trace;
 size_t _tort_gc_finalize_count = 0;
 
 static
@@ -30,7 +38,8 @@ struct {
 #define TORT_GC_STAT(X) (1)
 #endif
 
-int _tort_gc_mode = 0;
+const char *_tort_gc_mode;
+static int _tort_alloc_bzero = 1;
 
 static
 void *(*_tort_malloc)(size_t size) = malloc;
@@ -106,19 +115,26 @@ void tort_free_atomic(void *ptr)
 
 static void _tort_finalization_proc (void * obj, void * client_data)
 {
-  if ( ! _tort_gc_mode ) return;
   _tort_gc_finalize_count ++;
   TORT_GC_STAT(finalize_n ++);
-  tort_send(tort__s(__finalize), tort_ref_box(obj));
+  tort_send(tort__s(__finalize), tort_ref_box(obj + sizeof(tort_header)));
 }
 
+#if TORT_GC
+void _tort_gc_register_finalizer_gc(tort_v obj)
+{
+  GC_register_finalizer(obj - sizeof(tort_header), _tort_finalization_proc, 0, 0, 0);
+}
+#endif
+
+static void (*_tort_gc_register_finalizer)(tort_v obj) = 0;
 tort_v _tort_m_object____register_finalizer(tort_tp tort_v rcvr)
 {
-  if ( _tort_gc_mode ) {
-    // fprintf(stderr, "\n  _tort_object___register_finalizer @%p\n", (void*) rcvr);
-    GC_register_finalizer(rcvr, _tort_finalization_proc, 0, 0, 0);
-    TORT_GC_STAT(finalizer_n ++);
+  if ( _tort_gc_register_finalizer ) {
+    fprintf(stderr, "\n  _tort_object___register_finalizer @%p\n", (void*) rcvr);
+    _tort_gc_register_finalizer(rcvr);
   }
+  TORT_GC_STAT(finalizer_n ++);
   return tort_nil;
 }
 
@@ -143,6 +159,36 @@ void tort_gc_invoke_finalizers()
 
 /********************************************************************/
 
+void tort_gc_mark(tort_v referrer, tort_v referred)
+{
+  // FIXME
+#if TORT_SMAL
+  if ( referred != tort_nil && ! tort_taggedQ(referred) ) {
+    smal_mark_ptr(referrer != tort_nil ? referrer - sizeof(tort_header) : 0, 
+		  referred - sizeof(tort_header));
+  }
+#endif
+}
+
+void tort_gc_mark_range(void *b, void *e)
+{
+  // FIXME
+#if TORT_SMAL
+  smal_mark_ptr_range(0, b, e);
+#endif
+}
+
+void tort_gc_add_callback(void (*func)(void *data), void *data)
+{
+  // FIXME
+#if TORT_SMAL
+  smal_roots_add_callback(func, data);
+#endif
+}
+
+/********************************************************************/
+
+#if TORT_SMAL
 void smal_collect_before_inner(void *top_of_stack)
 {
   smal_thread *thr = smal_thread_self();
@@ -171,30 +217,13 @@ void smal_collect_after_sweep()
 {
 }
 
-void tort_gc_mark(tort_v referrer, tort_v referred)
-{
-  if ( referred != tort_nil && ! tort_taggedQ(referred) ) {
-    smal_mark_ptr(referrer - sizeof(tort_header), 
-		  referred - sizeof(tort_header));
-  }
-}
-
-void tort_gc_mark_range(void *b, void *e)
-{
-  smal_mark_ptr_range(0, b, e);
-}
-
-void tort_gc_add_callback(void (*func)(void *data), void *data)
-{
-  smal_roots_add_callback(func, data);
-}
-
 static
-void print_smal_stats(const char *msg)
+void _tort_gc_dump_stats_smal()
 {
+  const char *msg = 0;
   smal_stats stats = { 0 };
   int i;
-  
+
   smal_global_stats(&stats);
   fprintf(stderr, "\n  smal stats %s:\n", msg ? msg : "");
   for ( i = 0; smal_stats_names[i]; ++ i ) {
@@ -204,20 +233,18 @@ void print_smal_stats(const char *msg)
 }
 
 static
-void _smal_gc_collect()
+void _tort_gc_collect_smal()
 {
   smal_collect();
   smal_collect_wait_for_sweep();
-  print_smal_stats("after gc");
+  tort_gc_dump_stats();
 }
-
-extern int _tort_lookup_trace;
 
 static
 void *mark_obj(void *ptr)
 {
   tort_v obj = ptr + sizeof(tort_header);
-  fprintf(stderr, "  %p mark %p %s [%p-%p]\n", &obj, ptr, tort_object_name(obj), obj, obj + tort_h(obj)->alloc_size);
+  // fprintf(stderr, "  %p mark %p %s [%p-%p]\n", &obj, ptr, tort_object_name(obj), obj, obj + tort_h(obj)->alloc_size);
   smal_mark_ptr_range(ptr, obj, obj + tort_h(obj)->alloc_size);
   if ( tort_h_mtable(obj)->gc_mark_method != tort_true ) {
     tort_v result;
@@ -226,7 +253,7 @@ void *mark_obj(void *ptr)
     // _tort_lookup_trace --;
     smal_mark_ptr(ptr, result);
   }
-  return ((tort_v*) obj)[-1]; // obj->mtable.
+  return ((tort_v*) obj)[-1] - sizeof(tort_header); // obj->mtable.
 }
 static
 void free_obj(void *ptr)
@@ -249,8 +276,9 @@ void *_type_for_size(size_t size)
   desc.free_func = free_obj;
   return smal_type_for_desc(&desc);
 }
+
 static
-void *_tort_object_alloc_default(tort_mtable *mtable, size_t size)
+void *_tort_object_alloc_smal(tort_mtable *mtable, size_t size)
 {
   if ( mtable ) {
     if ( ! mtable->gc_data ) {
@@ -262,8 +290,15 @@ void *_tort_object_alloc_default(tort_mtable *mtable, size_t size)
     return smal_alloc(mtable->gc_data);
   }
   return smal_alloc(_type_for_size(size));
+}
+#endif
+
+static
+void *_tort_object_alloc_default(tort_mtable *mtable, size_t size)
+{
   return tort_malloc(size);
 }
+
 static void *(*_tort_object_alloc)() = _tort_object_alloc_default;
 void *tort_object_alloc(tort_mtable *mtable, size_t size)
 {
@@ -282,70 +317,35 @@ void *tort_object_alloc(tort_mtable *mtable, size_t size)
   ptr = _tort_object_alloc(mtable, alloc_size);
   if ( ptr ) {
     extern unsigned long _tort_alloc_id;
+    if ( ! _tort_alloc_bzero )
+      bzero(ptr, alloc_size);
     ptr += sizeof(tort_header);
     tort_h_ref(ptr)->alloc_size = size;
     tort_h_ref(ptr)->mtable = mtable;
     ++ _tort_alloc_id;
-    fprintf(stderr, "  alloc %p[%llu] %s %lu\n", ptr, (unsigned long long) size, tort_object_name(mtable), _tort_alloc_id);
+    // fprintf(stderr, "  alloc %p[%llu] %s %lu\n", ptr, (unsigned long long) size, tort_object_name(mtable), _tort_alloc_id);
     TORT_GC_STAT(object_alloc_n ++);
     TORT_GC_STAT(object_alloc_bytes += alloc_size);
-#if 0
-    if ( gc_stats.object_alloc_n % 10000 == 0 ) {
-      print_smal_stats(0);
-    }
-#endif
   }
   return ptr;
 }
 
-tort_v tort_runtime_initialize_malloc()
+#if TORT_GC
+static void _tort_gc_dump_stats_gc()
 {
-  const char *var;
-  _tort_gc_disabled ++;
-  _tort_gc_mode = atoi((var = getenv("TORT_GC")) ? var : "0"); // BOEHM GC is broken - kurt 2011/10/30
-  if ( _tort_gc_mode > 0 ) {
-    GC_finalize_on_demand = 1;
-    _tort_malloc  = GC_malloc;
-    _tort_malloc_atomic = GC_malloc_atomic;
-    _tort_free = GC_free;
-    _tort_free_atomic = GC_free; /* ??? */
-    _tort_realloc = GC_realloc;
-    _tort_realloc_atomic = GC_realloc; /* ??? */
-    _tort_gc_collect = GC_gcollect;
-    _tort_gc_invoke_finalizers = (void*) GC_invoke_finalizers;
-  }
-  smal_debug_set_level(smal_debug_all, 1);
-  smal_init();
-  _tort_gc_collect = _smal_gc_collect;
-  return 0;
+#define Pf(X) tort_printf(io, "tort: gc stats: %26s = %16lu\n", #X, GC_##X())
+#define Pl(X) tort_printf(io, "tort: gc stats: %26s = %16lu\n", #X, GC_##X)
+#include "gc_stats.h"
 }
-
-static
-void tort_gc_atexit()
-{
-#if 0
-  fprintf(stderr, "\n  tort_gc_atexit()\n");
-  fflush(stderr);
 #endif
-  print_smal_stats("before atexit");
-  tort_gc_collect();
-  if ( getenv("TORT_GC_STATS") ) {
-    tort_gc_dump_stats();
-  }
-  print_smal_stats("after atexit gc");
-}
 
+static void (*_tort_gc_dump_stats)() = 0;
 void tort_gc_dump_stats()
 {
   tort_v io = tort_stderr;
   tort_flush(tort_stdout);
   tort_flush(tort_stderr);
   tort_printf(io, "\n");
-  if ( _tort_gc_mode ) {
-#define Pf(X) tort_printf(io, "tort: gc stats: %26s = %16lu\n", #X, GC_##X())
-#define Pl(X) tort_printf(io, "tort: gc stats: %26s = %16lu\n", #X, GC_##X)
-#include "gc_stats.h"
-  }
 #if TORT_GC_STATS
 #define S(N) \
   tort_printf(io, "tort: gc stats: %26s = %16lu\n", #N, (unsigned long) gc_stats.N)
@@ -365,13 +365,99 @@ void tort_gc_dump_stats()
   S(finalize_n);
 #undef S
 #endif
+  if ( _tort_gc_dump_stats )
+    _tort_gc_dump_stats();
   tort_flush(io);
+}
+
+tort_v tort_runtime_initialize_malloc()
+{
+  const char *var;
+  _tort_gc_disabled ++; // temporarily disabled till boot is finished.
+
+  (void) _tort_finalization_proc; // avoid warning.
+
+  var = getenv("TORT_GC");
+  if ( ! var || ! *var || ! strcmp(var, "0") ) var = "malloc";
+
+#if TORT_GC
+  if ( ! strcmp(var, "gc") ) {
+    GC_finalize_on_demand = 1;
+    _tort_gc_mode = "gc";
+    _tort_malloc  = GC_malloc;
+    _tort_malloc_atomic = GC_malloc_atomic;
+    _tort_free = GC_free;
+    _tort_free_atomic = GC_free; /* ??? */
+    _tort_realloc = GC_realloc;
+    _tort_realloc_atomic = GC_realloc; /* ??? */
+    _tort_gc_collect = GC_gcollect;
+    _tort_gc_register_finalizer = _tort_gc_register_finalizer_gc;
+    _tort_gc_invoke_finalizers = (void*) GC_invoke_finalizers;
+    _tort_gc_dump_stats = _tort_gc_dump_stats_gc;
+  }
+#endif
+#if TORT_SMAL
+  if ( ! strcmp(var, "smal") ) {
+    _tort_gc_mode = "smal";
+    smal_debug_set_level(smal_debug_all, 1);
+    smal_init();
+    _tort_gc_collect = _tort_gc_collect_smal;
+    _tort_object_alloc = _tort_object_alloc_smal;
+    _tort_gc_dump_stats = _tort_gc_dump_stats_smal;
+  }
+#endif
+  if ( ! strcmp(var, "malloc") ) {
+    _tort_gc_mode = "malloc";
+  }
+  if ( ! _tort_gc_mode ) {
+    _tort_gc_mode = "malloc";
+    fprintf(stderr, "  tort: WARNING: defaulting to TORT_GC=%s\n", _tort_gc_mode);
+  }
+  if ( ! strcmp(var, "malloc") ) {
+    fprintf(stderr, "  tort: WARNING: using malloc(), NO GC!\n");
+  }
+
+  return 0;
+}
+
+static
+void tort_gc_atexit()
+{
+#if 0
+  fprintf(stderr, "\n  tort_gc_atexit()\n");
+  fflush(stderr);
+#endif
+#if TORT_SMAL
+  fprintf(stderr, "  before atexit\n");
+  tort_gc_dump_stats();
+#endif
+  tort_gc_collect();
+  if ( getenv("TORT_GC_STATS") ) {
+    tort_gc_dump_stats();
+  }
+}
+
+tort_v _tort_M_gc__gc_collect(tort_tp tort_mtable *o)
+{
+  tort_gc_collect();
+  return o;
+}
+
+tort_v _tort_M_gc__gc_stats(tort_tp tort_mtable *o)
+{
+  tort_gc_dump_stats();
+  return o;
+}
+
+tort_v _tort_M_gc__mark(tort_tp tort_mtable *o, tort_v object)
+{
+  tort_gc_mark(0, object);
+  return o;
 }
 
 tort_v tort_runtime_initialize_gc()
 {
   tort_add_method(tort__mt(object), "__finalize",  _tort_m_object__identity);
-  atexit(tort_gc_atexit);
   return 0;
 }
 
@@ -379,5 +465,6 @@ tort_v tort_runtime_initialize_gc_ready()
 {
   assert(_tort_gc_disabled);
   _tort_gc_disabled --;
+  atexit(tort_gc_atexit);
   return 0;
 }
