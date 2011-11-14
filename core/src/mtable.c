@@ -1,5 +1,12 @@
 #include "tort/core.h"
 
+// tort_GETTER(mtable,tort_v,delegate)
+tort_ACCESSOR(mtable,size_t,instance_size);
+tort_ACCESSOR(mtable,voidP,gc_data);
+tort_ACCESSOR(mtable,tort_v,gc_mark_method);
+tort_ACCESSOR(mtable,tort_v,gc_free_method);
+tort_ACCESSOR(mtable,tort_v,data);
+
 unsigned long _tort_alloc_id = 0;
 
 tort_v _tort_allocate(tort_tp tort_v mtable, size_t size
@@ -20,11 +27,6 @@ tort_v _tort_allocate(tort_tp tort_v mtable, size_t size
 tort_v _tort_m_mtable__allocate (tort_tp tort_mtable *mtable)
 {
   return _tort_m_mtable___allocate(tort_ta mtable, mtable->instance_size);
-}
-
-tort_v _tort_m_mtable___instance_size (tort_tp tort_mtable *mtable)
-{
-  return tort_i(mtable->instance_size);
 }
 
 tort_v _tort_m_mtable___allocate (tort_tp tort_mtable *mtable, size_t size)
@@ -69,8 +71,9 @@ tort_v _tort_m_mtable__remove_method (tort_tp tort_mtable *mtable, tort_symbol *
 
 tort_v _tort_m_mtable__alias_method (tort_tp tort_mtable *mtable, tort_symbol *symbol, tort_symbol *other_symbol)
 {
-  tort_message_ msg_ = { { sizeof(tort_message), tort__mt(message) } };
+  tort_message_ msg_;
   tort_message *msg = &msg_._;
+  msg->_h[-1].mtable = tort__mt(message);
   msg->selector = other_symbol;
   msg->method = tort_nil;
   msg = tort_send(tort_s(lookup), mtable, msg);
@@ -171,7 +174,7 @@ tort_v tort_runtime_initialize_mtable()
 
   /* Initialize nil object header. */
   tort__mt(nil)         = tort_mtable_create(tort__mt(object));
-  tort_(nil_header).alloc_size = 0;
+  // tort_(nil_header).applyf = ???;
   tort_(nil_header).mtable  = tort__mt(nil);
 
   /* Initialize tagged object headers. */
@@ -179,7 +182,7 @@ tort_v tort_runtime_initialize_mtable()
   {
     int i;
     for ( i = 0; i < 1 << TORT_TAG_BITS; ++ i ) {
-      tort_(tagged_header[i]).alloc_size = 0;
+      // tort_(tagged_header[i]).applyf = ???;
       tort_(tagged_header[i]).mtable = tort_mtable_create(tort__mt(tagged));
     }
   }

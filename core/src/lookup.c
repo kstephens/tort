@@ -209,7 +209,7 @@ tort_message* _tort_lookup (tort_tp tort_v rcvr, tort_message *message)
 #define MTABLE ((tort_mtable*) rcvr)
 
   /* Initializer rest of message object. */
-  message->_h[-1].alloc_size = sizeof(tort_message);
+  // message->_h[-1].applyf = ???;
   message->_h[-1].mtable = tort__mt(message);
   // message->previous_message = _tort_message;
   message->method = tort_nil;

@@ -28,10 +28,6 @@ int main(int argc, char **argv, char **environ)
     tort_inspect(io, c = tort_send(tort__s(eof), o));
     printf("\n  (size v) => ");
     tort_inspect(io, c = tort_send(tort__s(size), v));
-    printf("\n  (alloc_size v) => ");
-    tort_inspect(io, c = tort_send(tort__s(alloc_size), v));
-    printf("\n  (_alloc_size v) => ");
-    tort_inspect(io, c = tort_send(tort__s(_alloc_size), v));
     printf("\n\n");
   }
 

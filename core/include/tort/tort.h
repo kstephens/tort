@@ -63,7 +63,6 @@ struct tort_header {
   int alloc_line;
   size_t alloc_id;
 #endif
-  size_t alloc_size;   /** allocated object size, not including this header */
   tort_mtable *mtable; /** The object's method table. */
 } tort_header;
 #define tort_H tort_header _h[0]
@@ -202,7 +201,7 @@ tort_v tort_string_new_cstr(const char *str);
 struct tort_mtable { tort_H;
   tort_map _map; /* same layout as tort_map. */
   tort_mtable* delegate;
-  size_t instance_size;
+  size_t instance_size; /** allocated object size, not including this header */
   void *gc_data;
   tort_v gc_mark_method;
   tort_v gc_free_method;

@@ -232,7 +232,7 @@ static void *mark_obj(void *ptr)
 {
   tort_v obj = ptr + sizeof(tort_header);
   // fprintf(stderr, "  %p mark %p %s [%p-%p]\n", &obj, ptr, tort_object_name(obj), obj, obj + tort_h(obj)->alloc_size);
-  smal_mark_ptr_range(ptr, obj, obj + tort_h(obj)->alloc_size);
+  smal_mark_ptr_range(ptr, obj, obj + tort_h_mtable(obj)->instance_size);
   if ( tort_h_mtable(obj)->gc_mark_method != tort_true ) {
     tort_v result;
     // _tort_lookup_trace ++;
@@ -303,7 +303,6 @@ void *tort_object_alloc(tort_mtable *mtable, size_t size)
     if ( ! _tort_alloc_bzero )
       bzero(ptr, alloc_size);
     ptr += sizeof(tort_header);
-    tort_h_ref(ptr)->alloc_size = size;
     tort_h_ref(ptr)->mtable = mtable;
     ++ _tort_alloc_id;
     // fprintf(stderr, "  alloc %p[%llu] %s %lu\n", ptr, (unsigned long long) size, tort_object_name(mtable), _tort_alloc_id);

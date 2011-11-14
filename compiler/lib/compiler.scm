@@ -47,7 +47,7 @@
   (string-append "_tort_x_" ('_to_string ('_object_ptr o))))
 
 (define compiler:object:header-size ('get &root 'OBJECT_HEADER_SIZE))
-(define compiler:message:alloc-size (+ compiler:object:header-size ('_alloc_size ('new <message>))))
+(define compiler:message:instance-size (+ compiler:object:header-size ('instance_size <message>)))
 (define (compiler:type:slot-offset type slot)
   ((string->symbol (string-append "_offset_" (symbol->string slot))) type))
 
@@ -251,7 +251,7 @@
       ;;   Save msg reg:
       (compiler:emit c "pushq " msg)
       ;;   Allocate new message object on stack:
-      (compiler:emit c "subq  $" compiler:message:alloc-size ", " sp-reg)
+      (compiler:emit c "subq  $" compiler:message:instance-size ", " sp-reg)
       (compiler:emit c "movq  " sp-reg "," msg)
       ;;   Add object header offset:
       (compiler:emit c "addq  $" compiler:object:header-size ", " msg)
@@ -311,7 +311,7 @@
 	)
 
       ;; Reclaim message space:
-      (compiler:emit c "addq  $" compiler:message:alloc-size ", " sp-reg "    \t// pop *msg")
+      (compiler:emit c "addq  $" compiler:message:instance-size ", " sp-reg "    \t// pop *msg")
       ;;   Restore msg reg:
       (compiler:emit c "popq  " msg)
       )
