@@ -47,7 +47,7 @@
   (string-append "_tort_x_" ('_to_string ('_object_ptr o))))
 
 (define compiler:object:header-size ('get &root 'OBJECT_HEADER_SIZE))
-(define compiler:message:instance-size (+ compiler:object:header-size ('instance_size <message>)))
+(define compiler:message:instance-size (+ compiler:object:header-size ((and ('new <message>) ('instance_size <message>)))))
 (define (compiler:type:slot-offset type slot)
   ((string->symbol (string-append "_offset_" (symbol->string slot))) type))
 
