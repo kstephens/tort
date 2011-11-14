@@ -41,8 +41,7 @@ struct {
 const char *_tort_gc_mode;
 static int _tort_alloc_bzero = 1;
 
-static
-void *(*_tort_malloc)(size_t size) = malloc;
+static void *(*_tort_malloc)(size_t size) = malloc;
 void *tort_malloc(size_t size)
 {
   void *ptr = _tort_malloc(size);
@@ -55,8 +54,7 @@ void *tort_malloc(size_t size)
   return ptr;
 }
 
-static
-void *(*_tort_malloc_atomic)(size_t size) = malloc;
+static void *(*_tort_malloc_atomic)(size_t size) = malloc;
 void *tort_malloc_atomic(size_t size)
 {
   void *ptr = _tort_malloc_atomic(size);
@@ -69,8 +67,7 @@ void *tort_malloc_atomic(size_t size)
   return ptr;
 }
 
-static
-void (*_tort_free)(void *ptr) = free;
+static void (*_tort_free)(void *ptr) = free;
 void tort_free(void *ptr)
 {
   if ( ! ptr )
@@ -79,8 +76,7 @@ void tort_free(void *ptr)
   TORT_GC_STAT(free_n ++);
 }
 
-static
-void *(*_tort_realloc)(void *ptr, size_t size) = realloc;
+static void *(*_tort_realloc)(void *ptr, size_t size) = realloc;
 void *tort_realloc(void *ptr, size_t size)
 {
   void *new_ptr = _tort_realloc(ptr, size);
@@ -91,8 +87,7 @@ void *tort_realloc(void *ptr, size_t size)
   return new_ptr;
 }
 
-static
-void *(*_tort_realloc_atomic)(void *ptr, size_t size) = realloc;
+static void *(*_tort_realloc_atomic)(void *ptr, size_t size) = realloc;
 void *tort_realloc_atomic(void *ptr, size_t size)
 {
   void *new_ptr = _tort_realloc_atomic(ptr, size);
@@ -103,8 +98,7 @@ void *tort_realloc_atomic(void *ptr, size_t size)
   return new_ptr;
 }
 
-static
-void (*_tort_free_atomic)(void *ptr) = free;
+static void (*_tort_free_atomic)(void *ptr) = free;
 void tort_free_atomic(void *ptr)
 {
   if ( ! ptr )
@@ -201,7 +195,7 @@ void smal_collect_before_mark()
 void smal_collect_mark_roots()
 {
   smal_thread *thr = smal_thread_self();
-  fprintf(stderr, "  mark_roots: stack [@%p,@%p)\n", thr->top_of_stack, thr->bottom_of_stack);
+  // fprintf(stderr, "  mark_roots: stack [@%p,@%p)\n", thr->top_of_stack, thr->bottom_of_stack);
   smal_mark_ptr_range(0, thr->top_of_stack, thr->bottom_of_stack);
   smal_mark_ptr(0, _tort);
   smal_mark_ptr_range(0, _tort, _tort + 1);
@@ -217,31 +211,24 @@ void smal_collect_after_sweep()
 {
 }
 
-static
-void _tort_gc_dump_stats_smal()
+static void _tort_gc_stats_smal(tort_v map)
 {
-  const char *msg = 0;
   smal_stats stats = { 0 };
   int i;
-
   smal_global_stats(&stats);
-  fprintf(stderr, "\n  smal stats %s:\n", msg ? msg : "");
   for ( i = 0; smal_stats_names[i]; ++ i ) {
-    fprintf(stderr, "    %24llu %s\n", (unsigned long long) (((size_t*) &stats)[i]), smal_stats_names[i]);
+    tort_send(tort__s(set), map, tort_symbol_new(smal_stats_names[i]), tort_i(((size_t*) &stats)[i]));
   }
-  fprintf(stderr, "\n");
 }
 
-static
-void _tort_gc_collect_smal()
+static void _tort_gc_collect_smal()
 {
   smal_collect();
   smal_collect_wait_for_sweep();
   tort_gc_dump_stats();
 }
 
-static
-void *mark_obj(void *ptr)
+static void *mark_obj(void *ptr)
 {
   tort_v obj = ptr + sizeof(tort_header);
   // fprintf(stderr, "  %p mark %p %s [%p-%p]\n", &obj, ptr, tort_object_name(obj), obj, obj + tort_h(obj)->alloc_size);
@@ -255,8 +242,7 @@ void *mark_obj(void *ptr)
   }
   return ((tort_v*) obj)[-1] - sizeof(tort_header); // obj->mtable.
 }
-static
-void free_obj(void *ptr)
+static void free_obj(void *ptr)
 {
   tort_v obj = ptr + sizeof(tort_header);
   fprintf(stderr, "  %p free %p %s\n", &obj, ptr, tort_object_name(obj));
@@ -266,8 +252,7 @@ void free_obj(void *ptr)
     // _tort_lookup_trace --;
   }
 }
-static
-void *_type_for_size(size_t size)
+static void *_type_for_size(size_t size)
 {
   smal_type_descriptor desc = { 0 };
   desc.object_size = size;
@@ -277,8 +262,7 @@ void *_type_for_size(size_t size)
   return smal_type_for_desc(&desc);
 }
 
-static
-void *_tort_object_alloc_smal(tort_mtable *mtable, size_t size)
+static void *_tort_object_alloc_smal(tort_mtable *mtable, size_t size)
 {
   if ( mtable ) {
     if ( ! mtable->gc_data ) {
@@ -293,8 +277,7 @@ void *_tort_object_alloc_smal(tort_mtable *mtable, size_t size)
 }
 #endif
 
-static
-void *_tort_object_alloc_default(tort_mtable *mtable, size_t size)
+static void *_tort_object_alloc_default(tort_mtable *mtable, size_t size)
 {
   return tort_malloc(size);
 }
@@ -331,24 +314,20 @@ void *tort_object_alloc(tort_mtable *mtable, size_t size)
 }
 
 #if TORT_GC
-static void _tort_gc_dump_stats_gc()
+static void _tort_gc_stats_gc(tort_v map)
 {
-#define Pf(X) tort_printf(io, "tort: gc stats: %26s = %16lu\n", #X, GC_##X())
-#define Pl(X) tort_printf(io, "tort: gc stats: %26s = %16lu\n", #X, GC_##X)
+#define Pf(X) tort_send(tort__s(set), map, tort_s(X), tort_i(GC_##X()));
+#define Pl(X) tort_send(tort__s(set), map, tort_s(X), tort_i(GC_##X));
 #include "gc_stats.h"
 }
 #endif
 
-static void (*_tort_gc_dump_stats)() = 0;
-void tort_gc_dump_stats()
+static void (*_tort_gc_stats)(tort_v map) = 0;
+void tort_gc_stats(tort_v map)
 {
-  tort_v io = tort_stderr;
-  tort_flush(tort_stdout);
-  tort_flush(tort_stderr);
-  tort_printf(io, "\n");
 #if TORT_GC_STATS
 #define S(N) \
-  tort_printf(io, "tort: gc stats: %26s = %16lu\n", #N, (unsigned long) gc_stats.N)
+  tort_send(tort__s(set), map, tort_s(tort_##N), tort_i(gc_stats.N));
   S(object_alloc_n);
   S(object_alloc_bytes);
   S(malloc_n);
@@ -365,8 +344,21 @@ void tort_gc_dump_stats()
   S(finalize_n);
 #undef S
 #endif
-  if ( _tort_gc_dump_stats )
-    _tort_gc_dump_stats();
+  if ( _tort_gc_stats )
+    _tort_gc_stats(map);
+}
+
+void tort_gc_dump_stats()
+{
+  tort_v io = tort_stderr;
+  tort_v map = tort_map_create();
+  tort_flush(tort_stdout);
+  tort_flush(tort_stderr);
+  tort_printf(io, "  tort GC stats:\n");
+  tort_map_EACH(map, e); {
+    tort_printf(io, "    %T = %T\n", e->first, e->second);
+  } tort_map_EACH_END();
+  tort_printf(io, "\n");
   tort_flush(io);
 }
 
@@ -393,7 +385,7 @@ tort_v tort_runtime_initialize_malloc()
     _tort_gc_collect = GC_gcollect;
     _tort_gc_register_finalizer = _tort_gc_register_finalizer_gc;
     _tort_gc_invoke_finalizers = (void*) GC_invoke_finalizers;
-    _tort_gc_dump_stats = _tort_gc_dump_stats_gc;
+    _tort_gc_stats = _tort_gc_stats_gc;
   }
 #endif
 #if TORT_SMAL
@@ -403,7 +395,7 @@ tort_v tort_runtime_initialize_malloc()
     smal_init();
     _tort_gc_collect = _tort_gc_collect_smal;
     _tort_object_alloc = _tort_object_alloc_smal;
-    _tort_gc_dump_stats = _tort_gc_dump_stats_smal;
+    _tort_gc_stats = _tort_gc_stats_smal;
   }
 #endif
   if ( ! strcmp(var, "malloc") ) {
@@ -420,8 +412,7 @@ tort_v tort_runtime_initialize_malloc()
   return 0;
 }
 
-static
-void tort_gc_atexit()
+static void tort_gc_atexit()
 {
 #if 0
   fprintf(stderr, "\n  tort_gc_atexit()\n");
@@ -445,8 +436,9 @@ tort_v _tort_M_gc__gc_collect(tort_tp tort_mtable *o)
 
 tort_v _tort_M_gc__gc_stats(tort_tp tort_mtable *o)
 {
-  tort_gc_dump_stats();
-  return o;
+  tort_v map = tort_map_create();
+  tort_gc_stats(map);
+  return map;
 }
 
 tort_v _tort_M_gc__mark(tort_tp tort_mtable *o, tort_v object)
