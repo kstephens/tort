@@ -399,8 +399,10 @@ tort_v tort_runtime_initialize_malloc()
     _tort_gc_collect = _tort_gc_collect_smal;
     _tort_object_alloc = _tort_object_alloc_smal;
     _tort_gc_stats = _tort_gc_stats_smal;
-    var = getenv("TORT_GC_ALLOCS_PER_GC");
-    allocs_per_gc = var && *var ? atoi(var) : 10000;
+    {
+      const char *s = getenv("TORT_GC_ALLOCS_PER_GC");
+      allocs_per_gc = s && *s ? atoi(s) : 10000;
+    }
   }
 #endif
   if ( ! strcmp(var, "malloc") ) {
@@ -410,7 +412,7 @@ tort_v tort_runtime_initialize_malloc()
     _tort_gc_mode = "malloc";
     fprintf(stderr, "  tort: WARNING: defaulting to TORT_GC=%s\n", _tort_gc_mode);
   }
-  if ( ! strcmp(var, "malloc") ) {
+  if ( ! strcmp(_tort_gc_mode, "malloc") ) {
     fprintf(stderr, "  tort: WARNING: using malloc(), NO GC!\n");
   }
 
