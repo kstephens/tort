@@ -29,7 +29,9 @@ CFLAGS_OPTIMIZE = -O3
 CFLAGS += -DTORT_DLIB_DIR='"$(libdir)"' #
 CFLAGS += -DTORT_GC=$(TORT_GC) #
 CFLAGS += -DTORT_SMAL=$(TORT_SMAL) #
-ifneq "$(UNAME_S)" "Linux"
+ifeq "$(UNAME_S)" "Linux"
+LIBS += -ldl
+else
 # FIXME: -fnested-functions not supported on linux gcc 4.4.5
 CFLAGS += -fnested-functions
 endif
