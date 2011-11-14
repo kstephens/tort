@@ -1,8 +1,8 @@
 
 !SLIDE
-!TITLE Meta-Decomposition
+!TITLE Decomposing Decomposition
 
-h1. Meta-Decomposition
+h1. Decomposing Decomposition
 
 * Kurt Stephens
 * 2011/11/13
@@ -22,19 +22,53 @@ h1. Fundamentals
 
 h1. Emphasis
 
-* Behavior, over State.
-* Messages, over Methods.
-* Composition and Delegation, over Inheritance.
-* Objects, over Classes.
+* Behavior over State.
+* Messages over Methods.
+
+h2. Other Emphasis
+
+* Composition and Delegation over Inheritance.
+* Objects over Classes.
 
 !SLIDE
-!TITLE Decomposing Composition
+!TITLE Behavior over State
 
-h1. Decomposing Composition
+h1. Behavior over State
 
-h2. Behavior
+* State is a side-effect of Behavior.
+* State is subordinate to Behavior.
+* Behavior is more difficult to abstract than State.
 
-Message:
+!SLIDE
+!TITLE Messages over Methods
+
+h1. Messages over Methods
+
+* "Send a message X to object Y"
+* NOT "Call the method X on object Y"
+* Messages have lifetimes, just like objects.
+
+!SLIDE 
+!TITLE Messaging In Ruby
+
+h1. Messaging In Ruby
+
+@@@ ruby
+
+object = Object.new
+def object.add(a, b)
+  a + b
+end
+object.add(1, 2)
+
+@@@
+
+!SLIDE
+!TITLE Decomposing Behavior Composition
+
+h1. Decomposing Behavior Composition
+
+h2. Message
 * selector
 * receiver
 * arguments
@@ -50,32 +84,80 @@ receiver.selector(*arguments)
 
 @@@
 
-!SLIDE 
-!TITLE Messaging In Ruby
+!SLIDE
+!TITLE Sending a Message.
 
-h1. Messaging In Ruby
+h1. Sending a Message
 
 @@@ ruby
 
-def add(a, b)
-  a + b
-end
-add(1, 2)
+# Ruby:
+receiver.selector(*arguments)
+# =>
+receiver.send(selector, arguments)
 
 @@@
 
-!SLIDE 
-!TITLE Messaging In Scheme
+!SLIDE
+!TITLE Decompose Messaging
 
-h1. Messaging In Scheme
+h1. Decompose Messaging
 
-@@@ scheme
+* Send
+** Lookup
+** Apply
 
-(define (add a b)
-  (+ a b))
-(add 1 2)
+!SLIDE
+!TITLE Decompose send()
+
+h1. Decompose send()
+
+* lookup(selector, receiver, arguments) => method
+* apply(method, receiver, arguments) => the-result-of-applying-method.
+
+!SLIDE
+!TITLE Implementing send()
+
+h1. Implementing send()
+
+@@@ ruby
+
+send(selector, receiver, arguments)
+# => 
+method = lookup(selector, receiver, arguments)
+apply(method, receiver, arguments)
 
 @@@
+
+!SLIDE
+!TITLE lookup()
+
+h1. lookup()
+
+* Functional Orientation:
+** Find the address of a function by its name.
+** Side-effect free, compile-/link-time operation.
+** Compiler/linker symbol table.
+** "Early Binding"
+* Object Orientation:
+** Find the method for a receiver by it's selector.
+** Uses a selector and method table to determine the method to apply.
+** Object method table.
+** Receiver may not be the sole factor in lookup(), e.g. multimethods.
+** "Late Binding"
+
+!SLIDE
+!TITLE apply()
+
+h1. apply()
+
+* Functional Orientation:
+** Apply a function to its arguments.
+** "Call a function"
+* Object Orientation:
+** Apply a method to receiver and arguments.
+** "Call a method"
+** The receiver is an implicit or explicit argument.
 
 !SLIDE
 !TITLE "Messaging" In C
@@ -88,90 +170,70 @@ int add(int a, int b)
 {
   return a + b;
 }
-add(1,2);
+int main(int argc, char **argv)
+{
+  return add(1, 2);
+}
+
+@@@
+
+!SLIDE 
+!TITLE Messaging In Scheme
+
+h1. Messaging In Scheme
+
+@@@ scheme
+
+(define (add a b)
+  (+ a b))
+(add 1 2) 
+;; add may be late- or early-bound.
+;; + is late-bound: behavior depends on the type.
 
 @@@
 
 !SLIDE
-!TITLE Sending a Message.
+!TITLE Function Call == Message Send
 
-h1. Sending a Message
+h1. Function Call == Message Send
 
-@@@ ruby
+* Object Messaging is a superset of Function Calls.
+* lookup() in C is implemented in the linker.
 
-receiver.selector(*arguments)
-# =>
-send(selector, receiver, arguments)
+h2. Isomorphic
 
-@@@
-
-!SLIDE
-!TITLE Decompose send
-
-h1. Decompose send
-
-* lookup()
-* apply()
+* Functions can be used to implement Messaging.
+* Messages can be used to implement Functions.
 
 !SLIDE
-!TITLE Go Deeper...
+!TITLE The Message Object
 
-h1. Go deeper...
-
-* lookup()
-  lookup(selector, receiver, arguments) => method
-* apply()
-  apply(method, receiver, arguments) => the-result-of-applying-method.
-
-!SLIDE
-!TITLE Lookup, Apply
-
-h1. lookup()
-
-In non-OO, lookup() is a side-effect free, compile-/link-time operation.
-In OO, lookup() uses a selector to determine which method to apply.
-
-h1. apply()
-
-In non-OO, apply() is the activation of a function on its arguments.
-IN OO, apply() is the activation of a method on its arguments.
-The reciever is an implicit argument, but not the sole determining factor in lookup.
-
-!SLIDE
-!TITEL Decompose send()
-
-@@@ ruby
-
-send(rcvr, args)
-# => 
-apply(lookup(rcvr, args), rcvr, args)
-
-@@@
-
-!SLIDE
-!TITLE Where's the Message object?
-
-h1. Where's the Message object?
+h1. The Message Object
 
 Most languages to not reify ("make real") the Message:
 
 @@@ ruby
 
-message = Message.new(:receiver => rcvr, :arguments => args, :method => METHOD_NOT_FOUND)
-lookup(message) # => message, side-effect: message[:method] is computed.
+message = Message.new(:receiver => rcvr,
+                      :arguments => args,
+                      :method => METHOD_NOT_FOUND)
+lookup(message) # => message, side-effect: message.method is computed.
 apply(lookup(message).method, message)
 
 @@@
 
 !SLIDE
-!TITLE Messages as Objects.
+!TITLE Messages as Objects
 
-h1. Messages as objects.
+h1. Messages as Objects
 
 @@@ ruby
 
 send(rcvr, args) =>
-  let message = Message.new(:reciever => rcvr, :arguments => args, :method => METHOD_NOT_FOUND)
+  let message = 
+    Message.new(:reciever => rcvr,
+                :arguments => args,
+                :method => METHOD_NOT_FOUND)
   message.send()
 
 message.send(message) =>
@@ -179,32 +241,58 @@ message.send(message) =>
 
 @@@
 
-! SLIDE
-! TITLE Objects In C
+!SLIDE
+!TITLE Simple Objects
+
+h1. Simple Objects
 
 !SLIDE
-!TITLE Structure
+!TITLE Structuring Objects
+
+h1. Structuring Objects
 
 * Behavior
+** Method Tables supports lookup().
+** Apply Function supports apply().
 * State
+** Accessor methods.
+** Slots: offsets from an object's address.
 
-pre.
+!SLIDE
+!TITLE Method Tables
+
+h1. Method Tables
+* Are objects.
+* Respond to lookup() messages.
+* Objects and method tables "all the way down".
+
+!SLIDE
+!TITLE Object Layout
+
+h1. Object Layout
+
+pre. 
 
 +----------------+
 | ...            |
 |----------------|
 | apply_function | 
 |----------------|
-| method_table   |   Behavior support extends upwards.
-|----------------|
+| method_table   |   Behavior support extends to lower addresses.
+|================|
 | attribute #1   | <===== pointer_to_object
 |----------------|
-| attribute #2   |   State support extends downwards.
+| attribute #2   |   State support extends to higher addresses.
 |----------------|
 | ...            |
 +----------------+
 
 p.
 
+!SLIDE
+!TITLE Object Graph
 
+h1. Object Graph
+
+<a href="image/object-graph-1.svg" target="_new">image/object-graph-1.svg</a>
 
