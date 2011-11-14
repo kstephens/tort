@@ -19,9 +19,7 @@ tort_ACCESSOR(lisp_formals,tort_v,argc);
 tort_ACCESSOR(lisp_formals,tort_v,map);
 tort_ACCESSOR(lisp_formals,tort_v,rest);
 
-typedef struct tort_lisp_closure { tort_H;
-  /* Same layout as tort_method. */
-  tort_apply_decl((*applyf));
+typedef struct tort_lisp_closure { tort_H; /* Same layout as tort_method. */
   tort_v name;
   tort_lisp_formals *formals;
   tort_v body;
@@ -128,7 +126,7 @@ tort_v _tort_m_lisp_closure__value(tort_tp tort_lisp_closure *obj, ...)
 tort_v _tort_M_lisp_closure__new(tort_tp tort_mtable *mtable, tort_v formals, tort_v body, tort_v env)
 {
   tort_lisp_closure *meth = tort_allocate(tort_mt(lisp_closure), sizeof(*meth));
-  meth->applyf = (void*) _tort_M_lisp_closure___apply;
+  meth->_h[-1].applyf = (void*) _tort_M_lisp_closure___apply;
   formals = tort_send(tort__s(new), tort_mt(lisp_formals), formals);
   body = tort_send(tort_s(list_TO_vector), body);
   if ( tort_vector_size(body) == 0 ) {

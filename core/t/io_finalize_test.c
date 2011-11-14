@@ -36,7 +36,6 @@ int main(int argc, char **argv, char **environ)
 
     tort_printf(io, "  (eof o) => %T\n", tort_send(tort__s(eof), o));
     tort_printf(io, "  (size v) => %T\n", tort_send(tort__s(size), s));
-    tort_printf(io, "  (_alloc_size v) => %T\n", tort_send(tort__s(_alloc_size), s));
 
     tort_printf(io, "\n\n");
 

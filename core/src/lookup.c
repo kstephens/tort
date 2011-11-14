@@ -208,8 +208,8 @@ tort_message* _tort_lookup (tort_tp tort_v rcvr, tort_message *message)
 
 #define MTABLE ((tort_mtable*) rcvr)
 
-  /* Initializer rest of message object. */
-  message->_h[-1].alloc_size = sizeof(tort_message);
+  /* Initialize rest of message object. */
+  message->_h[-1].applyf = _tort_m_object___cannot_apply;
   message->_h[-1].mtable = tort__mt(message);
   // message->previous_message = _tort_message;
   message->method = tort_nil;
@@ -321,6 +321,25 @@ tort_apply_decl(_tort_m_object___method_not_found)
   extern void tort_debug_stop_at();
   tort_error_message("cannot apply selector %s to", 
 		     (char *) tort_object_name(_tort_message->selector)
+		     );
+  tort_error_message("  receiver %s", tort_object_name(rcvr));
+#if TORT_ALLOC_DEBUG
+  tort_error_message("  allocated at %s:%d #%lu",
+		     tort_h(rcvr).alloc_file,
+		     tort_h(rcvr).alloc_line,
+		     tort_h(rcvr).alloc_id);
+#endif
+  tort_error_message("  message %T", _tort_message);
+  tort_debug_stop_at();
+  tort_error(tort_ta ": not applicable");
+  return tort_nil;
+}
+
+tort_apply_decl(_tort_m_object___cannot_apply) 
+{
+  extern void tort_debug_stop_at();
+  tort_error_message("cannot apply %s to", 
+		     (char *) tort_object_name(_tort_message->method)
 		     );
   tort_error_message("  receiver %s", tort_object_name(rcvr));
 #if TORT_ALLOC_DEBUG

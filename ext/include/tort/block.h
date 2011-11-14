@@ -25,17 +25,15 @@ typedef struct tort_block { tort_H;
 tort_h_struct(tort_block);
 
 #define tort_block_(BLK,PARAMS...)					\
-  tort_block_ BLK##_ = {						\
-    { sizeof(tort_block),						\
-      tort__mt(block)							\
-    },									\
-    { { }, { }, _tort_message, 0 },					\
-  };									\
+  tort_block_ BLK##_ = { { 0 } };					\
+  BLK##_._h.applyf = _tort_m_object___cannot_apply;			\
+  BLK##_._h.mtable = tort__mt(block);					\
   tort_block *BLK = &BLK##_._;						\
+  BLK->scope = _tort_message;						\
   tort_v BLK##_f (tort_thread_param tort_block *_block, ##PARAMS)
 
 #define tort_block_END(BLK)			\
-  BLK##_._._.applyf = (void*) BLK##_f;
+  BLK##_._h.applyf = (void*) BLK##_f;
 
 tort_v tort_runtime_initialize_block();
 

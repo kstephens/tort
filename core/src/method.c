@@ -1,16 +1,26 @@
 #include "tort/core.h"
 
-tort_ACCESSOR(method,voidP,applyf);
 tort_ACCESSOR(method,tort_v,name);
 tort_ACCESSOR(method,tort_v,data);
 
 tort_method* tort_method_new(void *applyf, tort_v data)
 {
   tort_method *meth = tort_allocate(tort__mt(method), sizeof(tort_method));
-  meth->applyf = applyf;
+  meth->_h[-1].applyf = applyf;
   meth->data = data;
   meth->name = 0;
   return meth;
+}
+
+tort_v _tort_m_object___applyf(tort_tp tort_v o)
+{
+  return tort_h(o)->applyf;
+}
+tort_v _tort_m_object___applyfSET(tort_tp tort_v o, tort_v ptr)
+{
+  void *p;
+  tort_send(tort__s(_ptr_data), ptr, &p);
+  return tort_h(o)->applyf = p;
 }
 
 tort_method* tort_offset_getter_new(tort_v offset)

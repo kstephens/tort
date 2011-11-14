@@ -47,6 +47,9 @@ typedef struct tort_method tort_method;
 #define tort_lookup_decl(X) tort_message* X (tort_tp tort_mtable *mtable, tort_message *message)
 #define tort_apply_decl(X)  tort_v X (tort_tp tort_v rcvr, ...)
 
+extern tort_apply_decl(_tort_m_object___method_not_found);
+extern tort_apply_decl(_tort_m_object___cannot_apply);
+
 #define tort_GETTER(MT,T,N) \
   tort_v _tort_M_##MT##___offset_##N ( tort_tp tort_mtable *mtable ) { return tort_i(&((struct tort_##MT*) 0)->N); } \
   tort_v _tort_m_##MT##__##N ( tort_tp struct tort_##MT *rcvr ) { return tort_box_(T,rcvr->N); }
@@ -63,7 +66,7 @@ struct tort_header {
   int alloc_line;
   size_t alloc_id;
 #endif
-  size_t alloc_size;   /** allocated object size, not including this header */
+  tort_apply_decl((*applyf)); /** How to apply this object as a method. */
   tort_mtable *mtable; /** The object's method table. */
 } tort_header;
 #define tort_H tort_header _h[0]
@@ -202,7 +205,7 @@ tort_v tort_string_new_cstr(const char *str);
 struct tort_mtable { tort_H;
   tort_map _map; /* same layout as tort_map. */
   tort_mtable* delegate;
-  size_t instance_size;
+  size_t instance_size; /** allocated object size, not including this header */
   void *gc_data;
   tort_v gc_mark_method;
   tort_v gc_free_method;
@@ -231,7 +234,6 @@ const char *tort_symbol_encode(const char *in);
 tort_symbol* tort_symbol_new_encode(const char *string);
 
 struct tort_method { tort_H;
-  tort_apply_decl((*applyf)); /* Must be first element */
   tort_v data;
   tort_v name;
 };
@@ -260,6 +262,7 @@ struct tort_runtime { tort_H;
   tort_v message; /* Current message: not thread/fiber-safe. */
   tort_caller_info *unknown_caller_info;
   tort_v _m_method_not_found; /** method called if method cannot be found. */
+  tort_v _m_cannot_apply;     /** method called if method cannot be applied. */
 
   tort_v _in_error;
 #define tort_error_decl(X)  tort_v X (tort_tp const char *format, va_list *vapp)
@@ -347,7 +350,7 @@ tort_lookup_decl(_tort_m_mtable__lookup);
     _tort_send_msg_init(SEL, RCVR_AND_ARGS);				\
     __tort_msg._.argc = tort_i(ARGC);					\
     _tort_lookup(_tort_message, __tort_msg._.receiver, &__tort_msg._)-> \
-      method->applyf(&__tort_msg._, _tort_send_RCVR_ARGS(__tort_msg._.receiver, RCVR_AND_ARGS)); \
+      method->_h[-1].applyf(&__tort_msg._, _tort_send_RCVR_ARGS(__tort_msg._.receiver, RCVR_AND_ARGS)); \
   })
 #define tort_send(SEL, RCVR_AND_ARGS...)_tort_sendn(SEL, -1, RCVR_AND_ARGS)
 #define tort_sendn(SEL, ARGC, RCVR_AND_ARGS...)_tort_sendn(SEL, ARGC, RCVR_AND_ARGS)
@@ -362,7 +365,7 @@ tort_lookup_decl(_tort_m_mtable__lookup);
     _tort_send_msg_file_line(_tort_message);				\
     return								\
       _tort_lookup(_tort_message, _tort_message->receiver, _tort_message)-> \
-      method->applyf(_tort_message, _tort_send_RCVR_ARGS(_tort_message->receiver, RCVR_AND_ARGS)); \
+      method->_h[-1].applyf(_tort_message, _tort_send_RCVR_ARGS(_tort_message->receiver, RCVR_AND_ARGS)); \
   } while ( 0 )
 #define return_tort_send(SEL, RCVR_AND_ARGS...)_tort_sendnt(SEL, -1, RCVR_AND_ARGS)
 #define return_tort_sendn(SEL, ARGC, RCVR_AND_ARGS...)_tort_sendnt(SEL, ARGC, RCVR_AND_ARGS)

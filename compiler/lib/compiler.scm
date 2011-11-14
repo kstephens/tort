@@ -47,13 +47,13 @@
   (string-append "_tort_x_" ('_to_string ('_object_ptr o))))
 
 (define compiler:object:header-size ('get &root 'OBJECT_HEADER_SIZE))
-(define compiler:message:alloc-size (+ compiler:object:header-size ('_alloc_size ('new <message>))))
+(define compiler:message:instance-size (+ compiler:object:header-size ('instance_size <message>)))
 (define (compiler:type:slot-offset type slot)
   ((string->symbol (string-append "_offset_" (symbol->string slot))) type))
 
 (define (compiler:reg:offset reg type slot)
   (string-append
-   (object->string (compiler:type:slot-offset type slot))
+   (object->string (if (number? slot) slot (compiler:type:slot-offset type slot)))
    "(" reg ")"))
 
 (let ((word-size ('get &root 'WORD_SIZE))
@@ -81,7 +81,7 @@
 	(msg->argc             (compiler:reg:offset msg <message> 'argc))
 	(msg->method           (compiler:reg:offset msg <message> 'method))
 	(msg->mtable           (compiler:reg:offset msg <message> 'mtable))
-	(meth->applyf          (compiler:reg:offset meth <method> 'applyf))
+	(meth->applyf          (compiler:reg:offset meth <method> (- (+ word-size word-size)))) ;; FIXME 
 	)
 
     (define (compiler:bind c name . ar-offset)
@@ -251,7 +251,7 @@
       ;;   Save msg reg:
       (compiler:emit c "pushq " msg)
       ;;   Allocate new message object on stack:
-      (compiler:emit c "subq  $" compiler:message:alloc-size ", " sp-reg)
+      (compiler:emit c "subq  $" compiler:message:instance-size ", " sp-reg)
       (compiler:emit c "movq  " sp-reg "," msg)
       ;;   Add object header offset:
       (compiler:emit c "addq  $" compiler:object:header-size ", " msg)
@@ -303,7 +303,7 @@
 	
 	;; msg->method->applyf(msg, rcvr, ...) 
 	(compiler:emit c "movq  " msg->method ", " meth " \t// msg->method => meth")
-	(compiler:emit c "call  *" meth->applyf "      \t// meth->apply(msg, rcvr, args...) ")
+	(compiler:emit c "call  " meth->applyf "      \t// meth->apply(msg, rcvr, args...) ")
 	
 	;; Pop args sp:
 	(if (> stack-arg-count 0)
@@ -311,7 +311,7 @@
 	)
 
       ;; Reclaim message space:
-      (compiler:emit c "addq  $" compiler:message:alloc-size ", " sp-reg "    \t// pop *msg")
+      (compiler:emit c "addq  $" compiler:message:instance-size ", " sp-reg "    \t// pop *msg")
       ;;   Restore msg reg:
       (compiler:emit c "popq  " msg)
       )

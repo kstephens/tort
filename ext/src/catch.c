@@ -2,7 +2,6 @@
 #include <setjmp.h>
 
 typedef struct tort_catch { tort_H;
-  tort_apply_decl((*applyf));
   tort_v name;
   tort_v data;
   jmp_buf *jbp;
@@ -85,7 +84,7 @@ tort_v _tort_M_catch__top_catch(tort_tp tort_mtable *mtable)
 tort_v _tort_M_catch__new(tort_tp tort_mtable *mtable)
 {
   tort_catch *catch = tort_allocate(mtable, sizeof(*catch));
-  catch->applyf = (void*) _catch___applyf;
+  catch->_h[-1].applyf = (void*) _catch___applyf;
   catch->name = tort_nil;
   catch->data = tort_nil;
   catch->jbp = 0;

@@ -5,7 +5,7 @@
 #if TORT_MULTIPLICITY
 tort_runtime *_tort;
 #else
-tort_runtime_ __tort = { { sizeof(tort_runtime) } };
+tort_runtime_ __tort;
 tort_runtime *_tort = &__tort._;
 #endif
 
@@ -44,7 +44,8 @@ tort_v tort_runtime_create_ (int *argcp, char ***argvp, char ***envp)
   /* Allocate and initialize mtables */
   tort_runtime_initialize_mtable();
 
-  tort_h_mtable(_tort) = tort__mt(runtime);
+  tort_h(_tort)->mtable = tort__mt(runtime);
+  tort_h(_tort)->applyf = _tort_m_object___cannot_apply;
 
 #if ! TORT_NIL_IS_ZERO
   /* Create the nil object. */

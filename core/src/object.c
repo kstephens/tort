@@ -17,16 +17,12 @@ tort_v _tort_m_object___set_mtable (tort_tp tort_v rcvr, tort_v mtable)
   return rcvr;
 }
 
-tort_v _tort_m_object___alloc_size (tort_tp tort_v rcvr)
-{
-  return tort_i(tort_h(rcvr)->alloc_size);
-}
-
 tort_v _tort_m_object__clone (tort_tp tort_v rcvr)
 {
-  size_t alloc_size = tort_h(rcvr)->alloc_size;
-  void *ptr = tort_object_alloc(tort_h(rcvr)->mtable, alloc_size);
-  memcpy(ptr, rcvr, alloc_size);
+  size_t instance_size = tort_h(rcvr)->mtable->instance_size;
+  void *ptr = tort_object_alloc(tort_h(rcvr)->mtable, instance_size);
+  tort_h(ptr)->applyf = tort_h(rcvr)->applyf;
+  memcpy(ptr, rcvr, instance_size);
   return ptr;
 }
 

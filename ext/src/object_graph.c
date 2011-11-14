@@ -254,9 +254,9 @@ void og_object(tort_og_context *context, tort_v obj)
 
 #define SLOT(NAME) og_slot(context, obj, #NAME, "%s", 0, o->NAME, 0, s_style, sl_style)
 
-  og_slot(context, obj, "alloc_size", "%s", 0, tort_i(tort_h(obj)->alloc_size), 0, h_style, sl_style);
-  og_slot(context, obj, "mtable",     "%s", 0, mt, 0, h_style, "style=\"dotted\"");
-  og_slot(context, obj, 0,            "%s", 0, obj, 0, "BGCOLOR=\"black\" COLOR=\"WHITE\"", 0);
+  og_slot(context, obj, "applyf",     "%s", 0, tort_h(obj)->applyf, "%p", h_style, 0);
+  og_slot(context, obj, "mtable",     "%s", 0, mt,                  0,    h_style, "style=\"dotted\"");
+  og_slot(context, obj, 0,            "%s", 0, obj,                 0,    "BGCOLOR=\"black\" COLOR=\"WHITE\"", 0);
 
   if ( 0 ) {
   } else if ( mt == tort__mt(string) ) {
@@ -292,7 +292,6 @@ void og_object(tort_og_context *context, tort_v obj)
   }
   else if ( mt == tort__mt(method) ) {
     tort_method *o = obj;
-    og_slot(context, obj, "applyf", "%s", 0, o->applyf, "%p", s_style, sl_style);
     og_slot(context, obj, "data",   "%s", 0, o->data, "%p", s_style, sl_style);
     og_slot(context, obj, "name",   "%s", 0, o->name, 0, s_style, sl_style);
   }
@@ -307,6 +306,7 @@ void og_object(tort_og_context *context, tort_v obj)
     tort_mtable *o = obj;
     // fprintf(stderr, "mtable %s\n", tort_object_name(obj));
     SLOT(delegate);
+    og_slot(context, obj, "instance_size", "%s", 0, tort_i(o->instance_size), 0, s_style, sl_style);
     goto map;
   }
   else if ( mt == tort__mt(dynlib) ) {
