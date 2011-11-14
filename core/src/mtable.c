@@ -174,16 +174,16 @@ tort_v tort_runtime_initialize_mtable()
 
   /* Initialize nil object header. */
   tort__mt(nil)         = tort_mtable_create(tort__mt(object));
-  // tort_(nil_header).applyf = ???;
   tort_(nil_header).mtable  = tort__mt(nil);
+  tort_(nil_header).applyf = _tort_m_object___cannot_apply;
 
   /* Initialize tagged object headers. */
   tort__mt(tagged)      = tort_mtable_create(tort__mt(object));
   {
     int i;
     for ( i = 0; i < 1 << TORT_TAG_BITS; ++ i ) {
-      // tort_(tagged_header[i]).applyf = ???;
       tort_(tagged_header[i]).mtable = tort_mtable_create(tort__mt(tagged));
+      tort_(tagged_header[i]).applyf = _tort_m_object___cannot_apply;
     }
   }
 #ifdef tort_tag_fixnum 

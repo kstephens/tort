@@ -53,7 +53,7 @@
 
 (define (compiler:reg:offset reg type slot)
   (string-append
-   (object->string (compiler:type:slot-offset type slot))
+   (object->string (if (number? slot) slot (compiler:type:slot-offset type slot)))
    "(" reg ")"))
 
 (let ((word-size ('get &root 'WORD_SIZE))
@@ -81,7 +81,7 @@
 	(msg->argc             (compiler:reg:offset msg <message> 'argc))
 	(msg->method           (compiler:reg:offset msg <message> 'method))
 	(msg->mtable           (compiler:reg:offset msg <message> 'mtable))
-	(meth->applyf          (compiler:reg:offset meth <method> 'applyf))
+	(meth->applyf          (compiler:reg:offset meth <method> (- (+ word-size word-size)))) ;; FIXME 
 	)
 
     (define (compiler:bind c name . ar-offset)
@@ -303,7 +303,7 @@
 	
 	;; msg->method->applyf(msg, rcvr, ...) 
 	(compiler:emit c "movq  " msg->method ", " meth " \t// msg->method => meth")
-	(compiler:emit c "call  *" meth->applyf "      \t// meth->apply(msg, rcvr, args...) ")
+	(compiler:emit c "call  " meth->applyf "      \t// meth->apply(msg, rcvr, args...) ")
 	
 	;; Pop args sp:
 	(if (> stack-arg-count 0)

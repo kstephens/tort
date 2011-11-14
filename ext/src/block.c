@@ -12,7 +12,6 @@ tort_lookup_decl(_tort_M_block__lookup)
   }
 }
 
-
 tort_v tort_runtime_initialize_block()
 {
   tort__mt(block) = tort_mtable_new("block", tort_mt(method));

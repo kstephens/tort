@@ -304,6 +304,7 @@ void *tort_object_alloc(tort_mtable *mtable, size_t size)
       bzero(ptr, alloc_size);
     ptr += sizeof(tort_header);
     tort_h_ref(ptr)->mtable = mtable;
+    tort_h_ref(ptr)->applyf = _tort_m_object___cannot_apply;
     ++ _tort_alloc_id;
     // fprintf(stderr, "  alloc %p[%llu] %s %lu\n", ptr, (unsigned long long) size, tort_object_name(mtable), _tort_alloc_id);
     TORT_GC_STAT(object_alloc_n ++);
