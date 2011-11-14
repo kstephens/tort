@@ -183,6 +183,8 @@ void tort_gc_add_callback(void (*func)(void *data), void *data)
 /********************************************************************/
 
 #if TORT_SMAL
+static int allocs_since_gc;
+static int allocs_per_gc;
 void smal_collect_before_inner(void *top_of_stack)
 {
   smal_thread *thr = smal_thread_self();
@@ -268,8 +270,9 @@ static void *_tort_object_alloc_smal(tort_mtable *mtable, size_t size)
     if ( ! mtable->gc_data ) {
       mtable->gc_data = _type_for_size(size);
     }
-    if ( gc_stats.object_alloc_n % 10000 == 0 ) {
+    if ( ++ allocs_since_gc > allocs_per_gc ) {
       tort_gc_collect();
+      allocs_since_gc = 0;
     }
     return smal_alloc(mtable->gc_data);
   }
@@ -396,6 +399,8 @@ tort_v tort_runtime_initialize_malloc()
     _tort_gc_collect = _tort_gc_collect_smal;
     _tort_object_alloc = _tort_object_alloc_smal;
     _tort_gc_stats = _tort_gc_stats_smal;
+    var = getenv("TORT_GC_ALLOCS_PER_GC");
+    allocs_per_gc = var && *var ? atoi(var) : 10000;
   }
 #endif
   if ( ! strcmp(var, "malloc") ) {
