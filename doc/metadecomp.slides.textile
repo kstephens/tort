@@ -1,0 +1,210 @@
+
+!SLIDE
+!TITLE Meta-Decomposition
+
+h1. Meta-Decomposition
+
+* Kurt Stephens
+* 2011/11/13
+* Slides -- "http://kurtstephens.com/pub/metadecomp.slides/index.html":http://kurtstephens.com/pub/metadecomp.slides/index.html
+* Code -- "http://github.com/kstephens/tort":http://github.com/kstephens/tort
+
+!SLIDE
+!TITLE Fundamentals
+
+h1. Fundamentals
+
+* Behavior
+* State
+
+!SLIDE
+!TITLE Emphasis
+
+h1. Emphasis
+
+* Behavior, over State.
+* Messages, over Methods.
+* Composition and Delegation, over Inheritance.
+* Objects, over Classes.
+
+!SLIDE
+!TITLE Decomposing Composition
+
+h1. Decomposing Composition
+
+h2. Behavior
+
+Message:
+* selector
+* receiver
+* arguments
+
+@@@ ruby
+
+object.add(1, 2)
+# =>
+receiver = object
+selector = :add
+arguments = [ 1, 2 ]
+receiver.selector(*arguments)
+
+@@@
+
+!SLIDE 
+!TITLE Messaging In Ruby
+
+h1. Messaging In Ruby
+
+@@@ ruby
+
+def add(a, b)
+  a + b
+end
+add(1, 2)
+
+@@@
+
+!SLIDE 
+!TITLE Messaging In Scheme
+
+h1. Messaging In Scheme
+
+@@@ scheme
+
+(define (add a b)
+  (+ a b))
+(add 1 2)
+
+@@@
+
+!SLIDE
+!TITLE "Messaging" In C
+
+h1. "Messaging" In C
+
+@@@ c
+
+int add(int a, int b)
+{
+  return a + b;
+}
+add(1,2);
+
+@@@
+
+!SLIDE
+!TITLE Sending a Message.
+
+h1. Sending a Message
+
+@@@ ruby
+
+receiver.selector(*arguments)
+# =>
+send(selector, receiver, arguments)
+
+@@@
+
+!SLIDE
+!TITLE Decompose send
+
+h1. Decompose send
+
+* lookup()
+* apply()
+
+!SLIDE
+!TITLE Go Deeper...
+
+h1. Go deeper...
+
+* lookup()
+  lookup(selector, receiver, arguments) => method
+* apply()
+  apply(method, receiver, arguments) => the-result-of-applying-method.
+
+!SLIDE
+!TITLE Lookup, Apply
+
+h1. lookup()
+
+In non-OO, lookup() is a side-effect free, compile-/link-time operation.
+In OO, lookup() uses a selector to determine which method to apply.
+
+h1. apply()
+
+In non-OO, apply() is the activation of a function on its arguments.
+IN OO, apply() is the activation of a method on its arguments.
+The reciever is an implicit argument, but not the sole determining factor in lookup.
+
+!SLIDE
+!TITEL Decompose send()
+
+@@@ ruby
+
+send(rcvr, args)
+# => 
+apply(lookup(rcvr, args), rcvr, args)
+
+@@@
+
+!SLIDE
+!TITLE Where's the Message object?
+
+h1. Where's the Message object?
+
+Most languages to not reify ("make real") the Message:
+
+@@@ ruby
+
+message = Message.new(:receiver => rcvr, :arguments => args, :method => METHOD_NOT_FOUND)
+lookup(message) # => message, side-effect: message[:method] is computed.
+apply(lookup(message).method, message)
+
+@@@
+
+!SLIDE
+!TITLE Messages as Objects.
+
+h1. Messages as objects.
+
+@@@ ruby
+
+send(rcvr, args) =>
+  let message = Message.new(:reciever => rcvr, :arguments => args, :method => METHOD_NOT_FOUND)
+  message.send()
+
+message.send(message) =>
+  message.lookup().method.apply(message)
+
+@@@
+
+! SLIDE
+! TITLE Objects In C
+
+!SLIDE
+!TITLE Structure
+
+* Behavior
+* State
+
+pre.
+
++----------------+
+| ...            |
+|----------------|
+| apply_function | 
+|----------------|
+| method_table   |   Behavior support extends upwards.
+|----------------|
+| attribute #1   | <===== pointer_to_object
+|----------------|
+| attribute #2   |   State support extends downwards.
+|----------------|
+| ...            |
++----------------+
+
+p.
+
+
+
