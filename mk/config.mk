@@ -3,7 +3,7 @@ BASE_DIR:=$(shell cd "$(BASE_DIR)" && /bin/pwd)#
 GC_VERSION=gc-20101223-cvs#
 GC_VERSION=gc-7.2alpha6#
 GC=$(BASE_DIR)/$(GC_VERSION)#
-TORT_GC_BDW=0#
+TORT_GC_BDW=1#
 TORT_GC_SMAL=1#
 
 PREFIX:=$(shell mkdir -p $(BASE_DIR)/local && cd $(BASE_DIR)/local && /bin/pwd)#

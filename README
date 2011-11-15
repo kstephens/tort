@@ -29,8 +29,11 @@ Supports:
 ** Message objects allocated on C stack.
 ** Supports tail recursion.
 ** Supports method aliasing.
-* Can be linked against BDW GC library.
-* Configurable.
+* GC Support:
+** NO GC (malloc-only).
+** BDW GC library.
+** SMAL GC library (PROTOTYPE).
+* Low-bit tagging is configurable at compile-time.
 
 Extensions are dynamically loaded:
 
@@ -53,4 +56,5 @@ Extensions are dynamically loaded:
 *** Lambdas can be used as object blocks.
 *** Methods can be called using ('symbol rcvr . args) syntax.
 ** Basic Scheme-like semantics boot-strapped from objects and lisp.
-** PRELIMINARY x86-64 compiler written in scheme.
+** Basic structures based on vectors.
+** PRELIMINARY x86-64 compiler written in Scheme superset.
