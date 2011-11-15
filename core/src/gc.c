@@ -119,7 +119,6 @@ void _tort_gc_register_finalizer_bdw(tort_v obj)
 {
   GC_register_finalizer(obj - sizeof(tort_header), _tort_finalization_proc, 0, 0, 0);
 }
-#endif
 
 static void (*_tort_gc_register_finalizer)(tort_v obj) = 0;
 tort_v _tort_m_object____register_finalizer(tort_tp tort_v rcvr)
@@ -158,7 +157,7 @@ void tort_gc_mark(tort_v referrer, tort_v referred)
   // FIXME
 #if TORT_GC_SMAL
   if ( referred != tort_nil && ! tort_taggedQ(referred) ) {
-    smal_mark_ptr(referrer != tort_nil ? referrer - sizeof(tort_header) : 0, 
+    smal_mark_ptr(tort_h(referrer), 
 		  referred - sizeof(tort_header));
   }
 #endif
@@ -197,10 +196,18 @@ void smal_collect_before_mark()
 void smal_collect_mark_roots()
 {
   smal_thread *thr = smal_thread_self();
-  // fprintf(stderr, "  mark_roots: stack [@%p,@%p)\n", thr->top_of_stack, thr->bottom_of_stack);
+  fprintf(stderr, "    mark_roots: stack [@%p,@%p)\n", thr->top_of_stack, thr->bottom_of_stack);
   smal_mark_ptr_range(0, thr->top_of_stack, thr->bottom_of_stack);
+  fprintf(stderr, "    mark_roots: _tort @%p\n", _tort);
   smal_mark_ptr(0, _tort);
-  smal_mark_ptr_range(0, _tort, _tort + 1);
+  fprintf(stderr, "    mark_roots: _tort struct [@%p,@%p)\n", _tort - sizeof(tort_header), _tort + 1);
+  smal_mark_ptr_range(0, _tort - sizeof(tort_header), _tort + 1);
+  // This should all be redundant:
+  fprintf(stderr, "    mark_roots: tort_(root) @%p\n", tort_(root));
+  smal_mark_ptr(0, tort_(root));
+  fprintf(stderr, "    mark_roots: tort__mt(mtable) @%p\n", tort__mt(mtable));
+  smal_mark_ptr(0, tort__mt(mtable));
+  fprintf(stderr, "    mark_roots: chain()\n");
   smal_roots_mark_chain();
 }
 void smal_collect_after_mark()
@@ -233,7 +240,7 @@ static void _tort_gc_collect_smal()
 static void *mark_obj(void *ptr)
 {
   tort_v obj = ptr + sizeof(tort_header);
-  // fprintf(stderr, "  %p mark %p %s [%p-%p]\n", &obj, ptr, tort_object_name(obj), obj, obj + tort_h(obj)->alloc_size);
+  fprintf(stderr, "  %p mark %p %s [%p-%p]\n", &obj, ptr, tort_object_name(obj), obj, obj + tort_h_mtable(obj)->instance_size);
   smal_mark_ptr_range(ptr, obj, obj + tort_h_mtable(obj)->instance_size);
   if ( tort_h_mtable(obj)->gc_mark_method != tort_true ) {
     tort_v result;
@@ -305,6 +312,8 @@ void *tort_object_alloc(tort_mtable *mtable, size_t size)
     extern unsigned long _tort_alloc_id;
     if ( ! _tort_alloc_bzero )
       bzero(ptr, alloc_size);
+    if ( ptr == (void*) 0x1000f3f08 )
+      tort_debug_stop_at();
     ptr += sizeof(tort_header);
     tort_h_ref(ptr)->mtable = mtable;
     tort_h_ref(ptr)->applyf = _tort_m_object___cannot_apply;
