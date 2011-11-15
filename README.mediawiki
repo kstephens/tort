@@ -18,7 +18,7 @@ Supports:
 ** Map.
 ** IO with FILE* and finalization.
 * Dynamic message dispatch.
-** ~30,000,000 send/sec on OS X 64-bit using a global method cache.
+** ~25,000,000 send/sec on OS X 64-bit using a global method cache.
 ** global method cache monitors for invalidations due to:
 *** New method definitons using symbol version counters.
 *** Changes in lookup() meta-send protocol method.
@@ -29,11 +29,12 @@ Supports:
 ** Message objects allocated on C stack.
 ** Supports tail recursion.
 ** Supports method aliasing.
+* Anonymous symbols for lexically scoped methods.
+* Low-bit tag size and method table mapping is configurable at compile-time.
 * GC Support:
 ** NO GC (malloc-only).
 ** BDW GC library.
 ** SMAL GC library (PROTOTYPE).
-* Low-bit tagging is configurable at compile-time.
 
 Extensions are dynamically loaded:
 
@@ -41,15 +42,14 @@ Extensions are dynamically loaded:
 
 * Example Extension Library.
 ** Lexical blocks in C using GCC nested functions.
-** Fibers.
+** Fibers (PRELIMINARY).
+** Catch/throw.
 ** Object graphing using graphviz/dot.
-** Catch/throw support.
 
 * LISP Extension Library.
-** Conses.
 ** Lisp reader.
 ** Lisp writer.
-** Lexicial evaluator.
+** Lexical evaluator.
 ** Simple macro support.
 ** Call-in and call-out to tort primitives.
 *** Lambdas can be used as object methods.
