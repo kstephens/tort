@@ -2,11 +2,11 @@
 #include "smal/smal.h"
 #include "smal/roots.h"
 
-#ifndef TORT_GC
-#define TORT_GC 0
+#ifndef TORT_GC_BDW
+#define TORT_GC_BDW 0
 #endif
-#ifndef TORT_SMAL
-#define TORT_SMAL 0
+#ifndef TORT_GC_SMAL
+#define TORT_GC_SMAL 0
 #endif
 
 extern int _tort_lookup_trace;
@@ -156,7 +156,7 @@ void tort_gc_invoke_finalizers()
 void tort_gc_mark(tort_v referrer, tort_v referred)
 {
   // FIXME
-#if TORT_SMAL
+#if TORT_GC_SMAL
   if ( referred != tort_nil && ! tort_taggedQ(referred) ) {
     smal_mark_ptr(referrer != tort_nil ? referrer - sizeof(tort_header) : 0, 
 		  referred - sizeof(tort_header));
@@ -175,14 +175,14 @@ void tort_gc_mark_range(tort_v referrer, void *b, void *e)
 void tort_gc_add_root_callback(void (*func)(void *data), void *data)
 {
   // FIXME
-#if TORT_SMAL
+#if TORT_GC_SMAL
   smal_roots_add_callback(func, data);
 #endif
 }
 
 /********************************************************************/
 
-#if TORT_SMAL
+#if TORT_GC_SMAL
 static int allocs_since_gc;
 static int allocs_per_gc;
 void smal_collect_before_inner(void *top_of_stack)
@@ -316,7 +316,7 @@ void *tort_object_alloc(tort_mtable *mtable, size_t size)
   return ptr;
 }
 
-#if TORT_GC
+#if TORT_GC_BDW
 static void _tort_gc_stats_gc(tort_v map)
 {
 #define Pf(X) tort_send(tort__s(set), map, tort_s(X), tort_i(GC_##X()));
@@ -425,7 +425,7 @@ static void tort_gc_atexit()
   fprintf(stderr, "\n  tort_gc_atexit()\n");
   fflush(stderr);
 #endif
-#if TORT_SMAL
+#if TORT_GC_SMAL
   fprintf(stderr, "  before atexit\n");
   tort_gc_dump_stats();
 #endif

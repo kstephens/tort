@@ -3,8 +3,8 @@ BASE_DIR:=$(shell cd "$(BASE_DIR)" && /bin/pwd)#
 GC_VERSION=gc-20101223-cvs#
 GC_VERSION=gc-7.2alpha6#
 GC=$(BASE_DIR)/$(GC_VERSION)#
-TORT_GC=0
-TORT_SMAL=1
+TORT_GC_BDW=0#
+TORT_GC_SMAL=1#
 
 PREFIX:=$(shell mkdir -p $(BASE_DIR)/local && cd $(BASE_DIR)/local && /bin/pwd)#
 libdir=$(PREFIX)/lib#
@@ -28,8 +28,8 @@ CFLAGS_OPTIMIZE = -O3
 CFLAGS_OPTIMIZE = -fast
 #CFLAGS_OPTIMIZE = 
 CFLAGS += -DTORT_DLIB_DIR='"$(libdir)"' #
-CFLAGS += -DTORT_GC=$(TORT_GC) #
-CFLAGS += -DTORT_SMAL=$(TORT_SMAL) #
+CFLAGS += -DTORT_GC_BDW=$(TORT_GC_BDW) #
+CFLAGS += -DTORT_GC_SMAL=$(TORT_GC_SMAL) #
 ifeq "$(UNAME_S)" "Linux"
 LIBS += -ldl
 else
@@ -38,13 +38,13 @@ CFLAGS += -fnested-functions
 endif
 CFLAGS += $(CFLAGS_INC) -Iinclude -I$(BASE_DIR)/core/include -I$(BASE_DIR)/core/boot/include -I$(GC)/include -Wall -Werror $(CFLAGS_OPTIMIZE)
 
-ifneq "$(TORT_GC)" "0"
+ifneq "$(TORT_GC_BDW)" "0"
 LDFLAGS += -L$(PREFIX)/lib #
 LIBS += -lgc #
 endif
 
 SMAL=$(BASE_DIR)/../smal#
-ifneq "$(TORT_SMAL)" "0"
+ifneq "$(TORT_GC_SMAL)" "0"
 CFLAGS += -I$(SMAL)/include
 LDFLAGS += -L$(SMAL)/lib
 LIBS += -lsmal
