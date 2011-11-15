@@ -459,5 +459,9 @@ typedef struct tort_dynlib { tort_H;
   tort_v base_ptr;
 } tort_dynlib;
 
+void *tort_dlopen(const char *file, char *file_buffer);
+void *tort_dlsym(void *handle, const char *symbol);
+void tort_dlclose(void *handle);
+
 #endif
 

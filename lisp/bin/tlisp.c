@@ -6,7 +6,7 @@ int main(int argc, char **argv, char **environ)
   int argi;
   tort_v in, out, io;
   tort_repl *repl;
-  int interactive = 0;
+  int interactive = 0, verbose = 0;
 
   tort_runtime_create();
   tort_send(tort_s(_dlopen), tort_string_new_cstr("libtortlisp"));
@@ -47,6 +47,9 @@ int main(int argc, char **argv, char **environ)
     if ( ! strcmp(arg, "-i") ) {
       interactive ++;
     } else
+    if ( ! strcmp(arg, "-v") ) {
+      verbose ++;
+    } else
     if ( ! strcmp(arg, "-") ) {
       in = stdin;
     } else {
@@ -59,6 +62,8 @@ int main(int argc, char **argv, char **environ)
     out = tort_stdout;
     repl->input = io;
     repl->output = out;
+    if ( verbose )
+      repl->prompt = out;
     tort_send(tort_s(run), repl);
   }
   if ( argc == 1 || interactive ) {

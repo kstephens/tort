@@ -18,6 +18,55 @@ tort_v _tort_M_dynlib__new(tort_tp tort_mtable *mtable)
 
 int _tort_dl_debug = 0;
 
+void *tort_dlopen(const char *file, char *file_buffer)
+{
+  void *dl;
+  char _file_buffer[1024];
+  if ( ! file_buffer )
+    file_buffer = _file_buffer;
+  if ( ! strchr(file, '/') ) {
+    sprintf(file_buffer, "%s/%s", TORT_DLIB_DIR, file);
+    file = file_buffer;
+  }
+  if ( strlen(file) < strlen(TORT_DLIB_SUFFIX) || strcmp(strchr(file, '\0') - strlen(TORT_DLIB_SUFFIX), TORT_DLIB_SUFFIX) ) {
+    sprintf(file_buffer, "%s%s", file, TORT_DLIB_SUFFIX);
+    file = file_buffer;
+  }
+  if ( file_buffer != file ) strcpy(file_buffer, file);
+  if ( _tort_dl_debug ) {
+    fprintf(stderr, "  tort_dlopen: file = %s\n", file);
+  }
+  if ( (dl = dlopen(file, RTLD_NOW | RTLD_GLOBAL | RTLD_NODELETE)) ) {
+    if ( _tort_dl_debug >= 2 ) {
+      fprintf(stderr, "    dl = @%p\n", dl);
+    }
+    return dl;
+  }
+  perror(dlerror());
+  return 0;
+}
+
+void *tort_dlsym(void *dl, const char *symbol)
+{
+  void *ptr;
+#if 0 // def __APPLE__
+  char *_symbol = alloca(strlen(symbol) + 2);
+  _symbol[0] = '_';
+  strcpy(_symbol + 1, symbol);
+  symbol = _symbol;
+#endif
+  ptr = dlsym(dl, symbol);
+  if ( _tort_dl_debug ) {
+    fprintf(stderr, "    tort_dlsym(@%p, \"%s\") => @%p\n", dl, symbol, ptr);
+  }
+  return ptr;
+}
+
+void tort_dlclose(void *dl)
+{
+  dlclose(dl);
+}
+
 tort_v _tort_m_dynlib__dlopen(tort_tp struct tort_dynlib *rcvr, tort_v name)
 {
   char file_buffer[1024];
@@ -28,24 +77,18 @@ tort_v _tort_m_dynlib__dlopen(tort_tp struct tort_dynlib *rcvr, tort_v name)
 
   rcvr->name = name;
   file = tort_string_data(name);
-  if ( ! strchr(file, '/') ) {
-    sprintf(file_buffer, "%s/%s", TORT_DLIB_DIR, file);
-    file = file_buffer;
+  if ( ! (dl = tort_dlopen(file, file_buffer)) ) {
+    rcvr->error = tort_string_new_cstr(dlerror());
+    perror(dlerror());
+    return rcvr;
   }
-  if ( strlen(file) < strlen(TORT_DLIB_SUFFIX) || strcmp(strchr(file, '\0') - strlen(TORT_DLIB_SUFFIX), TORT_DLIB_SUFFIX) ) {
-    sprintf(file_buffer, "%s%s", file, TORT_DLIB_SUFFIX);
-    file = file_buffer;
-  }
-  if ( _tort_dl_debug ) {
-    fprintf(stderr, "  _dlopen: file = %s\n", file);
-  }
+  file = file_buffer;
   rcvr->path = tort_string_new_cstr(file);
   rcvr->base_sym = rcvr->base_ptr = tort_nil;
   tort_send(tort_s(emptyE), rcvr);
   tort_send(tort_s(_load_symtab), rcvr, file, 0);
   if ( ! tort_map_size(rcvr) )
     return rcvr;
-  //#ifdef __APPLE__
   base_sym = tort_symbol_data(tort_map_data(rcvr)[0]->first);
   rcvr->base_sym = tort_string_new_cstr(base_sym);
   base_ptr = tort_ptr_data(tort_map_data(rcvr)[0]->second);
@@ -54,36 +97,28 @@ tort_v _tort_m_dynlib__dlopen(tort_tp struct tort_dynlib *rcvr, tort_v name)
     fprintf(stderr, "    base_sym = '%s'\n", base_sym);
     fprintf(stderr, "    base_ptr = %p\n", base_ptr);
   }
-  if ( (dl = dlopen(file, RTLD_NOW | RTLD_GLOBAL | RTLD_NODELETE)) ) {
-    if ( _tort_dl_debug >= 2 ) {
-      fprintf(stderr, "    dl = @%p\n", dl);
-    }
-    base_ptr = dlsym(dl, base_sym);
-    if ( _tort_dl_debug ) {
-      fprintf(stderr, "    dlsym(@%p, \"%s\") => @%p\n", dl, base_sym, base_ptr);
-    }
-    {
-      Dl_info info;
-      bzero(&info, sizeof(info));
-      dladdr((void*) base_ptr, &info);
-      if ( _tort_dl_debug > 1 ) {
-	fprintf(stderr, "    dli_fname = %s\n", info.dli_fname);
-	fprintf(stderr, "    dli_fbase = %p\n", info.dli_fbase);
-	fprintf(stderr, "    dli_sname = %s\n", info.dli_sname);
-	fprintf(stderr, "    dli_saddr = %p\n", info.dli_saddr);
-      }
-      base_ptr = info.dli_fbase;
-    }
-    dlclose(dl);
-    tort_send(tort_s(emptyE), rcvr);
-    tort_send(tort_s(_load_symtab), rcvr, file, base_ptr);
-    tort_send(tort_s(set), tort_(dl_maps), tort_string_new_cstr(file), rcvr);
-    tort_send(tort_s(_run_initializers), rcvr);
-    tort_send(tort_s(_load_methods), rcvr);
-  } else {
-    rcvr->error = tort_string_new_cstr(dlerror());
-    perror(dlerror());
+  base_ptr = dlsym(dl, base_sym);
+  if ( _tort_dl_debug ) {
+    fprintf(stderr, "    dlsym(@%p, \"%s\") => @%p\n", dl, base_sym, base_ptr);
   }
+  {
+    Dl_info info;
+    bzero(&info, sizeof(info));
+    dladdr((void*) base_ptr, &info);
+    if ( _tort_dl_debug > 1 ) {
+      fprintf(stderr, "    dli_fname = %s\n", info.dli_fname);
+      fprintf(stderr, "    dli_fbase = %p\n", info.dli_fbase);
+      fprintf(stderr, "    dli_sname = %s\n", info.dli_sname);
+      fprintf(stderr, "    dli_saddr = %p\n", info.dli_saddr);
+    }
+    base_ptr = info.dli_fbase;
+  }
+  tort_dlclose(dl);
+  tort_send(tort_s(emptyE), rcvr);
+  tort_send(tort_s(_load_symtab), rcvr, file, base_ptr);
+  tort_send(tort_s(set), tort_(dl_maps), tort_string_new_cstr(file), rcvr);
+  tort_send(tort_s(_run_initializers), rcvr);
+  tort_send(tort_s(_load_methods), rcvr);
   return rcvr;
 }
 
@@ -112,7 +147,6 @@ tort_v tort_m_dynlib___run_initializers(tort_tp tort_v map)
   tort_map_EACH_END();
   return 0;
 }
-
 
 static int process_method(int cmeth, const char *prefix, tort_pair *e)
 {
