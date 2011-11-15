@@ -1,12 +1,15 @@
 #include "tort/core.h"
-#include "smal/smal.h"
-#include "smal/roots.h"
 
 #ifndef TORT_GC_BDW
 #define TORT_GC_BDW 0
 #endif
 #ifndef TORT_GC_SMAL
 #define TORT_GC_SMAL 0
+#endif
+
+#if TORT_GC_SMAL
+#include "smal/smal.h"
+#include "smal/roots.h"
 #endif
 
 extern int _tort_lookup_trace;
