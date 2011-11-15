@@ -549,7 +549,7 @@ tort_v _tort_m_lisp_repl__eval(tort_tp tort_repl *repl)
 tort_v _tort_m_lisp_repl__print(tort_tp tort_repl *repl, tort_v thing)
 {
   tort_send(tort_s(lisp_write), thing, repl->output);
-  tort_printf(repl->output, "\n");
+  // tort_printf(repl->output, "\n");
   return repl;
 }
 

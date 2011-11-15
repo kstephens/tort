@@ -34,7 +34,7 @@ tort_v _tort_m_repl__value(tort_tp tort_repl *repl, tort_v catch)
     tort_(error_catch) = catch;
   do {
     if ( repl->prompt != tort_nil )
-      tort_printf(repl->prompt, "%S > ", repl->prompt_id);
+      tort_printf(repl->prompt, "#|%S>|# ", repl->prompt_id);
     tort_send(tort_s(read), repl);
     // tort_printf(tort_stderr, "  REPL expr => %O\n", repl->expr);
     if ( repl->expr == tort_eos ) {
@@ -42,15 +42,23 @@ tort_v _tort_m_repl__value(tort_tp tort_repl *repl, tort_v catch)
       break;
     }
     if ( repl->prompt != tort_nil ) {
-      tort_printf(repl->prompt, "  == ");
+      tort_printf(repl->prompt, "  #|== ");
       if ( repl->output != tort_nil )
 	tort_send(tort_s(print), repl, repl->expr);
+      if ( repl->prompt != tort_nil ) 
+	tort_printf(repl->prompt, " |#\n");
+      else
+	tort_printf(repl->output, "\n");
     }
     tort_send(tort_s(eval), repl);
     if ( repl->output != tort_nil ) {
       if ( repl->prompt != tort_nil ) 
-	tort_printf(repl->prompt, "  => ");
+	tort_printf(repl->prompt, "  #|=> ");
       tort_send(tort_s(print), repl, repl->result);
+      if ( repl->prompt != tort_nil )
+	tort_printf(repl->prompt, " |#\n");
+      else
+	tort_printf(repl->output, "\n");
     }
   } while ( 0 ); // break;
   if ( catch )
