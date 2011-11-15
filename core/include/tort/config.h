@@ -2,7 +2,14 @@
 #define _tort_CONFIG_H
 
 #ifndef TORT_TAG_BITS
-#define TORT_TAG_BITS 1
+#define TORT_TAG_BITS 2
+#endif
+
+#if TORT_TAG_BITS >= 1
+#define tort_tag_fixnum 1
+#endif
+#if TORT_TAG_BITS >= 2
+#define tort_tag_locative 3
 #endif
 
 #ifndef TORT_MULTIPLICITY

@@ -189,6 +189,10 @@ tort_v tort_runtime_initialize_mtable()
 #ifdef tort_tag_fixnum 
   tort__mt(fixnum) = tort_(tagged_header[tort_tag_fixnum]).mtable;
 #endif
+#ifdef tort_tag_locative
+  tort__mt(locative) = tort_(tagged_header[tort_tag_locative]).mtable;
+  tort_(tagged_header[tort_tag_locative]).applyf = (void*) _tort_m_locative___applyf;
+#endif
 
   /* Other core. */
   tort__mt(ptr)         = tort_mtable_create(tort__mt(object));

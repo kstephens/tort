@@ -20,15 +20,24 @@ typedef ssize_t tort_vi;
 #define tort_ref(T, X)      ((struct T *)(X))
 #define tort_ref_box(PTR)   ((tort_v)(PTR))
 
+#define tort_TAG_MASK ((1 << TORT_TAG_BITS) - 1)
 #define tort_tag(X) ((short) tort_taggedQ(X))
-#define tort_taggedQ(X)     ((size_t)(X) & ((1 << TORT_TAG_BITS) - 1))
+#define tort_taggedQ(X)     ((size_t)(X) & tort_TAG_MASK)
 #define tort_tagged_box(V,TAG)  ((tort_v) ((((ssize_t) (V)) << TORT_TAG_BITS) | TAG))
 #define tort_tagged_data(X) (((ssize_t) (X)) >> TORT_TAG_BITS)
 #define tort_tagged_udata(X) (((size_t) (X)) >> TORT_TAG_BITS)
 
-#define tort_tag_fixnum 1
-#define tort_i(V) tort_tagged_box(V,1)
+/* Fixnums: Small integers */
+#define tort_i(V) tort_tagged_box(V,tort_tag_fixnum)
 #define tort_I(X) tort_tagged_data(X)
+
+/* Locatives: */
+#ifdef tort_tag_locative
+#define tort_l(P) ((tort_v)(((size_t) (P)) | tort_tag_locative))
+#define tort_L(X) ((tort_v*)(((size_t) (X)) & ~(size_t)tort_TAG_MASK))
+#endif
+
+/* Characters: */
 #ifndef tort_c
 #define tort_c(V) tort_i(V)
 #define tort_C(X) tort_I(X)
