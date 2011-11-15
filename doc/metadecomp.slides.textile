@@ -18,6 +18,15 @@ h1. Fundamentals
 * State
 
 !SLIDE
+!TITLE Acknoledgements
+
+* Viewpoints Research Institute - http://vpri.org
+** Alan Kay - "Object-Oriented", SMALLTALK
+** Ian Piumarta
+*** "COLAs" Combined Object Lambda Architecture
+*** Building Your Own Dynamic Language - http://www.youtube.com/watch?v=cn7kTPbW6QQ
+
+!SLIDE
 !TITLE Emphasis
 
 h1. Emphasis
@@ -46,7 +55,9 @@ h1. Messages over Methods
 
 * "Send a message X to object Y"
 * NOT "Call the method X on object Y"
-* Messages have lifetimes, just like objects.
+* A message is a nown.
+* A message has a lifetime.
+* Send is the verb.
 
 !SLIDE 
 !TITLE Messaging In Ruby
@@ -64,9 +75,9 @@ object.add(1, 2)
 @@@
 
 !SLIDE
-!TITLE Decomposing Behavior Composition
+!TITLE Decomposing Messaging
 
-h1. Decomposing Behavior Composition
+h1. Decomposing Messaging
 
 h2. Message
 * selector
@@ -94,7 +105,7 @@ h1. Sending a Message
 # Ruby:
 receiver.selector(*arguments)
 # =>
-receiver.send(selector, arguments)
+receiver.send(:selector, arguments)
 
 @@@
 
@@ -132,32 +143,44 @@ apply(method, receiver, arguments)
 !SLIDE
 !TITLE lookup()
 
-h1. lookup()
+h1. Functional Oriented lookup()
 
-* Functional Orientation:
-** Find the address of a function by its name.
-** Side-effect free, compile-/link-time operation.
-** Compiler/linker symbol table.
-** "Early Binding"
-* Object Orientation:
-** Find the method for a receiver by it's selector.
-** Uses a selector and method table to determine the method to apply.
-** Object method table.
-** Receiver may not be the sole factor in lookup(), e.g. multimethods.
-** "Late Binding"
+* Find the address of a function by its name.
+* Bind the function name to a function address.
+* Compiler/linker symbol table.
+* Compile-/link-time operation.
+* "Early Binding"
+
+!SLIDE
+!TITLE lookup()
+
+h1. Object Oriented lookup()
+
+* Find the method for a receiver by it's selector.
+* Bind a selector name to a method object.
+* Object method table.
+* Runtime-time operation.
+* Receiver may not be the sole factor in lookup(), e.g. multimethods.
+* "Late Binding"
 
 !SLIDE
 !TITLE apply()
 
-h1. apply()
+h1. Functional Oriented apply()
 
-* Functional Orientation:
-** Apply a function to its arguments.
-** "Call a function"
-* Object Orientation:
-** Apply a method to receiver and arguments.
-** "Call a method"
-** The receiver is an implicit or explicit argument.
+* "Call a function"
+* Apply a function to its arguments.
+* Bind function parameters to arguments.
+
+!SLIDE
+!TITLE apply()
+
+h1. Object Oriented apply()
+
+* "Call a method"
+* Apply a method to receiver and arguments.
+* Bind method parameters to arguments.
+* The receiver is an implicit or explicit argument.
 
 !SLIDE
 !TITLE "Messaging" In C
@@ -166,10 +189,12 @@ h1. "Messaging" In C
 
 @@@ c
 
+// add.c
 int add(int a, int b)
 {
   return a + b;
 }
+// main.c
 int main(int argc, char **argv)
 {
   return add(1, 2);
@@ -187,8 +212,8 @@ h1. Messaging In Scheme
 (define (add a b)
   (+ a b))
 (add 1 2) 
-;; add may be late- or early-bound.
-;; + is late-bound: behavior depends on the type.
+;; "add" may be late- or early-bound.
+;; "+" is late-bound: behavior depends on the type.
 
 @@@
 
@@ -198,12 +223,13 @@ h1. Messaging In Scheme
 h1. Function Call == Message Send
 
 * Object Messaging is a superset of Function Calls.
-* lookup() in C is implemented in the linker.
+* lookup() in C is in the linker.
 
 h2. Isomorphic
 
-* Functions can be used to implement Messaging.
-* Messages can be used to implement Functions.
+* Functions can implement Messaging.
+* Messages can implement Functions.
+
 
 !SLIDE
 !TITLE The Message Object
@@ -242,9 +268,20 @@ message.send(message) =>
 @@@
 
 !SLIDE
+!TITLE Lookup and Apply both create Bindings
+
+h1. Lookup and Apply both create Bindings
+
+* Lookup binds selector and arguments to a Method in a Message.
+* Apply binds Method parameters to arguments.
+
+!SLIDE
 !TITLE Simple Objects
 
 h1. Simple Objects
+
+* Objects, not Classes.
+* Method Tables, not Classes.
 
 !SLIDE
 !TITLE Structuring Objects
