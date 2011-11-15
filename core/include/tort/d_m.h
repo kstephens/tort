@@ -8,6 +8,7 @@ include/tort/d_mt.h
 include/tort/d_s.h
 include/tort/fixnum.h
 include/tort/init.h
+include/tort/integer.h
 include/tort/internal.h
 include/tort/ops.h
 include/tort/tort.h
@@ -144,6 +145,7 @@ tort_d_m(tort__mt(mtable), tort__s(gc_free_method), _tort_m_mtable__gc_free_meth
 tort_d_m(tort__mt(mtable), tort__s(gc_free_methodSET), _tort_m_mtable__gc_free_methodSET)
 tort_d_m(tort__mt(mtable), tort__s(gc_mark_method), _tort_m_mtable__gc_mark_method)
 tort_d_m(tort__mt(mtable), tort__s(gc_mark_methodSET), _tort_m_mtable__gc_mark_methodSET)
+tort_d_m(tort__mt(mtable), tort__s(initialize), _tort_m_mtable__initialize)
 tort_d_m(tort__mt(mtable), tort__s(instance_size), _tort_m_mtable__instance_size)
 tort_d_m(tort__mt(mtable), tort__s(instance_sizeSET), _tort_m_mtable__instance_sizeSET)
 tort_d_m(tort__mt(mtable), tort__s(lookup), _tort_m_mtable__lookup)

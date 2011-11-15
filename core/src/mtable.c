@@ -7,6 +7,24 @@ tort_ACCESSOR(mtable,tort_v,gc_mark_method);
 tort_ACCESSOR(mtable,tort_v,gc_free_method);
 tort_ACCESSOR(mtable,tort_v,data);
 
+tort_v _tort_m_mtable__initialize(tort_tp tort_mtable *mt, tort_v delegate)
+{
+  _tort_m_map__initialize(tort_ta (tort_v) mt);
+  mt->delegate = delegate;
+  mt->instance_size = 0;
+  mt->gc_data = 0;
+  mt->gc_mark_method = 0;
+  mt->gc_free_method = 0;
+  mt->data = 0;
+  return mt;
+}
+
+tort_v _tort_M_mtable__new(tort_tp tort_mtable *mtable, tort_v delegate)
+{
+  tort_mtable *o = tort_send(tort_s(allocate), mtable);
+  return_tort_send(tort_s(initialize), o, delegate);
+}
+
 unsigned long _tort_alloc_id = 0;
 
 tort_v _tort_allocate(tort_tp tort_v mtable, size_t size
@@ -111,14 +129,7 @@ tort_mtable* tort_mtable_set_delegate(tort_mtable *obj_mt, tort_v delegate)
 static tort_mtable * tort_mtable_create_0(tort_v delegate)
 {
   tort_mtable *mt = tort_allocate(tort__mt(mtable), sizeof(tort_mtable));
-  _tort_m_map__initialize(tort_ta (tort_v) mt);
-  mt->delegate = delegate;
-  mt->instance_size = 0;
-  mt->gc_data = 0;
-  mt->gc_mark_method = 0;
-  mt->gc_free_method = 0;
-  mt->data = 0;
-  return mt;
+  return _tort_m_mtable__initialize(tort_ta mt, delegate);
 }
 
 tort_mtable* tort_mtable_create(tort_v delegate)
@@ -128,11 +139,6 @@ tort_mtable* tort_mtable_create(tort_v delegate)
   tort_h_ref(obj_mt)->mtable = cls_mt;
   tort_mtable_set_delegate(obj_mt, delegate);
   return obj_mt;
-}
-
-tort_v _tort_M_mtable__new(tort_tp tort_mtable *mtable, tort_v delegate)
-{
-  return tort_mtable_create(delegate);
 }
 
 tort_mtable* tort_mtable_get(const char *name)
