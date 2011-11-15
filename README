@@ -58,3 +58,13 @@ Extensions are dynamically loaded:
 ** Basic Scheme-like semantics boot-strapped from objects and lisp.
 ** Basic structures based on vectors.
 ** PRELIMINARY x86-64 compiler written in Scheme superset.
+
+== Building ==
+
+make bootstrap
+make
+
+== Examples ==
+
+lisp/bin/tlisp - simple Lisp interpreter written as object.
+
