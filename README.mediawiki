@@ -68,3 +68,8 @@ make
 
 lisp/bin/tlisp - simple Lisp interpreter written as object.
 
+== Compiler =
+
+lisp/bin/tlisp compiler/t/compiler_test_1.scm
+
+

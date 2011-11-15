@@ -303,7 +303,7 @@
 	
 	;; msg->method->applyf(msg, rcvr, ...) 
 	(compiler:emit c "movq  " msg->method ", " meth " \t// msg->method => meth")
-	(compiler:emit c "call  " meth->applyf "      \t// meth->apply(msg, rcvr, args...) ")
+	(compiler:emit c "call  *" meth->applyf "      \t// meth->apply(msg, rcvr, args...) ")
 	
 	;; Pop args sp:
 	(if (> stack-arg-count 0)
