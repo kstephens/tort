@@ -6,6 +6,7 @@ include/tort/core.h
 include/tort/d_m.h
 include/tort/d_mt.h
 include/tort/d_s.h
+include/tort/fixnum.h
 include/tort/init.h
 include/tort/integer.h
 include/tort/internal.h
@@ -15,9 +16,9 @@ src/debug.c
 src/dynlib.c
 src/eq.c
 src/error.c
+src/fixnum.c
 src/gc.c
 src/init.c
-src/integer.c
 src/io.c
 src/lookup.c
 src/map.c

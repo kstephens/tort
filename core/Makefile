@@ -12,7 +12,7 @@ include $(BASE_DIR)/mk/target.mk
 
 bootstrap : clean
 	$(MAKE) clean
-	-rm -f include/tort/integer.h.new
+	-rm -f include/tort/fixnum.h.new
 	-$(MAKE) 
 	-rm -f include/tort/internal.h.new
 	-$(MAKE) 
@@ -26,11 +26,11 @@ bootstrap : clean
 # include:
 #
 
-include/tort/internal.h.new : include/tort/internal.h.gen ${LIB_CFILES} ${GEN_C_FILES} $(shell ls include/tort/integer.h 2>/dev/null)
-include/tort/d_m.h.new  : include/tort/d_m.h.gen ${LIB_CFILES} ${GEN_C_FILES} $(shell ls include/tort/integer.h include/tort/internal.h 2>/dev/null)
+include/tort/internal.h.new : include/tort/internal.h.gen ${LIB_CFILES} ${GEN_C_FILES} $(shell ls include/tort/fixnum.h 2>/dev/null)
+include/tort/d_m.h.new  : include/tort/d_m.h.gen ${LIB_CFILES} ${GEN_C_FILES} $(shell ls include/tort/fixnum.h include/tort/internal.h 2>/dev/null)
 include/tort/d_mt.h.new : include/tort/d_mt.h.gen $(LIB_CFILES) $(GEN_C_FILES) $(shell ls include/tort/d_m.h 2>/dev/null)
 include/tort/d_s.h.new : include/tort/d_s.h.gen $(LIB_CFILES) $(GEN_C_FILES) $(shell ls include/tort/d_m.h 2>/dev/null)
-include/tort/integer.h.new : include/tort/integer.h.gen src/integer.c
+include/tort/fixnum.h.new : include/tort/fixnum.h.gen src/fixnum.c
 
 ######################################################################
 # debugging:

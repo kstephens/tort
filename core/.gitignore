@@ -10,6 +10,6 @@
 .stats
 *.dSYM/
 boot/
-include/tort/integer.h
+include/tort/fixnum.h
 include/tort/*.new
 

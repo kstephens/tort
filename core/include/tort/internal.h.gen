@@ -2,7 +2,7 @@
 set -e # x
 (
     cat "$1.begin"
-    srcs="$(ls src/*.c include/tort/integer.h 2>&1)"
+    srcs="$(ls src/*.c include/tort/fixnum.h 2>&1)"
     cat <<EOF
 /* Sources:
 $srcs
