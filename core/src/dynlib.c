@@ -117,6 +117,14 @@ tort_v _tort_m_dynlib__dlopen(tort_tp struct tort_dynlib *rcvr, tort_v name)
   tort_send(tort_s(emptyE), rcvr);
   tort_send(tort_s(_load_symtab), rcvr, file, base_ptr);
   tort_send(tort_s(set), tort_(dl_maps), tort_string_new_cstr(file), rcvr);
+  tort_v all = tort_send(tort_s(get), tort_(dl_maps), tort_s(all));
+  tort_send(tort_s(emit), rcvr, all);
+  return rcvr;
+}
+
+tort_v _tort_m_dynlib__load(tort_tp struct tort_dynlib *rcvr, tort_v name)
+{
+  tort_send(tort_s(dlopen), rcvr, name);
   tort_send(tort_s(_run_initializers), rcvr);
   tort_send(tort_s(_load_methods), rcvr);
   return rcvr;
@@ -125,7 +133,7 @@ tort_v _tort_m_dynlib__dlopen(tort_tp struct tort_dynlib *rcvr, tort_v name)
 tort_v _tort_m_string___dlopen(tort_tp tort_string *rcvr)
 {
   tort_v st = tort_send(tort_s(new), tort__mt(dynlib));
-  return_tort_send(tort_s(dlopen), st, rcvr);
+  return_tort_send(tort_s(load), st, rcvr);
 }
 
 tort_v tort_m_dynlib___run_initializers(tort_tp tort_v map)
@@ -319,10 +327,16 @@ tort_v tort_runtime_initialize_dynlib()
   tort_add_method(tort__mt(dynlib), "_load_methods", tort_m_dynlib___load_methods);
   tort_(dl_maps) = tort_map_create();
   tort_send(tort_s(set), tort_(root), tort_s(dl_maps), tort_(dl_maps));
+  tort_v all = tort_map_create();
+  tort_send(tort_s(set), tort_(dl_maps), tort_s(all), all);
 
   st = tort_send(tort_s(new), tort__mt(dynlib));
   _tort_m_dynlib___load_symtab(tort_ta st, tort_(_argv)[0], 0);
-  tort_send(tort_s(set), tort_(root), tort_s(core_symtab), st);
-  return st;
+  tort_send(tort_s(set), tort_(root), tort_s(prog_symtab), st);
+
+  st = tort_send(tort_s(new), tort__mt(dynlib));
+  tort_send(tort_s(dlopen), st, tort_string_new_cstr("libtortcore"));
+
+  return all;
 }
 
