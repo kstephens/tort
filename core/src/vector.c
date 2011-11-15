@@ -65,8 +65,9 @@ tort_v _tort_m_vector_base___delete_n (tort_tp tort_vector_base *v, tort_v i, to
   return v;
 }
 
-tort_v _tort_m_vector_base___resize (tort_tp tort_vector_base *v, size_t size)
+tort_v _tort_m_vector_base__resize (tort_tp tort_vector_base *v, tort_v s)
 {
+  size_t size = tort_I(s);
   size_t old_size = v->size;
   size_t old_alloc_size = v->alloc_size;
   if ( size > old_size || size < old_size / 2 ) {
@@ -89,13 +90,13 @@ tort_v _tort_m_vector_base___resize (tort_tp tort_vector_base *v, size_t size)
 
 tort_v _tort_m_vector_base__emptyE (tort_tp tort_vector_base *v)
 {
-  return_tort_send(tort__s(_resize), v, 0);
+  return_tort_send(tort__s(resize), v, tort_i(0));
 }
 
 tort_v _tort_m_vector_base___append (tort_tp tort_vector_base *v, const void *datap, size_t data_count)
 {
   size_t size = v->size;
-  _tort_m_vector_base___resize(tort_ta v, size + data_count);
+  _tort_m_vector_base__resize(tort_ta v, tort_i(size + data_count));
   memcpy(v->data + v->element_size * size,
 	 datap,
 	 v->element_size * data_count);

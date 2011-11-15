@@ -8,7 +8,6 @@ include/tort/d_mt.h
 include/tort/d_s.h
 include/tort/fixnum.h
 include/tort/init.h
-include/tort/integer.h
 include/tort/internal.h
 include/tort/ops.h
 include/tort/tort.h
@@ -229,13 +228,13 @@ tort_d_m(tort__mt(vector_base), tort__s(_delete_n), _tort_m_vector_base___delete
 tort_d_m(tort__mt(vector_base), tort__s(_gc_free), _tort_m_vector_base___gc_free)
 tort_d_m(tort__mt(vector_base), tort__s(_initialize), _tort_m_vector_base___initialize)
 tort_d_m(tort__mt(vector_base), tort__s(_ref), _tort_m_vector_base___ref)
-tort_d_m(tort__mt(vector_base), tort__s(_resize), _tort_m_vector_base___resize)
 tort_d_m(tort__mt(vector_base), tort__s(alloc_size), _tort_m_vector_base__alloc_size)
 tort_d_m(tort__mt(vector_base), tort__s(append), _tort_m_vector_base__append)
 tort_d_m(tort__mt(vector_base), tort__s(clone), _tort_m_vector_base__clone)
 tort_d_m(tort__mt(vector_base), tort__s(element_size), _tort_m_vector_base__element_size)
 tort_d_m(tort__mt(vector_base), tort__s(emptyE), _tort_m_vector_base__emptyE)
 tort_d_m(tort__mt(vector_base), tort__s(equalQ), _tort_m_vector_base__equalQ)
+tort_d_m(tort__mt(vector_base), tort__s(resize), _tort_m_vector_base__resize)
 tort_d_m(tort__mt(vector_base), tort__s(size), _tort_m_vector_base__size)
 tort_d_m(tort_h_ref(tort__mt(caller_info))->mtable, tort__s(_offset_data), _tort_M_caller_info___offset_data)
 tort_d_m(tort_h_ref(tort__mt(caller_info))->mtable, tort__s(_offset_file), _tort_M_caller_info___offset_file)

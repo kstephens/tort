@@ -70,7 +70,7 @@ tort_v _tort_m_string__escape(tort_tp tort_string *str, tort_v more)
 {
   tort_string *result = tort_send(tort__s(clone), str);
   unsigned char *dst, *src = (void*) str->data, *src_end = (void*) (str->data + str->size);
-  tort_send(tort__s(_resize), result, (size_t) str->size * 4); /* 4 = '\x00' or '\000' */
+  tort_send(tort__s(resize), result, tort_i(str->size * 4)); /* 4 = '\x00' or '\000' */
   dst = (void*) result->data;
   while ( src < src_end ) {
     int c = *(src ++);
@@ -94,7 +94,7 @@ tort_v _tort_m_string__escape(tort_tp tort_string *str, tort_v more)
     *(dst ++) = c;
   }
   *dst = 0;
-  return_tort_send(tort__s(_resize), result, (char*) dst - (char*) result->data);
+  return_tort_send(tort__s(resize), result, tort_i((char*) dst - (char*) result->data));
 }
 
 tort_v tort_string_new(const char *ptr, size_t size)
