@@ -395,8 +395,8 @@ void  tort_gc_collect();
 void  tort_gc_mark(tort_v referrer, tort_v referred);
 #define tort_gc_add_root(referencep) (void)0 // TODO
 #define tort_gc_remove_root(referencep) (void)0
-void tort_gc_mark_range(void *b, void *e);
-void tort_gc_add_callback(void (*func)(void *data), void *data);
+void tort_gc_mark_range(tort_v referrer, void *b, void *e);
+void tort_gc_add_root_callback(void (*func)(void *data), void *data);
 
 tort_v tort_map_create(); // FIXME
 

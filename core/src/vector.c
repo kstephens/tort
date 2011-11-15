@@ -186,6 +186,6 @@ tort_v _tort_m_vector__map (tort_tp tort_vector *rcvr, tort_v block)
 
 tort_v _tort_m_vector___gc_mark(tort_tp tort_vector *o)
 {
-  tort_gc_mark_range(o->data, o->data + o->size);
+  tort_gc_mark_range(o, o->data, o->data + o->size);
   return 0;
 }

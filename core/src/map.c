@@ -123,7 +123,7 @@ tort_v tort_map_create()
 
 tort_v _tort_m_map___gc_mark(tort_tp tort_vector *o)
 {
-  tort_gc_mark_range(o->data, o->data + o->size);
+  tort_gc_mark_range(o, o->data, o->data + o->size);
   return 0;
 }
 

@@ -164,15 +164,15 @@ void tort_gc_mark(tort_v referrer, tort_v referred)
 #endif
 }
 
-void tort_gc_mark_range(void *b, void *e)
+void tort_gc_mark_range(tort_v referrer, void *b, void *e)
 {
   // FIXME
-#if TORT_SMAL
-  smal_mark_ptr_range(0, b, e);
+#if TORT_GC_SMAL
+  smal_mark_ptr_range(tort_h(referrer), b, e);
 #endif
 }
 
-void tort_gc_add_callback(void (*func)(void *data), void *data)
+void tort_gc_add_root_callback(void (*func)(void *data), void *data)
 {
   // FIXME
 #if TORT_SMAL
