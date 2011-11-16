@@ -199,6 +199,7 @@ tort_message* _tort_lookup (tort_tp tort_v rcvr, tort_message *message)
 {
   tort_v sel = message->selector;
   
+  /* Reuse rcvr as the actual rcvr's mtable search start. */
   /* See tort_send* macros. */
   // Start from rcvr's mtable, if not specified.
   if ( ! message->mtable )
@@ -250,7 +251,8 @@ tort_message* _tort_lookup (tort_tp tort_v rcvr, tort_message *message)
   } else {
 #endif
 
-    if ( sel == s_lookup && message->receiver == (tort_v) tort__mt(mtable) ) {
+    /* Avoid infinite regres. */
+    if ( sel == s_lookup && MTABLE == (tort_v) tort__mt(mtable) ) {
       message = _tort_m_mtable__lookup(tort_ta MTABLE, message);
     } else {
       message = tort_send(s_lookup, MTABLE, message);
