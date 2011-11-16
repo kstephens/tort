@@ -10,7 +10,6 @@
 
 (define (%root sym) ('get &root sym))
 (define (%mtable-by-name sym) ('get (%root 'mtable) sym))
-
 (define (%mtable o) ('_mtable o))
 
 (define (make mt . args) ('new mt . args))

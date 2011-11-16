@@ -5,7 +5,6 @@ typedef struct tort_dmap {
   struct tort_dmap *delegate;
 } tort_dmap;
 
-
 tort_v _tort_M_dmap__new(tort_tp tort_v mtable, tort_map *map, tort_dmap *delegate)
 {
   tort_dmap *dmap = tort_send(tort__s(_allocate), mtable, sizeof(*dmap));
@@ -13,7 +12,6 @@ tort_v _tort_M_dmap__new(tort_tp tort_v mtable, tort_map *map, tort_dmap *delega
   dmap->delegate = delegate;
   return dmap;
 }
-
 
 tort_v _tort_m_dmap__get(tort_tp tort_dmap *dmap, tort_v key)
 {
@@ -24,7 +22,6 @@ tort_v _tort_m_dmap__get(tort_tp tort_dmap *dmap, tort_v key)
   }
   return tort_nil;
 }
-
 
 tort_v _tort_m_dmap__set(tort_tp tort_dmap *dmap, tort_v key, tort_v value)
 {
@@ -40,9 +37,8 @@ tort_v _tort_m_dmap__set(tort_tp tort_dmap *dmap, tort_v key, tort_v value)
   return dmap;
 }
 
-
 tort_v tort_runtime_initialize_dmap()
 {
-  return tort_mtable_new("dmap", tort_mt(object));
+  return tort_mtable_create_class("dmap", tort_mt(object));
 }
 

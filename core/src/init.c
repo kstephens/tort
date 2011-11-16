@@ -26,6 +26,7 @@ tort_v tort_runtime_initialize_dynlib();
 
 tort_v tort_runtime_create_ (int *argcp, char ***argvp, char ***envp)
 {
+  tort_mtable *obj_mt, *cls_mt;
   tort_runtime_initialize_malloc();
 
   /* Create runtime object. */
@@ -74,6 +75,9 @@ tort_v tort_runtime_create_ (int *argcp, char ***argvp, char ***envp)
   /* Create the symbol table. */
   tort_(symbols) = tort_map_create();
   
+  obj_mt = tort__mt(object);
+  cls_mt = tort_h_mtable(obj_mt);
+  
   tort__s(lookup) = tort_symbol_new("lookup");
   tort_add_method(tort__mt(mtable), "lookup", _tort_m_mtable__lookup);
 
@@ -102,7 +106,7 @@ tort_v tort_runtime_create_ (int *argcp, char ***argvp, char ***envp)
   tort_add_method(tort__mt(boolean), "clone", _tort_m_object__identity);
 
   /* Initialize system method table. */
-  tort_h(_tort)->mtable = tort_mtable_create(tort__mt(object));
+  tort_h(_tort)->mtable = tort_mtable_new_class(tort__mt(object));
 
   /* Subsystem initialization. */
   tort_runtime_initialize_gc();

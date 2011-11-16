@@ -429,10 +429,10 @@ tort_v _tort_allocate (tort_tp tort_v meth_table, size_t size);
 
 tort_v tort_object_new ();
 
-tort_mtable* tort_mtable_create();
-tort_mtable* tort_mtable_get (const char *string);
-tort_mtable* tort_mtable_set (const char *string, tort_v mtable);
-tort_mtable* tort_mtable_new (const char *string, tort_v parent);
+tort_mtable* tort_mtable_new(tort_v delegate);
+tort_mtable* tort_mtable_new_class(tort_v delegate);
+tort_mtable* tort_mtable_get(const char *string);
+tort_mtable* tort_mtable_create_class(const char *string, tort_v parent);
 
 tort_method* tort_method_new (void *applyf, tort_v data);
 tort_method* tort_offset_getter_new (tort_v offset);
