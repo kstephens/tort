@@ -105,6 +105,8 @@ const char *tort_object_name_(tort_v val)
   }
 #define tort_d_mt(N) else if ( val == tort__mt(N) ) { snprintf(str = buf, S, "@mtable(%s)", #N); }
 #include "tort/d_mt.h"
+#define tort_d_mt(N) else if ( val == tort_h_mtable(tort__mt(N)) ) { snprintf(str = buf, S, "@mtable(@mtable(%s))", #N); }
+#include "tort/d_mt.h"
 #define tort_d_mt(N) else if ( tort_h_mtable(val) == tort__mt(N) ) { snprintf(str = buf, S, "@%s(@%p)", #N, (void*) val); }
 #include "tort/d_mt.h"
   else if ( tort_h_mtable(val) == tort__mt(mtable) ) { snprintf(str = buf, S, "@mtable(%p)", (void*) val); }
