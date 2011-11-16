@@ -11,15 +11,7 @@
 	(slot-setter-sel  #f)
 	(slot-setter-proc #f)
 	(new_lambda_name #f)
-	(obj-mtable #f)
-	(cls-mtable #f)
-	(mtable #f))
-    ;; Create a class-oriented pair of mtables.
-    (set! obj-mtable ('new <mtable> <vector>))
-    (set! cls-mtable ('new <mtable> ('_mtable ('delegate obj-mtable))))
-    ('_set_mtable obj-mtable cls-mtable)
-    (set! mtable obj-mtable)
-
+	(mtable ('new <mtable> <vector>)))
     ;; (display "\nname- = ")(write name-)(newline)
     (set! slot-name    
       (lambda (slot) (if (pair? slot) (car slot) slot)))

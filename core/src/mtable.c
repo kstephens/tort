@@ -21,8 +21,12 @@ tort_v _tort_m_mtable__initialize(tort_tp tort_mtable *mt, tort_v delegate)
 
 tort_v _tort_M_mtable__new(tort_tp tort_mtable *mtable, tort_v delegate)
 {
+#if 0
   tort_mtable *o = tort_send(tort_s(allocate), mtable);
   return_tort_send(tort_s(initialize), o, delegate);
+#else
+  return tort_mtable_create(delegate);
+#endif
 }
 
 unsigned long _tort_alloc_id = 0;
