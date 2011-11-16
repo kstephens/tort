@@ -145,6 +145,12 @@ tort_v _tort_m_ptr__lisp_write(tort_tp tort_v rcvr, tort_v io)
   return tort_nil;
 }
 
+tort_v _tort_m_locative__lisp_write(tort_tp tort_v rcvr, tort_v io)
+{
+  printf("#@L%0llx", tort_L(rcvr));
+  return tort_nil;
+}
+
 tort_v _tort_m_boolean__lisp_write(tort_tp tort_v rcvr, tort_v io)
 {
   printf(rcvr == tort_false ? "#f" : "#t");
