@@ -214,7 +214,7 @@
 (define (vector-set! s i v) ('set s i v))
 
 (define-mtable-class symbol)
-(define (make-symbol s) ('_create <symbol> s))
+(define (make-symbol s) ('new <symbol> s))
 
 (define-mtable-class boolean)
 
