@@ -31,6 +31,7 @@ Supports:
 ** Supports method aliasing.
 * Anonymous symbols for lexically scoped methods.
 * Low-bit tag size and method table mapping is configurable at compile-time.
+* Support for locatives (safe pointers).
 * GC Support:
 ** NO GC (malloc-only).
 ** BDW GC library.
