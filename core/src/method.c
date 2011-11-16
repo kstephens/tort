@@ -55,9 +55,13 @@ tort_method* tort_constant_getter_new(tort_v value)
 
 tort_v tort_runtime_initialize_method()
 {
+  extern int _tort_lookup_trace;
+  ++ _tort_lookup_trace;
 #define tort_d_m(MT, S, F) \
+  fprintf(stderr, "   tort_d_m(%s, %s, %s)\n", #MT, #S, #F); \
   tort_send(tort__s(add_method), MT, S, tort_method_new(F, 0)); 
 #include "tort/d_m.h"
+  -- _tort_lookup_trace;
   return 0;
 }
 

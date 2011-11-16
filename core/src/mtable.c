@@ -19,9 +19,22 @@ tort_v _tort_m_mtable__initialize(tort_tp tort_mtable *mt, tort_v delegate)
   return mt;
 }
 
+tort_v _tort_m_mtable__delegates(tort_tp tort_mtable *mtable)
+{
+  tort_v v = tort_vector_new(0, 0);
+  while ( mtable != tort_nil ) {
+    tort_send(tort_s(add), v, mtable);
+    mtable = (tort_mtable*) mtable->delegate;
+  }
+  return v;
+}
+
 tort_v _tort_M_mtable__new(tort_tp tort_mtable *mtable, tort_v delegate)
 {
   tort_mtable *o = tort_send(tort_s(allocate), mtable);
+  fprintf(stderr, "\n_tort_M_table__new(%s, %s) => %s\n", 
+	  tort_object_name(mtable), tort_object_name(delegate), 
+	  tort_object_name(o));
   return_tort_send(tort_s(initialize), o, delegate);
 }
 
@@ -33,7 +46,7 @@ tort_v _tort_allocate(tort_tp tort_v mtable, size_t size
 #endif
 )
 {
-  tort_v val = _tort_m_mtable___allocate(tort_ta mtable, size);
+  tort_v val = _tort_M_object___allocate(tort_ta mtable, size);
 #if TORT_ALLOC_DEBUG
   tort_h_ref(val)->alloc_file = alloc_file;
   tort_h_ref(val)->alloc_line = alloc_line;
@@ -42,12 +55,12 @@ tort_v _tort_allocate(tort_tp tort_v mtable, size_t size
   return val;
 }
 
-tort_v _tort_m_mtable__allocate (tort_tp tort_mtable *mtable)
+tort_v _tort_M_object__allocate (tort_tp tort_mtable *mtable)
 {
-  return _tort_m_mtable___allocate(tort_ta mtable, mtable->instance_size);
+  return _tort_M_object___allocate(tort_ta mtable, mtable->instance_size);
 }
 
-tort_v _tort_m_mtable___allocate (tort_tp tort_mtable *mtable, size_t size)
+tort_v _tort_M_object___allocate (tort_tp tort_mtable *mtable, size_t size)
 {
   void *ptr;
   ptr = tort_object_alloc(mtable, size);
@@ -164,13 +177,18 @@ tort_v tort_runtime_initialize_mtable()
   tort_mtable *obj_mt, *cls_mt;
 
   /* Create mtable method table. */
-  tort__mt(mtable)      = tort_mtable_create_0(0);
-  tort_h(tort__mt(mtable))->mtable = tort__mt(mtable);
+  obj_mt = tort_mtable_new_class(0);
+  cls_mt = tort_h_mtable(obj_mt);
+  tort_h(cls_mt)->mtable = obj_mt;
+  tort_h(obj_mt)->mtable = obj_mt;
+  tort__mt(mtable) = obj_mt;
 
   /* Create object method table. */
-  tort__mt(object)      = tort_mtable_create_0(0);
-  tort_h(tort__mt(object))->mtable = tort__mt(mtable);
-  
+  obj_mt = tort_mtable_new_class(0);
+  cls_mt = tort_h_mtable(obj_mt);
+  cls_mt->delegate = obj_mt;
+  tort__mt(object) = obj_mt;
+
   /*************************************************/
   /* Create core method tables. */
 

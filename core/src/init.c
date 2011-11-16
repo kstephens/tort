@@ -79,13 +79,15 @@ tort_v tort_runtime_create_ (int *argcp, char ***argvp, char ***envp)
   cls_mt = tort_h_mtable(obj_mt);
   
   tort__s(lookup) = tort_symbol_new("lookup");
-  tort_add_method(tort__mt(mtable), "lookup", _tort_m_mtable__lookup);
+  tort_add_method(cls_mt, "lookup", _tort_m_mtable__lookup);
 
   tort__s(add_method) = tort_symbol_new("add_method");
-  tort_add_method(tort__mt(mtable), "add_method", _tort_m_mtable__add_method);
+  tort_add_method(cls_mt, "add_method", _tort_m_mtable__add_method);
 
+  _tort_lookup_trace ++;
   tort__s(allocate) = tort_symbol_new("allocate");
-  tort_send(tort__s(add_method), tort__mt(mtable), tort__s(allocate), tort_method_new(_tort_m_mtable__allocate, 0));
+  tort_send(tort__s(add_method), cls_mt, tort__s(allocate), tort_method_new(_tort_M_object__allocate, 0));
+  _tort_lookup_trace --;
 
   /******************************************************/
 

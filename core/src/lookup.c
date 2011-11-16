@@ -155,6 +155,7 @@ tort_lookup_decl(_tort_m_mtable__lookup)
   tort_v method = tort_nil;
   tort_symbol *sel = message->selector;
 
+ again:
   if ( _tort_lookup_trace ) 
     _tort_lookup_trace_level ++;
 
@@ -185,10 +186,19 @@ tort_lookup_decl(_tort_m_mtable__lookup)
   else if ( (mtable = mtable->delegate) != tort_nil ) {
     (void) TORT_MCACHE_STAT(mcache_stats.delegate_traverse_n ++);
     if ( _tort_lookup_trace ) {
-      message = tort_send(s_lookup, mtable, message);
-      _tort_lookup_trace_level --;
+      if ( tort_h_mtable(mtable) == tort__mt(mtable) ) {
+	_tort_lookup_trace_level --;
+	goto again;
+      } else {
+	message = tort_send(s_lookup, mtable, message);
+	_tort_lookup_trace_level --;
+      }
     } else {
-      return_tort_send(s_lookup, mtable, message);
+      if ( tort_h_mtable(mtable) == tort__mt(mtable) ) {
+	goto again;
+      } else {
+	return_tort_send(s_lookup, mtable, message);
+      }
     }
   }
   
@@ -250,7 +260,7 @@ tort_message* _tort_lookup (tort_tp tort_v rcvr, tort_message *message)
   } else {
 #endif
 
-    if ( sel == s_lookup && message->receiver == (tort_v) tort__mt(mtable) ) {
+    if ( sel == s_lookup && rcvr == tort__mt(mtable) ) {
       message = _tort_m_mtable__lookup(tort_ta MTABLE, message);
     } else {
       message = tort_send(s_lookup, MTABLE, message);

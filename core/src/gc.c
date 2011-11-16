@@ -114,6 +114,7 @@ static void _tort_finalization_proc (void * obj, void * client_data)
 {
   _tort_gc_finalize_count ++;
   TORT_GC_STAT(finalize_n ++);
+  fprintf(stderr, "\n  _tort_finalizer_proc(@%p, @%p)\n", (void*) obj, client_data);
   tort_send(tort__s(__finalize), tort_ref_box(obj + sizeof(tort_header)));
 }
 
