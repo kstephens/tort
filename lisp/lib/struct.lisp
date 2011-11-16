@@ -63,7 +63,7 @@
      (define ,name ',mtable)
      (define (,(string->symbol (string-append name-s "?")) o) (eq? ('_mtable o) ',mtable))
      (define (,new_lambda_name . inits)
-       (let ((instance ('_set_mtable (vector '<struct> ',name ',slots ,@(map slot-default slots)) ',mtable)))
+       (let ((instance ('_mtable= (vector '<struct> ',name ',slots ,@(map slot-default slots)) ',mtable)))
 	 (while (pair? inits)
 	   (let ((n (car inits))
 		 (v (cadr inits)))
