@@ -329,6 +329,7 @@ extern tort_runtime_ __tort;
 
 tort_message* _tort_lookup (tort_tp tort_v rcvr, tort_message *message);
 tort_lookup_decl(_tort_m_mtable__lookup);
+extern int _tort_lookup_trace;
 
 #define _tort_send_RCVR(RCVR, ARGS...)(RCVR)
 #define _tort_send_ARGS(RCVR, ARGS...)ARGS

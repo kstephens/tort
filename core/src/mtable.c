@@ -121,8 +121,8 @@ tort_mtable* tort_mtable_set_class_delegate(tort_mtable *obj_mt, tort_v delegate
     delegate = tort_nil;
   cls_mt = tort_h_ref(obj_mt)->mtable;
   cls_delegate = delegate != tort_nil ? tort_h_ref(delegate)->mtable : tort_nil;
-  _tort_m_mtable__set_delegate(tort_ta obj_mt, delegate);
-  _tort_m_mtable__set_delegate(tort_ta cls_mt, cls_delegate);
+  _tort_m_mtable__delegateSET(tort_ta obj_mt, delegate);
+  _tort_m_mtable__delegateSET(tort_ta cls_mt, cls_delegate);
   return obj_mt;
 }
 

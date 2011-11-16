@@ -8,7 +8,6 @@ include/tort/d_mt.h
 include/tort/d_s.h
 include/tort/fixnum.h
 include/tort/init.h
-include/tort/integer.h
 include/tort/internal.h
 include/tort/ops.h
 include/tort/tort.h

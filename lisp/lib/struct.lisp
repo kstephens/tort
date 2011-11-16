@@ -17,7 +17,7 @@
     ;; Create a class-oriented pair of mtables.
     (set! obj-mtable ('new <mtable> <vector>))
     (set! cls-mtable ('new <mtable> ('_mtable ('delegate obj-mtable))))
-    ('_set_mtable obj-mtable cls-mtable)
+    ('_mtable= obj-mtable cls-mtable)
     (set! mtable obj-mtable)
 
     ;; (display "\nname- = ")(write name-)(newline)

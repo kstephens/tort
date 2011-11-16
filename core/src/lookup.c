@@ -108,7 +108,7 @@ tort_v _tort_m_mtable__delegate(tort_tp tort_mtable *rcvr)
   return rcvr->delegate;
 }
 
-tort_v _tort_m_mtable__set_delegate(tort_tp tort_mtable *rcvr, tort_v delegate)
+tort_v _tort_m_mtable__delegateSET(tort_tp tort_mtable *rcvr, tort_v delegate)
 {
   if ( rcvr->delegate != delegate ) {
     rcvr->delegate = delegate;
