@@ -59,8 +59,22 @@ tort_v _tort_m_list__size(tort_tp tort_cons *rcvr) /**/
   return tort_i(i);
 }
 
+static int tort_pairQ(tort_v o)
+{
+  return tort_h_mtable(o) == tort_mt(cons);
+}
+
 tort_v _tort_m_list__lisp_write(tort_tp tort_v rcvr, tort_v io) /**/
 {
+  tort_v x;
+  if ( tort_pairQ(rcvr) &&
+       tort_car(rcvr) == tort_s(quote) &&
+       tort_pairQ(x = tort_cdr(rcvr)) &&
+       tort_cdr(x) == tort_nil
+       ) {
+    tort_printf(io, "'");
+    return_tort_send(tort_s(lisp_write), tort_car(x), io);
+  }
   tort_printf(io, "(");
   while ( rcvr != tort_nil ) {
     if ( tort_h_mtable(rcvr) == tort_mt(cons) ) {
@@ -223,8 +237,8 @@ tort_v _tort_m_io__printf_lisp_write(tort_tp tort_v io, tort_v val)
 
 tort_v tort_runtime_initialize_lisp()
 {
-  tort_v _mt_cons = tort_mtable_new("cons", tort_mt(pair));
-  tort_mtable_new("list", 0);
+  tort_v _mt_cons = tort_mtable_create_class("cons", tort_mt(pair));
+  tort_mtable_create_class("list", 0);
 
   /* Dependency. */
   tort_send(tort_s(_dlopen), tort_string_new_cstr("libtortext"));
