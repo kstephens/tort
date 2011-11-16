@@ -11,7 +11,7 @@ tort_v _tort_m_object___mtable (tort_tp tort_v rcvr)
   return tort_h(rcvr)->mtable;
 }
 
-tort_v _tort_m_object___set_mtable (tort_tp tort_v rcvr, tort_v mtable)
+tort_v _tort_m_object___mtableSET (tort_tp tort_v rcvr, tort_v mtable)
 {
   tort_h(rcvr)->mtable = mtable;
   return rcvr;
