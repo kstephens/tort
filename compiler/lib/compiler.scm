@@ -46,8 +46,6 @@
 (define (compiler:method:label c o)
   (string-append "_tort_x_" ('_to_string ('_object_ptr o))))
 
-(define compiler:object:header-size ('get &root 'OBJECT_HEADER_SIZE))
-(define compiler:message:instance-size (+ compiler:object:header-size ((and ('new <message>) ('instance_size <message>)))))
 (define (compiler:type:slot-offset type slot)
   ((string->symbol (string-append "_offset_" (symbol->string slot))) type))
 
@@ -67,7 +65,7 @@
       (rtn-reg  "%rax")
       (arg-regs '#("%rdi" "%rsi" "%rdx" "%rcx" "%r8" "%r9"))
       (callee-regs '#()))
-  (let (
+  (let* (
 	(_msg->selector        (compiler:reg:offset _msg <message> 'selector))
 	(_msg->argc            (compiler:reg:offset _msg <message> 'argc))
 	(_msg->mtable          (compiler:reg:offset _msg <message> 'mtable))
@@ -75,6 +73,8 @@
 	(arg0-reg (vector-ref arg-regs 0))
 	(arg1-reg (vector-ref arg-regs 1))
 	(arg2-reg (vector-ref arg-regs 2))
+	(object:header-size    ('get &root 'OBJECT_HEADER_SIZE))
+	(message:instance-size (+ object:header-size (and ('new <message>) ('instance_size <message>))))
 	(msg->previous_message (compiler:reg:offset msg <message> 'previous_message))
 	(msg->selector         (compiler:reg:offset msg <message> 'selector))
 	(msg->receiver         (compiler:reg:offset msg <message> 'receiver))
@@ -251,10 +251,10 @@
       ;;   Save msg reg:
       (compiler:emit c "pushq " msg)
       ;;   Allocate new message object on stack:
-      (compiler:emit c "subq  $" compiler:message:instance-size ", " sp-reg)
+      (compiler:emit c "subq  $" message:instance-size ", " sp-reg)
       (compiler:emit c "movq  " sp-reg "," msg)
       ;;   Add object header offset:
-      (compiler:emit c "addq  $" compiler:object:header-size ", " msg)
+      (compiler:emit c "addq  $" object:header-size ", " msg)
       
       (set! args
 	    (let ((arg-i 1)) ; skip first real args: (_msg rcvr)
@@ -311,7 +311,7 @@
 	)
 
       ;; Reclaim message space:
-      (compiler:emit c "addq  $" compiler:message:instance-size ", " sp-reg "    \t// pop *msg")
+      (compiler:emit c "addq  $" message:instance-size ", " sp-reg "    \t// pop *msg")
       ;;   Restore msg reg:
       (compiler:emit c "popq  " msg)
       )
@@ -359,9 +359,10 @@
 	    (compiler:compile:send c sel rcvr args))))
 	;; send always emits to dst=rtn-reg.
 	(cond
+	 ((eq? dst rtn-reg))
+	  ;; NOTHING
 	 ((eq? dst 'STACK)
 	  (compiler:emit c "pushq " rtn-reg))
-	 ((eq? dst rtn-reg))
 	 (else
 	  (compiler:emit c "movq  " rtn-reg ", " dst)))
 	)
