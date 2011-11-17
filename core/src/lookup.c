@@ -150,6 +150,11 @@ tort_v _tort_m_symbol___version_change(tort_tp tort_symbol *sym)
   return sym;
 }
 
+void tort_lookup_stop_at() // Add breakpoint here.
+{
+  // NOTHING
+}
+
 tort_lookup_decl(_tort_m_mtable__lookup)
 {
   tort_v method = tort_nil;
@@ -158,6 +163,7 @@ tort_lookup_decl(_tort_m_mtable__lookup)
   if ( _tort_lookup_trace ) 
     _tort_lookup_trace_level ++;
 
+ again:
 #if TORT_ANON_SYMBOL_MTABLE
   if ( sel->name == tort_nil )
     method = _tort_m_map__get(tort_ta (tort_v) sel->mtable_method_map, mtable);
@@ -172,7 +178,7 @@ tort_lookup_decl(_tort_m_mtable__lookup)
 	    tort_object_name(mtable), 
 	    tort_object_name(sel),
 	    tort_object_name(method));
-  
+    tort_lookup_stop_at();
   }
 
   if ( method != tort_nil ) {
@@ -185,10 +191,18 @@ tort_lookup_decl(_tort_m_mtable__lookup)
   else if ( (mtable = mtable->delegate) != tort_nil ) {
     (void) TORT_MCACHE_STAT(mcache_stats.delegate_traverse_n ++);
     if ( _tort_lookup_trace ) {
-      message = tort_send(s_lookup, mtable, message);
-      _tort_lookup_trace_level --;
+      if ( tort_h_mtable(mtable) == tort__mt(mtable) ) {
+	goto again;
+      } else {
+	message = tort_send(s_lookup, mtable, message);
+	_tort_lookup_trace_level --;
+      }
     } else {
-      return_tort_send(s_lookup, mtable, message);
+      if ( tort_h_mtable(mtable) == tort__mt(mtable) ) {
+	goto again;
+      } else {
+	return_tort_send(s_lookup, mtable, message);
+      }
     }
   }
   
@@ -227,6 +241,7 @@ tort_message* _tort_lookup (tort_tp tort_v rcvr, tort_message *message)
 	    _tort_lookup_trace_level, "",
 	    tort_object_name(message->receiver), 
 	    tort_object_name(sel));
+    tort_lookup_stop_at();
   }
 
 #if TORT_GLOBAL_MCACHE
@@ -252,7 +267,7 @@ tort_message* _tort_lookup (tort_tp tort_v rcvr, tort_message *message)
 #endif
 
     /* Avoid infinite regres. */
-    if ( sel == s_lookup && MTABLE == (tort_v) tort__mt(mtable) ) {
+    if ( sel == s_lookup && MTABLE == tort__mt(mtable) ) {
       message = _tort_m_mtable__lookup(tort_ta MTABLE, message);
     } else {
       message = tort_send(s_lookup, MTABLE, message);

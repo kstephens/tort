@@ -145,6 +145,6 @@ tort_v _tort_m_catch__begin(tort_tp tort_catch *catch, tort_v block)
 
 tort_v tort_runtime_initialize_catch()
 {
-  tort_mtable_new("catch", 0);
+  tort_mtable_create_class("catch", 0);
   return tort_true;
 }

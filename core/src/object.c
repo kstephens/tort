@@ -41,6 +41,17 @@ tort_v _tort_m_object___set_slot_at (tort_tp tort_v rcvr, tort_v offset, tort_v 
   return ((tort_v*) rcvr)[tort_I(offset)] = value;
 }
 
+tort_v _tort_m_object__initialize (tort_tp tort_v o)
+{
+  return o;
+}
+
+tort_v _tort_M_object__new (tort_tp tort_mtable *mtable)
+{
+  tort_v o = tort_send(tort__s(allocate), mtable);
+  return_tort_send(tort__s(initialize), o);
+}
+
 tort_v _tort_m_object___gc_mark(tort_tp tort_v o)
 {
   // Avoid sends to objects that do not have a _gc_mark method.  See gc.c.

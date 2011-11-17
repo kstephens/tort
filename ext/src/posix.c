@@ -40,7 +40,7 @@ tort_v _tort_m_posix__system(tort_tp tort_v rcvr, tort_string *str)
 
 tort_v tort_runtime_initialize_posix()
 {
-  tort_mtable_new("posix", 0);
+  tort_mtable_create_class("posix", 0);
   return 0;
 }
 

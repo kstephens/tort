@@ -19,14 +19,29 @@ tort_v _tort_m_mtable__initialize(tort_tp tort_mtable *mt, tort_v delegate)
   return mt;
 }
 
-tort_v _tort_M_mtable__new(tort_tp tort_mtable *mtable, tort_v delegate)
+tort_v _tort_m_mtable__delegates(tort_tp tort_mtable *mtable)
 {
-#if 0
+  tort_v v = tort_vector_new(0, 0);
+  while ( mtable != tort_nil ) {
+    tort_send(tort_s(add), v, mtable);
+    mtable = tort_send(tort_s(delegate), mtable);
+  }
+  return v;
+}
+
+tort_v _tort_M_mtable__new_mtable(tort_tp tort_mtable *mtable, tort_v delegate)
+{
   tort_mtable *o = tort_send(tort_s(allocate), mtable);
   return_tort_send(tort_s(initialize), o, delegate);
-#else
-  return tort_mtable_create(delegate);
-#endif
+}
+
+tort_v _tort_M_mtable__new_class(tort_tp tort_mtable *mtable, tort_v delegate)
+{
+  tort_mtable *cls_delegate = delegate != tort_nil ? tort_send(tort__s(_mtable), delegate) : tort_nil;
+  tort_mtable *obj_mt = tort_send(tort__s(new_mtable), mtable, delegate);
+  tort_mtable *cls_mt = tort_send(tort__s(new_mtable), mtable, cls_delegate);
+  tort_send(tort__s(_mtableSET), obj_mt, cls_mt);
+  return obj_mt;
 }
 
 unsigned long _tort_alloc_id = 0;
@@ -37,7 +52,7 @@ tort_v _tort_allocate(tort_tp tort_v mtable, size_t size
 #endif
 )
 {
-  tort_v val = _tort_m_mtable___allocate(tort_ta mtable, size);
+  tort_v val = _tort_M_object___allocate(tort_ta mtable, size);
 #if TORT_ALLOC_DEBUG
   tort_h_ref(val)->alloc_file = alloc_file;
   tort_h_ref(val)->alloc_line = alloc_line;
@@ -46,12 +61,12 @@ tort_v _tort_allocate(tort_tp tort_v mtable, size_t size
   return val;
 }
 
-tort_v _tort_m_mtable__allocate (tort_tp tort_mtable *mtable)
+tort_v _tort_M_object__allocate (tort_tp tort_mtable *mtable)
 {
-  return _tort_m_mtable___allocate(tort_ta mtable, mtable->instance_size);
+  return _tort_M_object___allocate(tort_ta mtable, mtable->instance_size);
 }
 
-tort_v _tort_m_mtable___allocate (tort_tp tort_mtable *mtable, size_t size)
+tort_v _tort_M_object___allocate (tort_tp tort_mtable *mtable, size_t size)
 {
   void *ptr;
   ptr = tort_object_alloc(mtable, size);
@@ -117,7 +132,7 @@ tort_v tort_add_class_method(tort_v mtable, const char *name, void *applyf)
   return tort_add_method(tort_h_ref(mtable)->mtable, name, applyf);
 }
 
-tort_mtable* tort_mtable_set_delegate(tort_mtable *obj_mt, tort_v delegate)
+tort_mtable* tort_mtable_set_class_delegate(tort_mtable *obj_mt, tort_v delegate)
 {
   tort_mtable *cls_mt;
   tort_v cls_delegate;
@@ -130,18 +145,18 @@ tort_mtable* tort_mtable_set_delegate(tort_mtable *obj_mt, tort_v delegate)
   return obj_mt;
 }
 
-static tort_mtable * tort_mtable_create_0(tort_v delegate)
+static tort_mtable * tort_mtable_new_0(tort_v delegate)
 {
   tort_mtable *mt = tort_allocate(tort__mt(mtable), sizeof(tort_mtable));
   return _tort_m_mtable__initialize(tort_ta mt, delegate);
 }
 
-tort_mtable* tort_mtable_create(tort_v delegate)
+tort_mtable* tort_mtable_new_class(tort_v delegate)
 {
-  tort_mtable *obj_mt = tort_mtable_create_0(delegate);
-  tort_mtable *cls_mt = tort_mtable_create_0(0);
+  tort_mtable *obj_mt = tort_mtable_new_0(delegate);
+  tort_mtable *cls_mt = tort_mtable_new_0(0);
   tort_h_ref(obj_mt)->mtable = cls_mt;
-  tort_mtable_set_delegate(obj_mt, delegate);
+  tort_mtable_set_class_delegate(obj_mt, delegate);
   return obj_mt;
 }
 
@@ -152,12 +167,12 @@ tort_mtable* tort_mtable_get(const char *name)
   return mt;
 }
 
-tort_mtable* tort_mtable_new(const char *name, tort_v parent)
+tort_mtable* tort_mtable_create_class(const char *name, tort_v parent)
 {
   tort_v sym = tort_symbol_new(name);
   tort_v mt = tort_send(tort__s(get), tort_(m_mtable), sym);
   if ( mt == tort_nil ) {
-    mt = tort_mtable_create(parent ? parent : tort__mt(object));
+    mt = tort_mtable_new_class(parent && parent != tort_nil ? parent : tort__mt(object));
     tort_send(tort__s(set), tort_(m_mtable), sym, mt);
   }
   return mt;
@@ -165,34 +180,43 @@ tort_mtable* tort_mtable_new(const char *name, tort_v parent)
 
 tort_v tort_runtime_initialize_mtable()
 {
+  tort_mtable *obj_mt, *cls_mt;
+
   /* Create mtable method table. */
-  tort__mt(mtable)      = tort_mtable_create_0(0);
-  tort_h(tort__mt(mtable))->mtable = tort__mt(mtable);
+  obj_mt = tort_mtable_new_0(0);
+  cls_mt = tort_h_mtable(obj_mt);
+  tort_h(cls_mt)->mtable = obj_mt;
+  tort_h(obj_mt)->mtable = obj_mt;
+  tort__mt(mtable) = obj_mt;
 
   /* Create object method table. */
-  tort__mt(object)      = tort_mtable_create_0(0);
-  tort_h(tort__mt(object))->mtable = tort__mt(mtable);
-  
+  // obj_mt = tort_mtable_new_class(0);
+  // cls_mt = tort_h_mtable(obj_mt);
+  // cls_mt->delegate = obj_mt;
+  obj_mt = tort_mtable_new_0(0);
+  tort__mt(object) = obj_mt;
+
   /*************************************************/
   /* Create core method tables. */
 
-  tort__mt(vector_base) = tort_mtable_create(tort__mt(object));
-  tort__mt(pair)        = tort_mtable_create(tort__mt(object));
-  tort__mt(vector)      = tort_mtable_create(tort__mt(vector_base));
-  tort__mt(map)         = tort_mtable_create(tort__mt(vector));
+  tort__mt(vector_base) = tort_mtable_new_class(tort__mt(object));
+  tort__mt(pair)        = tort_mtable_new_class(tort__mt(object));
+  tort__mt(vector)      = tort_mtable_new_class(tort__mt(vector_base));
+  tort__mt(map)         = tort_mtable_new_class(tort__mt(vector));
   _tort_m_mtable__delegateSET(tort_ta tort__mt(mtable), tort__mt(map));
+  // tort_mtable_set_class_delegate(tort__mt(mtable), tort__mt(map)); // ???
 
   /* Initialize nil object header. */
-  tort__mt(nil)         = tort_mtable_create(tort__mt(object));
+  tort__mt(nil)         = tort_mtable_new_class(tort__mt(object));
   tort_(nil_header).mtable  = tort__mt(nil);
   tort_(nil_header).applyf = _tort_m_object___cannot_apply;
 
   /* Initialize tagged object headers. */
-  tort__mt(tagged)      = tort_mtable_create(tort__mt(object));
+  tort__mt(tagged)      = tort_mtable_new_class(tort__mt(object));
   {
     int i;
     for ( i = 0; i < 1 << TORT_TAG_BITS; ++ i ) {
-      tort_(tagged_header[i]).mtable = tort_mtable_create(tort__mt(tagged));
+      tort_(tagged_header[i]).mtable = tort_mtable_new_class(tort__mt(tagged));
       tort_(tagged_header[i]).applyf = _tort_m_object___cannot_apply;
     }
   }
@@ -205,23 +229,23 @@ tort_v tort_runtime_initialize_mtable()
 #endif
 
   /* Other core. */
-  tort__mt(ptr)         = tort_mtable_create(tort__mt(object));
-  tort__mt(string)      = tort_mtable_create(tort__mt(vector_base));
-  tort__mt(symbol)      = tort_mtable_create(tort__mt(object));
-  tort__mt(method)      = tort_mtable_create(tort__mt(object));
-  tort__mt(message)     = tort_mtable_create(tort__mt(object));
-  tort__mt(caller_info) = tort_mtable_create(tort__mt(object));
-  tort__mt(boolean)     = tort_mtable_create(tort__mt(object));
+  tort__mt(ptr)         = tort_mtable_new_class(tort__mt(object));
+  tort__mt(string)      = tort_mtable_new_class(tort__mt(vector_base));
+  tort__mt(symbol)      = tort_mtable_new_class(tort__mt(object));
+  tort__mt(method)      = tort_mtable_new_class(tort__mt(object));
+  tort__mt(message)     = tort_mtable_new_class(tort__mt(object));
+  tort__mt(caller_info) = tort_mtable_new_class(tort__mt(object));
+  tort__mt(boolean)     = tort_mtable_new_class(tort__mt(object));
 
   /* io */
-  tort__mt(io)     = tort_mtable_create(tort__mt(object));
-  tort__mt(eos)    = tort_mtable_create(tort__mt(object));
+  tort__mt(io)     = tort_mtable_new_class(tort__mt(object));
+  tort__mt(eos)    = tort_mtable_new_class(tort__mt(object));
 
   /* dynlib */
-  tort__mt(dynlib) = tort_mtable_create(tort__mt(map));
+  tort__mt(dynlib) = tort_mtable_new_class(tort__mt(map));
 
   /* gc */
-  tort__mt(gc)     = tort_mtable_create(tort__mt(object));
+  tort__mt(gc)     = tort_mtable_new_class(tort__mt(object));
 
   /* force references for extensions. */
   (void) tort__mt(block);

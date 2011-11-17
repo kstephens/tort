@@ -114,6 +114,7 @@ static void _tort_finalization_proc (void * obj, void * client_data)
 {
   _tort_gc_finalize_count ++;
   TORT_GC_STAT(finalize_n ++);
+  // fprintf(stderr, "\n  _tort_finalizer_proc(@%p, @%p)\n", (void*) obj, client_data);
   tort_send(tort__s(__finalize), tort_ref_box(obj + sizeof(tort_header)));
 }
 
@@ -128,7 +129,7 @@ static void (*_tort_gc_register_finalizer)(tort_v obj) = 0;
 tort_v _tort_m_object____register_finalizer(tort_tp tort_v rcvr)
 {
   if ( _tort_gc_register_finalizer ) {
-    fprintf(stderr, "\n  _tort_object___register_finalizer @%p\n", (void*) rcvr);
+    // fprintf(stderr, "\n  _tort_object___register_finalizer @%p\n", (void*) rcvr);
     _tort_gc_register_finalizer(rcvr);
   }
   TORT_GC_STAT(finalizer_n ++);

@@ -11,7 +11,8 @@
 	(slot-setter-sel  #f)
 	(slot-setter-proc #f)
 	(new_lambda_name #f)
-	(mtable ('new <mtable> <vector>)))
+	  ;; Create a class-oriented mtable delegating to <vector>.
+	(mtable ('new_class <mtable> <vector>)))
     ;; (display "\nname- = ")(write name-)(newline)
     (set! slot-name    
       (lambda (slot) (if (pair? slot) (car slot) slot)))

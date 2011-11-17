@@ -243,8 +243,8 @@ tort_v _tort_m_io__printf_lisp_write(tort_tp tort_v io, tort_v val)
 
 tort_v tort_runtime_initialize_lisp()
 {
-  tort_v _mt_cons = tort_mtable_new("cons", tort_mt(pair)); // FIXME: tort_mtable_create_class().
-  tort_mtable_new("list", 0); // FIXME: tort_mtable_create_class().
+  tort_v _mt_cons = tort_mtable_create_class("cons", tort_mt(pair)); // FIXME: tort_mtable_create_class().
+  tort_mtable_create_class("list", 0); // FIXME: tort_mtable_create_class().
 
   /* Dependency. */
   tort_send(tort_s(_dlopen), tort_string_new_cstr("libtortext"));

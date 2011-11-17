@@ -10,7 +10,7 @@
   (write c)(newline)
   (set! o (cons 2 3))
   ;; Give object its own mtable.
-  ; ('_mtable= o ('new <mtable> ('_mtable o)))
+  ('_mtable= o ('new_mtable <mtable> ('_mtable o)))
   (write sym)(newline)
   ('add_method ('_mtable o) sym l)
   (set! &trace 2)
