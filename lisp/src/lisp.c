@@ -2,7 +2,7 @@
 
 tort_v _tort_M_cons__new(tort_tp tort_v cons_mt, tort_v a, tort_v d)
 {
-  tort_cons *cons = tort_send(tort__s(_allocate), cons_mt, sizeof(*cons));
+  tort_cons *cons = tort_send(tort__s(_allocate), cons_mt, tort_i(sizeof(*cons)));
   cons->car = a; cons->cdr = d;
   return cons;
 }

@@ -83,7 +83,7 @@ tort_v _tort_M_catch__top_catch(tort_tp tort_mtable *mtable)
 
 tort_v _tort_M_catch__new(tort_tp tort_mtable *mtable)
 {
-  tort_catch *catch = tort_allocate(mtable, sizeof(*catch));
+  tort_catch *catch = tort_send(tort__s(_allocate), mtable, tort_i(sizeof(*catch)));
   catch->_h[-1].applyf = (void*) _catch___applyf;
   catch->name = tort_nil;
   catch->data = tort_nil;

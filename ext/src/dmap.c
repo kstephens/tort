@@ -7,7 +7,7 @@ typedef struct tort_dmap {
 
 tort_v _tort_M_dmap__new(tort_tp tort_v mtable, tort_map *map, tort_dmap *delegate)
 {
-  tort_dmap *dmap = tort_send(tort__s(_allocate), mtable, sizeof(*dmap));
+  tort_dmap *dmap = tort_send(tort__s(_allocate), mtable, tort_i(sizeof(*dmap)));
   dmap->map = map;
   dmap->delegate = delegate;
   return dmap;

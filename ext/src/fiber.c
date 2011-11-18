@@ -43,15 +43,13 @@ tort_v _tort_m_fiber__yield (tort_thread_param tort_v rcvr)
 
 static void *allocate(size_t size)
 {
-  return tort_allocate(tort_mt(fiber), size);
+  return tort_send(tort__s(_allocate), tort_mt(fiber), tort_i(size));
 }
 
 tort_v tort_runtime_initialize_fiber()
 {
   tort_v _mt_fiber = tort_mtable_create_class("fiber", tort_mt(object));
-
   __tort_fiber_allocate = allocate;
-
   return _mt_fiber;
 }
 

@@ -112,7 +112,7 @@ tort_v tort_runtime_create_ (int *argcp, char ***argvp, char ***envp)
   tort_runtime_initialize_gc();
 
   /* unknown caller_info */
-  tort_(unknown_caller_info) = tort_send(tort__s(_allocate), tort__mt(caller_info), sizeof(tort_caller_info));
+  tort_(unknown_caller_info) = tort_send(tort__s(_allocate), tort__mt(caller_info), tort_i(sizeof(tort_caller_info)));
   tort_(unknown_caller_info)->file = "<unknown>";
 
   /* Create the mtable map. */

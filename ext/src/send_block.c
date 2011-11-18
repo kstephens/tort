@@ -13,7 +13,7 @@ tort_v _tort_m_send_block__value(tort_tp tort_send_block *o, tort_v rcvr) /* TOR
 
 tort_v _tort_M_send_block__new(tort_tp tort_mtable* mtable, tort_v selector) /* TORT_NO_INTERNAL */
 {
-  tort_send_block *o = tort_allocate(mtable, sizeof(*o));
+  tort_send_block *o = tort_send(tort__s(_allocate), mtable, tort_i(sizeof(*o)));
   o->selector = selector;
   return o;
 }

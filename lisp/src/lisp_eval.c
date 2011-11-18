@@ -55,7 +55,7 @@ tort_ACCESSOR(lisp_environment,tort_v,msg);
 
 tort_v _tort_M_lisp_formals__new(tort_tp tort_mtable *mtable, tort_v formals)
 {
-  tort_lisp_formals *obj = tort_send(tort__s(_allocate), mtable, sizeof(*obj));
+  tort_lisp_formals *obj = tort_send(tort__s(_allocate), mtable, tort_i(sizeof(*obj)));
   obj->formals = formals;
   obj->map = tort_map_create();
   obj->rest = tort_false;
@@ -125,7 +125,7 @@ tort_v _tort_m_lisp_closure__value(tort_tp tort_lisp_closure *obj, ...)
 
 tort_v _tort_M_lisp_closure__new(tort_tp tort_mtable *mtable, tort_v formals, tort_v body, tort_v env)
 {
-  tort_lisp_closure *meth = tort_allocate(tort_mt(lisp_closure), sizeof(*meth));
+  tort_lisp_closure *meth = tort_send(tort__s(_allocate), tort_mt(lisp_closure), tort_i(sizeof(*meth)));
   meth->_h[-1].applyf = (void*) _tort_M_lisp_closure___apply;
   formals = tort_send(tort__s(new), tort_mt(lisp_formals), formals);
   body = tort_send(tort_s(list_TO_vector), body);
@@ -162,7 +162,7 @@ tort_v _tort_m_lisp_environment__lisp_write(tort_tp tort_lisp_environment *rcvr,
 
 tort_v _tort_M_lisp_environment__new(tort_tp tort_mtable *mtable, tort_lisp_formals *formals, tort_v parent_env, tort_v args, tort_v argc)
 {
-  tort_lisp_environment *env = tort_send(tort__s(_allocate), mtable, sizeof(*env));
+  tort_lisp_environment *env = tort_send(tort__s(_allocate), mtable, tort_i(sizeof(*env)));
   tort_v argv;
 
   if ( formals == tort_nil ) 

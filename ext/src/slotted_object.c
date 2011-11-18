@@ -61,7 +61,7 @@ tort_v _tort_m_slotted_object___initialize(tort_tp tort_slotted_object *o)
 tort_v _tort_M_slotted_object__new(tort_tp tort_mtable *mtable, ...)
 {
   tort_mtable *o_mtable = tort_mtable_new_class(mtable);
-  tort_slotted_object *o = tort_allocate(o_mtable, sizeof(*o));
+  tort_slotted_object *o = tort_send(tort__s(_allocate), o_mtable, tort_i(sizeof(*o)));
   va_list vap;
 
   va_start(vap, mtable);

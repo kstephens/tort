@@ -13,7 +13,7 @@ tort_SETTER(repl,tort_v,result);
 
 tort_v _tort_M_repl__new(tort_tp tort_mtable *mtable)
 {
-  tort_repl *repl = tort_allocate(mtable, sizeof(*repl));
+  tort_repl *repl = tort_send(tort__s(_allocate), mtable, tort_i(sizeof(*repl)));
   repl->input = tort_nil;
   repl->output = tort_nil;
   repl->prompt = tort_nil;

@@ -52,7 +52,7 @@ tort_v _tort_allocate(tort_tp tort_v mtable, size_t size
 #endif
 )
 {
-  tort_v val = _tort_M_object___allocate(tort_ta mtable, size);
+  tort_v val = _tort_M_object___allocate(tort_ta mtable, tort_i(size));
 #if TORT_ALLOC_DEBUG
   tort_h_ref(val)->alloc_file = alloc_file;
   tort_h_ref(val)->alloc_line = alloc_line;
@@ -63,13 +63,13 @@ tort_v _tort_allocate(tort_tp tort_v mtable, size_t size
 
 tort_v _tort_M_object__allocate (tort_tp tort_mtable *mtable)
 {
-  return _tort_M_object___allocate(tort_ta mtable, mtable->instance_size);
+  return _tort_M_object___allocate(tort_ta mtable, tort_i(mtable->instance_size));
 }
 
-tort_v _tort_M_object___allocate (tort_tp tort_mtable *mtable, size_t size)
+tort_v _tort_M_object___allocate (tort_tp tort_mtable *mtable, tort_v size)
 {
   void *ptr;
-  ptr = tort_object_alloc(mtable, size);
+  ptr = tort_object_alloc(mtable, tort_I(size));
   return ptr;
 }
 
