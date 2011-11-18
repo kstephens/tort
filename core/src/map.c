@@ -1,12 +1,27 @@
 #include "tort/core.h"
+#include <stdarg.h>
 
 tort_ACCESSOR(map,tort_v,equality);
 #define EQ(X,Y) (rcvr->equality != tort_nil ? tort_sendn(rcvr->equality, 2, (X), (Y)) != tort_false : (X) == (Y))
 
-tort_v _tort_M_map__new(tort_tp tort_v mtable)
+tort_v _tort_M_map__new(tort_tp tort_v mtable, ...)
 {
-  tort_v val = tort_allocate(mtable, sizeof(tort_map));
-  return _tort_m_map__initialize(tort_ta val);
+  tort_map *o = tort_allocate(mtable, sizeof(tort_map));
+  int i;
+  _tort_m_map__initialize(tort_ta o);
+  if ( _tort_message && (i = tort_I(_tort_message->argc)) > 1 ) {
+    va_list vap;
+    va_start(vap, mtable);
+    -- i;
+    while ( i > 0 ) {
+      tort_v k = va_arg(vap, tort_v);
+      tort_v v = va_arg(vap, tort_v);
+      i -= 2;
+      tort_send(tort__s(set), o, k, v);
+    }
+    va_end(vap);
+  }
+  return o;
 }
 
 tort_v _tort_m_map__initialize(tort_tp tort_map *rcvr)
