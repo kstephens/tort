@@ -422,7 +422,6 @@ tort_v tort_runtime_initialize_malloc()
   if ( ! strcmp(_tort_gc_mode, "malloc") ) {
     fprintf(stderr, "  tort: WARNING: using malloc(), NO GC!\n");
   }
-
   return 0;
 }
 

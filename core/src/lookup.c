@@ -325,50 +325,39 @@ tort_message* _tort_lookup (tort_tp tort_v rcvr, tort_message *message)
 tort_message* _tort_lookup_debug (tort_tp tort_v rcvr, tort_message *message)
 {
   ++ _tort_lookup_trace;
-
   message = _tort_lookup(tort_ta rcvr, message);
-
   -- _tort_lookup_trace;
-
   return message;
 }
 
-tort_apply_decl(_tort_m_object___method_not_found) 
+static void method_error(tort_message *message, const char *msg, tort_v object)
 {
   extern void tort_debug_stop_at();
-  tort_error_message("cannot apply selector %s to", 
-		     (char *) tort_object_name(_tort_message->selector)
-		     );
+  tort_v rcvr = message->receiver;
+  tort_error_message(msg, (char *) tort_object_name(object));
+  tort_error_message("  selector %s", tort_object_name(message->selector));
   tort_error_message("  receiver %s", tort_object_name(rcvr));
+  tort_error_message("  mtable   %s", tort_object_name(tort_h_mtable(rcvr)));
 #if TORT_ALLOC_DEBUG
   tort_error_message("  allocated at %s:%d #%lu",
 		     tort_h(rcvr).alloc_file,
 		     tort_h(rcvr).alloc_line,
 		     tort_h(rcvr).alloc_id);
 #endif
-  tort_error_message("  message %T", _tort_message);
+  tort_error_message("  message %T", message);
   tort_debug_stop_at();
-  tort_error(tort_ta ": not applicable");
-  return tort_nil;
 }
 
-tort_apply_decl(_tort_m_object___cannot_apply) 
+tort_apply_decl(_tort_m_object___method_not_found)
 {
-  extern void tort_debug_stop_at();
-  tort_error_message("cannot apply %s to", 
-		     (char *) tort_object_name(_tort_message->method)
-		     );
-  tort_error_message("  receiver %s", tort_object_name(rcvr));
-#if TORT_ALLOC_DEBUG
-  tort_error_message("  allocated at %s:%d #%lu",
-		     tort_h(rcvr).alloc_file,
-		     tort_h(rcvr).alloc_line,
-		     tort_h(rcvr).alloc_id);
-#endif
-  tort_error_message("  message %T", _tort_message);
-  tort_debug_stop_at();
-  tort_error(tort_ta ": not applicable");
-  return tort_nil;
+  method_error(tort_ta "method not found", _tort_message->selector);
+  return tort_error(tort_ta ": not applicable");
+}
+
+tort_apply_decl(_tort_m_object___cannot_apply)
+{
+  method_error(tort_ta "cannot apply method %s", _tort_message->method);
+  return tort_error(tort_ta ": not applicable");
 }
 
 static void mark_cache(void *data)
@@ -379,9 +368,8 @@ static void mark_cache(void *data)
 tort_v tort_runtime_initialize_lookup()
 {
   tort_(_m_method_not_found) = tort_method_new(_tort_m_object___method_not_found, 0);
-
+  tort_(_m_cannot_apply) = tort_method_new(_tort_m_object___cannot_apply, 0);
   tort_gc_add_root_callback(mark_cache, 0);
-
 #if TORT_GLOBAL_MCACHE && TORT_GLOBAL_MCACHE_STATS
   if ( getenv("TORT_MCACHE_STATS") )
     atexit(_tort_mcache_stats);
