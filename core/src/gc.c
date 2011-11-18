@@ -297,10 +297,9 @@ void *tort_object_alloc(tort_mtable *mtable, size_t size)
 
   /* Save the instance size in the mtable. */
   if ( mtable ) {
-    if ( ! mtable->instance_size ) {
+    if ( ! mtable->instance_size )
       mtable->instance_size = size;
-    }
-    assert(mtable->instance_size == size);
+    assert(size >= mtable->instance_size);
   } else {
     // fprintf(stderr, "  tort_object_alloc: no mtable for %lu\n", (unsigned long) alloc_size);
   }
