@@ -23,16 +23,16 @@ tort_v _tort_m_mtable__delegates(tort_tp tort_mtable *mtable)
 {
   tort_v v = tort_vector_new(0, 0);
   while ( mtable != tort_nil ) {
-    tort_send(tort_s(add), v, mtable);
-    mtable = tort_send(tort_s(delegate), mtable);
+    tort_send(tort__s(add), v, mtable);
+    mtable = tort_send(tort__s(delegate), mtable);
   }
   return v;
 }
 
 tort_v _tort_M_mtable__new_mtable(tort_tp tort_mtable *mtable, tort_v delegate)
 {
-  tort_mtable *o = tort_send(tort_s(allocate), mtable);
-  return_tort_send(tort_s(initialize), o, delegate);
+  tort_mtable *o = tort_send(tort__s(allocate), mtable);
+  return_tort_send(tort__s(initialize), o, delegate);
 }
 
 tort_v _tort_M_mtable__new_class(tort_tp tort_mtable *mtable, tort_v delegate)
@@ -113,8 +113,8 @@ tort_v _tort_m_mtable__alias_method (tort_tp tort_mtable *mtable, tort_symbol *s
   msg->_h[-1].mtable = tort__mt(message);
   msg->selector = other_symbol;
   msg->method = tort_nil;
-  msg = tort_send(tort_s(lookup), mtable, msg);
-  return_tort_send(tort_s(add_method), mtable, symbol, msg->method);
+  msg = tort_send(tort__s(lookup), mtable, msg);
+  return_tort_send(tort__s(add_method), mtable, symbol, msg->method);
 }
 
 /********************************************************************/
