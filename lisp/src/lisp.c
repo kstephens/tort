@@ -141,13 +141,13 @@ tort_v _tort_m_symbol__lisp_write(tort_tp tort_symbol *rcvr, tort_v io)
 
 tort_v _tort_m_ptr__lisp_write(tort_tp tort_v rcvr, tort_v io)
 {
-  printf("#@%0llx", tort_P(rcvr));
+  printf("#@%0llx", (unsigned long long) tort_P(rcvr));
   return tort_nil;
 }
 
 tort_v _tort_m_locative__lisp_write(tort_tp tort_v rcvr, tort_v io)
 {
-  printf("#@L%0llx", tort_L(rcvr));
+  printf("#@L%0llx", (unsigned long long) tort_L(rcvr));
   return tort_nil;
 }
 
