@@ -79,7 +79,7 @@ tort_v _tort_m_object___printfv(tort_tp tort_io *io, const char *format, const c
 	  done = 1; break;
 	default:
 	  {
-	    tort_v sym = tort_send(tort__s(get), tort_(_printf_dispatch), tort_i(c));
+	    tort_v sym = tort_send(tort__s(get), tort_(_printf_dispatch), tort_c(c));
 	    if ( sym != tort_nil ) {
 	      tort_send(sym, io, va_arg(vap, tort_v));
 	      done = 1;
