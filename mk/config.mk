@@ -1,8 +1,8 @@
 UNAME_S:=$(shell uname -s 2>/dev/null)#
 BASE_DIR:=$(shell cd "$(BASE_DIR)" && /bin/pwd)#
-GC_VERSION=gc-20101223-cvs#
-GC_VERSION=gc-7.2alpha6#
-GC=$(BASE_DIR)/$(GC_VERSION)#
+GC_BDW_VERSION=gc-20101223-cvs#
+GC_BDW_VERSION=gc-7.2alpha6#
+GC_BDW=$(BASE_DIR)/$(GC_BDW_VERSION)#
 TORT_GC_BDW=1#
 TORT_GC_SMAL=0#
 
@@ -11,7 +11,7 @@ libdir=$(PREFIX)/lib#
 export LD_LIBRARY_PATH
 LD_LIBRARY_PATH:=$(libdir):$(LD_LIBRARY_PATH)
 
-LIBTOOL=$(GC)/libtool #
+LIBTOOL=$(GC_BDW)/libtool #
 CC=gcc-4.3# # for -fnested-functions support
 CC=gcc#
 #CC=gcc-mp-4.3#
@@ -36,7 +36,7 @@ else
 # FIXME: -fnested-functions not supported on linux gcc 4.4.5
 CFLAGS += -fnested-functions
 endif
-CFLAGS += $(CFLAGS_INC) -Iinclude -I$(BASE_DIR)/core/include -I$(BASE_DIR)/core/boot/include -I$(GC)/include -Wall -Werror $(CFLAGS_OPTIMIZE)
+CFLAGS += $(CFLAGS_INC) -Iinclude -I$(BASE_DIR)/core/include -I$(BASE_DIR)/core/boot/include -I$(GC_BDW)/include -Wall -Werror $(CFLAGS_OPTIMIZE)
 
 ifneq "$(TORT_GC_BDW)" "0"
 LDFLAGS += -L$(PREFIX)/lib #

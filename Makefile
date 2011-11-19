@@ -5,7 +5,7 @@ include $(BASE_DIR)/mk/config.mk
 #LIB=$(LIB_TORT)
 #TEST_LIBS = $(LIB) $(LIB_TORT)
 
-LIBS_EARLY += gc #
+LIBS_EARLY += gc-bdw #
 
 include $(BASE_DIR)/mk/target.mk
 
@@ -18,19 +18,18 @@ bootstrap : very-clean clean
 # libgc.a:
 #
 
-ifeq "$(TORT_GC)" "0"
-gc :
+ifeq "$(TORT_GC_BDW)" "0"
+gc-bdw :
 else
-gc : $(GC)/.libs/libgc.a
+gc-bdw : $(GC_BDW)/.libs/libgc.a
 
-$(GC)/.libs/libgc.a : $(BASE_DIR)/archive/$(GC_VERSION).tar.gz
-	if [ ! -d $(GC) ]; then tar -zxvf $^; fi
-	unset CFLAGS LDFLAGS; export CC='$(CC)'; cd $(GC) && if [ ! -f Makefile ]; then ./configure --enable-shared --prefix=$(PREFIX); fi
-	unset CFLAGS LDFLAGS; export CC='$(CC)'; cd $(GC) && make && make install
+$(GC_BDW)/.libs/libgc.a : $(BASE_DIR)/archive/$(GC_BDW_VERSION).tar.gz
+	if [ ! -d $(GC_BDW) ]; then tar -zxvf $^; fi
+	unset CFLAGS LDFLAGS; export CC='$(CC)'; cd $(GC_BDW) && if [ ! -f Makefile ]; then ./configure --enable-shared --prefix=$(PREFIX); fi
+	unset CFLAGS LDFLAGS; export CC='$(CC)'; cd $(GC_BDW) && make && make install
 
-$(BASE_DIR)/archive/$(GC_VERSION).tar.gz :
+$(BASE_DIR)/archive/$(GC_BDW_VERSION).tar.gz :
 	mkdir -p $(BASE_DIR)/archive
-	curl -Lk http://www.hpl.hp.com/personal/Hans_Boehm/gc/gc_source/$(GC_VERSION).tar.gz -o $@
-
+	curl -Lk http://www.hpl.hp.com/personal/Hans_Boehm/gc/gc_source/$(GC_BDW_VERSION).tar.gz -o $@
 endif
 
