@@ -248,7 +248,7 @@ tort_v tort_runtime_initialize_lisp()
   tort_mtable_create_class("list", 0); // FIXME: tort_mtable_create_class().
 
   /* Dependency. */
-  tort_send(tort_s(_dlopen), tort_string_new_cstr("libtortext"));
+  tort_send(tort_s(load), tort_mt(dynlib), tort_string_new_cstr("libtortext"));
 
   /* Reused methods. */
   tort_add_method(tort__mt(fixnum), "lisp_write", _tort_m_fixnum___inspect);

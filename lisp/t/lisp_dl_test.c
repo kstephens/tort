@@ -14,7 +14,7 @@ int main(int argc, char **argv, char **environ)
 
   io = tort_stdout;
 
-  st = tort_send(tort_s(_dlopen), tort_string_new_cstr("libtortlisp"));
+  st = tort_send(tort_s(load), tort_mt(dynlib), tort_string_new_cstr("libtortlisp"));
 
   // tort_send(tort_s(_inspect), st, io);
   tort_send(tort_s(lisp_write), tort_nil, io);

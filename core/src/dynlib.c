@@ -130,10 +130,10 @@ tort_v _tort_m_dynlib__load(tort_tp struct tort_dynlib *rcvr, tort_v name)
   return rcvr;
 }
 
-tort_v _tort_m_string___dlopen(tort_tp tort_string *rcvr)
+tort_v _tort_M_dynlib__load(tort_tp tort_mtable *mtable, tort_v name)
 {
-  tort_v st = tort_send(tort_s(new), tort__mt(dynlib));
-  return_tort_send(tort_s(load), st, rcvr);
+  tort_dynlib *o = tort_send(tort__s(new), mtable);
+  return_tort_send(tort__s(load), o, name);
 }
 
 tort_v tort_m_dynlib___run_initializers(tort_tp tort_v map)
