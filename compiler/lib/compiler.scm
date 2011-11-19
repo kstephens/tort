@@ -507,7 +507,7 @@
 	(compiler:constant:reference c o))))
 
     (define (compiler:constant:number c o)
-      (string-append "$" (object->string (| (+ o o) 1)))) ; |
+      (string-append "$" ('_to_string o)))
 
     (define (compiler:constant:reference c o)
       (string-append "$0x" ('_to_string ('_object_ptr o))))

@@ -135,13 +135,13 @@ tort_v _tort_m_symbol___to_string(tort_tp tort_symbol *rcvr)
   return rcvr->name;
 }
 
-tort_v _tort_m_fixnum___to_string(tort_tp tort_v rcvr)
+tort_v _tort_m_tagged___to_string(tort_tp tort_v rcvr)
 {
   char buf[64];
   if ( sizeof(tort_v) == sizeof(long long) ) {
-    snprintf(buf, 63, "%lld", (long long) tort_tagged_data(rcvr));
+    snprintf(buf, 63, "%lld", (long long) rcvr);
   } else {
-    snprintf(buf, 63, "%ld", (long) tort_tagged_data(rcvr));
+    snprintf(buf, 63, "%ld", (long) rcvr);
   }
   return tort_string_new_cstr(buf);
 }
