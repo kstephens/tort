@@ -327,6 +327,7 @@ tort_message* _tort_lookup_debug (tort_tp tort_v rcvr, tort_message *message)
   ++ _tort_lookup_trace;
   message = _tort_lookup(tort_ta rcvr, message);
   -- _tort_lookup_trace;
+  tort_lookup_stop_at();
   return message;
 }
 
