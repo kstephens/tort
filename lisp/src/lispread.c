@@ -282,7 +282,6 @@ READ_DECL
 	fflush(stderr);
 #endif
 	GETC(stream);
-	GETC(stream);
 	READ_CALL();
 	goto try_again;
 
