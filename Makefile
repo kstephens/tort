@@ -5,8 +5,6 @@ include $(BASE_DIR)/mk/config.mk
 #LIB=$(LIB_TORT)
 #TEST_LIBS = $(LIB) $(LIB_TORT)
 
-LIBS_EARLY += gc-bdw #
-
 include $(BASE_DIR)/mk/target.mk
 
 bootstrap : very-clean clean
@@ -19,8 +17,8 @@ bootstrap : very-clean clean
 #
 
 ifeq "$(TORT_GC_BDW)" "0"
-gc-bdw :
-else
+LIBS_EARLY += gc-bdw #
+
 gc-bdw : $(GC_BDW)/.libs/libgc.a
 
 $(GC_BDW)/.libs/libgc.a : $(BASE_DIR)/archive/$(GC_BDW_VERSION).tar.gz

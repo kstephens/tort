@@ -36,17 +36,18 @@ else
 # FIXME: -fnested-functions not supported on linux gcc 4.4.5
 CFLAGS += -fnested-functions
 endif
-CFLAGS += $(CFLAGS_INC) -Iinclude -I$(BASE_DIR)/core/include -I$(BASE_DIR)/core/boot/include -I$(GC_BDW)/include -Wall -Werror $(CFLAGS_OPTIMIZE)
+CFLAGS += $(CFLAGS_INC) -Iinclude -I$(BASE_DIR)/core/include -I$(BASE_DIR)/core/boot/include $(INCS) -Wall -Werror $(CFLAGS_OPTIMIZE)
 
 ifneq "$(TORT_GC_BDW)" "0"
 LDFLAGS += -L$(PREFIX)/lib #
+INCS += -I$(GC_BDW)/include 
 LIBS += -lgc #
 endif
 
 SMAL=$(BASE_DIR)/../smal#
 ifneq "$(TORT_GC_SMAL)" "0"
-CFLAGS += -I$(SMAL)/include
 LDFLAGS += -L$(SMAL)/lib
+INCS += -I$(SMAL)/include
 LIBS += -lsmal
 LINK_DEPS += $(SMAL)/lib/libsmal.a
 endif
