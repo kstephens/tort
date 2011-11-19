@@ -234,8 +234,8 @@
 
     (define (compiler:compile:expr-dst c o dst)
       (cond
-       ((number? o)
-	(compiler:compile:number c o dst))
+       ((or (null? o) (number? o))
+	(compiler:compile:tagged c o dst))
        ((pair? o)
 	(compiler:compile:pair c o dst))
        ((symbol? o)
@@ -284,7 +284,7 @@
       (compiler:emit c "movq  " rtn-reg ", " arg1-reg " \t// <- rcvr")
       (compiler:emit c "movq  " msg     ", " arg2-reg " \t// <- message")
       (compiler:emit c "movq  " _msg    ", " arg0-reg " \t// <- _tort_message")
-      (compiler:emit c "call  " (compiler:global-symbol c '_tort_lookup))
+      (compiler:emit c "call  " (compiler:global-symbol c '_tort_lookup)) ;'_tort_lookup_debug)) ;
       (compiler:emit c "movq  " rtn-reg ", " msg " \t// -> message")
 
       ;; Invoke method->func(message, rcvr, args ...):
@@ -483,13 +483,13 @@
 
     (define (compiler:compile:quote c o dst)
       (cond
-       ((number? o)
-	(compiler:compile:number c o dst))
+       ((or (null? o) (number? o))
+	(compiler:compile:tagged c o dst))
        (else
 	(compiler:compile:reference c o dst))))
 
-    (define (compiler:compile:number c o dst)
-      (compiler:compile:literal c (compiler:constant:number c o) dst))
+    (define (compiler:compile:tagged c o dst)
+      (compiler:compile:literal c (compiler:constant:tagged c o) dst))
 
     (define (compiler:compile:reference c o dst)
       (compiler:compile:literal c (compiler:constant:reference c o) dst))
@@ -501,39 +501,18 @@
 
     (define (compiler:constant:object c o)
       (cond
-       ((number? o)
-	(compiler:constant:number c o))
+       ((or (null? o) (number? o))
+	(compiler:constant:tagged c o))
        (else
 	(compiler:constant:reference c o))))
 
-    (define (compiler:constant:number c o)
+    (define (compiler:constant:tagged c o)
       (string-append "$" ('_to_string o)))
 
     (define (compiler:constant:reference c o)
       (string-append "$0x" ('_to_string ('_object_ptr o))))
 
 )) ; let) let)
-
-
-(define (compiler:compile:literal:string c o)
-  (let ((v   (compiler:label c))
-	 (s   (compiler:label c)))
-    (compiler:emit c "  .data")
-    (compiler:emit c "  " v ":")
-    (compiler:emit c "  .asciiz" (object->string o))
-    (compiler:emit c "  " s ":")
-    (compiler:emit c "  .qword $0")
-    (compiler:emit c "  .text")
-    ))
-
-(define (compiler:box:int c dst)
-					; int expression is in dst,
-  (compiler:emit c "addq  " dst ", " dst)
-  (compiler:emit c "orq   $1, " dst))
-
-(define (compiler:unbox:int c dst)
-  ;; int expression is in dst,
-  (compiler:emit c "sarq  " dst))
 
 (define (compiler:assemble c . options)
   (let ((name (compiler:output-name c))
