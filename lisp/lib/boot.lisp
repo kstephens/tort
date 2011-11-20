@@ -341,6 +341,7 @@
 (define-mtable-class catch)
 (define-mtable-class locative)
 (define-mtable-class value)
+(define-mtable-class dynlib)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 

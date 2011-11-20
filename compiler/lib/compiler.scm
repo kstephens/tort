@@ -564,7 +564,7 @@
 	     (st nil)
 	     (func-ptr nil)
 	     (result nil))
-	(set! st ('_dlopen (string-append "./" dfile)))
+	(set! st ('load <dynlib> (string-append "./" dfile)))
 	;;(display "st = ")(write st)(newline)
 	;;(display "name-sym = ")(write name-sym)(newline)
 	;;(display "name-sym class = ")(write (%get-type name-sym))(newline)
