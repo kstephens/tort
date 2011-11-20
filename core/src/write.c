@@ -105,10 +105,10 @@ tort_v _tort_m_pair___inspect(tort_tp tort_pair *rcvr, tort_v io)
   return tort_nil;
 }
 
-tort_v _tort_m_map___inspect(tort_tp tort_v rcvr, tort_v io)
+tort_v _tort_m_map___inspect(tort_tp tort_map *rcvr, tort_v io)
 {
   size_t entry_i = 0;
-  printf("@map( \n  ");
+  printf("@map( %T,\n ", rcvr->equality);
   tort_map_EACH(rcvr, entry) {
     if ( entry_i > 0 ) printf(",\n  ");
     tort_inspect(IO, entry->first);
@@ -162,9 +162,4 @@ tort_v _tort_m_tagged___to_string(tort_tp tort_v rcvr)
 
 #undef printf
 #undef IO
-
-tort_v tort_runtime_initialize_write()
-{
-  return tort__s(write);
-}
 

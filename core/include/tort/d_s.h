@@ -196,6 +196,5 @@ tort_d_s(value)
 tort_d_s(valueSET)
 tort_d_s(value_locative)
 tort_d_s(version)
-tort_d_s(write)
 /* -*- c -*- */
 #undef tort_d_s

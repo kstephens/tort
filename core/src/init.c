@@ -127,7 +127,6 @@ tort_v tort_runtime_create_ (int *argcp, char ***argvp, char ***envp)
 
   INIT(io);
   INIT(printf);
-  INIT(write);
   INIT(debug);
   INIT(dynlib);
 
