@@ -7,13 +7,6 @@
 #ifdef __linux__
 #include <printf.h>
 #include <libio.h>
-/* Use hidden slot in FILE* to point back to a tort_io object. */
-#define FP_TORT_OBJ(fp) *(((tort_v*)(((struct _IO_FILE *) fp) + 1)) - 4)
-#endif
-
-#ifdef __APPLE__
-/* Use hidden slot in FILE* to point back to a tort_io object. */
-#define FP_TORT_OBJ(fp) *(((tort_v*)(((struct __sFILE *) fp) + 1)) - 1)
 #endif
 
 tort_v _tort_M_io____stat(tort_tp tort_mtable *mtable, tort_v name)
@@ -68,9 +61,6 @@ tort_v _tort_M_io____create(tort_tp tort_mtable *mtable, FILE *fp)
 {
   tort_io *rcvr = _tort_allocate(tort_ta mtable, sizeof(tort_io));
   FP = fp;
-  if ( FP ) {
-    // FP_TORT_OBJ(FP) = rcvr;
-  }
   IO->name = IO->mode = tort_nil;
   IO->flags = 0;
   return rcvr;
@@ -85,7 +75,6 @@ tort_v _tort_m_io__open(tort_tp tort_io *rcvr, tort_v name, tort_v mode)
 {
   if ( (FP = fopen(tort_string_data(name), tort_string_data(mode))) ){
     ++ _tort_io_open_count;
-    // FP_TORT_OBJ(FP) = rcvr;
     IO->name = name;
     IO->mode = mode;
     IO->flags |= 1;
@@ -98,7 +87,6 @@ tort_v _tort_m_io__popen(tort_tp tort_io *rcvr, tort_v name, tort_v mode)
 {
   if ( (FP = popen(tort_string_data(name), tort_string_data(mode))) ) {
     ++ _tort_io_open_count;
-    // FP_TORT_OBJ(FP) = rcvr;
     IO->name = name;
     IO->mode = mode;
     IO->flags |= 3;
@@ -118,7 +106,6 @@ tort_v _tort_m_io__close(tort_tp tort_io *rcvr)
       fclose(FP);
     }
     ++ _tort_io_close_count;
-    // FP_TORT_OBJ(FP) = 0;
     FP = 0;
   }
   return rcvr;
