@@ -20,6 +20,7 @@ tort_d_mt(runtime)
 tort_d_mt(string)
 tort_d_mt(symbol)
 tort_d_mt(tagged)
+tort_d_mt(value)
 tort_d_mt(vector)
 tort_d_mt(vector_base)
 /* -*- c -*- */

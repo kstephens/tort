@@ -101,7 +101,7 @@ tort_v _tort_m_message___inspect(tort_tp tort_message *msg, tort_v io)
 
 tort_v _tort_m_pair___inspect(tort_tp tort_pair *rcvr, tort_v io)
 {
-  printf("@pair(%T, %T)", rcvr->first, rcvr->second);
+  printf("@pair(%T,%T)", rcvr->first, rcvr->second);
   return tort_nil;
 }
 
@@ -119,6 +119,20 @@ tort_v _tort_m_map___inspect(tort_tp tort_v rcvr, tort_v io)
   printf("  )");
   return tort_nil;
 }
+
+tort_v _tort_m_locative___inspect(tort_tp tort_v rcvr, tort_v io)
+{
+  printf("@locative(@%p)", tort_L(rcvr));
+  return tort_nil;
+}
+
+tort_v _tort_m_value___inspect(tort_tp tort_method *rcvr, tort_v io)
+{
+  printf("@value(%T)", rcvr->data);
+  return tort_nil;
+}
+
+/********************************************************************/
 
 tort_v _tort_m_object___to_string(tort_tp tort_v rcvr)
 {

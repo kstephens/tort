@@ -33,6 +33,7 @@ src/string.c
 src/symbol.c
 src/symbol_encoding.c
 src/tagged.c
+src/value.c
 src/vector.c
 src/write.c
 */
@@ -81,6 +82,7 @@ tort_d_m(tort__mt(io), tort__s(popen), _tort_m_io__popen)
 tort_d_m(tort__mt(io), tort__s(printf_as_string), _tort_m_io__printf_as_string)
 tort_d_m(tort__mt(io), tort__s(read), _tort_m_io__read)
 tort_d_m(tort__mt(locative), tort__s(_applyf), _tort_m_locative___applyf)
+tort_d_m(tort__mt(locative), tort__s(_inspect), _tort_m_locative___inspect)
 tort_d_m(tort__mt(locative), tort__s(_ptr_data), _tort_m_locative___ptr_data)
 tort_d_m(tort__mt(locative), tort__s(_ptr_object), _tort_m_locative___ptr_object)
 tort_d_m(tort__mt(locative), tort__s(_to_string), _tort_m_locative___to_string)
@@ -222,6 +224,12 @@ tort_d_m(tort__mt(symbol), tort__s(name), _tort_m_symbol__name)
 tort_d_m(tort__mt(symbol), tort__s(version), _tort_m_symbol__version)
 tort_d_m(tort__mt(tagged), tort__s(_object_ptr), _tort_m_tagged___object_ptr)
 tort_d_m(tort__mt(tagged), tort__s(_to_string), _tort_m_tagged___to_string)
+tort_d_m(tort__mt(value), tort__s(_applyf), _tort_m_value___applyf)
+tort_d_m(tort__mt(value), tort__s(_inspect), _tort_m_value___inspect)
+tort_d_m(tort__mt(value), tort__s(initialize), _tort_m_value__initialize)
+tort_d_m(tort__mt(value), tort__s(value), _tort_m_value__value)
+tort_d_m(tort__mt(value), tort__s(valueSET), _tort_m_value__valueSET)
+tort_d_m(tort__mt(value), tort__s(value_locative), _tort_m_value__value_locative)
 tort_d_m(tort__mt(vector), tort__s(_gc_mark), _tort_m_vector___gc_mark)
 tort_d_m(tort__mt(vector), tort__s(_inspect), _tort_m_vector___inspect)
 tort_d_m(tort__mt(vector), tort__s(add), _tort_m_vector__add)
@@ -290,6 +298,7 @@ tort_d_m(tort_h_ref(tort__mt(symbol))->mtable, tort__s(_offset_mtable_method_map
 tort_d_m(tort_h_ref(tort__mt(symbol))->mtable, tort__s(_offset_name), _tort_M_symbol___offset_name)
 tort_d_m(tort_h_ref(tort__mt(symbol))->mtable, tort__s(_offset_version), _tort_M_symbol___offset_version)
 tort_d_m(tort_h_ref(tort__mt(symbol))->mtable, tort__s(new), _tort_M_symbol__new)
+tort_d_m(tort_h_ref(tort__mt(value))->mtable, tort__s(new), _tort_M_value__new)
 tort_d_m(tort_h_ref(tort__mt(vector))->mtable, tort__s(_new), _tort_M_vector___new)
 tort_d_m(tort_h_ref(tort__mt(vector))->mtable, tort__s(new), _tort_M_vector__new)
 tort_d_m(tort_h_ref(tort__mt(vector_base))->mtable, tort__s(_new), _tort_M_vector_base___new)

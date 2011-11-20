@@ -9,32 +9,22 @@ tort_runtime_ __tort;
 tort_runtime *_tort = &__tort._;
 #endif
 
-tort_v tort_runtime_initialize_malloc();
-tort_v tort_runtime_initialize_error();
-tort_v tort_runtime_initialize_mtable();
-tort_v tort_runtime_initialize_symbol();
-tort_v tort_runtime_initialize_gc();
-tort_v tort_runtime_initialize_gc_ready();
-tort_v tort_runtime_initialize_io();
-tort_v tort_runtime_initialize_printf();
-tort_v tort_runtime_initialize_write();
-tort_v tort_runtime_initialize_debug();
-tort_v tort_runtime_initialize_method();
-tort_v tort_runtime_initialize_lookup();
-tort_v tort_runtime_initialize_tort();
-tort_v tort_runtime_initialize_dynlib();
+#define INIT(N) {					\
+    extern tort_v tort_runtime_initialize_##N();	\
+    tort_runtime_initialize_##N();			\
+  }
 
 tort_v tort_runtime_create_ (int *argcp, char ***argvp, char ***envp)
 {
   tort_mtable *obj_mt, *cls_mt;
-  tort_runtime_initialize_malloc();
+  INIT(malloc);
 
   /* Create runtime object. */
 #if TORT_MULTIPLICITY
   _tort = tort_ref(tort_runtime, tort_allocate(0, sizeof(tort_runtime)));
 #endif
 
-  tort_runtime_initialize_error();
+  INIT(error);
 
   /* Setup environment from main. */
   tort_(_argc) = *argcp;
@@ -43,7 +33,7 @@ tort_v tort_runtime_create_ (int *argcp, char ***argvp, char ***envp)
   tort_(stack_bottom) = envp;
   
   /* Allocate and initialize mtables */
-  tort_runtime_initialize_mtable();
+  INIT(mtable);
 
   tort_h(_tort)->mtable = tort__mt(runtime);
   tort_h(_tort)->applyf = _tort_m_object___cannot_apply;
@@ -67,7 +57,7 @@ tort_v tort_runtime_create_ (int *argcp, char ***argvp, char ***envp)
   tort_(message) = tort_nil;
 
   /* Initialize lookup(). */
-  tort_runtime_initialize_lookup();
+  INIT(lookup);
   
   /*******************************************************/
   /* Messaging Boot strap. */
@@ -90,10 +80,11 @@ tort_v tort_runtime_create_ (int *argcp, char ***argvp, char ***envp)
   /******************************************************/
 
   /* Create the core symbols. */
-  tort_runtime_initialize_symbol();
+  INIT(symbol);
 
   /* Install core methods. */
-  tort_runtime_initialize_method();
+  INIT(value);
+  INIT(method);
 
   /* Create the root table. */
   tort_(root) = tort_map_create();
@@ -109,7 +100,7 @@ tort_v tort_runtime_create_ (int *argcp, char ***argvp, char ***envp)
   tort_h(_tort)->mtable = tort_mtable_new_class(tort__mt(object));
 
   /* Subsystem initialization. */
-  tort_runtime_initialize_gc();
+  INIT(gc);
 
   /* unknown caller_info */
   tort_(unknown_caller_info) = tort_send(tort__s(_allocate), tort__mt(caller_info), tort_i(sizeof(tort_caller_info)));
@@ -134,11 +125,11 @@ tort_v tort_runtime_create_ (int *argcp, char ***argvp, char ***envp)
   if ( tort__mt(X) ) tort_send(tort__s(set), tort_(m_mtable), tort_symbol_new(#X), tort__mt(X));
 #include "tort/d_mt.h"
 
-  tort_runtime_initialize_io();
-  tort_runtime_initialize_printf();
-  tort_runtime_initialize_write();
-  tort_runtime_initialize_debug();
-  tort_runtime_initialize_dynlib();
+  INIT(io);
+  INIT(printf);
+  INIT(write);
+  INIT(debug);
+  INIT(dynlib);
 
   {
     int i; tort_v m = tort_map_create();
@@ -159,12 +150,13 @@ tort_v tort_runtime_create_ (int *argcp, char ***argvp, char ***envp)
     ROOT(argv, v);
   }
 
-  tort_runtime_initialize_gc_ready();
+  INIT(gc_ready);
 
   tort_(_initialized) = tort_true;
 
   // fprintf(stderr, "\ntort: initialized\n");
 #undef ROOT
+#undef INIT
 
   return tort_ref_box(_tort);
 }

@@ -233,6 +233,7 @@ tort_v tort_runtime_initialize_mtable()
   tort__mt(string)      = tort_mtable_new_class(tort__mt(vector_base));
   tort__mt(symbol)      = tort_mtable_new_class(tort__mt(object));
   tort__mt(method)      = tort_mtable_new_class(tort__mt(object));
+  tort__mt(value)       = tort_mtable_new_class(tort__mt(method));
   tort__mt(message)     = tort_mtable_new_class(tort__mt(object));
   tort__mt(caller_info) = tort_mtable_new_class(tort__mt(object));
   tort__mt(boolean)     = tort_mtable_new_class(tort__mt(object));

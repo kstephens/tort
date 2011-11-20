@@ -44,15 +44,6 @@ tort_v _tort_offset_setter__applyf(tort_tp void *o, tort_v v)
   return o;
 }
 
-tort_v _tort_constant_getter__applyf(tort_tp tort_v *o, tort_v v)
-{
-  return _tort_message->method->data;
-}
-tort_method* tort_constant_getter_new(tort_v value)
-{
-  return tort_method_new(_tort_constant_getter__applyf, value);
-}
-
 tort_v tort_runtime_initialize_method()
 {
 #define tort_d_m(MT, S, F) \
