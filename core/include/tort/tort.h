@@ -131,7 +131,6 @@ typedef
 struct tort_ptr { tort_H; /* basic ptr. */
   void *data;
 } tort_ptr;
-
 #define tort_P(X) tort_ref(tort_ptr, X)->data
 void * tort_ptr_data(tort_v x);
 tort_v tort_ptr_new(void *ptr);
@@ -143,13 +142,11 @@ struct tort_vector_base { tort_H; /* Same layout as tort_vector, tort_string. */
   size_t alloc_size;
   size_t element_size;
 } tort_vector_base;
-
+tort_v tort_vector_base_new(tort_v mtable, const void *d, size_t s, size_t element_size);
 #define tort_vector_base_data(X) tort_ref(tort_vector_base, X)->data
 #define tort_vector_base_size(X) tort_ref(tort_vector_base, X)->size
 #define tort_vector_base_alloc_size(X) tort_ref(tort_vector_base, X)->alloc_size
 #define tort_vector_base_element_size(X) tort_ref(tort_vector_base, X)->element_size
-
-tort_v tort_vector_base_new(tort_v mtable, const void *d, size_t s, size_t element_size);
 
 typedef
 struct tort_vector { tort_H; /* Same layout as tort_vector_base. */
@@ -158,22 +155,18 @@ struct tort_vector { tort_H; /* Same layout as tort_vector_base. */
   size_t alloc_size;
   size_t element_size; /* sizeof(tort_v) */
 } tort_vector;
-
+tort_v tort_vector_new(const tort_v *d, size_t s);
 #define tort_vector_data(X) ((tort_v*)tort_vector_base_data(X))
 #define tort_vector_size(X) tort_vector_base_size(X)
 #define tort_vector_alloc_size(X) tort_vector_base_alloc_size(X)
-
 #define tort_vector_loop(X, V) \
   do {									\
   size_t V##_i;								\
   for ( V##_i = 0; V##_i < tort_vector_size(X); ++ V##_i ) {		\
   tort_v V = tort_vector_data(X)[V##_i];
-
 #define tort_vector_loop_end(X)			\
   }						\
     } while ( 0 )
-
-tort_v tort_vector_new(const tort_v *d, size_t s);
 
 typedef 
 struct tort_pair { tort_H;
