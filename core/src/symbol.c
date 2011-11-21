@@ -18,7 +18,7 @@ tort_symbol* _tort_M_symbol___create(tort_tp tort_mtable *mtable, tort_v name)
   value->name = name;
   value->version = tort_i(0);
 #if TORT_ANON_SYMBOL_MTABLE
-  value->mtable_method_map = ( name == tort_nil || name == 0 ) ? tort_map_create() : tort_nil;
+  value->mtable_method_map = ( name == tort_nil || name == 0 ) ? tort_map_new() : tort_nil;
 #endif
   return value;
 }

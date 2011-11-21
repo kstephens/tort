@@ -131,7 +131,7 @@ tort_v _tort_m_map__clone(tort_tp tort_map *rcvr)
   return _tort_m_map__emit(tort_ta rcvr, new_map);
 }
 
-tort_v tort_map_create()
+tort_v tort_map_new()
 {
   return _tort_M_map__new(tort_ta tort__mt(map));
 }

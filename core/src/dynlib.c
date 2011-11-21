@@ -325,9 +325,9 @@ tort_v tort_runtime_initialize_dynlib()
   }
   tort_add_method(tort__mt(dynlib), "_run_initializers", tort_m_dynlib___run_initializers);
   tort_add_method(tort__mt(dynlib), "_load_methods", tort_m_dynlib___load_methods);
-  tort_(dl_maps) = tort_map_create();
+  tort_(dl_maps) = tort_map_new();
   tort_send(tort_s(set), tort_(root), tort_s(dl_maps), tort_(dl_maps));
-  tort_v all = tort_map_create();
+  tort_v all = tort_map_new();
   tort_send(tort_s(set), tort_(dl_maps), tort_s(all), all);
 
   st = tort_send(tort_s(new), tort__mt(dynlib));

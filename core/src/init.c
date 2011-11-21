@@ -63,7 +63,7 @@ tort_v tort_runtime_create_ (int *argcp, char ***argvp, char ***envp)
   /* Messaging Boot strap. */
 
   /* Create the symbol table. */
-  tort_(symbols) = tort_map_create();
+  tort_(symbols) = tort_map_new();
   
   obj_mt = tort__mt(mtable);
   cls_mt = tort_h_mtable(obj_mt);
@@ -87,7 +87,7 @@ tort_v tort_runtime_create_ (int *argcp, char ***argvp, char ***envp)
   INIT(method);
 
   /* Create the root table. */
-  tort_(root) = tort_map_create();
+  tort_(root) = tort_map_new();
 
   /* Uncloneable objects. */
   tort_add_method(tort__mt(symbol),  "clone", _tort_m_object__identity);  
@@ -107,7 +107,7 @@ tort_v tort_runtime_create_ (int *argcp, char ***argvp, char ***envp)
   tort_(unknown_caller_info)->file = "<unknown>";
 
   /* Create the mtable map. */
-  tort_(m_mtable) = tort_map_create();
+  tort_(m_mtable) = tort_map_new();
   
   /* Setup the root namespace. */
 #define ROOT(N,V) tort_send(tort__s(set), tort_(root), tort_symbol_new(#N), (V))
@@ -131,7 +131,7 @@ tort_v tort_runtime_create_ (int *argcp, char ***argvp, char ***envp)
   INIT(dynlib);
 
   {
-    int i; tort_v m = tort_map_create();
+    int i; tort_v m = tort_map_new();
     for ( i = 0; i < 1 << TORT_TAG_BITS; ++ i ) {
       tort_v k = tort_i(i), v = tort_(tagged_header)[i].mtable;
       if ( ! v ) v = tort_nil;

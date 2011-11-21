@@ -361,7 +361,7 @@ void tort_gc_dump_stats()
   tort_flush(tort_stdout);
   tort_flush(tort_stderr);
   tort_printf(io, "  tort GC stats:\n");
-  map = tort_map_create();
+  map = tort_map_new();
   tort_gc_stats(map);
   tort_map_EACH(map, e); {
     tort_printf(io, "    %T = %T\n", e->first, e->second);
@@ -444,7 +444,7 @@ tort_v _tort_M_gc__gc_collect(tort_tp tort_mtable *o)
 
 tort_v _tort_M_gc__gc_stats(tort_tp tort_mtable *o)
 {
-  tort_v map = tort_map_create();
+  tort_v map = tort_map_new();
   tort_gc_stats(map);
   return map;
 }

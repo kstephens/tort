@@ -185,10 +185,9 @@ struct tort_map { tort_H; /* Same layout as tort_vector_base. */
   tort_vector_base _vector_base;
   tort_v equality;
 } tort_map;
-
+tort_v tort_map_new();
 #define tort_map_data(X) ((tort_pair**)tort_vector_base_data(X))
 #define tort_map_size(X) tort_vector_base_size(X)
-
 #define tort_map_EACH(m, me)					\
   {								\
   tort_pair **me##p = tort_map_data(m), *me;			\
@@ -407,8 +406,6 @@ void  tort_gc_mark(tort_v referrer, tort_v referred);
 #define tort_gc_remove_root(referencep) (void)0
 void tort_gc_mark_range(tort_v referrer, void *b, void *e);
 void tort_gc_add_root_callback(void (*func)(void *data), void *data);
-
-tort_v tort_map_create(); // FIXME
 
 #if TORT_ALLOC_DEBUG
 tort_v _tort_allocate (tort_tp tort_v meth_table, size_t size, const char *alloc_file, int alloc_line);

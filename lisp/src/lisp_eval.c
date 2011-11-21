@@ -57,7 +57,7 @@ tort_v _tort_M_lisp_formals__new(tort_tp tort_mtable *mtable, tort_v formals)
 {
   tort_lisp_formals *obj = tort_send(tort__s(_allocate), mtable, tort_i(sizeof(*obj)));
   obj->formals = formals;
-  obj->map = tort_map_create();
+  obj->map = tort_map_new();
   obj->rest = tort_false;
   obj->argc = obj->formals_n = tort_i(0);
   {
