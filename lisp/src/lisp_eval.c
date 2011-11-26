@@ -123,6 +123,14 @@ tort_v _tort_m_lisp_closure__value(tort_tp tort_lisp_closure *obj, ...)
   return _tort_M_lisp_closure___applyv(tort_ta obj, -1, &vap);
 }
 
+/* non-symbol lookup interface. */
+tort_v _tort_m_lisp_closure__lookup(tort_tp tort_lisp_closure *obj, tort_message *msg)
+{
+  msg->mtable = tort_h_mtable(obj);
+  msg->method = (tort_v) obj;
+  return msg;
+}
+
 tort_v _tort_M_lisp_closure__new(tort_tp tort_mtable *mtable, tort_v formals, tort_v body, tort_v env)
 {
   tort_lisp_closure *meth = tort_send(tort__s(_allocate), tort_mt(lisp_closure), tort_i(sizeof(*meth)));
