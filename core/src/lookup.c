@@ -196,14 +196,14 @@ tort_lookup_decl(_tort_m_mtable__lookup)
       if ( tort_h_mtable(mtable) == tort__mt(mtable) ) {
 	goto again;
       } else {
-	message = tort_send(s_lookup, mtable, message);
+	message = tort_sendn(s_lookup, 2, mtable, message);
 	_tort_lookup_trace_level --;
       }
     } else {
       if ( tort_h_mtable(mtable) == tort__mt(mtable) ) {
 	goto again;
       } else {
-	return_tort_send(s_lookup, mtable, message);
+	return_tort_sendn(s_lookup, 2, mtable, message);
       }
     }
   }
@@ -272,7 +272,7 @@ tort_message* _tort_lookup (tort_tp tort_v rcvr, tort_message *message)
     if ( sel == s_lookup && MTABLE == tort__mt(mtable) ) {
       message = _tort_m_mtable__lookup(tort_ta MTABLE, message);
     } else {
-      message = tort_send(s_lookup, MTABLE, message);
+      message = tort_sendn(s_lookup, 2, MTABLE, message);
     }
     
     if ( message->method == tort_nil ) {
