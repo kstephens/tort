@@ -129,9 +129,8 @@ tort_v _tort_M_lisp_closure__new(tort_tp tort_mtable *mtable, tort_v formals, to
   meth->_h[-1].applyf = (void*) _tort_M_lisp_closure___apply;
   formals = tort_send(tort__s(new), tort_mt(lisp_formals), formals);
   body = tort_send(tort_s(list_TO_vector), body);
-  if ( tort_vector_size(body) == 0 ) {
-    tort_error(tort_ta "empty lambda body");
-  }
+  if ( tort_vector_size(body) == 0 )
+    return tort_error(tort_ta "empty lambda body");
   meth->name = tort_nil;
   meth->formals = formals;
   meth->body = body;
