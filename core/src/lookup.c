@@ -164,6 +164,8 @@ tort_lookup_decl(_tort_m_mtable__lookup)
     _tort_lookup_trace_level ++;
 
  again:
+  if ( tort_h_mtable(sel) != tort__mt(symbol) )
+    return_tort_sendn(tort__s(lookup), 2, sel, message);
 #if TORT_ANON_SYMBOL_MTABLE
   if ( sel->name == tort_nil )
     method = _tort_m_map__get(tort_ta (tort_v) sel->mtable_method_map, mtable);
