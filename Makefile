@@ -12,6 +12,9 @@ bootstrap : very-clean clean
 	$(MAKE) clean 
 	$(MAKE)
 
+clean ::
+	rm -f tmp/*.*
+
 ######################################################################
 # libgc.a:
 #
