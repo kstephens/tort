@@ -18,32 +18,36 @@
 	  ;; (compiler:stream c)
 	  (compiler:assemble c 'verbose)
 	  (set! func-ptr (compiler:load c))
-	  (set! result ('_ccallv func-ptr (vector &msg 1 2 3 4 5 6 7 8)))
-	  (display "  _ccallv result = ")(write result)(newline)
+	  (set! result ('_ccallv func-ptr (vector &msg 1 2 3 4 5 6 7 8 9)))
+	  (display "  params   = ")(write (car m))(newline)
+	  (display "  body     = ")(write (cdr m))(newline)
+	  (display "  result   = ")(write result)(newline)
+	  (display "  expected = ")(write expected)(newline)
+	  (if (not (equal? result expected)) ('_error "result does not equal? expected"))
 	  ;; (read)
 	  ))))
     ;; Cases:
- '(
+ `(
    (
-    (() ; args 
-     1)
-    1)
+    (() ; args
+     1) ; body
+    1)  ; expected
    (
     (() ; args 
      'two)
-    'two)
+    two)
    (
     (() ; args 
      (if #t 'three))
-    'three)
+    three)
    (
     (() ; args 
      (if #t 'four 'not-ok))
-    'four)
+    four)
    (
     (() ; args 
      (if #f 'not-ok 'five))
-    'five)
+    five)
    (
     (() ; args 
      ('- -1 5))
@@ -67,91 +71,90 @@
 
    (
     (() ; args 
-     &root)
-    &root)
-   (
-    (() ; args 
-     (&root stdout))
-    *standard-output*)
+     ('get &root 'stdout))
+    ,*standard-output*)
    (
     (() ; args 
      ('_write (&root stdout) "Hello World!\n"))
-    #t)
+    13)
    (
     (() ; args 
-     (quote (while #t ('_write *standard-output* "Hello, World!\n"))))
-    #t)
+     (quote (foo bar)))
+    (foo bar))
+   (
+    (() ; args 
+     (&root 'stdout)) ;; optional syntax
+    ,*standard-output*)
 
    (
     ((a) ; args 
-     (if #f ('list a))
      a)
-    #t)
+    1)
    (
     ((a b) ; args 
-     (if #f ('list a b))
-     b)
-    #t)
+      b)
+    2)
    (
     ((a b c) ; args 
-     (if #f ('list a b c))
-     c)
-     #t)
+      c)
+     3)
    (
     ((a b c d) ; args 
-     (if #f ('list a b c d))
-     d)
-    #t)
+      d)
+     4)
    (
     ((a b c d e) ; args 
-     (if #f ('list a b c d e))
-     e)
-    #t)
+      e)
+     5)
    (
     ((a b c d e f) ; args 
-     (if #f ('list a b c d e f))
      f)
-    #t)
+     6)
    (
     ((a b c d e f g) ; args 
-     (if #f ('list a b c d e f g))
      g)
-    #t)
+     7)
+   (
+    ((a b c d e f g h) ; args 
+     h)
+     8)
+
 
    (
     ((a) ; args 
-     (if #f ('list a))
-     (set! a 1))
-    #f)
+      (set! a 'a)
+      a)
+     a)
    (
     ((a b) ; args 
-     (if #f ('list a b))
-     (set! b 2))
-    #f)
+      (set! b 'b)
+      b)
+    b)
    (
     ((a b c) ; args 
-     (if #f ('list a b c))
-     (set! c 3))
-    #f)
+     (set! c 'c))
+     c)
    (
     ((a b c d) ; args 
-     (if #f ('list a b c d))
-     (set! d 4))
-    #f)
+      (set! d 'd)
+      d)
+     d)
    (
     ((a b c d e) ; args 
-     (if #f ('list a b c d e))
-     (set! e 5))
-    #f)
+      (set! e 'e)
+      e)
+     e)
    (
     ((a b c d e f) ; args 
-     (if #f ('list a b c d e f))
-     (set! f 6))
-    #f)
+     (set! f 'f))
+    f)
    (
     ((a b c d e f g) ; args 
-     (if #f ('list a b c d e f g))
-     (set! g 7))
-    #f)
+     (set! g 'g))
+    g)
+   (
+    ((a b c d e f g h) ; args 
+     (set! h 'h))
+    h)
    )
 
