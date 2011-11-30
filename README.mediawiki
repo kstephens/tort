@@ -28,6 +28,7 @@ Supports:
 ** Fully recursive lookup() delegation.
 ** Message objects allocated on C stack.
 ** Supports tail recursion.
+** Supports non-symbol message selectors.
 ** Supports method aliasing.
 * Anonymous symbols for lexically scoped methods.
 * Low-bit tag size and method table mapping is configurable at compile-time.
@@ -72,5 +73,4 @@ lisp/bin/tlisp - simple Lisp interpreter written as object.
 == Compiler =
 
 lisp/bin/tlisp compiler/t/compiler_test_1.scm
-
 
