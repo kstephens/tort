@@ -33,7 +33,10 @@ typedef ssize_t tort_vi;
 
 /* Locatives: */
 #ifdef tort_tag_locative
-#define tort_l(P) ((tort_v )(((size_t) (P)) | tort_tag_locative))
+extern tort_v tort_locative_new(tort_v *);
+//#define tort_l(P) tort_locative_new((void*) P)
+#define tort_l(P) _tort_l(P)
+#define _tort_l(P) ((tort_v )(((size_t) (P)) ^ tort_tag_locative))
 #define tort_L(X) ((tort_v*)(((size_t) (X)) - tort_tag_locative))
 #endif
 

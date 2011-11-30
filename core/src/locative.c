@@ -1,5 +1,16 @@
 #include "tort/core.h"
 
+#ifdef tort_l
+#undef tort_l
+#define tort_l(P) _tort_l(P)
+#endif
+tort_v tort_locative_new(tort_v *vp)
+{
+  assert(tort_L(tort_l(vp)) == vp);
+  // fprintf(stderr, "  tort_l(%p) => %p\n", vp, tort_l(vp));
+  return tort_l(vp);
+}
+
 tort_v _tort_m_locative__value(tort_tp tort_v l)
 {
   return *tort_L(l);
