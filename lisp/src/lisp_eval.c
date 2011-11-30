@@ -187,7 +187,7 @@ tort_v _tort_M_lisp_environment__new(tort_tp tort_mtable *mtable, tort_lisp_form
     tort_error(tort_ta "too many args: expected %O, given %O to %O", formals->argc, argc, formals);
   if ( tort_h_mtable(args) == tort_mt(vector) ) {
     env->argv = argv = args;
-    env->rest = env->rest_ok = tort_false; /* Lazy: see get below. */
+    env->rest = env->rest_ok = tort_nil; /* Lazy: see get below. */
   } else {
     argv = tort_vector_new(0, tort_I(formals->argc));
     env->argv = argv;
@@ -240,7 +240,7 @@ tort_v _tort_m_lisp_environment__get(tort_tp tort_lisp_environment *env, tort_v 
     return_tort_send(tort__s(get), env->argv, index);
   }
   else if ( env->formals->rest == name ) {
-    if ( env->rest_ok != tort_true ) {
+    if ( env->rest_ok == tort_nil ) {
       tort_v *tailp = &env->rest;
       int i;
       *tailp = tort_nil;
@@ -283,7 +283,7 @@ tort_v _tort_m_lisp_environment__set(tort_tp tort_lisp_environment *env, tort_v 
     *tort_L(index) = value; 
   }
   else if ( env->formals->rest == name ) {
-    if ( env->rest_ok != tort_true )
+    if ( env->rest_ok == tort_nil )
       env->rest = NEW_LOC(value);
     else 
       *tort_L(env->rest) = value;
