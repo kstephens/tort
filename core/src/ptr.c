@@ -90,7 +90,7 @@ tort_v _tort_m_tagged___object_ptr(tort_tp tort_v obj)
 tort_v _tort_m_ptr___to_string(tort_tp tort_v p)
 {
   char buf[64];
-  snprintf(buf, sizeof(buf) - 1, "%016llx", (unsigned long long) (size_t) tort_P(p));
+  snprintf(buf, sizeof(buf) - 1, "%llx", (unsigned long long) (size_t) tort_P(p));
   return tort_string_new(buf, strlen(buf));
 }
 
