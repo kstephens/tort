@@ -5,6 +5,8 @@
 int _tort_lisp_trace = 0;
 int _tort_lisp_macro_trace = 0;
 
+#define NEW_LOC(VALUE) tort_send(tort__s(new_locative), tort__mt(value), (VALUE))
+
 typedef struct tort_lisp_formals { tort_H;
   tort_v formals;
   tort_v formals_n;
@@ -198,8 +200,16 @@ tort_v _tort_M_lisp_environment__new(tort_tp tort_mtable *mtable, tort_lisp_form
 	args = tort_cdr(args);
 	argi ++;
       }
-      env->rest = args;
+      env->rest = NEW_LOC(args);
       env->rest_ok = tort_true;
+    }
+  }
+  // Turn values into locatives.
+  {
+    int argi = tort_vector_size(argv);
+    while ( -- argi >= 0 ) {
+      tort_v *vp = &tort_vector_data(argv)[argi];
+      *vp = NEW_LOC(*vp);
     }
   }
   env->parent = parent_env;
@@ -217,89 +227,103 @@ tort_v _tort_m_lisp_environment__globals(tort_tp tort_lisp_environment *env)
   return env->_globals;
 }
 
+tort_v _tort_m_lisp_environment__globals_locative(tort_tp tort_lisp_environment *env)
+{
+  tort_send(tort_s(globals), env);
+  return tort_l(&env->_globals);
+}
+
 tort_v _tort_m_lisp_environment__get(tort_tp tort_lisp_environment *env, tort_v name)
 {
-  // tort_printf(tort_stderr, "  get(%O, %O)\n", env, name);
-  if ( name == tort_s(ANDenv) ) {
-    return env;
-  }
-  else if ( name == tort_s(ANDroot) ) {
-    return tort_(root);
-  }
-  else if ( name == tort_s(ANDglobals) ) {
-    return_tort_send(tort_s(globals), env);
-  }
-  else if ( name == tort_s(ANDmsg) ) {
-    return env->msg;
+  tort_v index = tort_send(tort__s(get), env->formals->map, name);
+  if ( index != tort_nil ) {
+    return_tort_send(tort__s(get), env->argv, index);
   }
   else if ( env->formals->rest == name ) {
-    if ( env->rest_ok == tort_false ) {
+    if ( env->rest_ok != tort_true ) {
       tort_v *tailp = &env->rest;
       int i;
       *tailp = tort_nil;
       for ( i = tort_I(env->formals->argc); i < tort_vector_size(env->argv); ++ i ) {
-	*tailp = tort_cons(tort_vector_data(env->argv)[i], tort_nil);
+	tort_v v = tort_vector_data(env->argv)[i];
+	*tailp = tort_cons(*tort_L(v), tort_nil);
 	tailp = &((tort_cons*) *tailp)->cdr;
       }
+      env->rest = NEW_LOC(env->rest);
       env->rest_ok = tort_true;
     }
     return env->rest;
-  } else {
-    tort_v index = tort_send(tort__s(get), env->formals->map, name);
-    if ( index != tort_nil ) {
-      return_tort_send(tort__s(get), env->argv, index);
+  } 
+  else if ( name == tort_s(ANDenv) ) {
+    return NEW_LOC(env);
+  }
+  else if ( name == tort_s(ANDroot) ) {
+    return tort_l(&tort_(root));
+  }
+  else if ( name == tort_s(ANDmsg) ) {
+    return tort_l(&env->msg);
+  }
+  else if ( name == tort_s(ANDglobals) ) {
+    return_tort_send(tort_s(globals_locative), env);
+  }
+  else {
+    if ( env->parent == tort_nil ) {
+      return tort_nil;
     } else {
-      if ( env->parent == tort_nil ) {
-	return tort_error(tort_ta "get: symbol '%O is unbound.", name);
-      } else {
-	return_tort_send(tort__s(get), env->parent, name);
-      }
+      return_tort_send(tort__s(get), env->parent, name);
     }
   }
 }
 
 tort_v _tort_m_lisp_environment__set(tort_tp tort_lisp_environment *env, tort_v name, tort_v value)
 {
-  if ( name == tort_s(ANDtrace) ) {
+  tort_v index = tort_send(tort__s(get), env->formals->map, name);
+  if ( index != tort_nil ) {
+    index = tort_send(tort__s(get), env->argv, index);
+    *tort_L(index) = value; 
+  }
+  else if ( env->formals->rest == name ) {
+    if ( env->rest_ok != tort_true )
+      env->rest = NEW_LOC(value);
+    else 
+      *tort_L(env->rest) = value;
+    env->rest_ok = tort_true;
+  }
+  else if ( name == tort_s(ANDtrace) ) {
     _tort_lisp_trace = tort_I(value);
-  } else
-  if ( name == tort_s(ANDmacroSUBtrace) ) {
+  }
+  else if ( name == tort_s(ANDmacroSUBtrace) ) {
     _tort_lisp_macro_trace = tort_I(value);
-  } else
-  if ( env->formals->rest == name ) {
+  } else {
+    if ( env->parent == tort_nil ) {
+      tort_error(tort_ta "set!: symbol '%O is unbound.", name);
+    } else {
+      tort_send(tort__s(set), env->parent, name, value);
+    }
+  }
+  return env;
+}
+
+tort_v _tort_m_lisp_environment__add_locative(tort_tp tort_lisp_environment *env, tort_v name, tort_v value)
+{
+  tort_v index = tort_send(tort__s(get), env->formals->map, name);
+  if ( index != tort_nil ) {
+    tort_send(tort__s(set), env->argv, index, value);
+  }
+  else if ( env->formals->rest == name ) {
     env->rest = value;
     env->rest_ok = tort_true;
   } else {
-    tort_v index = tort_send(tort__s(get), env->formals->map, name);
-    if ( index != tort_nil ) {
-      tort_send(tort__s(set), env->argv, index, value);
-    } else {
-      if ( env->parent == tort_nil ) {
-	tort_error(tort_ta "set!: symbol '%O is unbound.", name);
-      } else {
-	tort_send(tort__s(set), env->parent, name, value);
-      }
-    }
+    index = tort_send(tort__s(size), env->argv);
+    tort_send(tort__s(set), env->formals->map, name, index);
+    tort_send(tort__s(add), env->argv, value);
   }
   return env;
 }
 
 tort_v _tort_m_lisp_environment__add(tort_tp tort_lisp_environment *env, tort_v name, tort_v value)
 {
-  if ( env->formals->rest == name ) {
-    env->rest = value;
-    env->rest_ok = tort_true;
-  } else {
-    tort_v index = tort_send(tort__s(get), env->formals->map, name);
-    if ( index != tort_nil ) {
-      tort_send(tort__s(set), env->argv, index, value);
-    } else {
-      index = tort_send(tort__s(size), env->argv);
-      tort_send(tort__s(set), env->formals->map, name, index);
-      tort_send(tort__s(add), env->argv, value);
-    }
-  }
-  return env;
+  return_tort_send(tort_s(add_locative), env, name, NEW_LOC(value));
 }
 
 tort_v _tort_m_lisp_environment__get_macro(tort_tp tort_lisp_environment *env, tort_v name)
@@ -334,7 +358,9 @@ tort_v _tort_m_lisp_environment__define_macro(tort_tp tort_lisp_environment *env
 
 tort_v _tort_m_symbol__lisp_eval(tort_tp tort_v sym, tort_v env)
 {
-  return_tort_send(tort__s(get), env, sym);
+  tort_v l = tort_send(tort__s(get), env, sym);
+  if ( l == tort_nil ) return tort_error(tort_ta "get: symbol '%O is unbound.", sym);
+  return *tort_L(l);
 }
 
 tort_v _tort_m_object__lisp_eval(tort_tp tort_v obj, tort_v env)
@@ -427,9 +453,9 @@ tort_v _tort_m_cons__lisp_eval(tort_tp tort_cons *obj, tort_v env)
     if ( tort_h_mtable(val) == tort__mt(symbol) && (args = tort_send(tort_s(get_macro), env, val)) != tort_nil ) {
       val = args;
       args = obj->cdr;
+      if ( _tort_lisp_macro_trace >= 2 ) tort_printf(tort_stderr, "   M  %O =>\n    %O\n", obj, args);
       val = tort_send(tort_s(lisp_apply), val, args, env);
-      if ( _tort_lisp_macro_trace )
-	tort_printf(tort_stderr, "   EM %O =>\n    %O\n", obj, val);
+      if ( _tort_lisp_macro_trace ) tort_printf(tort_stderr, "   EM %O =>\n    %O\n", obj, val);
       return_tort_send(tort_s(lisp_eval), val, env);
     } else {
       val  = tort_send(tort_s(lisp_eval_car), val, env);
@@ -443,12 +469,10 @@ tort_v _tort_m_cons__lisp_eval(tort_tp tort_cons *obj, tort_v env)
 
 tort_v _tort_m_symbol__lisp_eval_car(tort_tp tort_v obj, tort_v env)
 {
-  if ( _tort_lisp_trace > 1 ) {
-    tort_v val = tort_send(tort_s(get), env, obj);
-    tort_printf(tort_stderr, "   EC %O => %O\n", obj, val);
-    return val;
-  } else
-  return_tort_send(tort_s(get), env, obj);
+  tort_v val = tort_send(tort__s(get), env, obj);
+  val = *tort_L(val);
+  if ( _tort_lisp_trace > 1 ) tort_printf(tort_stderr, "   EC %O => %O\n", obj, val);
+  return val;
 }
 
 tort_v _tort_m_object__lisp_eval_car(tort_tp tort_v obj, tort_v env)
@@ -517,9 +541,8 @@ tort_v _tort_m_vector__lisp_eval_body(tort_tp tort_vector *obj, tort_v env)
 {
   size_t i = 0;
   if ( ! obj->size ) return tort_nil;
-  while ( i < obj->size - 1 ) {
+  while ( i < obj->size - 1 )
     tort_send(tort_s(lisp_eval), obj->data[i ++], env);
-  }
   return_tort_send(tort_s(lisp_eval), obj->data[i], env);
 }
 
