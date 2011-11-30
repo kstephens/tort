@@ -83,7 +83,6 @@ tort_v tort_runtime_create_ (int *argcp, char ***argvp, char ***envp)
   INIT(symbol);
 
   /* Install core methods. */
-  INIT(value);
   INIT(method);
 
   /* Create the root table. */

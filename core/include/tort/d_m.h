@@ -299,6 +299,7 @@ tort_d_m(tort_h_ref(tort__mt(symbol))->mtable, tort__s(_offset_name), _tort_M_sy
 tort_d_m(tort_h_ref(tort__mt(symbol))->mtable, tort__s(_offset_version), _tort_M_symbol___offset_version)
 tort_d_m(tort_h_ref(tort__mt(symbol))->mtable, tort__s(new), _tort_M_symbol__new)
 tort_d_m(tort_h_ref(tort__mt(value))->mtable, tort__s(new), _tort_M_value__new)
+tort_d_m(tort_h_ref(tort__mt(value))->mtable, tort__s(new_locative), _tort_M_value__new_locative)
 tort_d_m(tort_h_ref(tort__mt(vector))->mtable, tort__s(_new), _tort_M_vector___new)
 tort_d_m(tort_h_ref(tort__mt(vector))->mtable, tort__s(new), _tort_M_vector__new)
 tort_d_m(tort_h_ref(tort__mt(vector_base))->mtable, tort__s(_new), _tort_M_vector_base___new)
