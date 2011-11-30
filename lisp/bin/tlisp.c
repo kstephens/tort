@@ -20,16 +20,17 @@ int main(int argc, char **argv, char **environ)
   }
 
   {
-    extern int _tort_lisp_trace;
+    extern int _tort_lisp_trace, _tort_lisp_macro_trace;
     const char *str = getenv("TORT_LISP_LIB_DIR");
     tort_v boot = tort_string_new_cstr(str && *str ? str : TORT_LISP_LIB_DIR);
     tort_v out_io;
     int boot_debug;
 
     str = getenv("TORT_LISP_BOOT_DEBUG");
-    boot_debug = str && *str != '0';
+    boot_debug = atoi(str ? str : "0");
     out_io = boot_debug ? tort_stderr : tort_nil;
-    if ( boot_debug ) ++ _tort_lisp_trace;
+    _tort_lisp_macro_trace += boot_debug;
+    _tort_lisp_trace += boot_debug;
 
     tort_send(tort_s(append), boot, tort_string_new_cstr("/boot.lisp"));
     tort_printf(out, ";; %s: reading %T\n", argv[0], boot);
@@ -39,7 +40,8 @@ int main(int argc, char **argv, char **environ)
     repl->output = out_io;
     tort_send(tort_s(run), repl);
 
-    if ( boot_debug ) -- _tort_lisp_trace;
+    _tort_lisp_macro_trace -= boot_debug;
+    _tort_lisp_trace -= boot_debug;
   }
 
   for ( argi = 1; argi < argc; ++ argi ) {
