@@ -350,6 +350,12 @@ READ_DECL
 	RETURN(U);
 #endif
 
+#ifdef E
+      case '#':
+	GETC(stream);
+	RETURN(E);
+#endif
+
       case 'e': case 'E':
       case 'i': case 'I':
         GETC(stream);
