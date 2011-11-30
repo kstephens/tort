@@ -17,6 +17,7 @@
        (binary-ops '((MOV movq) (SUB subq) (ADD addq) (OR orq) (AND andq)))
        (unary-ops  '((PUSH pushq) (POP popq) (CALL call)))
        (nonary-ops '((LEAVE leave) (RTN rtn)))
+       (compiled-forms ('new <map>))
        )
 
   (define-struct reg
@@ -127,7 +128,7 @@
 	  ((pair? obj)
 	    (for-each (lambda (obj) ('emit self obj)) obj))
 	  (else
-	    (debug obj)
+	    ;; (debug obj)
 	    ('_emit obj self))))
       objs)
     self)
@@ -167,7 +168,7 @@
 	;; (debug (pair? bp-offset))
 	;; (debug (and (pair? bp-offset) (car bp-offset)))
 	(set! bp-offset (and (pair? bp-offset) (car bp-offset)))
-	(debug bp-offset)
+	;; (debug bp-offset)
 	(if (or (not bp-offset) (null? bp-offset))
 	  (begin
 	    (set! bp-offset (- ('bp-offset env) word-size))
@@ -237,8 +238,7 @@
 	(if (< bp-offset 0)
 	  (begin
 	    ;; Align to 16-byte boundarys
-	    (set! bp-offset (- bp-offset))
-	    (set! bp-offset (* (/ (+ bp-offset -15) 16) 16))
+	    (set! bp-offset (* (/ (+ (- bp-offset) 15) 16) 16))
 	    (SUB (CONST bp-offset) SP)))))
 
     (define-method isn-stream ('cfunc self env params body)
@@ -264,7 +264,7 @@
       #f
       )
     
-    (define-method isn-stream ('send self env sel args)
+    (define-method isn-stream ('expr-send self env sel args dst)
       #f
       )
     
@@ -272,18 +272,36 @@
       (cond
 	((symbol? obj)
 	  ('expr-var self env obj dst))
+	((pair? obj)
+	  ('expr-pair self env obj dst))
 	(else
 	  (error "unknown object"))))
     
     (define-method isn-stream ('expr-var self env obj dst)
       (let ((b ('lookup env obj)))
-	(debug env)
-	(debug b)
+	;; (debug env)
+	(debug obj)(debug b)
 	(if (null? b)
 	  (error "variable %O is unbound" obj)
 	  (MOV ('loc b) dst obj)
 	  )))
+    (define-method isn-stream ('expr-pair self env obj dst)
+      (let ((form ('get compiled-forms (car obj)))
+	     (args (cdr obj)))
+	(if (null? form)
+	  ('expr-send self env (car obj) args dst)
+	  (form self env dst . args)
+	  )))
     
+    (let-macro (
+		 ((form name-args . body)  
+		   `('set compiled-forms ,(car name-args) (lambda (self env dst ,@(cdr name-args)) ,@body))))
+      (form (if test t . rest) #f)
+      (form (while test . body) #f)
+      (form (lambda args . body) #f)
+      ) ;; let-macro
+    (debug compiled-forms)
+
     ) ;; let-macro
   
   ) ;; let
