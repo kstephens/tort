@@ -5,7 +5,7 @@
 int _tort_lisp_trace = 0;
 int _tort_lisp_macro_trace = 0;
 
-#define NEW_LOC(VALUE) tort_send(tort__s(new_locative), tort__mt(value), (VALUE))
+#define NEW_LOC(VALUE) tort_send(tort__s(new_value), tort__mt(locative), (VALUE))
 
 typedef struct tort_lisp_formals { tort_H;
   tort_v formals;

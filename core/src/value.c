@@ -31,9 +31,3 @@ tort_v _tort_M_value__new(tort_tp tort_mtable *mtable, tort_v v)
   tort_v o = tort_send(tort__s(_allocate), mtable, tort_i(sizeof(tort_method)));
   return_tort_send(tort__s(initialize), o, v);
 }
-tort_v _tort_M_value__new_locative(tort_tp tort_mtable *mtable, tort_v v)
-{
-  v = tort_send(tort__s(new), mtable, v);
-  return_tort_send(tort__s(value_locative), v);
-}
-
