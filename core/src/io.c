@@ -16,33 +16,31 @@ tort_v _tort_M_io____stat(tort_tp tort_mtable *mtable, tort_v name)
   bzero(&st, sizeof(st));
   if ( (result = stat(tort_string_data(name), &st)) == 0 ) {
     tort_v map = tort_send(tort__s(new), tort__mt(map));
-#define ST(T,N) tort_send(tort__s(set), map, tort_s(N), tort_i((tort_vi) st.N))
-    ST(dev_t           ,st_dev);         /* [XSI] ID of device containing file */
-    ST(ino_t           ,st_ino);         /* [XSI] File serial number */
-    ST(mode_t          ,st_mode);        /* [XSI] Mode of file (see below) */
-    ST(nlink_t         ,st_nlink);       /* [XSI] Number of hard links */
-    ST(uid_t           ,st_uid);         /* [XSI] User ID of the file */
-    ST(gid_t           ,st_gid);         /* [XSI] Group ID of the file */
-    ST(dev_t           ,st_rdev);        /* [XSI] Device ID */
+#define ST(T,E,N) tort_send(tort__s(set), map, tort_s(N), tort_i((tort_vi) st.E))
+    ST(dev_t           ,st_dev,  dev);         /* [XSI] ID of device containing file */
+    ST(ino_t           ,st_ino,  ino);         /* [XSI] File serial number */
+    ST(mode_t          ,st_mode, mode);        /* [XSI] Mode of file (see below) */
+    ST(nlink_t         ,st_nlink,nlink);       /* [XSI] Number of hard links */
+    ST(uid_t           ,st_uid,  uid);         /* [XSI] User ID of the file */
+    ST(gid_t           ,st_gid,  gid);         /* [XSI] Group ID of the file */
+    ST(dev_t           ,st_rdev, rdev);        /* [XSI] Device ID */
 #if !defined(_POSIX_C_SOURCE) || defined(_DARWIN_C_SOURCE)
 #if 0
-    ST(struct  timespec ,st_atimespec);  /* time of last access */
-    ST(struct  timespec ,st_mtimespec);  /* time of last data modification */
-    ST(struct  timespec ,st_ctimespec);  /* time of last status change */
+    ST(struct  timespec ,st_atimespec,atimespec);  /* time of last access */
+    ST(struct  timespec ,st_mtimespec,mtimespec);  /* time of last data modification */
+    ST(struct  timespec ,st_ctimespec,ctimespec);  /* time of last status change */
 #endif
 #else
-#ifndef __linux__ /* FIXME!!! */
-    ST(time_t          ,st_atime);       /* [XSI] Time of last access */
-    ST(long            ,st_atimensec);   /* nsec of last access */
-    ST(time_t          ,st_mtime);       /* [XSI] Last data modification time */
-    ST(long            ,st_mtimensec);   /* last data modification nsec */
-    ST(time_t          ,st_ctime);       /* [XSI] Time of last status change */
-    ST(long            ,st_ctimensec);   /* nsec of last status change */
+    ST(time_t          ,st_atime,    atime);       /* [XSI] Time of last access */
+    ST(long            ,st_atimensec,atimensec);   /* nsec of last access */
+    ST(time_t          ,st_mtime,    mtime);       /* [XSI] Last data modification time */
+    ST(long            ,st_mtimensec,mtimensec);   /* last data modification nsec */
+    ST(time_t          ,st_ctime,    ctime);       /* [XSI] Time of last status change */
+    ST(long            ,st_ctimensec,ctimensec);   /* nsec of last status change */
 #endif
-#endif
-    ST(off_t           ,st_size);        /* [XSI] file size, in bytes */
-    ST(blkcnt_t        ,st_blocks);      /* [XSI] blocks allocated for file */
-    ST(blksize_t       ,st_blksize);     /* [XSI] optimal blocksize for I/O */
+    ST(off_t           ,st_size,    size);        /* [XSI] file size, in bytes */
+    ST(blkcnt_t        ,st_blocks,  blocks);      /* [XSI] blocks allocated for file */
+    ST(blksize_t       ,st_blksize, blksize);     /* [XSI] optimal blocksize for I/O */
 #if 0
         __uint32_t      st_flags;       /* user defined flags for file */
         __uint32_t      st_gen;         /* file generation number */
