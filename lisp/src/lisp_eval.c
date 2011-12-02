@@ -450,13 +450,8 @@ tort_v _tort_m_cons__lisp_eval(tort_tp tort_cons *obj, tort_v env)
   }
   else {
     tort_v args;
-    if ( tort_h_mtable(val) == tort__mt(symbol) && (args = tort_send(tort_s(get_macro), env, val)) != tort_nil ) {
-      val = args;
-      args = obj->cdr;
-      if ( _tort_lisp_macro_trace >= 2 ) tort_printf(tort_stderr, "   M  %O =>\n    %O\n", obj, args);
-      val = tort_send(tort_s(lisp_apply), val, args, env);
-      if ( _tort_lisp_macro_trace ) tort_printf(tort_stderr, "   EM %O =>\n    %O\n", obj, val);
-      return_tort_send(tort_s(lisp_eval), val, env);
+    if ( (args = tort_send(tort_s(lisp_macro_expand), obj, env)) != tort_nil ) {
+      return_tort_send(tort_s(lisp_eval), args, env);
     } else {
       val  = tort_send(tort_s(lisp_eval_car), val, env);
       args = tort_send(tort_s(lisp_eval_args), obj->cdr, env);
@@ -464,7 +459,24 @@ tort_v _tort_m_cons__lisp_eval(tort_tp tort_cons *obj, tort_v env)
       // if ( _tort_lisp_trace || 1) tort_printf(tort_stderr, "\n  f = %O, args = %O\n", val, args);
       return_tort_send(tort_s(lisp_apply), val, args, env);
     }
-   }
+  }
+}
+
+tort_v _tort_m_cons__lisp_macro_expand(tort_tp tort_cons *obj, tort_v env)
+{
+  tort_v val = obj->car;
+  if ( tort_h_mtable(val) == tort__mt(symbol) && (val = tort_send(tort_s(get_macro), env, val)) != tort_nil ) {
+    if ( _tort_lisp_macro_trace >= 2 ) tort_printf(tort_stderr, "   M  %O =>\n    %O\n", obj->car, val);
+    val = tort_send(tort_s(lisp_apply), val, obj->cdr, env);
+    if ( _tort_lisp_macro_trace ) tort_printf(tort_stderr, "   EM %O =>\n    %O\n", obj, val);
+    return val;
+  }
+  return tort_nil;
+}
+
+tort_v _tort_m_object__lisp_macro_expand(tort_tp tort_v obj, tort_v env)
+{
+  return tort_nil;
 }
 
 tort_v _tort_m_symbol__lisp_eval_car(tort_tp tort_v obj, tort_v env)
