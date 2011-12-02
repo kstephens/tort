@@ -48,6 +48,16 @@
       (set! l (cdr l)))
     r))
 
+(define (memv v l)
+  (let ((r #f))
+    (while (pair? l)
+      (if (eqv? v (car l))
+	  (begin
+	    (set! r l)
+	    (set! l '()))
+	  (set! l (cdr l))))
+    r))
+
 (define (map f l)
   (let ((result (cons #f '()))
 	 (r #f)
