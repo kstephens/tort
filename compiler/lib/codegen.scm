@@ -91,9 +91,10 @@
       )))
 
   (define-struct environ
-    (parent        nil)
-    (bp-offset     0)
-    ;; (bp-offset-max 0)
+    (parent           #f)
+    (alloc-env        #f)
+    (alloc-offset     0)
+    (alloc-offset-max 0)
     (bindings      ('new <map>))
     )
   (define-method environ ('add self binding)
@@ -109,6 +110,7 @@
     (referenced? #f)
     (set?        #f)
     (loc         nil)
+    (size        #f)
     (reg         #f)
     (rest-arg    #f)
     (restore-reg #f)
@@ -217,10 +219,17 @@
 
     (define-method environ ('allocate-binding env binding)
       (if (and ('referenced? binding) (not ('loc binding)))
-	(let ((bp-offset ('bp-offset env)))
-	  (set! bp-offset (- bp-offset word-size))
-	  ('bp-offset= env bp-offset)
-	  ('loc= binding (OFFSET BP bp-offset))
+	(let* ((alloc-env (or ('alloc-env env) env))
+		(alloc-offset ('alloc-offset alloc-env))
+		(alloc-size (or ('size binding) word-size)))
+	  ('size= binding alloc-size)
+	  ;; Align to word boundary.
+	  (set! alloc-size (* (/ (+ alloc-size (- word-size 1)) word-size) word-size))
+	  (set! alloc-offset (- alloc-offset alloc-size))
+	  ('alloc-offset= alloc-env alloc-offset)
+	  (if (> ('alloc-offset-max alloc-env) alloc-offset)
+	    ('alloc-offset-max= alloc-env alloc-offset))
+	  ('loc= binding (OFFSET BP alloc-offset))
 	  (debug 'allocate-binding)(debug binding)
 	)))
 
@@ -234,14 +243,14 @@
 	  )))
 
     (define-method isn-stream ('emit-stack-space self env)
-      ;; Save stack space for args.
-      (let ((bp-offset ('bp-offset env)))
-	(if (< bp-offset 0)
+      ;; Save stack space for bindings.
+      (let ((alloc-offset ('alloc-offset-max env)))
+	(if (< alloc-offset 0)
 	  (begin
 	    ;; Align to 16-byte boundary.
-	    (set! bp-offset (* (/ (+ (- bp-offset) 15) 16) 16))
-	    ('bp-offset= env (- bp-offset))
-	    (SUB (CONST bp-offset) SP)))))
+	    (set! alloc-offset (* (/ (+ (- alloc-offset) 15) 16) 16))
+	    ('alloc-offset-max= env (- alloc-offset))
+	    (SUB (CONST alloc-offset) SP)))))
 
     (define-method isn-stream ('cfunc self env params body)
       (if (null? env)
@@ -312,15 +321,15 @@
 	   (if (null? b) (error "variable %O is unbound" obj)
 	       (MOV ('loc b) dst obj)
 	       )))))
+
     (define-method isn-stream ('expr-pair self env obj dst)
       (let ((form ('get compiled-forms (car obj)))
 	     (args (cdr obj)))
 	(if (null? form)
-	  ('expr-send self env (car obj) args dst)
+	  ('expr-call self env (car obj) args dst)
 	  (form self env dst . args)
 	  )))
     
-#|
     (let-macro (
 		 ((form name-args . body)  
 		   `('set compiled-forms ,(car name-args) (lambda (self env dst ,@(cdr name-args)) ,@body))))
@@ -328,7 +337,6 @@
       (form (while test . body) #f)
       (form (lambda args . body) #f)
       ) ;; let-macro
-|#
     (debug compiled-forms)
 
     ) ;; let-macro
@@ -340,7 +348,7 @@
 ;; (define e ('new environ))
 ;; (display "\ne=\n")(write e)(newline)
 (define s ('new isn-stream))
-(display "\ns=\n")(write s)(newline)
+;; (display "\ns=\n")(write s)(newline)
 ('emit s "// hello, world\n")
 ('cfunc s nil '(a b c d e f g h i) '(a c e g h i))
 (display "\nCode:\n")(display ('body s))(display "\n")
