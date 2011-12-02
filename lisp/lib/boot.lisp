@@ -1,7 +1,7 @@
 ;; -*- scheme -*-
 (define (eq? a b) ('eq? a b))
 (define equal? 'equal?)
-(define eqv? 'equal?)
+(define eqv? 'equal?) ;; FIXME
 
 (define nil '())
 
@@ -138,8 +138,8 @@
 
 (define-macro (let-macro bindings . body)
   `(&let ()
-     ,@(map (lambda (binding)
-	      `('set_macro &env ',(caar binding) (lambda ,(cdar binding) ,@(cdr binding))))
+     ,@(map (lambda (b)
+	      `('set_macro &env ',(caar b) (lambda ,(cdar b) ,@(cdr b))))
 	 bindings)
      ,@body))
 
@@ -159,7 +159,7 @@
 
 (define-macro (let* bindings . body)
   (cond
-    ((null? bindings) `(let () ,@body))
+    ((null? bindings) `(begin ,@body))
     ((pair? bindings)
       `(let (,(car bindings)) (let* (,@(cdr bindings)) ,@body)))))
  
@@ -175,9 +175,23 @@
        ,@body))))
 
 (define-macro (letrec bindings . body)
-  `(let ,(map (lambda (binding) `(,(car binding) #f)) bindings)
-     ,@(map (lambda (binding) (set! ,(car binding) ,@(cdr binding))) bindings)
-     ,@(body)))
+  `(let ,(map (lambda (b) `(,(car b) #f)) bindings)
+     ,@(map (lambda (b) `(set! ,(car b) ,@(cdr b))) bindings)
+     ,@body))
+
+(define-macro (case val-expr . cases)
+  (letrec ((val (make-symbol '()))
+	   (%case 
+	     (lambda (cases)
+	       (if (null? cases) ''() ;; undefined
+		 (let ((c (car cases)))
+		   (if (eq? (car c) 'else)
+		     `(begin ,@(cdr c))
+		     `(if (pair? (memv ,val ',(car c)))
+			(begin ,@(cdr c))
+			,(%case (cdr cases)))))))))
+    `(let ((,val ,val-expr))
+       ,(%case cases))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
