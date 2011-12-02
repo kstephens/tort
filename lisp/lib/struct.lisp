@@ -1,25 +1,43 @@
 ;; -*- scheme -*-
 
+(define <struct> ('new_class <mtable> <vector>))
+
+(let ((slot-name
+       (lambda (slot) (if (pair? slot) (car slot) slot)))
+      (slot-default
+       (lambda (slot) (if (and (pair? slot) (not (null? (cdr slot))))
+			  (cadr slot)
+			  ''())))
+      (slot-offset  
+       (lambda (slot) (caddr slot)))
+      (struct-name
+       (lambda (obj) (vector-ref obj 1)))
+      (struct-slots 
+       (lambda (obj) (vector-ref obj 2)))
+      )
+
+  (define-method <struct> ('lisp_write obj port)
+    (display "#<struct " port)
+    (write (struct-name obj) port)
+    (display " " port)
+    (for-each (lambda (slot)
+		(write (slot-name slot) port)(display " " port)
+		(write (vector-ref obj (slot-offset slot)))(display " " port)
+		) (struct-slots obj))
+    (display ">" port)
+    )
+
 (define (%define-struct name slots)
   (let* ((name-s (symbol->string name))
 	(name- (string-append name-s ":"))
 	(nslots 2)
-	(slot-name #f) 
-	(slot-default #f)
-	(slot-offset #f)
 	(slot-getter-proc #f)
 	(slot-setter-sel  #f)
 	(slot-setter-proc #f)
 	(new_lambda_name #f)
 	  ;; Create a class-oriented mtable delegating to <vector>.
-	(mtable ('new_class <mtable> <vector>)))
+	(mtable ('new_class <mtable> <struct>)))
     ;; (display "\nname- = ")(write name-)(newline)
-    (set! slot-name    
-      (lambda (slot) (if (pair? slot) (car slot) slot)))
-    (set! slot-default 
-      (lambda (slot) (if (and (pair? slot) (not (null? (cdr slot))))
-			 (cadr slot)
-			 ''())))
     ;; (display "struct ")(write name)(display " slots = ")(write slots)(newline)
     (set! slots
       (map (lambda (slot)
@@ -28,8 +46,6 @@
 	     (list (slot-name slot) (slot-default slot) nslots))
 	slots))
     ;; (display "struct ")(write name)(display " slots = ")(write slots)(newline)
-    (set! slot-offset
-      (lambda (slot) (caddr slot)))
     (set! slot-getter-proc
       (lambda (slot)
 	(string->symbol
@@ -83,6 +99,8 @@
      ;; (display `(struct ,name))(display " => ")(write ',mtable)(newline)
      ',mtable
      )))
+
+)
 
 (define-macro (define-struct name . slots) (%define-struct name slots))
 

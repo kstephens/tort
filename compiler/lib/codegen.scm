@@ -90,7 +90,7 @@
 	  ('emit stream "$" v))
       )))
 
-  (define-struct environ
+=  (define-struct environ
     (parent        nil)
     (bp-offset    0) ; (list 0))
     ;; (bp-offset-max 0)
@@ -105,6 +105,8 @@
     
   (define-struct env-binding
     (name        #f)
+    (getted      #f)
+    (setted      #f)
     (loc         nil)
     (bp-offset   #f)
     (restore-reg #f)
@@ -115,7 +117,9 @@
   (define-struct isn-stream
     (body     (string-new))
     (labels   '())
-    (label-id 0)
+    (label-id  0)
+    (mode      nil)
+    (env       #f)
     )
   (define-method isn-stream ('emit self . objs)
     (for-each 
@@ -244,13 +248,22 @@
     (define-method isn-stream ('cfunc self env params body)
       (if (null? env)
         (set! env ('new environ)))
+      ('env= self env)
       (PUSH  BP)
       (MOV   SP BP)
       ('emit-params self env params)
-      ('emit-stack-space self env)
+
+      ('mode= self 'variable-contour)
       (for-each (lambda (expr)
 		  ('expr self env expr RESULT))
 	body)
+      ('emit-stack-space self env)
+
+      ('mode= self 'emit)
+      (for-each (lambda (expr)
+		  ('expr self env expr RESULT))
+	body)
+
       (LEAVE)
       (RTN)
       self
@@ -280,11 +293,15 @@
     (define-method isn-stream ('expr-var self env obj dst)
       (let ((b ('lookup env obj)))
 	;; (debug env)
-	(debug obj)(debug b)
-	(if (null? b)
-	  (error "variable %O is unbound" obj)
-	  (MOV ('loc b) dst obj)
-	  )))
+	(debug obj)(debug b)(debug ('mode self))
+	(case ('mode self)
+	  ((variable-contour)
+	   (if (null? b) (error "variable %O is unbound" obj)
+	       ('getted= b #t)))
+	  ((emit)
+	   (if (null? b) (error "variable %O is unbound" obj)
+	       (MOV ('loc b) dst obj)
+	       )))))
     (define-method isn-stream ('expr-pair self env obj dst)
       (let ((form ('get compiled-forms (car obj)))
 	     (args (cdr obj)))
@@ -293,6 +310,7 @@
 	  (form self env dst . args)
 	  )))
     
+#|
     (let-macro (
 		 ((form name-args . body)  
 		   `('set compiled-forms ,(car name-args) (lambda (self env dst ,@(cdr name-args)) ,@body))))
@@ -300,6 +318,7 @@
       (form (while test . body) #f)
       (form (lambda args . body) #f)
       ) ;; let-macro
+|#
     (debug compiled-forms)
 
     ) ;; let-macro
@@ -313,5 +332,9 @@
 (define s ('new isn-stream))
 (display "\ns=\n")(write s)(newline)
 ('emit s "// hello, world\n")
-('cfunc s nil '(a b c d e f g h i) '(a b c d e f g h i))
+('cfunc s nil '(a b c d e f g h i) '(a c e g h i))
 (display "\nCode:\n")(display ('body s))(display "\n")
+(display "\nEnv:\n")
+(for-each (lambda (b)
+	    (write b)(newline))
+	  (vector->list ('values ('bindings ('env s)))))(display "\n")

@@ -1,7 +1,7 @@
 ;; -*- scheme -*-
 (define (eq? a b) ('eq? a b))
 (define equal? 'equal?)
-(define eqv? 'equal?)
+(define eqv? 'equal?) ;; FIXME
 
 (define nil '())
 
@@ -46,6 +46,16 @@
     (while (pair? l)
       (set! r (cons (car l) r))
       (set! l (cdr l)))
+    r))
+
+(define (memv v l)
+  (let ((r #f))
+    (while (pair? l)
+      (if (eqv? v (car l))
+	  (begin
+	    (set! r l)
+	    (set! l '()))
+	  (set! l (cdr l))))
     r))
 
 (define (map f l)
@@ -128,15 +138,17 @@
 
 (define-macro (let-macro bindings . body)
   `(&let ()
-     ,@(map (lambda (binding)
-	      `('set_macro &env ',(caar binding) (lambda ,(cdar binding) ,@(cdr binding))))
+     ,@(map (lambda (b)
+	      `('set_macro &env ',(caar b) (lambda ,(cdar b) ,@(cdr b))))
 	 bindings)
      ,@body))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define-macro (begin . body)
-  `(let () ,@body))
+  (if (null? body) ''() ; undef
+    (if (null? (cdr body)) (car body)
+      `(let () ,@body))))
 
 (define-macro (cond case . cases)
   (if (null? cases)
@@ -147,14 +159,39 @@
 
 (define-macro (let* bindings . body)
   (cond
-    ((null? bindings) `(let () ,@body))
+    ((null? bindings) `(begin ,@body))
     ((pair? bindings)
       `(let (,(car bindings)) (let* (,@(cdr bindings)) ,@body)))))
+ 
+(define (macro-expand expr . env)
+  (set! env (if (pair? env) (car env) &env))
+  (let ((result ('lisp_macro_expand expr env)))
+    (if (null? result) expr result)))
+
+(define-macro (macro-bind bindings . body)
+  (let ((anon-bindings (map (lambda (b) (cons (make-symbol '()) b)) bindings)))
+   `(let ,(map (lambda (b) `(,(cadr b) ,(car b))) anon-bindings)
+     (let ,(map (lambda (b) `(,(car b) ,(caddr b))) anon-bindings)
+       ,@body))))
 
 (define-macro (letrec bindings . body)
-  `(let ,(map (lambda (binding) `(,(car binding) #f)) bindings)
-     ,@(map (lambda (binding) (set! ,(car binding) ,@(cdr binding))) bindings)
-     ,@(body)))
+  `(let ,(map (lambda (b) `(,(car b) #f)) bindings)
+     ,@(map (lambda (b) `(set! ,(car b) ,@(cdr b))) bindings)
+     ,@body))
+
+(define-macro (case val-expr . cases)
+  (letrec ((val (make-symbol '()))
+	   (%case 
+	     (lambda (cases)
+	       (if (null? cases) ''() ;; undefined
+		 (let ((c (car cases)))
+		   (if (eq? (car c) 'else)
+		     `(begin ,@(cdr c))
+		     `(if (pair? (memv ,val ',(car c)))
+			(begin ,@(cdr c))
+			,(%case (cdr cases)))))))))
+    `(let ((,val ,val-expr))
+       ,(%case cases))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -163,15 +200,12 @@
 	 (args (cdr name-and-args)))
     `(begin
        ('add_method ,mtable ,name (lambda ,args ,@body))
-       ;; (display `(method ,mtable ,name))(newline)
        (list ,mtable ,name))))
 
 (define (%reduce f l)
   (let ((a (car l)))
     (set! l (cdr l))
-    (while (not (null? l))
-      ;; (write 'a=)(write a)(write "\n")
-      ;; (write 'l=)(write l)(write "\n")
+    (while (pair? l)
       (set! a (f a (car l)))
       (set! l (cdr l))
       )
@@ -211,6 +245,15 @@
 (define (vector-length s) ('size s))
 (define (vector-ref s i) ('get s i))
 (define (vector-set! s i v) ('set s i v))
+(define (vector->list v)
+  (let* ((l (cons '() '()))
+	 (r l)
+	 (i 0))
+    (while (< i (vector-length v))
+      (set-cdr! r (cons (vector-ref v i) '()))
+      (set! r (cdr r))
+      (set! i (+ i 1)))
+    (cdr l)))
 
 (define-mtable-class symbol)
 (define (make-symbol s) ('new <symbol> s))
