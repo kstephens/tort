@@ -200,15 +200,12 @@
 	 (args (cdr name-and-args)))
     `(begin
        ('add_method ,mtable ,name (lambda ,args ,@body))
-       ;; (display `(method ,mtable ,name))(newline)
        (list ,mtable ,name))))
 
 (define (%reduce f l)
   (let ((a (car l)))
     (set! l (cdr l))
-    (while (not (null? l))
-      ;; (write 'a=)(write a)(write "\n")
-      ;; (write 'l=)(write l)(write "\n")
+    (while (pair? l)
       (set! a (f a (car l)))
       (set! l (cdr l))
       )
