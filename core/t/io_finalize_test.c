@@ -25,7 +25,7 @@ int main(int argc, char **argv, char **environ)
 
     tort_printf(io, "  (open v %T %T)\n", p, m);
 
-    v = tort_send(tort__s(__create), tort__mt(io), 0);
+    v = tort_send(tort__s(new), tort__mt(io));
     tort_printf(io, "  v => %T\n", v);
 
     o = tort_send(tort__s(open), v, p, m);
@@ -44,6 +44,7 @@ int main(int argc, char **argv, char **environ)
     }
   }
 
+  p = m = v = o = s = tort_nil;
   tort_gc_collect();
 
   if ( _tort_gc_mode ) {

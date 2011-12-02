@@ -61,7 +61,7 @@ tort_ACCESSOR(io,tort_v,data);
 
 size_t _tort_io_open_count, _tort_io_close_count;
 
-tort_v _tort_M_io____create(tort_tp tort_mtable *mtable, FILE *fp)
+tort_v _tort_M_io____new(tort_tp tort_mtable *mtable, FILE *fp)
 {
   tort_io *rcvr = _tort_allocate(tort_ta mtable, sizeof(tort_io));
   FP = fp;
@@ -71,9 +71,9 @@ tort_v _tort_M_io____create(tort_tp tort_mtable *mtable, FILE *fp)
   return rcvr;
 }
 
-tort_v _tort_M_io__create(tort_tp tort_mtable *mtable, FILE *fp)
+tort_v _tort_M_io__new(tort_tp tort_mtable *mtable)
 {
-  return _tort_M_io____create(tort_ta mtable, 0);
+  return _tort_M_io____new(tort_ta mtable, 0);
 }
 
 tort_v _tort_m_io__open(tort_tp tort_io *rcvr, tort_v name, tort_v mode)
@@ -136,16 +136,18 @@ tort_v _tort_m_io__flush(tort_tp tort_io *rcvr)
 tort_v _tort_m_io__read(tort_tp tort_io *rcvr, tort_string *buf)
 {
   int count;
-
   if ( tort_taggedQ(buf) )
     buf = tort_string_new(0, tort_I(buf));
-
   count = fread(buf->data, sizeof(buf->data[0]), buf->alloc_size - 1, FP);
-
-  buf->size = count;
-  buf->data[count] = '\0';
-
-  return buf;
+  if ( count >= 0 ) {
+    buf->size = count;
+    buf->data[count] = '\0';
+    return buf;
+  } else {
+    buf->size = 0;
+    buf->data[0] = '\0';
+  }
+  return tort_false;
 }
 
 tort_v _tort_m_io__openQ(tort_tp tort_io *rcvr)
@@ -197,9 +199,9 @@ tort_v _tort_m_string__close(tort_tp tort_string *rcvr)
 extern tort_v tort_runtime_initialize_printf();
 tort_v tort_runtime_initialize_io()
 {
-  tort_stdin  = _tort_M_io____create(tort_ta tort__mt(io), stdin);
-  tort_stdout = _tort_M_io____create(tort_ta tort__mt(io), stdout);
-  tort_stderr = _tort_M_io____create(tort_ta tort__mt(io), stderr);
+  tort_stdin  = _tort_M_io____new(tort_ta tort__mt(io), stdin);
+  tort_stdout = _tort_M_io____new(tort_ta tort__mt(io), stdout);
+  tort_stderr = _tort_M_io____new(tort_ta tort__mt(io), stderr);
 
   tort_send(tort__s(set), tort_(root), tort_s(stdin), tort_stdin);
   tort_send(tort__s(set), tort_(root), tort_s(stdout), tort_stdout);

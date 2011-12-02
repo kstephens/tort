@@ -34,7 +34,7 @@ int main(int argc, char **argv, char **environ)
 
     tort_send(tort_s(append), boot, tort_string_new_cstr("/boot.lisp"));
     tort_printf(out, ";; %s: reading %T\n", argv[0], boot);
-    io = tort_send(tort_s(__create), tort__mt(io), (FILE*) 0);
+    io = tort_send(tort_s(new), tort__mt(io));
     io = tort_send(tort_s(open), io, boot, tort_string_new_cstr("r"));
     repl->input = io;
     repl->output = out_io;
@@ -57,7 +57,7 @@ int main(int argc, char **argv, char **environ)
     } else {
       in = tort_string_new_cstr(arg);
       tort_printf(out, ";; %s: reading %T\n", argv[0], in);
-      io = tort_send(tort_s(__create), tort__mt(io), (FILE*) 0);
+      io = tort_send(tort_s(new), tort__mt(io));
       io = tort_send(tort_s(open), io, in, tort_string_new_cstr("r"));
       in = io;
     }

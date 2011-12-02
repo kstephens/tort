@@ -132,7 +132,7 @@ tort_v _tort_m_string____printfsv(tort_tp tort_string *str, const char *fmt, va_
   FILE *fp = fopencookie((void*) str,
 			 "w",
 			 str_io_funcs);
-  tort_io *io = tort_send(tort__s(__create), tort__mt(io), fp);
+  tort_io *io = tort_send(tort__s(__new), tort__mt(io), fp);
   tort_v result = tort_send(tort__s(__printfsv), io, fmt, vapp);
   fclose(fp);
   return result;
@@ -168,7 +168,7 @@ tort_v _tort_m_string____printfsv(tort_tp tort_string *str, const char *fmt, va_
 		     string_write,
 		     string_seek,
 		     string_close);
-  tort_io *io = tort_send(tort__s(__create), tort__mt(io), fp);
+  tort_io *io = tort_send(tort__s(__new), tort__mt(io), fp);
   tort_v result = tort_send(tort__s(__printfsv), io, fmt, vapp);
   fclose(fp);
   return result;
