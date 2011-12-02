@@ -90,25 +90,27 @@
 	  ('emit stream "$" v))
       )))
 
-=  (define-struct environ
+  (define-struct environ
     (parent        nil)
-    (bp-offset    0) ; (list 0))
+    (bp-offset     0)
     ;; (bp-offset-max 0)
-    (saves         nil)
     (bindings      ('new <map>))
     )
   (define-method environ ('add self binding)
     ('set ('bindings self) ('name binding) binding)
     binding)
+  (define-method environ ('binding-list self)
+    (vector->list ('values ('bindings self))))
   (define-method environ ('lookup self name)
     ('get ('bindings self) name))
     
   (define-struct env-binding
     (name        #f)
-    (getted      #f)
-    (setted      #f)
+    (referenced? #f)
+    (set?        #f)
     (loc         nil)
-    (bp-offset   #f)
+    (reg         #f)
+    (rest-arg    #f)
     (restore-reg #f)
     (closed-over #f)
     (exported    #f)
@@ -165,105 +167,113 @@
 	       ((CONST val) `('new constant 'value ,val))
 	       )
 
-    (define-method environ ('bind env name . bp-offset)
-      (let ( (loc #f)
-	     (binding #f))
-	;; Allocate offset?
-	;; (debug (pair? bp-offset))
-	;; (debug (and (pair? bp-offset) (car bp-offset)))
-	(set! bp-offset (and (pair? bp-offset) (car bp-offset)))
-	;; (debug bp-offset)
-	(if (or (not bp-offset) (null? bp-offset))
-	  (begin
-	    (set! bp-offset (- ('bp-offset env) word-size))
-	    ('bp-offset= env bp-offset)))
-	(if (number? bp-offset)
-	  (set! loc (OFFSET BP bp-offset))
-	  (set! loc bp-offset))
-	(set! binding ('new env-binding 
-			'name name
-			'loc loc
-			'bp-offset bp-offset))
-	;;(debug name)
-	;;(debug loc)
-	;;(debug bp-offset)
-	;;(debug binding)
-	('add env binding)))
-    
-    (define-method isn-stream ('emit-params self env params)
-      ;; Save parameter registers as unnamed bindings:
+    (define-method environ ('bind-params env params)
       (let ( (l params)
-	     (rest-arg #f)
-	     (arg nil)
-	     (loc nil)
-	     (binding nil)
 	     (arg-i -1)
+	     (arg-bp-offset (+ word-size word-size)) ; BP -> #(prev-BP rtn-addr)
+	     (arg #f)
+	     (rest-arg #f)
 	     (reg #f)
-	     (arg-offset (+ word-size word-size))) ; BP -> #(prev-BP rtn-addr)
+	     (loc #f)
+	     (binding #f)
+	     ) 
 	;; (debug args)
 	;; (debug (vector-length arg-regs))
 	(while (not (null? l))
 	  (set! arg-i (+ arg-i 1))
+	  (set! reg #f)
+	  (set! loc #f)
 	  ;; (debug l)
 	  ;; (debug arg-i)
 	  (cond
 	    ((symbol? l) ; rest arg
 	      (set! arg l)
 	      (set! rest-arg l)
-	      (set! l '())
-	      (set! loc nil)
-	      (set! reg #f))
+	      (set! l '()))
 	    (else
 	      (set! arg (car l))
 	      (set! l (cdr l))
 	      (cond
 		((< arg-i (vector-length arg-regs))
-		  (set! loc #f) ;; allocate temporary on stack.
+		  ;; allocate temporary on stack for argument register
 		  (set! reg (vector-ref arg-regs arg-i)))
 		(else
-		  (set! loc arg-offset) ;; location is relative to BP.
-		  (set! reg #f)
-		  (set! arg-offset (+ arg-offset word-size))))))
+		  ;; location is relative to BP.
+		  (set! loc (OFFSET BP arg-bp-offset))
+		  (set! arg-bp-offset (+ arg-bp-offset word-size))))))
 	  ;; (debug arg)
 	  ;; (debug loc)
 	  ;; (debug reg)
-	  (set! binding ('bind env arg loc))
-	  (debug binding)
-	  ;; save reg to stack binding.
-	  (if reg
-	    (MOV reg ('loc binding) '<= arg))
+	  (set! binding ('new env-binding 
+			  'name arg
+			  'loc loc
+			  'reg reg
+			  'rest-arg rest-arg))
+	  ;; (debug binding)
+	  ('add env binding)
 	  ;; FIXME: handle rest-arg.
 	  )
 	))
+
+    (define-method environ ('allocate-binding env binding)
+      (if (and ('referenced? binding) (not ('loc binding)))
+	(let ((bp-offset ('bp-offset env)))
+	  (set! bp-offset (- bp-offset word-size))
+	  ('bp-offset= env bp-offset)
+	  ('loc= binding (OFFSET BP bp-offset))
+	  (debug 'allocate-binding)(debug binding)
+	)))
+
+    (define-method isn-stream ('emit-binding-preamble self binding)
+      ;; FIXME: handle rest-arg.
+      (let ((reg ('reg binding))
+	     (loc ('loc binding)))
+	;; If binding is in register, and there is a stack location allocated, move it to stack.
+	(if (and reg loc)
+	  (MOV reg loc '<= ('name binding))
+	  )))
 
     (define-method isn-stream ('emit-stack-space self env)
       ;; Save stack space for args.
       (let ((bp-offset ('bp-offset env)))
 	(if (< bp-offset 0)
 	  (begin
-	    ;; Align to 16-byte boundarys
+	    ;; Align to 16-byte boundary.
 	    (set! bp-offset (* (/ (+ (- bp-offset) 15) 16) 16))
+	    ('bp-offset= env (- bp-offset))
 	    (SUB (CONST bp-offset) SP)))))
 
     (define-method isn-stream ('cfunc self env params body)
       (if (null? env)
         (set! env ('new environ)))
       ('env= self env)
+
+      ;; Preamble
       (PUSH  BP)
       (MOV   SP BP)
-      ('emit-params self env params)
-
+      ;; Bind params
+      ('bind-params env params)
+      ;; Find variable contours in body
       ('mode= self 'variable-contour)
       (for-each (lambda (expr)
 		  ('expr self env expr RESULT))
 	body)
+      ;; Allocate space for bindings.
+      (for-each (lambda (b)
+		  ('allocate-binding env b))
+	('binding-list env))
+      ;; Emit bindings.
+      (for-each (lambda (b)
+		  ('emit-binding-preamble self b))
+	('binding-list env))
+      ;; Reserve stack space for bindings.
       ('emit-stack-space self env)
-
+      ;; Emit body exprs.
       ('mode= self 'emit)
       (for-each (lambda (expr)
 		  ('expr self env expr RESULT))
 	body)
-
+      ;; Postamble
       (LEAVE)
       (RTN)
       self
@@ -293,11 +303,11 @@
     (define-method isn-stream ('expr-var self env obj dst)
       (let ((b ('lookup env obj)))
 	;; (debug env)
-	(debug obj)(debug b)(debug ('mode self))
+	(debug ('mode self))(debug obj)(debug b)
 	(case ('mode self)
 	  ((variable-contour)
 	   (if (null? b) (error "variable %O is unbound" obj)
-	       ('getted= b #t)))
+	       ('referenced?= b #t)))
 	  ((emit)
 	   (if (null? b) (error "variable %O is unbound" obj)
 	       (MOV ('loc b) dst obj)
@@ -337,4 +347,4 @@
 (display "\nEnv:\n")
 (for-each (lambda (b)
 	    (write b)(newline))
-	  (vector->list ('values ('bindings ('env s)))))(display "\n")
+	  ('binding-list ('env s)))(display "\n")
