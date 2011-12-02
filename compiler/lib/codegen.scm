@@ -346,7 +346,7 @@
 	  (case (car obj)
 	    ((let)  ('expr-let self env dst obj))
 	    ((set!)
-	      ('expr self self env dst (caddr obj))
+	      ('expr      self env dst (caddr obj))
 	      ('expr-set! self env dst (cadr obj)))
 	    (else 
 	      ('expr-call self env dst obj)))
