@@ -385,6 +385,8 @@
 (define-mtable-class locative)
 (define-mtable-class value)
 (define-mtable-class dynlib)
+(define (error fmt . args)
+  ('_error fmt . args))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
