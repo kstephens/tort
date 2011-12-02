@@ -146,7 +146,9 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define-macro (begin . body)
-  `(let () ,@body))
+  (if (null? body) ''() ; undef
+    (if (null? (cdr body)) (car body)
+      `(let () ,@body))))
 
 (define-macro (cond case . cases)
   (if (null? cases)
