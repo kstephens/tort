@@ -132,7 +132,7 @@ veryclean :: very-clean
 very-clean :: clean
 
 FIND_STAT_FILES= \
-   -name '*.h' -o -name '*.c' \
+   -name '*.h' -o -name '*.c' -o -name '*.lisp' -o -name '*.scm' \
 -o -name '*.in' \
 -o -name '*.begin' -o -name '*.end' -o -name '*.gen' \
 -o -name Makefile
@@ -145,12 +145,12 @@ stats :
 	  sort -u > .stats/files_gen
 	@xargs wc -l < .stats/files_gen
 	@echo "  Source LoC:"
-	@find src include $(FIND_STAT_FILES) | \
+	@find src include lib $(FIND_STAT_FILES) 2>/dev/null | \
 	  sort -u > .stats/files.t
 	@comm -23 .stats/files.t .stats/files_gen > .stats/files_src
 	@xargs wc -l < .stats/files_src
 	@echo "  Test LoC:"
-	@find t $(FIND_STAT_FILES) | \
+	@find t $(FIND_STAT_FILES) 2>/dev/null | \
 	  sort -u > .stats/files.t
 	@comm -23 .stats/files.t .stats/files_gen > .stats/files_t
 	@xargs wc -l < .stats/files_t

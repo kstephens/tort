@@ -49,6 +49,7 @@ Extensions are dynamically loaded:
 ** Object graphing using graphviz/dot.
 
 * LISP Extension Library.
+** Under 1900 lines.
 ** Lisp reader.
 ** Lisp writer.
 ** Lexical evaluator.

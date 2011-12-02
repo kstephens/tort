@@ -1,5 +1,5 @@
 BASE_DIR=.#
-SUBDIRS=core ext lisp#
+SUBDIRS=core ext lisp compiler#
 include $(BASE_DIR)/mk/config.mk
 
 #LIB=$(LIB_TORT)
