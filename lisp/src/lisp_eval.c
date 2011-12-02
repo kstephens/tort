@@ -482,6 +482,7 @@ tort_v _tort_m_object__lisp_macro_expand(tort_tp tort_v obj, tort_v env)
 tort_v _tort_m_symbol__lisp_eval_car(tort_tp tort_v obj, tort_v env)
 {
   tort_v val = tort_send(tort__s(get), env, obj);
+  if ( val == tort_nil ) return tort_error(tort_ta "get: symbol '%O is unbound.", obj);
   val = *tort_L(val);
   if ( _tort_lisp_trace > 1 ) tort_printf(tort_stderr, "   EC %O => %O\n", obj, val);
   return val;
