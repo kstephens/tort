@@ -150,7 +150,7 @@ tort_v _tort_M_lisp_closure__new(tort_tp tort_mtable *mtable, tort_v formals, to
 
 tort_v _tort_m_lisp_closure__lisp_write(tort_tp tort_lisp_closure *rcvr, tort_v io)
 {
-  return tort_printf(io, "(lambda %O ...)", rcvr->formals->formals);
+  return tort_printf(io, "#<lambda %O >", rcvr->formals->formals);
 }
 
 tort_v _tort_m_lisp_closure__lisp_apply(tort_tp tort_lisp_closure *obj, tort_v args, tort_v env)
