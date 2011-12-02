@@ -66,7 +66,8 @@
 	      (else
 		" "))))
 	('args self)))
-    ('emit stream "\n"))
+    ('emit stream "\n")
+    #t)
   
   (define-struct label
     (name #f)
@@ -96,6 +97,7 @@
     (alloc-offset     0)
     (alloc-offset-max 0)
     (bindings      ('new <map>))
+    (subenvs       ('new <map>))
     )
   (define-method environ ('add self binding)
     ('set ('bindings self) ('name binding) binding)
@@ -104,12 +106,20 @@
     (vector->list ('values ('bindings self))))
   (define-method environ ('lookup self name)
     ('get ('bindings self) name))
-    
+  (define-method environ ('subenv self obj)
+    (let ((env ('get ('subenvs self) obj)))
+      (if (null? env)
+	(begin
+	  (set! env ('new environ 'parent self 'alloc-env self))
+	  ('set ('subenvs self) obj env)
+	  ))
+      env))
+
   (define-struct env-binding
     (name        #f)
     (referenced? #f)
     (set?        #f)
-    (loc         nil)
+    (loc         #f)
     (size        #f)
     (reg         #f)
     (rest-arg    #f)
@@ -139,7 +149,7 @@
 	    ;; (debug obj)
 	    ('_emit obj self))))
       objs)
-    self)
+    self #t)
 
   (for-each 
     (lambda (x)
@@ -168,6 +178,25 @@
 	       ((OFFSET reg offset) `('new reg-offset 'reg ,reg 'offset ,offset))
 	       ((CONST val) `('new constant 'value ,val))
 	       )
+
+    (define-method environ ('allocate-binding env binding)
+      (if (and ('referenced? binding) (not ('loc binding)))
+	(let* ((alloc-env (or ('alloc-env env) env))
+		(alloc-offset ('alloc-offset alloc-env))
+		(alloc-size (or ('size binding) word-size)))
+	  ('size= binding alloc-size)
+	  ;; Align to word boundary.
+	  (set! alloc-size (* (/ (+ alloc-size (- word-size 1)) word-size) word-size))
+	  (set! alloc-offset (- alloc-offset alloc-size))
+	  ('alloc-offset= alloc-env alloc-offset)
+	  (if (> ('alloc-offset-max alloc-env) alloc-offset)
+	    ('alloc-offset-max= alloc-env alloc-offset))
+	  ('loc= binding (OFFSET BP alloc-offset))
+	  (debug 'allocate-binding)(debug binding)
+	)))
+    (define-method environ ('allocate-bindings env)
+      (for-each (lambda (b) ('allocate-binding env b))
+	('binding-list env)))
 
     (define-method environ ('bind-params env params)
       (let ( (l params)
@@ -217,21 +246,6 @@
 	  )
 	))
 
-    (define-method environ ('allocate-binding env binding)
-      (if (and ('referenced? binding) (not ('loc binding)))
-	(let* ((alloc-env (or ('alloc-env env) env))
-		(alloc-offset ('alloc-offset alloc-env))
-		(alloc-size (or ('size binding) word-size)))
-	  ('size= binding alloc-size)
-	  ;; Align to word boundary.
-	  (set! alloc-size (* (/ (+ alloc-size (- word-size 1)) word-size) word-size))
-	  (set! alloc-offset (- alloc-offset alloc-size))
-	  ('alloc-offset= alloc-env alloc-offset)
-	  (if (> ('alloc-offset-max alloc-env) alloc-offset)
-	    ('alloc-offset-max= alloc-env alloc-offset))
-	  ('loc= binding (OFFSET BP alloc-offset))
-	  (debug 'allocate-binding)(debug binding)
-	)))
 
     (define-method isn-stream ('emit-binding-preamble self binding)
       ;; FIXME: handle rest-arg.
@@ -260,76 +274,115 @@
       ;; Preamble
       (PUSH  BP)
       (MOV   SP BP)
-      ;; Bind params
+      ;; Bind params.
       ('bind-params env params)
-      ;; Find variable contours in body
+      ;; Find variable contours in body.
       ('mode= self 'variable-contour)
-      (for-each (lambda (expr)
-		  ('expr self env expr RESULT))
-	body)
+      (for-each (lambda (e) ('expr self env RESULT e)) body)
       ;; Allocate space for bindings.
-      (for-each (lambda (b)
-		  ('allocate-binding env b))
-	('binding-list env))
-      ;; Emit bindings.
-      (for-each (lambda (b)
-		  ('emit-binding-preamble self b))
-	('binding-list env))
+      ('mode= self 'allocate-bindings)
+      ('allocate-bindings env)
+      (for-each (lambda (e) ('expr self env RESULT e)) body)
+      ;; Emit param preamble.
+      (for-each (lambda (b) ('emit-binding-preamble self b)) ('binding-list env))
       ;; Reserve stack space for bindings.
       ('emit-stack-space self env)
       ;; Emit body exprs.
       ('mode= self 'emit)
-      (for-each (lambda (expr)
-		  ('expr self env expr RESULT))
-	body)
+      (for-each (lambda (e) ('expr self env RESULT e)) body)
       ;; Postamble
       (LEAVE)
       (RTN)
       self
+      #t
       )
 
-    (define-method isn-stream ('ccall self env func args)
+    (define-method isn-stream ('ccall self env dst func args)
       #f
       )
     
-    (define-method isn-stream ('method self env params)
+    (define-method isn-stream ('method self env dst params)
       #f
       )
     
-    (define-method isn-stream ('expr-send self env sel args dst)
-      #f
-      )
-    
-    (define-method isn-stream ('expr self env obj dst)
+    (define-method isn-stream ('expr-call self env dst obj)
+      #f)
+
+    (define-method isn-stream ('expr self env dst obj)
       (cond
+	((eq? dst obj) #f)
 	((symbol? obj)
-	  ('expr-var self env obj dst))
+	  ('expr-var self env dst obj))
 	((pair? obj)
-	  ('expr-pair self env obj dst))
+	  ('expr-pair self env dst obj))
 	(else
+	  (debug obj)
 	  (error "unknown object"))))
     
-    (define-method isn-stream ('expr-var self env obj dst)
+    (define-method isn-stream ('expr-var self env dst obj)
       (let ((b ('lookup env obj)))
-	;; (debug env)
 	(debug ('mode self))(debug obj)(debug b)
+	(if (null? b) (error "variable %O is unbound" obj))
 	(case ('mode self)
 	  ((variable-contour)
-	   (if (null? b) (error "variable %O is unbound" obj)
-	       ('referenced?= b #t)))
+	    ('referenced?= b #t))
 	  ((emit)
-	   (if (null? b) (error "variable %O is unbound" obj)
-	       (MOV ('loc b) dst obj)
-	       )))))
+	    (MOV ('loc b) dst obj)
+	    ))))
 
-    (define-method isn-stream ('expr-pair self env obj dst)
-      (let ((form ('get compiled-forms (car obj)))
-	     (args (cdr obj)))
+    (define-method isn-stream ('expr-set! self env dst obj)
+      (let ((b ('lookup env obj)))
+	(debug ('mode self))(debug obj)
+	(if (null? b) (error "variable %O is unbound" obj))
+	(case ('mode self)
+	  ((emit)
+	    (if ('referenced? b)
+	      (MOV dst ('loc b) '=> obj))
+	    ))))
+
+    (define-method isn-stream ('expr-pair self env dst obj)
+      (let ((form ('get compiled-forms (car obj))))
 	(if (null? form)
-	  ('expr-call self env (car obj) args dst)
+	  (case (car obj)
+	    ((let)  ('expr-let self env dst obj))
+	    ((set!)
+	      ('expr self self env dst (caddr obj))
+	      ('expr-set! self env dst (cadr obj)))
+	    (else 
+	      ('expr-call self env dst obj)))
 	  (form self env dst . args)
 	  )))
-    
+
+    (define-method isn-stream ('expr-let self env dst obj)
+      (debug ('mode self))(debug obj)
+      (let ((bindings (cadr obj))
+	     (body (cddr obj)))
+	(let ((subenv ('subenv env obj)))
+	  (case ('mode self)
+	    ((variable-contour)
+	      (for-each (lambda (b)
+			  ('add subenv ('new env-binding 'name (car b))))
+		bindings)
+	      ))
+
+	  (for-each (lambda (b) 
+		      ('expr      self env    RESULT (cadr b))
+		      ('expr-set! self subenv RESULT (car  b)))
+	    bindings)
+
+	  (for-each (lambda (e) ('expr self subenv dst e)) body)
+
+	  (display "  env for ")(write obj)(display ":\n")
+	  (for-each (lambda (b)
+		      (write b)(newline))
+	    ('binding-list subenv))(display "\n")
+	  (newline)
+
+	  (case ('mode self)
+	    ((allocate-bindings) ('allocate-bindings subenv)))
+	  )))
+
+#|
     (let-macro (
 		 ((form name-args . body)  
 		   `('set compiled-forms ,(car name-args) (lambda (self env dst ,@(cdr name-args)) ,@body))))
@@ -337,6 +390,7 @@
       (form (while test . body) #f)
       (form (lambda args . body) #f)
       ) ;; let-macro
+|#
     (debug compiled-forms)
 
     ) ;; let-macro
@@ -350,7 +404,7 @@
 (define s ('new isn-stream))
 ;; (display "\ns=\n")(write s)(newline)
 ('emit s "// hello, world\n")
-('cfunc s nil '(a b c d e f g h i) '(a c e g h i))
+('cfunc s nil '(a b c d e f g h i) '(a c e g h i (let ((x a) (y b)) x y)))
 (display "\nCode:\n")(display ('body s))(display "\n")
 (display "\nEnv:\n")
 (for-each (lambda (b)
