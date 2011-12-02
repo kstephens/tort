@@ -162,6 +162,17 @@
     ((null? bindings) `(let () ,@body))
     ((pair? bindings)
       `(let (,(car bindings)) (let* (,@(cdr bindings)) ,@body)))))
+ 
+(define (macro-expand expr . env)
+  (set! env (if (pair? env) (car env) &env))
+  (let ((result ('lisp_macro_expand expr env)))
+    (if (null? result) expr result)))
+
+(define-macro (macro-bind bindings . body)
+  (let ((anon-bindings (map (lambda (b) (cons (make-symbol '()) b)) bindings)))
+   `(let ,(map (lambda (b) `(,(cadr b) ,(car b))) anon-bindings)
+     (let ,(map (lambda (b) `(,(car b) ,(caddr b))) anon-bindings)
+       ,@body))))
 
 (define-macro (letrec bindings . body)
   `(let ,(map (lambda (binding) `(,(car binding) #f)) bindings)
