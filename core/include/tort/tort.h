@@ -249,6 +249,7 @@ struct tort_io { tort_H;
   tort_v name;
   tort_v mode;
   int flags;
+  tort_v data;
 } tort_io;
 
 typedef

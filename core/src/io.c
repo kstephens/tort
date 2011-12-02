@@ -55,6 +55,12 @@ tort_v _tort_M_io____stat(tort_tp tort_mtable *mtable, tort_v name)
   return tort_nil;
 }
 
+tort_ACCESSOR(io,voidP,fp);
+tort_ACCESSOR(io,tort_v,name);
+tort_ACCESSOR(io,tort_v,mode);
+tort_ACCESSOR(io,int,flags);
+tort_ACCESSOR(io,tort_v,data);
+
 size_t _tort_io_open_count, _tort_io_close_count;
 
 tort_v _tort_M_io____create(tort_tp tort_mtable *mtable, FILE *fp)
@@ -63,6 +69,7 @@ tort_v _tort_M_io____create(tort_tp tort_mtable *mtable, FILE *fp)
   FP = fp;
   IO->name = IO->mode = tort_nil;
   IO->flags = 0;
+  IO->data = tort_map_new();
   return rcvr;
 }
 
