@@ -26,6 +26,10 @@
 		) (struct-slots obj))
     (display ">" port)
     )
+  (define-method <struct> ('initialize-struct obj)
+    obj)
+  (define-method <struct> ('_inspect obj port)
+    ('lisp_write obj port))
 
 (define (%define-struct name slots)
   (let* ((name-s (symbol->string name))
@@ -91,7 +95,7 @@
 		   slots)
 	       (else (error "invalid slot name")))
 	     (set! inits (cddr inits))))
-	 instance))
+	 ('initialize-struct instance)))
      ;; (set! &trace 0)
      ('add_method ',('_mtable mtable) 'new 
        (lambda (mtable . args)
