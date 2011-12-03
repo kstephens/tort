@@ -8,7 +8,7 @@
      (newline)))
 
 (let (
-       (ops '())
+       ;; x68_64
        (word-size  8)
        (arg-regs   '#(%rdi %rsi %rdx %rcx %r8 %r9))
        (SP         '%rsp)
@@ -17,6 +17,10 @@
        (binary-ops '((MOV movq) (SUB subq) (ADD addq) (OR orq) (AND andq)))
        (unary-ops  '((PUSH pushq) (POP popq) (CALL call)))
        (nonary-ops '((LEAVE leave) (RET ret)))
+
+       ;;
+       (ops '())
+       (locative-tag ('get ('get &root 'tagged_mtables) <locative>))
        (compiled-forms ('new <map>))
        )
 
@@ -25,9 +29,20 @@
     (width word-size))
   (define-method reg ('_emit self stream)
     ('emit stream ('name self)))
-  (set! SP (reg:new 'name SP))
-  (set! BP (reg:new 'name BP))
-  (set! RESULT (reg:new 'name RESULT))
+
+  (let ((regs ('new <map>)))
+    (define-method reg ('initialize-struct self)
+      (let ((obj ('get regs ('name self))))
+	(if (null? obj)
+	  ('set regs ('name self) self)
+	  (set! self obj))
+	;; (debug regs)
+	self)))
+
+  ('map! arg-regs (lambda (r) ('new reg 'name r))) 
+  (set! SP ('new reg 'name SP))
+  (set! BP ('new reg 'name BP))
+  (set! RESULT ('new reg 'name RESULT))
 
   (define-struct reg-offset
     (reg    'UNKNOWN-REG)
@@ -98,6 +113,11 @@
     (bindings      ('new <map>))
     (macros        ('new <map>))
     (subenvs       ('new <map>))
+    )
+  (define-method environ ('lisp_write self port)
+    (display "#<environ " port)
+    (write ('keys ('bindings self)) port)
+    (display " >" port)
     )
   (define-method environ ('add self binding)
     ('set ('bindings self) ('name binding) binding)
@@ -206,6 +226,12 @@
 	       ((LITERAL val)  `('new literal  'value ,val))
 	       ((QUOTE val)    `('new quote    'value ,val))
 	       ((LABEL_ obj . args) `('emit self ,obj ":" ,@args "\n"))
+	       ((ALIGN size . args) `('emit self ".align " ,size ",0x90" ,@args "\n")) ;; ?? 0x90
+	       ((GLOBAL_ name . args) `(let ((sym (string-append "_" ,name)))
+					 ('emit self ".globl " sym ,@args "\n")
+					 (LABEL_ sym)
+					 ))
+	       ((TEXT . args)  `('emit self ".text" ,@args "\n"))
 	       ((S op . args)  `(,op self env dst ,@args))
 	       )
 
@@ -315,7 +341,9 @@
 	('env= self env)
 	
 	;; Preamble
-	(LABEL_ ('output-name self))
+	(TEXT)
+	(ALIGN 4) ; ???
+	(GLOBAL_ ('output-name self))
 	('emit self "/* " (QUOTE params) " */\n")
 	(LABEL_ start)
 	(PUSH  BP)
@@ -372,7 +400,7 @@
 				    'STACK))
 			      (car ei))
 		       ) arg-i)
-	   (debug arg-i)(debug sp-offset)
+	   ;; (debug arg-i)(debug sp-offset)
 	   ('expr self env 'CALL func)
 	   (if (> sp-offset 0)
 	       (ADD (CONST sp-offset) SP))
@@ -396,7 +424,25 @@
 	  (S 'expr-constant obj))))
 
     (define-method isn-stream ('expr-constant self env dst obj)
-      (MOV (LITERAL obj) dst))
+      (case ('mode self)
+	((emit)
+	  (MOV (LITERAL obj) dst))
+	))
+
+    (define-method isn-stream ('expr-ptr self env dst obj)
+      (case ('mode self)
+	((emit)
+	  ('expr self env RESULT obj)
+	  (MOV (OFFSET RESULT 0) dst "\t// *tort_P(" RESULT ")")) ;; dst = ptr->data 
+	))
+
+    (define-method isn-stream ('expr-contents self env dst obj)
+      (case ('mode self)
+	((emit)
+	  ('expr self env RESULT obj)
+	  (SUB (CONST locative-tag) RESULT "\t// tort_L(" RESULT ")")) ;; RESULT  = locative 
+	  (MOV (OFFSET RESULT 0) dst "\t// *" RESULT)
+	))
 
     (define-method isn-stream ('expr-var self env dst obj)
       (let ((b ('lookup env obj)))
@@ -428,6 +474,11 @@
 	    ((set!)
 	      (S 'expr      (caddr obj))
 	      (S 'expr-set! (cadr obj)))
+	    ((&ptr)      (S 'expr-ptr (cadr obj)))
+	    ((&contents) (S 'expr-contents (cadr obj)))
+	    ((&set-contents!) 
+	      (S 'expr      (caddr obj))
+	      (S 'expr-set-contents! (cadr obj)))
 	    (else 
 	      (S 'expr-call obj)))
 	  (S form . args)
@@ -500,6 +551,8 @@
 			    " -dynamiclib -Wl,-undefined -Wl,dynamic_lookup -o " dfile " " ofile " -compatibility_version 1 -current_version 1.0 -Wl,-single_module"))
 	    ;; (if verbose (posix:system (string-append "otool -tv " dfile)))
 	    (set! result dfile)
+	    (posix:unlink sfile)
+	    (posix:unlink ofile)
 	    (display "'assemble => ")(write result)(newline)
 	    result
 	    ))))
@@ -526,6 +579,7 @@
 	    (set! func-ptr ('get st name-sym))
 	    (if (or #t verbose) (begin (display "  func-ptr = ")(write func-ptr)(newline)))
 	    (set! result func-ptr)
+	    ;; (posix:unlink dfile)
 	    result
 	    ))))
 
@@ -544,7 +598,7 @@
   '(a b c d e f g h i)
   '(a c e g h i
     (let ((x a) (y b)) x y)
-    (a 1 2 3 4 5 6 7 8 9 10)
+    (a (&ptr b) 2 3 4 5 6 7 8 9 10)
     ))
 (display "\nCode:\n")(display ('body s))(display "\n")
 (display "\nEnv Bindings:\n")
@@ -556,5 +610,10 @@
 	    (write b)(newline))
   ('literals s))(display "\n")
 ('assemble s)
-('load s)
+
+(let ((func ('load s)))
+  (debug func)
+  ('load <dynlib> "/usr/lib/libc") ;; printf
+  ('_ccallv func (vector (&extern 'printf) ('_to_c_ptr "Hello World!\n")))
+  )
 
