@@ -19,7 +19,7 @@ tort_v _tort_m_object___to_c_ptr(tort_tp tort_v p)
 }
 tort_v _tort_m_fixnum___to_c_ptr(tort_tp tort_v p)
 {
-  return tort_p(tort_I(p));
+  return tort_p((void*) tort_I(p));
 }
 tort_v _tort_m_ptr___to_c_ptr(tort_tp tort_v p)
 {
@@ -33,9 +33,9 @@ tort_v _tort_m_vector_base___to_c_ptr(tort_tp tort_vector *p)
 {
   return tort_p(p->data);
 }
-tort_v _tort_m_null___to_c_ptr(tort_tp tort_v p)
+tort_v _tort_m_nil___to_c_ptr(tort_tp tort_v p)
 {
-  return tort_p(0);
+  return tort_p((void*) 0);
 }
 
 
