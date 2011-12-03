@@ -165,6 +165,15 @@ tort_v _tort_m_vector__each (tort_tp tort_v rcvr, tort_v block)
   return rcvr;
 }
 
+tort_v _tort_m_vector__mapE (tort_tp tort_vector *rcvr, tort_v block)
+{
+  tort_vector_loop(rcvr, x) {
+    x = tort_sendn(tort__s(value), 2, block, x);
+    tort_send(tort__s(set), rcvr, tort_i(x_i), x);
+  } tort_vector_loop_end(rcvr);
+  return rcvr;
+}
+
 tort_v _tort_m_vector__map (tort_tp tort_vector *rcvr, tort_v block)
 {
   // was clone, but then ('map map) wouldn't work.
@@ -172,14 +181,6 @@ tort_v _tort_m_vector__map (tort_tp tort_vector *rcvr, tort_v block)
   tort_vector_loop(rcvr, x) {
     x = tort_sendn(tort__s(value), 2, block, x);
     tort_send(tort__s(set), new_vec, tort_i(x_i), x);
-#if 0
-    tort_printf(tort_stderr, 
-		"  tort_v_m(%p(%p) => %p(%p)[%d] => %T\n", 
-		rcvr, tort_vector_data(rcvr),
-		new_vec, tort_vector_data(new_vec),
-		x_i, 
-		tort_vector_data(new_vec)[x_i]);
-#endif
   } tort_vector_loop_end(rcvr);
   return new_vec;
 }
