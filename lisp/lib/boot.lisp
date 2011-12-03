@@ -394,6 +394,7 @@
 (define posix ('allocate <posix>))
 (define (posix:system str) ('system posix str))
 (define (posix:exit code) ('exit posix code))
+(define (posix:unlink str) ('unlink posix str))
 ;; (posix:system "hostname")
 
 ;; Lambdas as methods:
