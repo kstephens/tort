@@ -380,9 +380,6 @@ extern int _tort_lookup_trace;
 extern tort_message *_tort_message; 
 extern tort_v _tort_fiber;
 
-#define tort_string_null tort_(string_null)
-#define tort_vector_null tort_(vector_null)
-
 #define tort_true  tort_(b_true)
 #if TORT_FALSE_IS_NIL
 #define tort_false tort_nil
