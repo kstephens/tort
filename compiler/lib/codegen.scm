@@ -1,3 +1,5 @@
+;; (set! &trace 1)
+
 (define-macro (debug expr)
   `(begin
      (display " #| DEBUG: ")
@@ -13,14 +15,18 @@
        (arg-regs   '#(%rdi %rsi %rdx %rcx %r8 %r9))
        (SP         '%rsp)
        (BP         '%rbp)
+       (IP         '%rip)
        (RESULT     '%rax)
-       (binary-ops '((MOV movq) (SUB subq) (ADD addq) (OR orq) (AND andq)))
-       (unary-ops  '((PUSH pushq) (POP popq) (CALL call)))
+       (TMP0       '%rbx)
+       (binary-ops '((MOV movq) (SUB subq) (ADD addq) (OR orq) (AND andq)
+		     (CMP cmpq)))
+       (unary-ops  '((PUSH pushq) (POP popq)
+		      (CALL call) (JMP jmp) (JNE jne) (JE je)))
        (nonary-ops '((LEAVE leave) (RET ret)))
 
        ;;
-       (ops '())
        (locative-tag ('get ('get &root 'tagged_mtables) <locative>))
+       (fixnum-tag   ('get ('get &root 'tagged_mtables) <fixnum>))
        (compiled-forms ('new <map>))
        )
 
@@ -42,7 +48,9 @@
   ('map! arg-regs (lambda (r) ('new reg 'name r))) 
   (set! SP ('new reg 'name SP))
   (set! BP ('new reg 'name BP))
+  (set! IP ('new reg 'name IP))
   (set! RESULT ('new reg 'name RESULT))
+  (set! TMP0 ('new reg 'name TMP0))
 
   (define-struct reg-offset
     (reg    'UNKNOWN-REG)
@@ -53,18 +61,12 @@
   (define-struct opcode
     (name    'UNKNOWN)
     (n-param 2))
-  (define-method opcode ('new self name n-param)
-    ('name= self name)
-    ('n-param= self n-param))
   (define-method opcode ('_emit self stream)
     ('emit stream ('name self) " "))
   
   (define-struct isn
     (opcode 'UNKNOWN)
     (args   '()))
-  (define-method isn ('new self opcode args)
-    ('opcode= self opcode)
-    ('args= self args))
   (define-method isn ('_emit self stream)
     (let ((sep " ") (arg-i 0) (opcode ('opcode self)))
       ('emit stream opcode)
@@ -153,10 +155,10 @@
     (name     #f)
     (_output-name #f)
     (body     (string-new))
-    (labels   '())
+    (labels   ('new <map>))
     (label-id  0)
     (literals '())
-    (mode      nil)
+    (pass      'unknown)
     (env       #f)
     )
   (define-method isn-stream ('output-name self)
@@ -165,21 +167,32 @@
   (define-struct label
     (id #f)
     (name #f)
+    (scope 'local)
     (position #f)
     (references '())
     )
   (define-method label ('_emit self stream)
-    (display ('name self) ('body stream)))
+    (case ('scope self)
+      ((global)
+	('emit stream "_" ('name self)))
+      (else
+	('emit stream ('name self)))))
   
-  (define-method isn-stream ('label self)
+  (define-method isn-stream ('label self . name)
     (let ((id ('label-id self))
 	   (label ('new label)))
       ('label-id= self (+ id 1))
       ('id= label id)
-      ('name= label (string-append "L" (number->string id)))
-      ('labels= self (cons label ('labels self)))
+      (if (null? name)
+	(set! name (string->symbol (string-append "L" (number->string id))))
+	(begin
+	  ('scope= label 'global)
+	  (set! name (car name))))
+      ('name= label name)
+      ('set ('labels self) name label)
       label))
 
+  ;; Emits GCC assembly:
   (define-method isn-stream ('emit self . objs)
     (for-each 
       (lambda (obj)
@@ -194,6 +207,20 @@
 	    ('_emit obj self))))
       objs)
     self #t)
+  (define-method isn-stream ('emit-isn self opcode . args)
+    ('emit self opcode args))
+  (define-method isn-stream ('emit-label self l . objs)
+    ;; (set! &trace 1)
+    (let ((name ('name l)))
+      (if (eq? ('scope l) 'global)
+	(begin
+	  (set! name (string-append "_" ('_to_string name)))
+	  ('emit self "  .globl " name "\n")
+	  ))
+      ('emit self "  " name ":\n")))
+  (define-method isn-stream ('emit-align self amount)
+    ('emit self "  .align " amount ",0x90\n") ;; ?? 0x90
+    )
 
   (for-each 
     (lambda (x)
@@ -210,7 +237,7 @@
       (define-method isn-stream ((car x) self . rest)
 	('emit self (cadr x) rest "\n")))
     nonary-ops)
-
+  
   (let-macro (
 	       ((PUSH . args)  `('PUSH self  ,@args))
 	       ((POP . args)   `('POP self   ,@args))
@@ -221,28 +248,29 @@
 	       ((LEAVE . args) `('LEAVE self ,@args))
 	       ((RET . args)   `('RET self   ,@args))
 	       ((CALL . args)  `('CALL self  ,@args))
+	       ((JMP . args)   `('JMP self  ,@args))
+	       ((JE  . args)   `('JE self   ,@args))
+	       ((JNE . args)   `('JNE self  ,@args))
+	       ((CMP . args)   `('CMP self  ,@args))
 	       ((OFFSET reg offset) `('new reg-offset 'reg ,reg 'offset ,offset))
 	       ((CONST val)    `('new constant 'value ,val))
 	       ((LITERAL val)  `('new literal  'value ,val))
 	       ((QUOTE val)    `('new quote    'value ,val))
-	       ((LABEL_ obj . args) `('emit self ,obj ":" ,@args "\n"))
-	       ((ALIGN size . args) `('emit self ".align " ,size ",0x90" ,@args "\n")) ;; ?? 0x90
-	       ((GLOBAL_ name . args) `(let ((sym (string-append "_" ,name)))
-					 ('emit self ".globl " sym ,@args "\n")
-					 (LABEL_ sym)
-					 ))
-	       ((TEXT . args)  `('emit self ".text" ,@args "\n"))
+	       ((LABEL . args) `('label self ,@args))
+	       ((LABEL_ obj . args) `('emit-label self ,obj))
+	       ((ALIGN size . args) `('emit-align self ,size))
+	       ((COMMENT . args) `('emit self "  /* " ,@args " */\n"))
+	       ((TEXT . args)  `('emit self "  .text" ,@args "\n"))
 	       ((S op . args)  `(,op self env dst ,@args))
+	       ((EXPR . args)  `('expr self env dst ,@args))
 	       )
 
     (define-method isn-stream ('mov self src dst . args)
       (cond
-       ((eq? src dst) #f)
-       ((eq? dst 'STACK)
-	(PUSH src))
-       ((eq? dst 'CALL)
-	(CALL "*" src))
-       (else (MOV_ src dst args))))
+       ((eq? src dst)    #f)
+       ((eq? dst 'STACK) (PUSH src))
+       ((eq? dst 'CALL)  (CALL "*" src))
+       (else             (MOV_ src dst args))))
 
     (define-method environ ('allocate-binding env binding)
       (if (and ('referenced? binding) (not ('loc binding)))
@@ -272,7 +300,7 @@
 	     (reg #f)
 	     (loc #f)
 	     (binding #f)
-	     ) 
+	     )
 	;; (debug args)
 	;; (debug (vector-length arg-regs))
 	(while (not (null? l))
@@ -284,7 +312,7 @@
 	  (cond
 	    ((symbol? l) ; rest arg
 	      (set! arg l)
-	      (set! rest-arg l)
+	      (set! rest-arg arg-i)
 	      (set! l '()))
 	    (else
 	      (set! arg (car l))
@@ -311,7 +339,6 @@
 	  )
 	))
 
-
     (define-method isn-stream ('emit-binding-preamble self binding)
       ;; FIXME: handle rest-arg.
       (let ((reg ('reg binding))
@@ -333,56 +360,60 @@
 
     (define-method isn-stream ('c-func self env params body)
       (let ((dst RESULT) 
-	     (start ('label self)) 
-	     (return ('label self)) 
-	     (end ('label self)))
+	     (this (LABEL ('output-name self)))
+	     (start (LABEL)) 
+	     (return (LABEL)) 
+	     (end (LABEL)))
 	(if (null? env)
 	    (set! env ('new environ)))
 	('env= self env)
 	
+	;; Bind params.
+	('pass= self 'bind-params)
+	('bind-params env params)
+	;; Find variable contours in body.
+	('pass= self 'variable-contour)
+	('expr-body self env body)
+	;; Allocate space for bindings.
+	('pass= self 'allocate-bindings)
+	('allocate-bindings env)
+	('expr-body self env body)
+
 	;; Preamble
+	('pass= self 'emit)
 	(TEXT)
 	(ALIGN 4) ; ???
-	(GLOBAL_ ('output-name self))
-	('emit self "/* " (QUOTE params) " */\n")
+	(LABEL_ this)
+	(COMMENT (QUOTE params))
 	(LABEL_ start)
 	(PUSH  BP)
 	(MOV   SP BP)
-	;; Bind params.
-	('bind-params env params)
-	;; Find variable contours in body.
-	('mode= self 'variable-contour)
-	('expr-body self env body)
-	;; Allocate space for bindings.
-	('mode= self 'allocate-bindings)
-	('allocate-bindings env)
-	('expr-body self env body)
-	;; Emit param preamble.
-	(for-each (lambda (b) ('emit-binding-preamble self b)) ('binding-list env))
 	;; Reserve stack space for bindings.
+	(COMMENT "Reserve stack space:")
 	('emit-stack-space self env)
+	;; Emit param preamble.
+	(COMMENT "Save param regs:")
+	(for-each (lambda (b) ('emit-binding-preamble self b)) ('binding-list env))
+	(COMMENT "Body:")
 	;; Emit body exprs.
-	('mode= self 'emit)
 	('expr-body self env body)
 	;; Postamble
 	(LABEL_ return)
 	(LEAVE)
 	(RET)
 	(LABEL_ end)
-	self
-	#t
 	))
-
+    
     (define-method isn-stream ('expr-body self env body)
-      ;; (debug 'pass=)(debug ('mode self))
+      ;; (debug 'pass=)(debug ('pass self))
       (for-each (lambda (e) ('expr self env RESULT e)) body))
 
     (define-method isn-stream ('method-func self env dst params)
-      ('cfunc self env dst (cons '&msg params)))
-    
+      ('c-func self env dst (cons '&msg params)))
+   
     (define-method isn-stream ('expr-call self env dst obj)
-      (debug 'expr-call)(debug ('mode self))(debug obj)
-      (case ('mode self)
+      (debug 'expr-call)(debug ('pass self))(debug obj)
+      (case ('pass self)
 	((emit)
 	 (let ((func (car obj)) (args (cdr obj))
 	       (arg-i #f) (nargs -1) (sp-offset 0))
@@ -406,49 +437,51 @@
 	       (ADD (CONST sp-offset) SP))
 	   (MOV RESULT dst)))
 	(else
-	 (debug 'handle-other)
-	 ;; FIXME:
-	 ;; (for-each (lambda (e) (S 'expr e)) obj)
+	  (debug 'handle-other)
+	  (for-each (lambda (e) (EXPR e)) obj)
 	 )
 	))
 
     (define-method isn-stream ('expr self env dst obj)
       (cond
-	((eq? dst obj) #f)
-	((symbol? obj)
-	  ('expr-var self env dst obj))
-	((pair? obj)
-	  ('expr-pair self env dst obj))
-	(else
-	  ; (debug obj)
-	  (S 'expr-constant obj))))
+	((eq? dst obj)  #f)
+	((symbol? obj)  ('expr-var self env dst obj))
+	((pair? obj)    ('expr-pair self env dst obj))
+	(else           (S 'expr-literal obj))))
 
-    (define-method isn-stream ('expr-constant self env dst obj)
-      (case ('mode self)
+    (define-method isn-stream ('expr-literal self env dst obj)
+      (case ('pass self)
 	((emit)
-	  (MOV (LITERAL obj) dst))
-	))
+	  (MOV (LITERAL obj) dst))))
 
     (define-method isn-stream ('expr-ptr self env dst obj)
-      (case ('mode self)
+      (case ('pass self)
 	((emit)
 	  ('expr self env RESULT obj)
 	  (MOV (OFFSET RESULT 0) dst "\t// *tort_P(" RESULT ")")) ;; dst = ptr->data 
 	))
 
     (define-method isn-stream ('expr-contents self env dst obj)
-      (case ('mode self)
+      (case ('pass self)
 	((emit)
 	  ('expr self env RESULT obj)
 	  (SUB (CONST locative-tag) RESULT "\t// tort_L(" RESULT ")")) ;; RESULT  = locative 
 	  (MOV (OFFSET RESULT 0) dst "\t// *" RESULT)
 	))
 
+    (define-method isn-stream ('expr-set-contents! self env dst obj)
+      (case ('pass self)
+	((emit)
+	  ('expr self env TMP0 obj)
+	  (SUB (CONST locative-tag) TMP0 "\t// tort_L(" TMP0 ")")) ;; RESULT  = locative 
+	  (MOV dst (OFFSET TMP0 0) "\t// *" TMP0 " = " dst)
+	))
+
     (define-method isn-stream ('expr-var self env dst obj)
       (let ((b ('lookup env obj)))
-	;; (debug ('mode self))(debug obj)(debug b)
+	;; (debug ('pass self))(debug obj)(debug b)
 	(if (null? b) (error "variable %O is unbound" obj))
-	(case ('mode self)
+	(case ('pass self)
 	  ((variable-contour)
 	    ('referenced?= b #t))
 	  ((emit)
@@ -457,27 +490,31 @@
 
     (define-method isn-stream ('expr-set! self env dst obj)
       (let ((b ('lookup env obj)))
-	;; (debug ('mode self))(debug obj)
+	;; (debug ('pass self))(debug obj)
 	(if (null? b) (error "variable %O is unbound" obj))
-	(case ('mode self)
+	(case ('pass self)
 	  ((emit)
 	    (if ('referenced? b)
 	      (MOV dst ('loc b) "\t// => " obj))
 	    ))))
 
     (define-method isn-stream ('expr-pair self env dst obj)
+      (if (eq? ('pass self) 'emit) (COMMENT (QUOTE obj)))
       (let ((form ('get compiled-forms (car obj))))
 	(if (null? form)
 	  (case (car obj)
-	    ((quote) (S 'expr-constant (cadr obj)))
+	    ((quote) (S 'expr-literal (cadr obj)))
+	    ((if)    (S 'expr-if obj))
 	    ((let)   (S 'expr-let obj))
 	    ((set!)
-	      (S 'expr      (caddr obj))
+	      (EXPR      (caddr obj))
 	      (S 'expr-set! (cadr obj)))
+	    ((lambda)
+	      (S 'expr-lambda (cadr obj) (caddr obj)))
 	    ((&ptr)      (S 'expr-ptr (cadr obj)))
 	    ((&contents) (S 'expr-contents (cadr obj)))
 	    ((&set-contents!) 
-	      (S 'expr      (caddr obj))
+	      (EXPR      (caddr obj))
 	      (S 'expr-set-contents! (cadr obj)))
 	    (else 
 	      (S 'expr-call obj)))
@@ -485,11 +522,11 @@
 	  )))
 
     (define-method isn-stream ('expr-let self env dst obj)
-      (debug ('mode self))(debug obj)
+      ;; (debug ('pass self))(debug obj)
       (let ((bindings (cadr obj))
 	     (body (cddr obj))
 	     (subenv ('subenv env obj)))
-	(case ('mode self)
+	(case ('pass self)
 	  ((variable-contour)
 	   (for-each (lambda (b)
 		       ('add subenv ('new env-binding 'name (car b))))
@@ -503,8 +540,35 @@
 	
 	(for-each (lambda (e) ('expr self subenv dst e)) body)
 	
-	(if (eq? ('mode self) 'allocate-bindings) ('allocate-bindings subenv))
+	(if (eq? ('pass self) 'allocate-bindings) ('allocate-bindings subenv))
 	))
+
+    (define-method isn-stream ('expr-if self env dst o)
+      (case ('pass self)
+	((emit)
+	  (let ((Lfalse (LABEL)) (Lend (LABEL))
+		 (test-expr  (cdr o))
+		 (true-expr  (cddr o))
+		 (false-expr (cdddr o)))
+	    (EXPR (car test-expr))
+	    (MOV (LITERAL #f) TMP0)
+	    (CMP TMP0 dst)
+	    (JE Lfalse)
+	    (EXPR (car true-expr))
+	    (cond 
+	      ((pair? false-expr)	
+		(JMP Lend)
+		(ALIGN 4)
+		(LABEL_ Lfalse)
+		(EXPR (car false-expr)))
+	      (else
+		(ALIGN 4)
+		(LABEL_ Lfalse)))
+	    (ALIGN 4)
+	    (LABEL_ Lend)))
+	(else
+	  (for-each (lambda (e) (EXPR e)) (cdr o))))
+      )
 
 #|
     (let-macro (
@@ -597,7 +661,8 @@
 ('c-func s nil 
   '(a b c d e f g h i)
   '(a c e g h i
-    (let ((x a) (y b)) x y)
+     (let ((x a) (y b)) x y)
+     (if #t 1 2)
     (a (&ptr b) 2 3 4 5 6 7 8 9 10)
     ))
 (display "\nCode:\n")(display ('body s))(display "\n")
