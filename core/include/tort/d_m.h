@@ -19,6 +19,7 @@ src/fixnum.c
 src/gc.c
 src/init.c
 src/io.c
+src/literal.c
 src/locative.c
 src/lookup.c
 src/map.c
@@ -69,6 +70,7 @@ tort_d_m(tort__mt(fixnum), tort__s(RSH), _tort_m_fixnum__RSH)
 tort_d_m(tort__mt(fixnum), tort__s(SUB), _tort_m_fixnum__SUB)
 tort_d_m(tort__mt(fixnum), tort__s(XOR), _tort_m_fixnum__XOR)
 tort_d_m(tort__mt(fixnum), tort__s(_inspect), _tort_m_fixnum___inspect)
+tort_d_m(tort__mt(fixnum), tort__s(_to_c_literal), _tort_m_fixnum___to_c_literal)
 tort_d_m(tort__mt(io), tort__s(__finalize), _tort_m_io____finalize)
 tort_d_m(tort__mt(io), tort__s(__write), _tort_m_io____write)
 tort_d_m(tort__mt(io), tort__s(_write), _tort_m_io___write)
@@ -184,6 +186,7 @@ tort_d_m(tort__mt(object), tort__s(_set_slot_at), _tort_m_object___set_slot_at)
 tort_d_m(tort__mt(object), tort__s(_slot_at), _tort_m_object___slot_at)
 tort_d_m(tort__mt(object), tort__s(_slot_locative_at), _tort_m_object___slot_locative_at)
 tort_d_m(tort__mt(object), tort__s(_tag), _tort_m_object___tag)
+tort_d_m(tort__mt(object), tort__s(_to_c_literal), _tort_m_object___to_c_literal)
 tort_d_m(tort__mt(object), tort__s(_to_string), _tort_m_object___to_string)
 tort_d_m(tort__mt(object), tort__s(clone), _tort_m_object__clone)
 tort_d_m(tort__mt(object), tort__s(eqQ), _tort_m_object__eqQ)

@@ -16,7 +16,7 @@
        (RESULT     '%rax)
        (binary-ops '((MOV movq) (SUB subq) (ADD addq) (OR orq) (AND andq)))
        (unary-ops  '((PUSH pushq) (POP popq) (CALL call)))
-       (nonary-ops '((LEAVE leave) (RTN rtn)))
+       (nonary-ops '((LEAVE leave) (RET ret)))
        (compiled-forms ('new <map>))
        )
 
@@ -69,27 +69,26 @@
     ('emit stream "\n")
     #t)
   
-  (define-struct label
-    (name #f)
-    (position #f)
-    (references '())
-    )
-  (define-method label ('_emit self stream)
-    (let ((id ('label stream)))
-      ('label-id= stream (+ id 1))
-      ('name= self (string-append "L" (number->string id))))
-    ('emit stream ('name self) ":\n")
-    ('labels= stream (cons self ('labels stream))))
-  
-  (define-struct constant
-    (value #f)
-    )
+  (define-struct constant (value #f))
   (define-method constant ('_emit self stream)
     (let ((v ('value self)))
       (cond 
 	((number? v)
 	  ('emit stream "$" v))
-      )))
+	(else (error "unknown constant type %O" v)))
+      ))
+
+  (define-struct literal (value #f))
+  (define-method literal ('_emit self stream)
+    (let ((v ('value self)))
+      ('literals= stream (cons v ('literals stream)))
+      (display '$ ('body stream))
+      (display ('_to_c_literal v) ('body stream))))
+
+  (define-struct quote (value #f))
+  (define-method quote ('_emit self stream)
+    (let ((v ('value self)))
+      (write v ('body stream))))
 
   (define-struct environ
     (parent           #f)
@@ -121,6 +120,7 @@
     (referenced? #f)
     (set?        #f)
     (loc         #f)
+    (type        #f)
     (size        #f)
     (reg         #f)
     (rest-arg    #f)
@@ -130,12 +130,36 @@
     )
 
   (define-struct isn-stream
+    (name     #f)
+    (_output-name #f)
     (body     (string-new))
     (labels   '())
     (label-id  0)
+    (literals '())
     (mode      nil)
     (env       #f)
     )
+  (define-method isn-stream ('output-name self)
+    (string-append "_tort_x_" (or ('name self) ('_to_string ('_object_ptr self)))))
+
+  (define-struct label
+    (id #f)
+    (name #f)
+    (position #f)
+    (references '())
+    )
+  (define-method label ('_emit self stream)
+    (display ('name self) ('body stream)))
+  
+  (define-method isn-stream ('label self)
+    (let ((id ('label-id self))
+	   (label ('new label)))
+      ('label-id= self (+ id 1))
+      ('id= label id)
+      ('name= label (string-append "L" (number->string id)))
+      ('labels= self (cons label ('labels self)))
+      label))
+
   (define-method isn-stream ('emit self . objs)
     (for-each 
       (lambda (obj)
@@ -147,7 +171,6 @@
 	  ((pair? obj)
 	    (for-each (lambda (obj) ('emit self obj)) obj))
 	  (else
-	    ;; (debug obj)
 	    ('_emit obj self))))
       objs)
     self #t)
@@ -176,11 +199,14 @@
 	       ((SUB . args)   `('SUB self   ,@args))
 	       ((ADD . args)   `('ADD self   ,@args))
 	       ((LEAVE . args) `('LEAVE self ,@args))
-	       ((RTN . args)   `('RTN self   ,@args))
+	       ((RET . args)   `('RET self   ,@args))
 	       ((CALL . args)  `('CALL self  ,@args))
 	       ((OFFSET reg offset) `('new reg-offset 'reg ,reg 'offset ,offset))
-	       ((CONST val) `('new constant 'value ,val))
-	       ((S op . args) `(,op self env dst ,@args))
+	       ((CONST val)    `('new constant 'value ,val))
+	       ((LITERAL val)  `('new literal  'value ,val))
+	       ((QUOTE val)    `('new quote    'value ,val))
+	       ((LABEL_ obj . args) `('emit self ,obj ":" ,@args "\n"))
+	       ((S op . args)  `(,op self env dst ,@args))
 	       )
 
     (define-method isn-stream ('mov self src dst . args)
@@ -189,7 +215,7 @@
        ((eq? dst 'STACK)
 	(PUSH src))
        ((eq? dst 'CALL)
-	(CALL src))
+	(CALL "*" src))
        (else (MOV_ src dst args))))
 
     (define-method environ ('allocate-binding env binding)
@@ -280,36 +306,48 @@
 	    (SUB (CONST alloc-offset) SP)))))
 
     (define-method isn-stream ('c-func self env params body)
-      (let ((dst RESULT))
+      (let ((dst RESULT) 
+	     (start ('label self)) 
+	     (return ('label self)) 
+	     (end ('label self)))
 	(if (null? env)
 	    (set! env ('new environ)))
 	('env= self env)
 	
 	;; Preamble
+	(LABEL_ ('output-name self))
+	('emit self "/* " (QUOTE params) " */\n")
+	(LABEL_ start)
 	(PUSH  BP)
 	(MOV   SP BP)
 	;; Bind params.
 	('bind-params env params)
 	;; Find variable contours in body.
 	('mode= self 'variable-contour)
-	(for-each (lambda (e) (S 'expr e)) body)
+	('expr-body self env body)
 	;; Allocate space for bindings.
 	('mode= self 'allocate-bindings)
 	('allocate-bindings env)
-	(for-each (lambda (e) (S 'expr e)) body)
+	('expr-body self env body)
 	;; Emit param preamble.
 	(for-each (lambda (b) ('emit-binding-preamble self b)) ('binding-list env))
 	;; Reserve stack space for bindings.
 	('emit-stack-space self env)
 	;; Emit body exprs.
 	('mode= self 'emit)
-	(for-each (lambda (e) (S 'expr e)) body)
+	('expr-body self env body)
 	;; Postamble
+	(LABEL_ return)
 	(LEAVE)
-	(RTN)
+	(RET)
+	(LABEL_ end)
 	self
 	#t
 	))
+
+    (define-method isn-stream ('expr-body self env body)
+      ;; (debug 'pass=)(debug ('mode self))
+      (for-each (lambda (e) ('expr self env RESULT e)) body))
 
     (define-method isn-stream ('method-func self env dst params)
       ('cfunc self env dst (cons '&msg params)))
@@ -358,11 +396,11 @@
 	  (S 'expr-constant obj))))
 
     (define-method isn-stream ('expr-constant self env dst obj)
-      (MOV (CONST obj) dst))
+      (MOV (LITERAL obj) dst))
 
     (define-method isn-stream ('expr-var self env dst obj)
       (let ((b ('lookup env obj)))
-	; (debug ('mode self))(debug obj)(debug b)
+	;; (debug ('mode self))(debug obj)(debug b)
 	(if (null? b) (error "variable %O is unbound" obj))
 	(case ('mode self)
 	  ((variable-contour)
@@ -373,7 +411,7 @@
 
     (define-method isn-stream ('expr-set! self env dst obj)
       (let ((b ('lookup env obj)))
-	; (debug ('mode self))(debug obj)
+	;; (debug ('mode self))(debug obj)
 	(if (null? b) (error "variable %O is unbound" obj))
 	(case ('mode self)
 	  ((emit)
@@ -426,8 +464,70 @@
       (form (lambda args . body) #f)
       ) ;; let-macro
 |#
-
     (debug compiled-forms)
+
+    (define-method isn-stream ('assemble c . options)
+      (let ((name ('output-name c))
+	     (verbose (not (null? options)))
+	     (fname nil))
+	(set! verbose #t)
+	(set! fname (string-append "tmp/" name))
+	(let ((sfile (string-append fname ".s"))
+	       (ofile (string-append fname ".o"))
+	       (dfile (string-append fname ".dylib"))
+	       )
+	  ;;(display "sfile ")(write sfile)(newline)
+	  ;;(display "ofile ")(write ofile)(newline)
+	  (let ((name-sym (string->symbol name))
+		 (st nil)
+		 (func-ptr nil)
+		 (result #f))
+	    (call-with-output-file sfile (lambda (f)
+					   (display ('body c) f)))
+	    (if verbose
+	      (begin
+		(display "Assembly:\n") 
+		(display ('body c))
+		(display "=====\n")))
+	    
+	    (posix:system (string-append "gcc "
+			    ;; (if verbose "--verbose" "")
+			    " -D__DYNAMIC__ -fPIC -DPIC "
+			    " -export-dynamic -fno-common -c -o " ofile " " sfile))
+	    ;; (if verbose (posix:system (string-append "otool -tv " ofile)))
+	    (posix:system (string-append "gcc "
+			    ;; (if verbose "--verbose" "")
+			    " -dynamiclib -Wl,-undefined -Wl,dynamic_lookup -o " dfile " " ofile " -compatibility_version 1 -current_version 1.0 -Wl,-single_module"))
+	    ;; (if verbose (posix:system (string-append "otool -tv " dfile)))
+	    (set! result dfile)
+	    (display "'assemble => ")(write result)(newline)
+	    result
+	    ))))
+
+    (define-method isn-stream ('load c . options)
+      (let ((name ('output-name c))
+	 (verbose (not (null? options)))
+	 (fname nil))
+	(set! verbose #t)
+	(set! fname (string-append "tmp/" name))
+	(let ((sfile (string-append fname ".s"))
+	       (ofile (string-append fname ".o"))
+	       (dfile (string-append fname ".dylib"))
+	       )
+	  (let ((name-sym (string->symbol name))
+		 (st nil)
+		 (func-ptr nil)
+		 (result nil))
+	    (set! st ('load <dynlib> (string-append "./" dfile)))
+	    ;;(display "st = ")(write st)(newline)
+	    ;;(display "name-sym = ")(write name-sym)(newline)
+	    ;;(display "name-sym class = ")(write (%get-type name-sym))(newline)
+	    ;;('__debugger st) (set! &trace 1)
+	    (set! func-ptr ('get st name-sym))
+	    (if (or #t verbose) (begin (display "  func-ptr = ")(write func-ptr)(newline)))
+	    (set! result func-ptr)
+	    result
+	    ))))
 
     ) ;; let-macro
   
@@ -439,7 +539,7 @@
 ;; (display "\ne=\n")(write e)(newline)
 (define s ('new isn-stream))
 ;; (display "\ns=\n")(write s)(newline)
-('emit s "// hello, world\n")
+;; ('emit s "// hello, world\n")
 ('c-func s nil 
   '(a b c d e f g h i)
   '(a c e g h i
@@ -447,7 +547,14 @@
     (a 1 2 3 4 5 6 7 8 9 10)
     ))
 (display "\nCode:\n")(display ('body s))(display "\n")
-(display "\nEnv:\n")
+(display "\nEnv Bindings:\n")
 (for-each (lambda (b)
 	    (write b)(newline))
 	  ('binding-list ('env s)))(display "\n")
+(display "\nLiterals:\n")
+(for-each (lambda (b)
+	    (write b)(newline))
+  ('literals s))(display "\n")
+('assemble s)
+('load s)
+
