@@ -525,7 +525,8 @@
       ;; (debug ('pass self))(debug e)
       (let ((bindings (cadr e))
 	     (body (cddr e))
-	     (subenv ('subenv env e)))
+	     (subenv ('subenv env e))
+	     (alloc-offset ('alloc-offset env)))
 	(case ('pass self)
 	  ((variable-contour)
 	   (for-each (lambda (b)
@@ -541,6 +542,7 @@
 	(for-each (lambda (e) ('expr self subenv dst e)) body)
 	
 	(if (eq? ('pass self) 'allocate-bindings) ('allocate-bindings subenv))
+	('alloc-offset= env alloc-offset)
 	))
 
     (define-method isn-stream ('expr-if self env dst e)
@@ -662,7 +664,9 @@
   '(a b c d e f g h i)
   '(a c e g h i
      (let ((x a) (y b)) x y)
-     (if #t 1 2)
+     (if #t 
+       (let ((x1 a) (y1 b)) x1 y1)
+       (let ((x2 b) (y2 a) (z2 a)) x2 y2))
     (a (&ptr b) 2 3 4 5 6 7 8 9 10)
     ))
 (display "\nCode:\n")(display ('body s))(display "\n")
