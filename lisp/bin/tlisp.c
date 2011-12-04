@@ -77,9 +77,7 @@ int main(int argc, char **argv, char **environ)
     tort_printf(out, ";; %s: READY:\n", argv[0]);
     tort_send(tort_s(run), repl);
   }
-
   tort_send(tort_s(print), repl, repl->result);
-
   return 0;
 }
 
