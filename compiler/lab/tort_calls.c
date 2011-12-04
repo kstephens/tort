@@ -1,4 +1,5 @@
 #include "tort/tort.h"
+#include <stdarg.h>
 
 static ssize_t the_answer = 42;
 tort_v _tort_m_class__return_42(tort_tp tort_v rcvr)
@@ -53,7 +54,7 @@ const char * _tort_while_stmt(tort_pair *x)
     printf("true %p\n", x);
     x = x->second;
   }
-  return x;
+  return (char*) x;
 }
 
 tort_v _tort_box_int(tort_vi i)
@@ -64,6 +65,48 @@ tort_v _tort_box_int(tort_vi i)
 tort_vi _tort_unbox_int(tort_v o)
 {
   return tort_I(o);
+}
+
+tort_v _tort_rest_arg(int n, va_list *vap)
+{
+  tort_v l = tort_nil, *lp = &l;
+  extern tort_v tort_cons(tort_v, tort_v);
+  while ( n -- > 0 ) {
+    *lp = tort_cons(va_arg(*vap, tort_v), tort_nil);
+    lp = ((tort_v*) lp) + 1; /* car + 0, cdr + 1 */
+  }
+  return l;
+}
+
+int _tort_argc;
+tort_v _tort_vararg_1(tort_v a1, ...)
+{
+  va_list val;
+  tort_v l;
+  va_start(val, a1);
+  l = _tort_rest_arg(_tort_argc - 1, &val);
+  va_end(val);
+  return l;
+}
+
+tort_v _tort_vararg_2(tort_v a1, tort_v a2, ...)
+{
+  va_list val;
+  tort_v l;
+  va_start(val, a2);
+  l = _tort_rest_arg(_tort_argc - 2, &val);
+  va_end(val);
+  return l;
+}
+
+tort_v _tort_vararg_3(tort_v a1, tort_v a2, tort_v a3, ...)
+{
+  va_list val;
+  tort_v l;
+  va_start(val, a3);
+  l = _tort_rest_arg(_tort_argc - 3, &val);
+  va_end(val);
+  return l;
 }
 
 /* 
