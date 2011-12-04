@@ -447,7 +447,7 @@
 	((eq? dst e)  #f)
 	((symbol? e)  ('expr-var self env dst e))
 	((pair? e)    ('expr-pair self env dst e))
-	(else           (S 'expr-literal e))))
+	(else         (S 'expr-literal e))))
 
     (define-method isn-stream ('expr-literal self env dst e)
       (case ('pass self)
@@ -455,24 +455,24 @@
 	  (MOV (LITERAL e) dst))))
 
     (define-method isn-stream ('expr-ptr self env dst e)
+      ('expr self env RESULT e)
       (case ('pass self)
 	((emit)
-	  ('expr self env RESULT e)
 	  (MOV (OFFSET RESULT 0) dst "\t// *tort_P(" RESULT ")")) ;; dst = ptr->data 
 	))
 
     (define-method isn-stream ('expr-contents self env dst e)
+      ('expr self env RESULT e)
       (case ('pass self)
 	((emit)
-	  ('expr self env RESULT e)
 	  (SUB (CONST locative-tag) RESULT "\t// tort_L(" RESULT ")")) ;; RESULT  = locative 
 	  (MOV (OFFSET RESULT 0) dst "\t// *" RESULT)
 	))
 
     (define-method isn-stream ('expr-set-contents! self env dst e)
+      ('expr self env TMP0 e)
       (case ('pass self)
 	((emit)
-	  ('expr self env TMP0 e)
 	  (SUB (CONST locative-tag) TMP0 "\t// tort_L(" TMP0 ")")) ;; RESULT  = locative 
 	  (MOV dst (OFFSET TMP0 0) "\t// *" TMP0 " = " dst)
 	))
@@ -507,14 +507,14 @@
 	    ((if)    (S 'expr-if e))
 	    ((let)   (S 'expr-let e))
 	    ((set!)
-	      (EXPR      (caddr e))
+	      (EXPR         (caddr e))
 	      (S 'expr-set! (cadr e)))
 	    ((lambda)
 	      (S 'expr-lambda (cadr e) (caddr e)))
 	    ((&ptr)      (S 'expr-ptr (cadr e)))
 	    ((&contents) (S 'expr-contents (cadr e)))
 	    ((&set-contents!) 
-	      (EXPR      (caddr e))
+	      (EXPR                  (caddr e))
 	      (S 'expr-set-contents! (cadr e)))
 	    (else 
 	      (S 'expr-call e)))
@@ -543,13 +543,13 @@
 	(if (eq? ('pass self) 'allocate-bindings) ('allocate-bindings subenv))
 	))
 
-    (define-method isn-stream ('expr-if self env dst o)
+    (define-method isn-stream ('expr-if self env dst e)
       (case ('pass self)
 	((emit)
 	  (let ((Lfalse (LABEL)) (Lend (LABEL))
-		 (test-expr  (cdr o))
-		 (true-expr  (cddr o))
-		 (false-expr (cdddr o)))
+		 (test-expr  (cdr e))
+		 (true-expr  (cddr e))
+		 (false-expr (cdddr e)))
 	    (EXPR (car test-expr))
 	    (MOV (LITERAL #f) TMP0)
 	    (CMP TMP0 dst)
@@ -567,7 +567,7 @@
 	    (ALIGN 4)
 	    (LABEL_ Lend)))
 	(else
-	  (for-each (lambda (e) (EXPR e)) (cdr o))))
+	  (for-each (lambda (e) (EXPR e)) (cdr e))))
       )
 
 #|
