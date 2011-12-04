@@ -9,7 +9,7 @@
      (display " |#")
      (newline)))
 
-(let (
+(let* (
        ;; x68_64
        (arg-regs   '#(%rdi %rsi %rdx %rcx %r8 %r9))
        (SP         '%rsp)
@@ -25,6 +25,7 @@
        (nonary-ops '((LEAVE leave) (RET ret)))
 
        ;;
+       (ops          '())
        (word-size    ('get &root 'WORD_SIZE))
        (tag-bits     ('get &root 'TAG_BITS))
        (locative-tag ('get ('get &root 'tagged_mtables) <locative>))
@@ -287,7 +288,10 @@
 	 (cond
 	   ((label? src) (CALL src))
 	   (else         (CALL "*" src))))
-       (else             (MOV_ src dst args))))
+       (else
+	 (if (label? src)
+	   (set! src (string-append "_" ('_to_string ('name src)) "@GOTPCREL(%rip)"))) ;; FIXME
+	 (MOV_ src dst args))))
 
     (define-method environ ('allocate-binding env binding)
       (if (and ('referenced? binding) (not ('loc binding)))
