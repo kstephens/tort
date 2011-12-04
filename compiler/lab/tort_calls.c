@@ -67,6 +67,11 @@ tort_vi _tort_unbox_int(tort_v o)
   return tort_I(o);
 }
 
+tort_v _tort_return_func_ptr()
+{
+  return tort_p(printf);
+}
+
 tort_v _tort_rest_arg(int n, va_list *vap)
 {
   tort_v l = tort_nil, *lp = &l;
