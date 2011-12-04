@@ -119,8 +119,6 @@ tort_v _tort_m_dynlib__dlopen(tort_tp struct tort_dynlib *rcvr, tort_v name)
   tort_send(tort_s(emptyE), rcvr);
   tort_send(tort_s(_load_symtab), rcvr, file, base_ptr);
   tort_send(tort_s(set), tort_(dl_maps), tort_string_new_cstr(file), rcvr);
-  tort_v all = tort_send(tort_s(get), tort_(dl_maps), tort_s(all));
-  tort_send(tort_s(emit), rcvr, all);
   return rcvr;
 }
 
@@ -308,6 +306,11 @@ tort_v _tort_m_dynlib___load_symtab(tort_tp tort_v st, const char *file, void *p
 #endif
 
     pclose(fp);
+
+    {
+      tort_v all = tort_send(tort_s(get), tort_(dl_maps), tort_s(all));
+      tort_send(tort_s(emit), st, all);
+    }
   }
 
   return st;
