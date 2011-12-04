@@ -498,17 +498,13 @@
       ('expr self env RESULT e)
       (case ('pass self)
 	((emit)
-	  (SUB (CONST locative-tag) RESULT "\t// tort_L(" RESULT ")")) ;; RESULT  = locative 
-	  (MOV (OFFSET RESULT 0) dst "\t// *" RESULT)
-	))
+	  (MOV (OFFSET RESULT (- locative-tag)) dst "\t// *tort_L(" RESULT ")"))))
 
     (define-method isn-stream ('expr-set-contents! self env dst e)
       ('expr self env TMP0 e)
       (case ('pass self)
 	((emit)
-	  (SUB (CONST locative-tag) TMP0 "\t// tort_L(" TMP0 ")")) ;; RESULT  = locative 
-	  (MOV dst (OFFSET TMP0 0) "\t// *" TMP0 " = " dst)
-	))
+	  (MOV dst (OFFSET TMP0 (- locative-tag)) "\t// *tort_L(" TMP0 ") = " dst))))
 
     (define-method isn-stream ('expr-var self env dst e)
       (let ((b ('lookup env e)))
