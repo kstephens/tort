@@ -81,3 +81,20 @@ int main(int argc, char **argv, char **environ)
   return 0;
 }
 
+int tort_hello_world()
+{
+  printf("Hello, World!\n");
+  return 42;
+}
+
+int tort_prints(const char *str)
+{
+  printf("%s\n", str);
+  return 42;
+}
+
+const char* tort_tlisp_version()
+{
+  return "tlisp 1.0";
+}
+
