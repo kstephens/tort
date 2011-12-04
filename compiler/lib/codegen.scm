@@ -17,15 +17,14 @@
        (IP         '%rip)
        (RESULT     '%rax)
        (TMP0       '%rbx)
-       (binary-ops '((MOV movq) (SUB subq) (ADD addq) (OR orq) (AND andq)
-		     (SAR sarq) (SAL salq)
-		     (CMP cmpq)))
-       (unary-ops  '((PUSH pushq) (POP popq)
-		      (CALL call) (JMP jmp) (JNE jne) (JE je)))
-       (nonary-ops '((LEAVE leave) (RET ret)))
+       (ops '( (MOV movq 2) (SUB subq 2) (ADD addq 2) (OR orq 2) (AND andq 2)
+	       (SAR sarq 2) (SAL salq 2)
+	       (CMP cmpq 2)
+	       (PUSH pushq 1) (POP popq 1)
+	       (CALL call 1) (JMP jmp 1) (JNE jne 1) (JE je 1)
+	       (LEAVE leave 0) (RET ret 0)))
 
        ;;
-       (ops          '())
        (word-size    ('get &root 'WORD_SIZE))
        (tag-bits     ('get &root 'TAG_BITS))
        (locative-tag ('get ('get &root 'tagged_mtables) <locative>))
@@ -34,6 +33,9 @@
        (unspec '())
        (UNSPEC ''())
        (VOID 'VOID)
+       (STK 'STK)
+       (TOP #f)
+       (gensym (lambda () (make-symbol '())))
        )
 
   (define-struct reg
@@ -233,24 +235,19 @@
     )
 
   (for-each 
-    (lambda (x)
-      (define-method isn-stream ((car x) self src dst . rest)
-	('emit self (cadr x) " " src ", " dst rest "\n")))
-    binary-ops)
-  (for-each 
-    (lambda (x)
-      (define-method isn-stream ((car x) self src . rest)
-	('emit self (cadr x) " " src rest "\n")))
-    unary-ops)
-  (for-each 
-    (lambda (x)
-      (define-method isn-stream ((car x) self . rest)
-	('emit self (cadr x) rest "\n")))
-    nonary-ops)
+    (lambda (op)
+      (let ((sel (car op)) (opcode (cadr op)))
+	(case (caddr op)
+	  ((0) (define-method isn-stream (sel self . r)     ('emit self opcode              r "\n")))
+	  ((1) (define-method isn-stream (sel self a . r)   ('emit self opcode " " a        r "\n")))
+	  ((2) (define-method isn-stream (sel self a b . r) ('emit self opcode " " a ", " b r "\n")))
+	  )))
+    ops)
   
   (let-macro (
 	       ((PUSH . args)  `('PUSH self  ,@args))
-	       ((POP . args)   `('POP self   ,@args))
+	       ((POP_ . args)  `('POP self   ,@args))
+	       ((POP . args)   `('pop self   ,@args))
 	       ((MOV_ . args)  `('MOV self   ,@args))
 	       ((MOV . args)   `('mov self   ,@args))
 	       ((SUB . args)   `('SUB self   ,@args))
@@ -276,14 +273,22 @@
 	       ((COMMENT . args) `('emit self "  /* " ,@args " */\n"))
 	       ((TEXT . args)  `('emit self "  .text" ,@args "\n"))
 	       ((S op . args)  `(,op self env dst ,@args))
-	       ((EXPR . args)  `('expr self env dst ,@args))
+	       ((ED   . args)  `('expr self env ,@args))
+	       ((E    . args)  `('expr self env dst ,@args))
 	       )
+    
+    (set! STK (OFFSET SP 0))
+
+    (define-method isn-stream ('pop self . args)
+      (if (null? args)
+	(ADD (CONST word-size) SP)
+	(POP_ (car args))))
 
     (define-method isn-stream ('mov self src dst . args)
       (cond
        ((eq? dst src)    #f)
        ((eq? dst 'VOID)  #f)
-       ((eq? dst 'STACK) (PUSH src))
+       ((eq? dst  STK)  (PUSH src))
        ((eq? dst 'CALL)
 	 (cond
 	   ((label? src) (CALL src))
@@ -393,11 +398,11 @@
 	('bind-params env params)
 	;; Find variable contours in body.
 	('pass= self 'variable-contour)
-	('expr-body self env body)
+	('expr-body self env RESULT body)
 	;; Allocate space for bindings.
 	('pass= self 'allocate-bindings)
 	('allocate-bindings env)
-	('expr-body self env body)
+	('expr-body self env RESULT body)
 
 	;; Preamble
 	('pass= self 'emit)
@@ -416,7 +421,7 @@
 	(for-each (lambda (b) ('emit-binding-preamble self b)) ('binding-list env))
 	(COMMENT "Body:")
 	;; Emit body exprs.
-	('expr-body self env body)
+	('expr-body self env RESULT body)
 	;; Postamble
 	(LABEL: return)
 	(LEAVE)
@@ -436,11 +441,11 @@
     (define-method isn-stream ('expr-c-extern self env dst e)
       (MOV (LABEL e) dst))
 
-    (define-method isn-stream ('expr-body self env body)
+    (define-method isn-stream ('expr-body self env dst body)
       (while (pair? (cdr body))
-	('expr self env VOID (car body))
+	(ED VOID (car body))
 	(set! body (cdr body)))
-      ('expr self env RESULT (car body)))
+      (ED dst (car body)))
 
     (define-method isn-stream ('method-func self env dst params)
       ('c-func self env dst (cons '&msg params)))
@@ -457,21 +462,20 @@
 			       (cons e nargs)
 			       ) args)))
 	   (for-each (lambda (ei) 
-		       ('expr self env 
-			      (if (< (cdr ei) (vector-length arg-regs))
-				  (vector-ref arg-regs (cdr ei))
-				  (begin
-				    (set! sp-offset (+ sp-offset word-size))
-				    'STACK))
-			      (car ei))
+		       (ED (if (< (cdr ei) (vector-length arg-regs))
+			    (vector-ref arg-regs (cdr ei))
+			    (begin
+			      (set! sp-offset (+ sp-offset word-size))
+			      STK))
+			 (car ei))
 		       ) arg-i)
 	   ;; (debug arg-i)(debug sp-offset)
-	   ('expr self env 'CALL func)
+	   (ED 'CALL func)
 	   (if (> sp-offset 0)
 	       (ADD (CONST sp-offset) SP))
 	   (MOV RESULT dst)))
 	(else
-	  (for-each (lambda (e) (EXPR e)) e)
+	  (for-each (lambda (e) (E e)) e)
 	 )
 	))
 
@@ -488,7 +492,7 @@
 	  (MOV (LITERAL e) dst))))
 
     (define-method isn-stream ('expr-c-ptr<- self env dst e)
-      ('expr self env RESULT e)
+      (ED RESULT e)
       (case ('pass self)
 	((emit)
 	  (MOV (OFFSET RESULT 0) dst "\t// *tort_P(" RESULT ")")) ;; dst = ptr->data 
@@ -496,16 +500,16 @@
 
     (define-method isn-stream ('expr-c-ptr-> self env dst e)
       (set! e `(&c-call (&c-extern tort_ptr_new) ,e))
-      (EXPR e))
+      (E e))
 
     (define-method isn-stream ('expr-contents self env dst e)
-      ('expr self env RESULT e)
+      (ED RESULT e)
       (case ('pass self)
 	((emit)
 	  (MOV (OFFSET RESULT (- locative-tag)) dst "\t// *tort_L(" RESULT ")"))))
 
     (define-method isn-stream ('expr-set-contents! self env dst e)
-      ('expr self env TMP0 e)
+      (ED TMP0 e)
       (case ('pass self)
 	((emit)
 	  (MOV dst (OFFSET TMP0 (- locative-tag)) "\t// *tort_L(" TMP0 ") = " dst))))
@@ -539,7 +543,7 @@
 	    ((quote) (S 'expr-literal (cadr e)))
 	    ((if)    (S 'expr-if e))
 	    ((let)   (S 'expr-let e))
-	    ((set!)  (EXPR         (caddr e))
+	    ((set!)  (E            (caddr e))
 	             (S 'expr-set! (cadr e)))
 	    ((lambda)    (S 'expr-lambda (cadr e) (caddr e)))
 	    ((&c-func)   (S 'expr-c-func e))
@@ -547,17 +551,29 @@
 	    ((&c-call)   (S 'expr-c-call (cdr e)))
 	    ((&c-ptr<-)  (S 'expr-c-ptr<- (cadr e)))
 	    ((&c-ptr->)  (S 'expr-c-ptr-> (cadr e)))
-	    ((&c-int<-)  (EXPR (cadr e)) 
+	    ((&c-int<-)  (E (cadr e))
 	                 (SAR (CONST tag-bits) dst))
-	    ((&c-int->)  (EXPR (cadr e)) 
+	    ((&c-int->)  (E (cadr e)) 
 	                 (SAL (CONST tag-bits) dst)
 	                 (OR  (CONST fixnum-tag) dst))
+	    ((&+)
+	      (let ((a (gensym)) (b (gensym)))
+		(E `(let ((,a ,(cadr e)) (,b ,(caddr e)))
+		      (MOV ,a ,dst)
+		      (ADD ,b ,dst)
+		      ))))
 	    ((&contents) (S 'expr-contents (cadr e)))
 	    ((&set-contents!) 
-	      (EXPR                  (caddr e))
+	      (E                     (caddr e))
 	      (S 'expr-set-contents! (cadr e)))
-	    (else 
-	      (S 'expr-c-call e)))
+	    (else
+	      (cond
+		((and (pair? (car e)) (eq? (caar e) 'lambda))
+		  ;; FIXME!
+		  (E `(let ,(map (lambda (list (car e) (cadr e))) (cadar e))
+			@,(cdr e))))
+		(else
+		  (S 'expr-c-call e)))))
 	  (S form . args)
 	  )))
 
@@ -574,7 +590,7 @@
 	   ))
 	
 	(for-each (lambda (b) 
-		    ('expr      self env    RESULT (cadr b))
+		    (ED                     RESULT (cadr b))
 		    ('expr-set! self subenv RESULT (car  b)))
 		  bindings)
 	
@@ -591,20 +607,20 @@
 		 (test-expr  (cdr e))
 		 (true-expr  (cddr e))
 		 (false-expr (cdddr e)))
-	    (EXPR (car test-expr))
+	    (E (car test-expr))
 	    (MOV (LITERAL #f) TMP0)
 	    (CMP TMP0 dst)
 	    (JE Lfalse)
-	    (EXPR (car true-expr))
+	    (E (car true-expr))
 	    (JMP Lend)
 	    (ALIGN 4)
 	    (LABEL: Lfalse)
-	    (EXPR (if (pair? false-expr) 
-		    (car false-expr) UNSPEC))
+	    (E (if (pair? false-expr) 
+		 (car false-expr) UNSPEC))
 	    ;; (ALIGN 4)
 	    (LABEL: Lend)))
 	(else
-	  (for-each (lambda (e) (EXPR e)) (cdr e))))
+	  (for-each (lambda (e) (E e)) (cdr e))))
       )
 
 #|
@@ -622,13 +638,13 @@
       (if (null? env)
 	(set! env ('new environ)))
       ('env= self env)
-      ('expr self env RESULT e)
+      (ED RESULT e)
       self)
 
     (define-method isn-stream ('assemble c . options)
       (let ((name ('output-name c))
 	     (verbose (not (null? options)))
-	     (fname nil))
+	     (fname '()))
 	;; (set! verbose #t)
 	(set! fname (string-append "tmp/" name))
 	(let ((sfile (string-append fname ".s"))
@@ -638,8 +654,8 @@
 	  ;;(display "sfile ")(write sfile)(newline)
 	  ;;(display "ofile ")(write ofile)(newline)
 	  (let ((name-sym (string->symbol name))
-		 (st nil)
-		 (func-ptr nil)
+		 (st '())
+		 (func-ptr '())
 		 (result #f))
 	    (call-with-output-file sfile (lambda (f)
 					   (display ('body c) f)))
@@ -668,7 +684,7 @@
     (define-method isn-stream ('load c . options)
       (let ((name ('output-name c))
 	 (verbose (not (null? options)))
-	 (fname nil))
+	 (fname '()))
 	(set! verbose #t)
 	(set! fname (string-append "tmp/" name))
 	(let ((sfile (string-append fname ".s"))
@@ -676,9 +692,9 @@
 	       (dfile (string-append fname ".dylib"))
 	       )
 	  (let ((name-sym (string->symbol name))
-		 (st nil)
-		 (func-ptr nil)
-		 (result nil))
+		 (st '())
+		 (func-ptr '())
+		 (result '()))
 	    (set! st ('load <dynlib> (string-append "./" dfile)))
 	    ;;(display "st = ")(write st)(newline)
 	    ;;(display "name-sym = ")(write name-sym)(newline)
@@ -701,25 +717,30 @@
 (void ('load <dynlib> "/usr/lib/libc")) ;; printf
 (define (test-compiler expr args expect)
   (let ((s ('new isn-stream)))
+    (display "# ==============================================\n")
     (debug expr)
-    ('compile s nil expr)
-    (display "\nCode:\n")(display ('body s))(display "\n")
+    ('compile s '() expr)
+    (display "\nCode:\n")(display ('body s))
     (display "\nEnv Bindings:\n")
     (for-each (lambda (b)
 		(write b)(newline))
-      ('binding-list ('env s)))(display "\n")
+      ('binding-list ('env s)))
     (display "\nLiterals:\n")
     (for-each (lambda (b)
 		(write b)(newline))
-      ('literals s))(display "\n")
+      ('literals s))
     ('assemble s)
     (let ((func ('load s))
 	   (result #f))
       (debug func)(debug args)
       (set! result ('_ccallv func args))
-      (debug result)(debug expect)
-      (if (not (equal? result expect))
-	(error "result != expect"))
+      (debug result)
+      (if expect
+	(begin
+	  (set! expect (car expect))
+	  (debug expect)
+	  (if (not (equal? result expect))
+	    (error "result != expect"))))
       result
       )
     ))
@@ -728,7 +749,7 @@
   '(&c-func #f ()
      1)
   (vector)
-  '1)
+  '(1))
 
 (test-compiler
   '(&c-func #f ()
@@ -736,51 +757,65 @@
      2
      3)
   (vector)
-  '3)
+  '(3))
 
 (test-compiler
   '(&c-func #f ()
      (if #t 'true))
   (vector)
-  'true)
+  '(true))
 
 (test-compiler
   '(&c-func #f ()
      (if #f 'true))
   (vector)
-  nil) ;; unspec
+  '(())) ;; unspec
 
 (test-compiler
   '(&c-func #f ()
      (&c-int-> (&c-call (&c-extern tort_hello_world))))
   (vector)
-  '42)
+  '(42))
 
 (test-compiler
   '(&c-func #f ()
      (&c-call (&c-extern tort_prints) (&c-ptr<- "123\n"))
      'ok)
   (vector)
-  'ok)
+  '(ok))
 
 (test-compiler
   '(&c-func #f (func str)
      (&c-call (&c-ptr<- func) (&c-ptr<- str))
      'ok)
   (vector (%extern 'tort_prints) "456\n")
-  'ok)
+  '(ok))
 
 (test-compiler
   '(&c-func #f ()
      (&c-call (&c-extern tort_string_new_cstr) (&c-call (&c-extern tort_tlisp_version))))
   (vector)
-  "tlisp 1.0")
+  '("tlisp 1.0"))
+
+(test-compiler
+  '(&c-func #f (a b)
+     (&c-int-> (&+ (&c-int<- a) (&c-int<- b))))
+  (vector 2 3)
+  '(5))
+
+(test-compiler
+  '(&c-func #f (a b c d)
+     (&c-int-> (&+ 
+		 (&+ (&c-int<- a) (&c-int<- b)) 
+		 (&+ (&c-int<- c) (&c-int<- d)))))
+  (vector 1 2 3 4)
+  '(10))
 
 (test-compiler
   '(&c-func #f ()
      (&c-ptr-> (&c-extern tort_prints)))
   (vector)
-  'ok)
+  (list (%extern 'tort_prints)))
 
 (test-compiler
   '(&c-func #f (a b c d e f g h i)
@@ -793,6 +828,6 @@
      'ok
      )
   (vector (%extern 'printf) ('_to_c_ptr "Hello World!\n"))
-  'ok)
+  '(ok))
 
 
