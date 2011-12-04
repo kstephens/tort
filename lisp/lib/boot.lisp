@@ -408,7 +408,7 @@
 ;; (set! *load-debug* #t)
 ; (set! &trace 1)
 (load "lisp/lib/struct.lisp")
-(define (&extern sym)
+(define (%extern sym)
   (let ((ptr ('get ('get ('get &root 'dl_maps) 'all) sym)))
     (display " sym ")(write sym)(display " => ")(write ptr)(newline)
     ptr
