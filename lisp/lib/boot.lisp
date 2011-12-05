@@ -101,7 +101,6 @@
 (define (cadr o) ('car ('cdr o)))
 (define (cdar o) ('cdr ('car o)))
 (define (cddr o) ('cdr ('cdr o)))
-
 (define (caaar o) ('car ('car ('car o))))
 (define (caadr o) ('car ('car ('cdr o))))
 (define (cadar o) ('car ('cdr ('car o))))
@@ -110,6 +109,23 @@
 (define (cdadr o) ('cdr ('car ('cdr o))))
 (define (cddar o) ('cdr ('cdr ('car o))))
 (define (cdddr o) ('cdr ('cdr ('cdr o))))
+(define (caaaar o) ('car ('car ('car ('car o)))))
+(define (caaadr o) ('car ('car ('car ('cdr o)))))
+(define (caadar o) ('car ('car ('cdr ('car o)))))
+(define (caaddr o) ('car ('car ('cdr ('cdr o)))))
+(define (cadaar o) ('car ('cdr ('car ('car o)))))
+(define (cadadr o) ('car ('cdr ('car ('cdr o)))))
+(define (caddar o) ('car ('cdr ('cdr ('car o)))))
+(define (cadddr o) ('car ('cdr ('cdr ('cdr o)))))
+(define (cdaaar o) ('cdr ('car ('car ('car o)))))
+(define (cdaadr o) ('cdr ('car ('car ('cdr o)))))
+(define (cdadar o) ('cdr ('car ('cdr ('car o)))))
+(define (cdaddr o) ('cdr ('car ('cdr ('cdr o)))))
+(define (cddaar o) ('cdr ('cdr ('car ('car o)))))
+(define (cddadr o) ('cdr ('cdr ('car ('cdr o)))))
+(define (cdddar o) ('cdr ('cdr ('cdr ('car o)))))
+(define (cddddr o) ('cdr ('cdr ('cdr ('cdr o)))))
+
 
 (define &quasiquote
   (let ((qq-list #f) (qq-element #f) (qq-object #f))
