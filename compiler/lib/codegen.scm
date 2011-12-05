@@ -1,4 +1,5 @@
 ;; (set! &trace 1)
+(load "compiler/lib/rewrite.scm")
 
 (define-macro (debug expr)
   `(begin
@@ -384,7 +385,7 @@
 	    ('alloc-offset-max= env (- alloc-offset))
 	    (SUB (CONST alloc-offset) SP)))))
 
-    (define-method isn-stream ('c-func self env name params body)
+    (define-method isn-stream ('&c-func self env name params body)
       (let ((dst RESULT) 
 	     (this (LABEL (or name ('output-name self))))
 	     (start (LABEL)) 
@@ -631,13 +632,15 @@
       (form (while test . body) #f)
       (form (lambda args . body) #f)
       ) ;; let-macro
-|#
     (debug compiled-forms)
+|#
 
     (define-method isn-stream ('compile self env e)
       (if (null? env)
 	(set! env ('new environ)))
       ('env= self env)
+      (set! e (compiler:rewrite-1 e))
+      (set! e (compiler:rewrite-2 e))
       (ED RESULT e)
       self)
 
