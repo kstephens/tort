@@ -17,7 +17,7 @@
       )
 
   (define-method <struct> ('lisp_write obj port)
-    (display "#<struct " port)
+    (display "#<" port)
     (write (struct-name obj) port)
     (display " " port)
     (for-each (lambda (slot)
