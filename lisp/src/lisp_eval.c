@@ -585,6 +585,11 @@ tort_v _tort_m_lisp_repl__new_environment(tort_tp tort_repl *repl)
   env->msg = _tort_message->previous_message; // FIXME?
   return repl;
 }
+tort_v _tort_m_lisp_repl__caughtE(tort_tp tort_repl *repl, tort_v value)
+{
+  _tort_lisp_trace = _tort_lisp_macro_trace = 0;
+  return repl;
+}
 tort_v _tort_m_lisp_repl__eval(tort_tp tort_repl *repl)
 {
   repl->result = tort_send(tort_s(lisp_eval), repl->expr, repl->env);

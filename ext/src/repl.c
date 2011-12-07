@@ -27,6 +27,11 @@ tort_v _tort_M_repl__new(tort_tp tort_mtable *mtable)
   return repl;
 }
 
+tort_v _tort_m_repl__caughtE(tort_tp tort_repl *repl, tort_v catch)
+{
+  return repl;
+}
+
 tort_v _tort_m_repl__value(tort_tp tort_repl *repl, tort_v catch)
 {
   tort_v error_catch_save = tort_(error_catch);
@@ -79,6 +84,7 @@ tort_v _tort_m_repl__run(tort_tp tort_repl *repl)
     } else {
       repl->caught = tort_send(tort_s(begin), repl->catch, repl);
       if ( tort_send(tort_s(applied), repl->catch) != tort_false ) {
+	tort_send(tort_s(caughtE), repl, repl->caught);
 	if ( repl->prompt != tort_nil ) {
 	  tort_printf(repl->prompt, "\nExpression aborted\n");
 	}
