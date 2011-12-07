@@ -7,6 +7,7 @@
 
 (define (current-environment) &globals)
 (define (eval o e) ('lisp_eval o e))
+(define (apply f . args) (f . args))
 
 (define (%root sym) ('get &root sym))
 (define (%mtable-by-name sym) ('get (%root 'mtable) sym))
