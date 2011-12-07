@@ -6,6 +6,7 @@
 
   (define-struct environ
     (id               (let ((id (+ environment-id 1))) (set! environment-id id) id))
+    (name             #f)
     (parent           #f)
     (_alloc-env       #f)
     (alloc-offset     0)
@@ -42,12 +43,12 @@
   (define-method environ ('lookup-or-add-global self name)
     (let ((b ('lookup self name)))
       (if (null? b)
-	('add ('global self) ('new env-binding 'name name))
+	('add ('global self) ('new env-binding 'name name 'loc ('new_value <locative> '()) ))
 	b)))
   (define-method environ ('global self)
     (or ('_global self) self))
   (define-method environ ('alloc-env self)
-    (debug "  alloc-env " self)
+    ;; (debug "  alloc-env " self)
     (or ('_alloc-env self) self))
   (define-method environ ('subenv self)
     (let ((env ('new environ 'parent self)));; 'loc ???
@@ -79,10 +80,10 @@
 	    (cond
 	      ((< arg-i (vector-length arg-regs))
 		;; allocate temporary on stack for argument register
-		(set! reg (vector-ref arg-regs arg-i)))
+		(set! reg `(&r ,(vector-ref arg-regs arg-i))))
 	      (else
 		;; location is relative to BP.
-		(set! loc `(&o (%r %rbp) ,arg-bp-offset))
+		(set! loc `(&o ,arg-bp-offset (%r %rbp)))
 		(set! arg-bp-offset (+ arg-bp-offset word-size))))))
 	(set! binding ('new env-binding 
 			'name arg
@@ -105,11 +106,11 @@
 	('alloc-offset= alloc-env alloc-offset)
 	(if (> ('alloc-offset-max alloc-env) alloc-offset)
 	  ('alloc-offset-max= alloc-env alloc-offset))
-	('loc= binding `(&o (%r &rbp) ,alloc-offset))
+	('loc= binding `(&o ,alloc-offset (&r %rbp)))
 	;; (debug 'allocate-binding)(debug binding)
 	)))
   (define-method environ ('allocate-bindings env)
-    (debug "allocate-bindings" env)
+    ;; (debug "allocate-bindings" env)
     (for-each (lambda (b) ('allocate-binding env b))
       ('binding-list env)))
 
@@ -117,7 +118,8 @@
     (name        #f)
     (init        #f)
     (env         #f)
-    (referenced? #f)
+    (referenced?  #f)
+    (closed-over? #f)
     (set?        #f)
     (loc         #f)
     (type        #f)
@@ -125,8 +127,7 @@
     (reg         #f)
     (rest-arg    #f)
     (restore-reg #f)
-    (closed-over #f)
-    (exported    #f)
+    (exported     #f)
     )
   (define-method env-binding ('lisp_write self port)
     (display "#<b " port)
@@ -137,7 +138,7 @@
 	(display "=" port)
 	(write ('init self) port)
 	(display " " port)))
-    (if ('closed-over self) (display "* " port))
+    (if ('closed-over? self) (display "* " port))
     (if ('loc self) 
       (begin 
 	(display "@" port)

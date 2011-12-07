@@ -49,11 +49,16 @@ tort_v _tort_m_locative___applyf(tort_tp tort_v v)
   return *tort_L(l);
 }
 
-tort_v _tort_M_locative__new_value(tort_tp tort_mtable *mtable, tort_v v)
+tort_v tort_locative_new_value(tort_v v)
 {
   tort_v *vp = tort_malloc(sizeof(*vp));
   *vp = v;
-  return tort_l(vp);
+  return tort_l(vp);  
+}
+
+tort_v _tort_M_locative__new_value(tort_tp tort_mtable *mtable, tort_v v)
+{
+  return tort_locative_new_value(v);
 }
 
 tort_v _tort_m_object___slot_locative_at (tort_tp tort_v rcvr, tort_v offset)
