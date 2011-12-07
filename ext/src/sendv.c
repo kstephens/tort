@@ -25,8 +25,23 @@ tort_v _tort_m_symbol___sendv(tort_tp tort_v sel, const tort_v *a, size_t n)
     return_tort_sendn(sel, 9, a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7], a[8]);
   case 10:
     return_tort_sendn(sel, 10, a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7], a[8], a[9]);
+  case 11:
+    return_tort_sendn(sel, 11, a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7], a[8], a[9],
+		      a[10]);
+  case 12:
+    return_tort_sendn(sel, 12, a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7], a[8], a[9],
+		      a[10], a[11]);
+  case 13:
+    return_tort_sendn(sel, 13, a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7], a[8], a[9],
+		      a[10], a[11], a[12]);
+  case 14:
+    return_tort_sendn(sel, 14, a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7], a[8], a[9],
+		      a[10], a[11], a[12], a[13]);
+  case 15:
+    return_tort_sendn(sel, 15, a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7], a[8], a[9],
+		      a[10], a[11], a[12], a[13], a[14]);
   default: 
-    abort();
+    return tort_error(tort_ta "symbol._sendv: too many arguments (%d)", n);
   }
   return tort_nil;
 }
