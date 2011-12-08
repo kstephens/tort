@@ -1,3 +1,69 @@
+#|
+x86 64: calling sequence:
+
+http://en.wikipedia.org/wiki/X86_calling_conventions#Microsoft_x64_calling_convention
+
+System V AMD64 ABI convention
+
+The calling convention of the System V AMD64 application binary interface[9] is followed on Linux and other non-Microsoft operating systems. 
+The registers RDI, RSI, RDX, RCX, R8 and R9 are used for integer and pointer arguments while XMM0, XMM1, XMM2, XMM3, XMM4, XMM5, XMM6 and XMM7 are used for floating point arguments.
+For system calls, R10 is used instead of RCX.[9] As in the Microsoft x64 calling convention, additional arguments are pushed onto the stack and the return value is stored in RAX.
+
+
+At Entry into callee:
+
+(arg0, arg1, arg2, arg3, arg4, arg5, arg6)
+ %rdi  %rsi  %rdx  %rcx  %r8   %r9   16(%rbp)
+
+Callee saves %rbp:
+
+	pushq	%rbp
+	movq	%rsp, %rbp
+
+???? prbp arg6
+0    8    16
+^
+|
+rsp
+rbp
+
+Callee saves registers:
+
+	movq	%rbx, -40(%rbp)
+	movq	%r12, -32(%rbp)
+	movq	%r13, -24(%rbp)
+	movq	%r14, -16(%rbp)
+	movq	%r15, -8(%rbp)
+	subq	$80, %rsp // extra space for %r9 temp and additional arg?
+
+Callee saves arguments on stack:
+	movq    %r9,  -56(%rbp)
+
+????  or9   ???? orbx or12 or13 or14 or15 orbp
+-64  -56    -48  -40  -32  -24  -16  -8   0
+^                                         ^
+|                                         |
+%rsp                                      %rbp
+
+... DO STUFF...
+
+Callee restores registers:
+
+	movq	-40(%rbp), %rbx
+	movq	-32(%rbp), %r12
+	movq	-24(%rbp), %r13
+	movq	-16(%rbp), %r14
+	movq	-8(%rbp), %r15
+
+Callee restores %rbp and %rsp:
+
+	leave
+
+Returns result in %rax:
+
+	ret
+ 
+|#
 ;; (set! &trace 9)
 (load "compiler/lib/environment.scm")
 (load "compiler/lib/debug.scm")
@@ -6,26 +72,21 @@
 
 (let ( 
               ;; x68_64
-       (arg-regs   '#(%rdi %rsi %rdx %rcx %r8 %r9))
+       (arg-regs     '#(%rdi %rsi %rdx %rcx %r8 %r9))
        (word-size    ('get &root 'WORD_SIZE))
        (tag-bits     ('get &root 'TAG_BITS))
        (locative-tag ('get ('get &root 'tagged_mtables) <locative>))
        (fixnum-tag   ('get ('get &root 'tagged_mtables) <fixnum>))
-       (unspec '(&q ()))
-       
-       (set-cons! (lambda (dst src)
-		    (set-car! dst (car src))
-		    (set-cdr! dst (cdr src))
-		    dst))
-       ;; (caddddr (lambda (x) (car (cdr (cdr (cdr (cdr x)))))))
+       (unspec '(&q ,(if #f #t)))
        )
 
   ;; 1) Rewrite scheme to canonical forms:
   ;;
   ;; (quote e) => (&q e)
   ;; SYM => (&v SYM): Unbound variable
-  ;; (&_ expr): Void expression, result not used.
-  ;; (&extern SYM): external linkage.
+  ;; (&e env expr): binds expr in env.
+  ;; (&_ expr): Void expression, result of expr not used.
+  ;; (&extern SYM) => (&g binding): external global binding.
   ;; (&c f . args); Call f with args.
   ;; (&L expr): Create locative for expr value.
   ;; (&l l-expr): Get locative's value.
@@ -37,6 +98,7 @@
   (letrec ((f 
     (lambda (e)
       (cond
+	((environ? e) e)
 	((symbol? e) `(&v ,e))
 	((pair? e)
 	  (case (car e)
@@ -46,6 +108,7 @@
 			 ,(if (pair? (cdddr e))
 			    (f (cadddr e))
 			    unspec)))
+	    ((while)  `(&while ,(f (cadr e)) ,(f `(begin ,@(cddr e)))))
 	    ((set!)   `(&set! (&v ,(cadr e)) ,(f (caddr e))))
 	    ((lambda)   ; (lambda formals . body) => (&lambda 'formals (begin . body) 'name)
 	      `(&lambda  ,`(&q ,(cadr e))  ,(f `(begin ,@(cddr e)))))
@@ -65,6 +128,8 @@
 			      (set! c (cdr c)) (set! e (cdr e)))
 			    (set-cdr! c (cons (f (car e)) '()))
 			    `(&b ,@(cdr r))))))
+	    ((&e)     `(&e (&q ,(cadr e)) ,(f (caddr e))))
+	    ((&extern) e)
 	    (else     (if (and (symbol? (car e)) (equal? (string-ref (symbol->string (car e)) 0) #\&))
 			`(,(car e) ,@(map f (cdr e)))
 			`(&c    ,@(map f e))))
@@ -148,10 +213,11 @@
 	      (set-car! (cdr e) subenv)
 	      (f subenv (caddr e)) ;; body
 	      ))					
+	  ((&e)  ;; (&e (&q env) expr) =>  
+	    (f (cadr (cadr e)) (caddr e)))
 	  (else
 	    (for-each (lambda (e) (f env e)) (cdr e))))
-	e))
-      )
+	e)))
     (define (compiler:pass-3 env e)
       (f env e))
     ) ;; letrec
@@ -163,7 +229,8 @@
       (lambda (env e)
 	;; (display "  4 e = ")(write e)(newline)
 	(case (car e)
-	  ((&q &extern) )
+	  ((&q &g) )
+	  ((&extern) `(&g ,('label env (cadr e))))
 	  ((&v &set!)
 	    (let ((b ('lookup-or-add-global env (cadr e))))
 	      ;; (display "   b = ")(write b)(newline)
@@ -185,6 +252,8 @@
 	    (for-each (lambda (b) (f env ('init b)))
 	      ('binding-list (cadr e)))
 	      (f (cadr e) (caddr e)))
+	  ((&e)  ;; (&e (&q env) expr) =>  
+	    (f (cadr (cadr e)) (caddr e)))
 	  (else
 	    (for-each (lambda (e) (f env e)) (cdr e))))
 	e)))
@@ -198,7 +267,7 @@
       (lambda (env e)
 	;; (display "  5 e = ")(write e)(newline)
 	(case (car e)
-	  ((&q &v &extern) )
+	  ((&q &v &g) )
 	  ((&lambda &&c-func)  
 	    ('allocate-bindings (cadr e))
 	    (f (cadr e) (caddr e)))
@@ -212,6 +281,8 @@
 	      (f subenv (caddr e))
 	      ('alloc-offset= ('alloc-env env) alloc-offset)
 	      ))
+	  ((&e)  ;; (&e (&q env) expr) =>
+	    (f (cadr (cadr e)) (caddr e)))
 	  (else
 	    (for-each (lambda (e) (f env e)) (cdr e))))
 	e)))
@@ -220,43 +291,6 @@
     ) ;; letrec
 
   ;; 6) Emit preliminary instructions.
-  (define-struct isns
-    (name      #f)
-    (isns      (vector))
-    (labels    ('new <map>))
-    (label-id  0)
-    (literals '())
-    (pass      'unknown)
-    (env       #f)
-    (main      #f)
-    )
-  (define-method isns ('lisp_write self port)
-    (display "#<isns >" port))
-  (define-method isns ('emit self . isns)
-    (let ((out ('isns self)))
-      (for-each 
-	(lambda (x)
-	  (if (not (pair? x)) (error "emit: not a pair: %O" x))
-	  (display "    | ")(display x)(newline)
-	  ('add out x)) 
-	isns))
-    self)
-  (define-method isns ('label self . name)
-    (set! name (if (pair? name) (car name) #f))
-    ;; (debug "isns.label" name)
-    (let ((id ('label-id self))
-	   (label ('new label)))
-      ('label-id= self (+ id 1))
-      ('id= label id)
-      (if name
-	(begin
-	  ('scope= label 'global)
-	  (set! name name))
-	(set! name (string->symbol (string-append "L" (number->string id)))))
-      ('name= label name)
-      ('set ('labels self) name label)
-      label))
-  
   (letrec (
     (literal (lambda (x) `(&$ ,('_to_c_literal x))))
     (loc 
@@ -271,7 +305,7 @@
 	      l)))))
     (f 
       (lambda (o e)
-	(display "  6 e = ")(write e)(newline)
+	;; (display "  6 e = ")(write e)(newline)
 	(case (car e)
 	  ((&_) 
 	    (case (car (cadr e))
@@ -279,6 +313,7 @@
 	      (else     (f o (cadr e)))))
 	  ((&q) ('emit o `(movq ,(literal (cadr e)) (&r %rax))))
 	  ((&b) (for-each (lambda (e) (f o e)) (cdr e)))
+	  ((&g) ('emit o `(movq ,(cadr e) (&r %rax))))
 	  ((&v) 
 	    ('emit o `(movq ,(loc o (cadr e)) (&r %rax))))
 	  ((&l)  ;; get locative's value.
@@ -293,7 +328,7 @@
 	    (f o (cadr e))
 	    ('emit o 
 	      '(movq (&r %rax) (&r &rdi))
-	      '(call _tort_locative_new_value)))
+	      '(callq _tort_locative_new_value)))
 	  ((&s!) ;; non-locative set! used for initializers.
 	    (f o (caddr e))
 	    ('emit o `(movq %rax ,('loc (cadr e)))))
@@ -304,11 +339,27 @@
 	    (let ((Lf ('label o))
 		  (Le ('label o)))
 	      (f o (cadr e))
-	      ('emit o `(cmpq ,(literal #f) (&r %rax)) `(je ,Lf))
+	      ('emit o 
+		`(movq ,(literal #f) (&r %rdx))
+		'(cmpq (&r %rdx) (&r %rax))
+		`(je ,Lf))
 	      (f o (caddr e))
 	      ('emit o `(jmp ,Le) '(.align 4) `(.label: ,Lf))
 	      (f o (cadddr e))
 	      ('emit o `(.label: ,Le))
+	      ))
+	  ((&while)
+	    (let ((Lb ('label o))
+		  (Le ('label o)))
+	      ('emit o '(.align 4) `(.label: ,Lb))
+	      (f o (cadr e))
+	      ('emit o
+		`(movq ,(literal #f) (&r %rdx))
+		'(cmpq (&r %rdx) (&r %rax))
+		`(je ,Le))
+	      (f o (caddr e))
+	      ('emit o `(jmp ,Lb))
+	      ('emit o '(.align 4) `(.label: ,Le))
 	      ))
 	  ((&lambda &&c-func)
 	    (let* ((env (cadr e))
@@ -326,11 +377,11 @@
 		(begin
 		  (set! this ('label o this))
 		  ('emit o
-		    `(.globl ,this)
+		    `(.globl  ,this)
 		    `(.label: ,this))))
 	      ('emit o
 		`(.label: ,start)
-		'(pushq (&r %rsp))
+		'(pushq (&r %rbp))
 		'(movq  (&r %rsp) (&r %rbp)))
 	      ;; Allocate stack space.
 	      (let ((alloc-offset ('alloc-offset-max env)))
@@ -354,8 +405,7 @@
 	      (for-each
 		(lambda (b)
 		  (if ('closed-over? b)
-		    (f o `(&s! ,b (&L ,('loc b))))
-		    ))
+		    (f o `(&s! ,b (&L ,('loc b))))))
 		('binding-list env))
 	      ;; Emit body instructions.
 	      (f o (caddr e))
@@ -366,7 +416,10 @@
 		`(.label: ,end))
 	      ;; Append parent instructions after this function.
 	      ('append ('isns o) old-isns)
-	      ;; FIXME: ('emit o `(movq ,start (&r %rax)))
+	      ;; Emit ptr expression for this.
+	      ('emit o 
+		`(movq ,start (&r %rdi))
+		`(callq _tort_ptr_new))
 	      ))
 	  ((&let)
 	    (for-each 
@@ -389,7 +442,7 @@
 		  (set! nargs (+ nargs 1))
 		  (set! stack-args-size (+ stack-args-size word-size))) 
 		(reverse (cddr e)))
-	      ;; Load function into %rax.
+	      ;; Load function ptr into %rax.
 	      (f o (cadr e))
 	      ;; Pull register args off stack.
 	      (let ((i 0))
@@ -399,19 +452,21 @@
 		  (set! i (+ i 1))))
 	      ;; Load %rbx with argc.
 	      ('emit o `(movq (&$ ,nargs) (&r %rbx)))
+	      ;; Load pointer from ptr object.
+	      ('emit o `(movq (&o 0 (&r %rax)) (&r %rax)))
 	      ;; Call function in %rax.
-	      ('emit o '(call* (&r %rax)))
+	      ('emit o '(callq* (&r %rax)))
 	      ;; Pop remaining stack args.
 	      (if (> stack-args-size 0)
 		('emit o `(addq ,stack-args-size %rsp)))))
+	  ((&e) (f o (caddr e)))
 	  (else
 	    (for-each (lambda (e) (f o e)) (cdr e))))
 	e)))
     (define (compiler:pass-6 env e)
-      (let* ((o ('new isns)))
-	(set! e `(&let ,env ,e))
-	(f o e)
-	o))
+      (let* ( (isns ('new isns)))
+	(f isns e)
+	isns))
     ) ;; letrec
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -419,10 +474,13 @@
   ;;
 
   (define (compile expr env)
-    (let ((result expr))
-      (if (not env) (set! env ('new environ)))
+    (let ((result expr)
+	  (asm ('new assembler)))
+      (if (not env) (set! env ('new environ 'arg-regs arg-regs 'word-size word-size)))
       (display "\nexpr     = ")(write expr)(newline)
-      
+      (set! result `(&e ,env
+		      (&c-func ,('init-symbol asm) () ,result)))
+      (display "result o = ")(write result)(newline)
       (set! result (compiler:pass-1 result))
       (display "result 1 = ")(write result)(newline)
       (set! result (compiler:pass-2 result))
@@ -434,45 +492,50 @@
       (set! result (compiler:pass-5 env result))
       (display "result 5 = ")(write result)(newline)
       
+      ;; ('output-name= asm "_tort_x_test") ;; TESTING
       (set! result (compiler:pass-6 env result))
       (display "result 6 = ")(write result)(newline)
-      (let ((asm ('new assembler)))
-	('isns= asm result)
-	('output-name= asm "_tort_x_test")
-	('body asm)
-	('assemble asm 'verbose)
-	)
+      ('isns= asm result)
+      ('assemble asm)
 
+      (display "isns = ")(newline)
+      (vector-for-each (lambda (x)
+			 (display "    | ")(display x)(newline))
+	('isns ('isns asm)))
+
+      (display "asm = \n")(display ('asm asm))(newline)
+
+      (set! result ('load asm))
       result))
 
   (let
     ((t 
        (lambda (expr expect)
-	 (let ((result expr))
-	   (set! result (compile result #f))
-	   (display "code = ")(newline)
-	   (vector-for-each (lambda (x)
-			      (display "    | ")(display x)(newline))
-	     ('isns result))
-	   (if (and #f (not (equal? result expect)))
+	 (let ((result expr) 
+		(func #f))
+	   (display "\n===================================================================\n");
+	   (set! func (compile result #f))
+	   (set! result ('_ccall func))
+	   (if (not (equal? result expect))
 	     (display "expr     = ")(write expr)(newline)
 	     (display "result   = ")(write result)(newline)
 	     (display "expect   = ")(write expect)(newline)
 	     (error "result != expect"))
 	   )
 	 #f)))
-    (t '1 '(&q 1))
-    (t '(quote (a b))  '(&q (a b)))
-    (t '(begin)        '(&q ()))
-    (t '(begin 1)      '(&q 1))
-    (t '(begin 1 'y)   '(&b (&_ (&q 1)) (&q y)))
-    (t '(begin 1 2 3) '(&b (&_ (&q 1)) (&_ (&q 2)) (&q 3)))
-    (t '(if 1 2)      '(&if (&q 1) (&q 2) (&q ())))
-    (t '(if 1 2 3)    '(&if (&q 1) (&q 2) (&q 3)))
+    (t '1 '1)
+    (t '(quote (a b))  '(a b))
+    (t '(begin)        (if #f #f))
+    (t '(begin 1)      '1)
+    (t '(begin 1 'y)   'y)
+    (t '(begin 1 2 3)  '3)
+    (t '(if 1 2)       '2)
+    (t '(if #f #f)     (if #f #f))
+    (t '(if #f 2 3)    '3)
+    (t '(let ((a 1) (b 2)) 3 a)
+      '1)
     (t '(lambda (a b) 1 a)
       '(&lambda #f (a b) (&b (&_ (&q 1)) (&v a))))
-    (t '(let ((a 1) (b 1)) 1 a)
-      '(&let #f ((a 1) (b 1)) (&b (&_ (&q 1)) (&v a))))
     (t '(foo 1 2)     '(&c (&v foo) (&q 1) (&q 2)))
     (t '(&primitive 1 2) '(&primitive (&q 1) (&q 2)))
     (t '(let ((a 1)) (lambda (x) (+ a x)))

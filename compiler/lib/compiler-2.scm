@@ -1,5 +1,12 @@
 ;; (set! &trace 1)
-(load "compiler/lib/rewrite.scm")
+(load "compiler/lib/debug.scm")
+(load "compiler/lib/label.scm")
+(define-method label ('_emit self stream)
+  (case ('scope self)
+    ((global)
+      ('emit stream "_" ('name self)))
+    (else
+      ('emit stream ('name self)))))
 
 (define-macro (debug expr)
   `(begin
@@ -175,20 +182,6 @@
   (define-method isn-stream ('output-name self)
     (string-append "_tort_x_" (or ('name self) ('_to_string ('_object_ptr self)))))
 
-  (define-struct label
-    (id #f)
-    (name #f)
-    (scope 'local)
-    (position #f)
-    (references '())
-    )
-  (define-method label ('_emit self stream)
-    (case ('scope self)
-      ((global)
-	('emit stream "_" ('name self)))
-      (else
-	('emit stream ('name self)))))
-  
   (define-method isn-stream ('label self . name)
     (let ((id ('label-id self))
 	   (label ('new label)))
@@ -639,8 +632,6 @@
       (if (null? env)
 	(set! env ('new environ)))
       ('env= self env)
-      (set! e (compiler:rewrite-1 e))
-      (set! e (compiler:rewrite-2 e))
       (ED RESULT e)
       self)
 

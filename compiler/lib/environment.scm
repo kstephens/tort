@@ -1,11 +1,6 @@
-(let ( (environment-id 0)
-       ;; FIXME!
-       (arg-regs   '#(%rdi %rsi %rdx %rcx %r8 %r9))
-       (word-size    ('get &root 'WORD_SIZE))
-       )
-
+(let ( (env-id 0) )
   (define-struct environ
-    (id               (let ((id (+ environment-id 1))) (set! environment-id id) id))
+    (id               (let ((id (+ env-id 1))) (set! env-id id) id))
     (name             #f)
     (parent           #f)
     (_alloc-env       #f)
@@ -17,8 +12,11 @@
     (macros           ('new <map>))
     (_global          #f)
     (exports          ('new <map>))
-    (imports          ('new <map>))
+    (imports          ('new <map>)) ; maps env-binding to env vector offset.
+    (arg-regs         '#())
+    (word-size        #f)
     )
+
   (define-method environ ('lisp_write self port)
     (display "#<e " port)
     ;; (write ('keys ('bindings self)) port)
@@ -52,11 +50,15 @@
     (or ('_alloc-env self) self))
   (define-method environ ('subenv self)
     (let ((env ('new environ 'parent self)));; 'loc ???
+      ('arg-regs=  env ('arg-regs self))
+      ('word-size= env ('word-size self))
       ('_global= env ('global self))
       env))
   (define-method environ ('add-formals env params)
     ('formals= env params)
-    (let ( (l params)
+    (let* ((word-size ('word-size env))
+	   (arg-regs  ('arg-regs env))
+	   (l params)
 	   (arg-i -1)
 	   (arg-bp-offset (+ word-size word-size)) ; BP -> #(prev-BP rtn-addr)
 	   (arg #f)
@@ -96,7 +98,8 @@
   
   (define-method environ ('allocate-binding env binding)
     (if (and ('referenced? binding) (not ('loc binding)))
-      (let* ((alloc-env (or ('alloc-env env) env))
+      (let* ( (word-size ('word-size env))
+	      (alloc-env (or ('alloc-env env) env))
 	      (alloc-offset ('alloc-offset alloc-env))
 	      (alloc-size (or ('size binding) word-size)))
 	('size= binding alloc-size)
@@ -147,4 +150,4 @@
     (display ">" port)
     )
 
-)
+) ;; let
