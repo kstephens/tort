@@ -44,7 +44,6 @@ void *tort_dlopen(const char *file, char *file_buffer)
     }
     return dl;
   }
-  perror(dlerror());
   return 0;
 }
 
@@ -80,8 +79,10 @@ tort_v _tort_m_dynlib__dlopen(tort_tp struct tort_dynlib *rcvr, tort_v name)
   rcvr->name = name;
   file = tort_string_data(name);
   if ( ! (dl = tort_dlopen(file, file_buffer)) ) {
-    rcvr->error = tort_string_new_cstr(dlerror());
-    perror(dlerror());
+    const char *str = dlerror();
+    str = str ? str : "UNKNOWN ERROR";
+    rcvr->error = tort_string_new_cstr(str);
+    perror(str);
     return rcvr;
   }
   file = file_buffer;
