@@ -324,8 +324,8 @@ tort_v tort_runtime_initialize_dynlib()
     const char *s = getenv("TORT_DL_DEBUG");
     _tort_dl_debug = s && *s ? atoi(s) : 0;
   }
-  tort_send(tort__s(set), tort_(root), tort_s(DYNLIB_SUFFIX), tort_string_new_cstr(TORT_DLIB_SUFFIX));
-  tort_send(tort__s(set), tort_(root), tort_s(DYNLIB_GLOBAL_PREFIX), tort_string_new_cstr(TORT_DYNLIB_GLOBAL_PREFIX));
+  tort_send(tort__s(set), tort_(root), tort_s(dynlib_suffix), tort_string_new_cstr(TORT_DLIB_SUFFIX));
+  tort_send(tort__s(set), tort_(root), tort_s(dynlib_global_prefix), tort_string_new_cstr(TORT_DYNLIB_GLOBAL_PREFIX));
   tort_add_method(tort__mt(dynlib), "_run_initializers", tort_m_dynlib___run_initializers);
   tort_add_method(tort__mt(dynlib), "_load_methods", tort_m_dynlib___load_methods);
   tort_(dl_maps) = tort_map_new();
