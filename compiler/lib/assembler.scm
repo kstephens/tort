@@ -97,9 +97,10 @@
 		(if (eq? ('scope e) 'global)
 		  (begin
 		    (display ('global-label-prefix self) o)
+		    (display ('name e) o)
 		    (if pic
-		      (display '@GOTPCREL o))))
-		(display ('name e) o)
+		      (display '@GOTPCREL o)))
+		  (display ('name e) o))
 		(if pic
 		  (begin
 		    (display "(" o)

@@ -77,7 +77,7 @@ Returns result in %rax:
        (tag-bits     ('get &root 'TAG_BITS))
        (locative-tag ('get ('get &root 'tagged_mtables) <locative>))
        (fixnum-tag   ('get ('get &root 'tagged_mtables) <fixnum>))
-       (unspec '(&q ,(if #f #t)))
+       (unspec `(&q ,(if #f #f)))
        )
 
   ;; 1) Rewrite scheme to canonical forms:
@@ -88,9 +88,12 @@ Returns result in %rax:
   ;; (&_ expr): Void expression, result of expr not used.
   ;; (&extern SYM) => (&g binding): external global binding.
   ;; (&c f . args); Call f with args.
-  ;; (&L expr): Create locative for expr value.
-  ;; (&l l-expr): Get locative's value.
-  ;; (&l! l-expr v-expr): Set locative's value.
+  ;; (&p expr): Create boxed pointer for expr value.
+  ;; (&P p-expr): Get boxed pointer's value.
+  ;; (&L! l-expr v-expr): Set locative's value.
+  ;; (&l expr): Create locative for expr value.
+  ;; (&L l-expr): Get locative's value.
+  ;; (&L! l-expr v-expr): Set locative's value.
   ;; (begin) => UNSPEC
   ;; (begin e) => e
   ;; (begin e . exprs) => (&b e . exprs)
@@ -128,8 +131,8 @@ Returns result in %rax:
 			      (set! c (cdr c)) (set! e (cdr e)))
 			    (set-cdr! c (cons (f (car e)) '()))
 			    `(&b ,@(cdr r))))))
-	    ((&e)     `(&e (&q ,(cadr e)) ,(f (caddr e))))
-	    ((&extern) e)
+	    ((&e)      `(&e (&q ,(cadr e)) ,(f (caddr e))))
+	    ((&extern) `(&&extern (&q ,(cadr e))))
 	    (else     (if (and (symbol? (car e)) (equal? (string-ref (symbol->string (car e)) 0) #\&))
 			`(,(car e) ,@(map f (cdr e)))
 			`(&c    ,@(map f e))))
@@ -149,7 +152,7 @@ Returns result in %rax:
 	((environ? e) e)
 	((eq? (car e) '&q) e)
 	((eq? (car e) '&v) e)
-	((eq? (car e) '&extern) e)
+	((eq? (car e) '&&extern) e)
 	((eq? (car e) '&lambda)  ; (&lambda formals body)
 	  `(&lambda  ,(cadr e) ,(f (caddr e))))
 	((eq? (car e) '&&c-func) ; (&&c-func formals body name)
@@ -191,7 +194,7 @@ Returns result in %rax:
       (lambda (env e)
 	;;(display "  3 e = ")(write e)(newline)
 	(case (car e)
-	  ((&q &v &extern) )
+	  ((&q &v &&extern) )
 	  ((&lambda &&c-func) ; (&lambda  'formals body) => (&lambda env body) 
 	    (let ((subenv ('subenv env)))
 	      ('closure= subenv e)
@@ -230,7 +233,6 @@ Returns result in %rax:
 	;; (display "  4 e = ")(write e)(newline)
 	(case (car e)
 	  ((&q &g) )
-	  ((&extern) `(&g ,('label env (cadr e))))
 	  ((&v &set!)
 	    (let ((b ('lookup-or-add-global env (cadr e))))
 	      ;; (display "   b = ")(write b)(newline)
@@ -313,18 +315,37 @@ Returns result in %rax:
 	      (else     (f o (cadr e)))))
 	  ((&q) ('emit o `(movq ,(literal (cadr e)) (&r %rax))))
 	  ((&b) (for-each (lambda (e) (f o e)) (cdr e)))
-	  ((&g) ('emit o `(movq ,(cadr e) (&r %rax))))
+	  ((&&extern) ('emit o `(movq ,('label o (cadr (cadr e))) (&r %rax))))
 	  ((&v) 
 	    ('emit o `(movq ,(loc o (cadr e)) (&r %rax))))
-	  ((&l)  ;; get locative's value.
+	  ((&&)  ;; get the address of a variable.
+	    ('emit o `(leaq ,('loc (cadr (cadr e))) (&r %rax))))
+	  ((&i)  ;; box an int.
+	    (f o (cadr e))
+	    ('emit o 
+	      '(salq (&$ 2) (&r %rax))
+	      '(orq  (&$ 1) (&r %rax))))
+	  ((&I)  ;; unbox an int.
+	    (f o (cadr e))
+	    ('emit o '(sarq (&$ 2) (&r %rax))))
+	  ((&p)  ;; box a pointer.
+	    (f o (cadr e))
+	    ('emit o 
+	      '(movq (&r %rax) (&r %rdi))
+	      '(callq _tort_ptr_new)))
+	  ((&P)  ;; unbox a pointer.
+	    (f o (cadr e))
+	    ('emit o '(movq (&o 0 (&r %rax)) (&r %rax))))
+	  ((&L)  ;; get locative's value.
 	    (f o (cadr e))
 	    ('emit o '(movq (&o ,(- locative-tag) (&r %rax)) (&r %rax))))
 	  ((&l!) ;; set locative's value.
 	    (f o (cadr e))
-	    ('emit o '(movq (&r %rax) (&r %rdx)))
+	    ('emit o '(pushq (&r %rax)))
 	    (f o (caddr e))
+	    ('emit o '(popq (&r %rdx)))
 	    ('emit o '(movq (&r %rax) (&o ,(- locative-tag) (&r %rdx)))))
-	  ((&L) ;; create new locative to value.
+	  ((&l) ;; create new locative to value.
 	    (f o (cadr e))
 	    ('emit o 
 	      '(movq (&r %rax) (&r &rdi))
@@ -391,7 +412,7 @@ Returns result in %rax:
 		    (set! alloc-offset (* (/ (+ (- alloc-offset) 15) 16) 16))
 		    ;; (debug "  6 " alloc-offset)
 		    ('alloc-offset-max= env (- alloc-offset))
-		    ('emit o `(subq ,alloc-offset (&r %rsp))))))
+		    ('emit o `(subq (&$ ,alloc-offset) (&r %rsp))))))
 	      ;; Move register arguments to stack.
 	      (for-each 
 		(lambda (b)
@@ -405,7 +426,7 @@ Returns result in %rax:
 	      (for-each
 		(lambda (b)
 		  (if ('closed-over? b)
-		    (f o `(&s! ,b (&L ,('loc b))))))
+		    (f o `(&s! ,b (&l ,('loc b))))))
 		('binding-list env))
 	      ;; Emit body instructions.
 	      (f o (caddr e))
@@ -416,10 +437,10 @@ Returns result in %rax:
 		`(.label: ,end))
 	      ;; Append parent instructions after this function.
 	      ('append ('isns o) old-isns)
-	      ;; Emit ptr expression for this.
+	      ;; Emit ptr expression for this function.
 	      ('emit o 
 		`(movq ,start (&r %rdi))
-		`(callq _tort_ptr_new))
+		'(callq _tort_ptr_new))
 	      ))
 	  ((&let)
 	    (for-each 
@@ -427,7 +448,7 @@ Returns result in %rax:
 		(if ('init b)
 		  (if ('referenced? b)
 		    (let ((init 
-			    (if ('closed-over? b) `(&L ,('init b)) ('init b))))
+			    (if ('closed-over? b) `(&l ,('init b)) ('init b))))
 		      (f o `(&s! ,b ,init)))
 		    (f o ('init b)))))
 	      ('binding-list (cadr e)))
@@ -442,7 +463,7 @@ Returns result in %rax:
 		  (set! nargs (+ nargs 1))
 		  (set! stack-args-size (+ stack-args-size word-size))) 
 		(reverse (cddr e)))
-	      ;; Load function ptr into %rax.
+	      ;; Load function into %rax.
 	      (f o (cadr e))
 	      ;; Pull register args off stack.
 	      (let ((i 0))
@@ -452,13 +473,11 @@ Returns result in %rax:
 		  (set! i (+ i 1))))
 	      ;; Load %rbx with argc.
 	      ('emit o `(movq (&$ ,nargs) (&r %rbx)))
-	      ;; Load pointer from ptr object.
-	      ('emit o `(movq (&o 0 (&r %rax)) (&r %rax)))
 	      ;; Call function in %rax.
 	      ('emit o '(callq* (&r %rax)))
 	      ;; Pop remaining stack args.
 	      (if (> stack-args-size 0)
-		('emit o `(addq ,stack-args-size %rsp)))))
+		('emit o `(addq (&$ ,stack-args-size) %rsp)))))
 	  ((&e) (f o (caddr e)))
 	  (else
 	    (for-each (lambda (e) (f o e)) (cdr e))))
@@ -516,6 +535,8 @@ Returns result in %rax:
 	   (display "\n===================================================================\n");
 	   (set! func (compile result #f))
 	   (set! result ('_ccall func))
+	   (display "expr     = ")(write expr)(newline)
+	   (display "result   = ")(write result)(newline)
 	   (if (not (equal? result expect))
 	     (display "expr     = ")(write expr)(newline)
 	     (display "result   = ")(write result)(newline)
@@ -523,6 +544,8 @@ Returns result in %rax:
 	     (error "result != expect"))
 	   )
 	 #f)))
+    (define (void x))
+    (void ('load <dynlib> "/usr/lib/libc")) ;; printf
     (t '1 '1)
     (t '(quote (a b))  '(a b))
     (t '(begin)        (if #f #f))
@@ -536,6 +559,12 @@ Returns result in %rax:
       '1)
     (t '(lambda (a b) 1 a)
       '(&lambda #f (a b) (&b (&_ (&q 1)) (&v a))))
+    (t '(&i 1)
+      '5)
+    (t '(&i ((&extern tort_prints) (&P "Hello, World!\n")))
+      '14)
+    (t '(&i ((&extern printf) (&P "Hello, World!\n")))
+      '14)
     (t '(foo 1 2)     '(&c (&v foo) (&q 1) (&q 2)))
     (t '(&primitive 1 2) '(&primitive (&q 1) (&q 2)))
     (t '(let ((a 1)) (lambda (x) (+ a x)))
