@@ -20,6 +20,7 @@
 (define (not o) (if o #f #t))
 
 (define (null? o) (eq? o '()))
+(define (not-nil o) (if (null? o) #f o))
 (define <cons> (%mtable-by-name 'cons))
 (define (pair? o) (eq? ('_mtable o) <cons>)) ;; bootstrap
 (define (cons a d) ('new <cons> a d))
