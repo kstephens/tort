@@ -113,5 +113,20 @@ void *tort_ptr_data(tort_v v)
 #define LUP(N,OP)						    \
   tort_v _tort_m_ptr__##N(tort_tp tort_v a)			    \
   { return (OP tort_P(a)) ? tort_true : tort_false; } 
-
 #include "tort/ops.h"
+
+tort_v _tort_m_ptr__nilQ(tort_tp tort_v a)
+{
+  return tort_P(a) ? tort_false : tort_true;
+}
+
+tort_v _tort_m_ptr__ADD(tort_tp tort_v a, tort_v b)
+{
+  return tort_p(a + tort_I(b));
+}
+
+tort_v _tort_m_ptr__SUB(tort_tp tort_v a, tort_v b)
+{
+  return tort_p(a - tort_I(b));
+}
+
