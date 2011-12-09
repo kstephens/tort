@@ -205,8 +205,9 @@ Returns result in %rax:
 	      ))
 	  ((&let)  ; (&let bindings body) => (&let env body)
 	    (let ((subenv ('subenv env)))
-	      ('_alloc-env= subenv ('alloc-env env)) ;; allocate from 
-	      ('closure= subenv ('closure env))
+	      ('_alloc-env= subenv ('alloc-env env)) ;; allocate from
+	      ;; same closure as parent environment, this is just a separate namespace. 
+	      ('closure= subenv ('closure env)) 
 	      (for-each (lambda (b)
 			  ('add subenv ('new env-binding 
 					 'name (car b) 
@@ -237,17 +238,8 @@ Returns result in %rax:
 	    (let ((b ('lookup-or-add-global env (cadr e))))
 	      ;; (display "   b = ")(write b)(newline)
 	      (set-car! (cdr e) b)
-	      ('referenced?= b #t)  ;; TODO: add reference count.
-	      ;; If this binding's closure is not in our closure,
-	      ;; mark the binding as closed-over.
-	      ;; b is exported from its closure and
-	      ;; imported into this.
-	      (if (not (eq? ('closure env) ('closure ('env b))))
-		(begin
-		  ('closed-over?= b #t)
-		  ('set ('exports ('env b)) b b)
-		  ('set ('imports env) b b))
-	      )))
+	      ('referenced-from! b env)
+	      ))
 	  ((&lambda &&c-func)  ;; (&lambda formals body)
 	    (f (cadr e) (caddr e)))
 	  ((&let)  ;; (&let env body) 
@@ -298,12 +290,18 @@ Returns result in %rax:
     (loc 
       (lambda (o b)
 	(let ((l ('loc b)))
-	  (if (locative? l)
-	    (begin 
-	      ('emit o `(movq ,(literal ('_to_c_ptr l)) (&r %rdx)))
-	      `(&o 0 (&r %rdx)))
-	    (if ('closed-over? b)
-	      `(&o ,(- locative-tag) ,l)
+	  (cond
+	    ((locative? l) ;; a known global.
+	      (begin 
+		('emit o `(movq ,(literal ('_to_c_ptr l)) (&r %rdx)))
+		`(&o 0 (&r %rdx))))
+#|
+	    (('export-index b)
+	      `(&o ,(- locative-tag) ,l))
+|#
+	    (('closed-over? b)
+	      `(&o ,(- locative-tag) ,l))
+	    (else
 	      l)))))
     (f 
       (lambda (o e)
@@ -426,7 +424,9 @@ Returns result in %rax:
 	      (for-each
 		(lambda (b)
 		  (if ('closed-over? b)
-		    (f o `(&s! ,b (&l ,('loc b))))))
+		    (begin
+		      (f o `(&s! ,b (&l ,('loc b))))))
+		  )
 		('binding-list env))
 	      ;; Emit body instructions.
 	      (f o (caddr e))
@@ -559,8 +559,8 @@ Returns result in %rax:
       '1)
     (t '(lambda (a b) 1 a)
       '(&lambda #f (a b) (&b (&_ (&q 1)) (&v a))))
-    (t '(&i 1)
-      '5)
+    (t '(&i 1) '5)
+    (t '(&I 5) '1)
     (t '(&i ((&extern tort_prints) (&P "Hello, World!\n")))
       '14)
     (t '(&i ((&extern printf) (&P "Hello, World!\n")))

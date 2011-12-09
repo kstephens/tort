@@ -12,6 +12,7 @@
     (macros           ('new <map>))
     (_global          #f)
     (exports          ('new <map>))
+    (export-vector    (vector))
     (imports          ('new <map>)) ; maps env-binding to env vector offset.
     (arg-regs         '#())
     (word-size        #f)
@@ -103,19 +104,40 @@
 	      (alloc-offset ('alloc-offset alloc-env))
 	      (alloc-size (or ('size binding) word-size)))
 	('size= binding alloc-size)
-	;; Align to word boundary.
-	(set! alloc-size (* (/ (+ alloc-size (- word-size 1)) word-size) word-size))
-	(set! alloc-offset (- alloc-offset alloc-size))
-	('alloc-offset= alloc-env alloc-offset)
-	(if (> ('alloc-offset-max alloc-env) alloc-offset)
-	  ('alloc-offset-max= alloc-env alloc-offset))
-	('loc= binding `(&o ,alloc-offset (&r %rbp)))
-	;; (debug 'allocate-binding)(debug binding)
-	)))
+	;; If it's exported, it's locative in the &export-vector.
+	(if ('export-index binding)
+	  ('loc= binding `(&o ,('export-index binding) &export-vector))
+	  ;; Else, it's locative is on the stack.
+	  (let* (
+		  (alloc-env (or ('alloc-env env) env))
+		  (alloc-offset ('alloc-offset alloc-env)))
+	    ;; Align to word boundary.
+	    (set! alloc-size (* (/ (+ alloc-size (- word-size 1)) word-size) word-size))
+	    (set! alloc-offset (- alloc-offset alloc-size))
+	    ('alloc-offset= alloc-env alloc-offset)
+	    (if (> ('alloc-offset-max alloc-env) alloc-offset)
+	      ('alloc-offset-max= alloc-env alloc-offset))
+	    ('loc= binding `(&o ,alloc-offset (&r %rbp)))
+	    ;; (debug 'allocate-binding)(debug binding)
+	    )))))
   (define-method environ ('allocate-bindings env)
     ;; (debug "allocate-bindings" env)
     (for-each (lambda (b) ('allocate-binding env b))
       ('binding-list env)))
+
+  (define-method environ ('add-export! env b)
+    (if (null? ('get ('exports self)))
+      (let ((export-index ('size ('export-vector self))))
+	(if (= export-index 0)
+	  (begin
+	    ;; Create a name for the export-vector.
+	    ('add env ('new env-binding 'name &export-vector))
+	    ;; Space for export-vector itself.
+	    ('add ('export-vector self) nil) 
+	    (set! export-index 1)))
+	('set ('exports self) b export-index)
+	('add ('export-vector self) b)
+	)))
 
   (define-struct env-binding
     (name        #f)
@@ -130,8 +152,27 @@
     (reg         #f)
     (rest-arg    #f)
     (restore-reg #f)
-    (exported     #f)
+    (export-index #f)
     )
+  (define-method env-binding ('referenced-from! b env)
+    ;; If this binding's closure is not in our closure,
+    ;; mark the binding as closed-over.
+    ;; b is exported from its origin closure and
+    ;; imported into this.
+    (let ((origin ('env b)))
+      ('referenced?= b #t)  ;; TODO: add reference count.
+      (if (not (eq? ('closure env) ('closure origin)))
+	;; Mark b as exported in all closure environments between here
+	;; and its origination.	
+	(let ((exporter ('parent env)))
+	  ('closed-over?= b #t)
+	  ('add-export! origin b)
+	  (while (not (eq? exporter origin))
+	    (let ((parent ('parent exporter)))
+	      (if (not (eq? ('closure exporter) ('closure parent)))
+		('add-export! exporter b))
+	      (set! exporter parent)))))))
+
   (define-method env-binding ('lisp_write self port)
     (display "#<b " port)
     (write ('id ('env self)) port) (display " " port)
