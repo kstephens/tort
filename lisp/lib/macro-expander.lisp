@@ -19,7 +19,7 @@
 ('add_method <macro-environment> 'set-transformer 
   (lambda (self symbol transformer)
     ('set ('bindings self) symbol transformer)
-    (display "\n\n  ### set-macro ")(write symbol)(write transformer)(display "\n\n")
+    ;; (display "\n\n  ### set-macro ")(write symbol)(write transformer)(display "\n\n")
     ))
 ('add_method <macro-environment> 'get-transformer
   (lambda (self car-expr)
