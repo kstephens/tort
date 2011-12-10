@@ -78,7 +78,7 @@
       (set! vals (cdr vals)))
     v))
 
-(load "lisp/lib/macro-expander.scm")
+(load "lisp/lib/macro-expander.lisp")
 (define <lisp-environment> (%mtable-by-name 'lisp_environment))
 ('add_method <lisp-environment> 'macro_expand
   (lambda (env expr)
