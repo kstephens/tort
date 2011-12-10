@@ -8,7 +8,7 @@ include $(BASE_DIR)/mk/config.mk
 include $(BASE_DIR)/mk/target.mk
 
 bootstrap : very-clean clean
-	$(MAKE) -C core bootstrap
+	$(MAKE) -C core bootstrap || $(MAKE) -C core bootstrap
 	$(MAKE) clean 
 	$(MAKE)
 
