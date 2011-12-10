@@ -6,6 +6,7 @@
 typedef struct tort_repl {
   tort_v input;
   tort_v output;
+  tort_v message;
   tort_v prompt;
   tort_v prompt_id;
   tort_v env;
