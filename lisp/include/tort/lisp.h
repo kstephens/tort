@@ -3,6 +3,8 @@
 
 #include "tort/core.h"
 
+extern int _tort_lisp_trace, _tort_lisp_macro_trace;
+
 typedef struct tort_cons { tort_H; /* same layout as tort_pair. */
   tort_v car, cdr; 
 } tort_cons;

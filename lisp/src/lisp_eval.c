@@ -592,14 +592,32 @@ tort_v _tort_m_lisp_repl__caughtE(tort_tp tort_repl *repl, tort_v value)
 }
 tort_v _tort_m_lisp_repl__eval(tort_tp tort_repl *repl)
 {
-  repl->result = tort_send(tort_s(lisp_eval), repl->expr, repl->env);
+  ((tort_lisp_environment*) repl->env)->msg = _tort_message->previous_message; // FIXME?
+  repl->result = tort_send(tort_s(lisp_eval_top_level), repl->expr, repl->env);
   return repl;
 }
 tort_v _tort_m_lisp_repl__print(tort_tp tort_repl *repl, tort_v thing)
 {
   tort_send(tort_s(lisp_write), thing, repl->output);
-  // tort_printf(repl->output, "\n");
   return repl;
+}
+
+tort_v _tort_m_lisp_repl__load(tort_tp tort_repl *repl, tort_v name)
+{
+  tort_v io, result;
+  repl = tort_send(tort_s(clone), repl);
+  repl->catch = tort_nil;
+  io = tort_send(tort_s(new), tort__mt(io));
+  io = tort_send(tort_s(open), io, name, tort_string_new_cstr("r"));
+  if ( io == tort_nil )
+    return tort_error(tort_ta "load: cannot open %T\n", name);
+  if ( repl->message != tort_nil )
+    tort_printf(repl->message, ";; reading %T\n", name);
+  repl->input = io;
+  result = tort_send(tort_s(run), repl);
+  if ( repl->message != tort_nil )
+    tort_printf(repl->message, ";; reading %T: done\n", name);
+  return result;
 }
 
 tort_v tort_runtime_initialize_lisp_eval()
@@ -609,6 +627,11 @@ tort_v tort_runtime_initialize_lisp_eval()
   tort_mtable_create_class("lisp_formals", 0);
   tort_mtable_create_class("lisp_closure", 0);
   tort_mtable_create_class("lisp_environment", 0);
+  {
+    const char *str = getenv("TORT_LISP_LIB_DIR");
+    tort_v dir = tort_string_new_cstr(str && *str ? str : TORT_LISP_LIB_DIR);
+    tort_send(tort_s(set), tort_(root), tort_s(lisp_lib_dir), dir);
+  }
   return 0;
 }
 

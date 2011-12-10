@@ -7,6 +7,8 @@
 
 (define (current-environment) &globals)
 (define (eval o e) ('lisp_eval o e))
+(define (load name) ('load &repl name))
+
 (define (apply f . args) (f . args))
 
 (define (%root sym) ('get &root sym))
@@ -373,20 +375,6 @@
 (define *load-debug* #f)
 (define-mtable-class lisp_repl)
 (define <lisp-repl> <lisp_repl>) ; FIXME
-(define (load fname . env)
-  (let ((out (if *load-debug* *standard-error* nil))
-	 (env (if (pair? env) (car env) &env))
-	 (repl nil))
-    (set! repl ('new <lisp-repl>))
-    ('output= repl out)
-    ('prompt= repl out)
-    ('env= repl env)
-    (call-with-input-file fname 
-      (lambda (f)
-	('input= repl f)
-	('run repl)))
-    ;; ('result repl) ; FIXME
-    ))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
