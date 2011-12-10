@@ -12,8 +12,28 @@
 (define (apply f . args) (f . args))
 
 (define (%root sym) ('get &root sym))
+
 (define (%mtable-by-name sym) ('get (%root 'mtable) sym))
 (define (%mtable o) ('_mtable o))
+(define <mtable> (%mtable-by-name 'mtable))
+
+(define <string> (%mtable-by-name 'string))
+(define (string? o) (eq? ('_mtable o) <string>))
+
+(define *standard-input*  (%root 'stdin))
+(define *standard-output* (%root 'stdout))
+(define *standard-error*  (%root 'stderr))
+
+(define (newline . port)
+  ('_write (if (pair? port) (car port) *standard-output*) "\n"))
+(define (write obj . port)
+  ('lisp_write obj 
+    (if (pair? port) (car port) *standard-output*)))
+(define (display obj . port)
+  (set! port (if (pair? port) (car port) *standard-output*)) 
+  (if (string? obj)
+    ('_write port obj)
+    (write obj port)))
 
 (define (make mt . args) ('new mt . args))
 
@@ -31,20 +51,42 @@
 (define (set-car! o v) ('set-car! o v))
 (define (set-cdr! o v) ('set-cdr! o v))
 (define (list . args) args)
+(define (length o) ('size o))
+(define list-length length)
+(define (map f l)
+  (let ((result (cons #f '()))
+	 (r #f)
+	 (c '()))
+    (set! r result)
+    (while (pair? l)
+      (set! c (cons (f (car l)) '()))
+      (set-cdr! r c)
+      (set! r c)
+      (set! l (cdr l)))
+    (cdr result)))
+(define <vector> (%mtable-by-name 'vector))
+(define (vector-ref s i) ('get s i))
+(define (vector-set! s i v) ('set s i v))
+(define <map> (%mtable-by-name 'map))
+(define (+ a b) ('+ a b))
+(define (vector . vals)
+  (let ((v ('new <vector> (list-length vals)))
+	 (i 0))
+    (while (not (null? vals))
+      (vector-set! v i (car vals))
+      (set! i (+ i 1))
+      (set! vals (cdr vals)))
+    v))
 
-(define (%define-macro name transformer)
-  ('define_macro &env name transformer))
-
-(%define-macro 'define-macro 
-  (lambda (name . body)
-    (if (pair? name)
-      (list '%define-macro (list 'quote (car name)) (cons 'lambda (cons (cdr name) body)))
-      (cons '%define-macro (cons (list 'quote name) body)))))
+(load "lisp/lib/macro-expander.scm")
+(define <lisp-environment> (%mtable-by-name 'lisp_environment))
+('add_method <lisp-environment> 'macro_expand
+  (lambda (env expr)
+    ('expand *top-level-macro-environment* expr)
+    ))
 
 (define-macro (send sel rcvr . args) `(,sel ,rcvr ,@args))
 
-(define (length o) ('size o))
-(define list-length length)
 (define (reverse l)
   (let ((r nil))
     (while (pair? l)
@@ -61,18 +103,6 @@
 	    (set! l '()))
 	  (set! l (cdr l))))
     r))
-
-(define (map f l)
-  (let ((result (cons #f '()))
-	 (r #f)
-	 (c '()))
-    (set! r result)
-    (while (pair? l)
-      (set! c (cons (f (car l)) '()))
-      (set-cdr! r c)
-      (set! r c)
-      (set! l (cdr l)))
-    (cdr result)))
 
 (define (map! f l)
   (while (pair? l)
@@ -156,12 +186,14 @@
 
 (define-macro quasiquote &quasiquote)
 
+#|
 (define-macro (let-macro bindings . body)
   `(&let ()
      ,@(map (lambda (b)
 	      `('set_macro &env ',(caar b) (lambda ,(cdar b) ,@(cdr b))))
 	 bindings)
      ,@body))
+|#
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -182,11 +214,13 @@
     ((null? bindings) `(begin ,@body))
     ((pair? bindings)
       `(let (,(car bindings)) (let* (,@(cdr bindings)) ,@body)))))
- 
+
+#|
 (define (macro-expand expr . env)
   (set! env (if (pair? env) (car env) &env))
   (let ((result ('lisp_macro_expand expr env)))
     (if (null? result) expr result)))
+|#
 
 (define-macro (macro-bind bindings . body)
   (let ((anon-bindings (map (lambda (b) (cons (make-symbol '()) b)) bindings)))
@@ -254,17 +288,7 @@
 (define (string-set! s i v) ('set s i v))
 
 (define-mtable-class vector)
-(define (vector . vals)
-  (let ((v ('new <vector> (list-length vals)))
-	 (i 0))
-    (while (not (null? vals))
-      (vector-set! v i (car vals))
-      (set! i (+ i 1))
-      (set! vals (cdr vals)))
-    v))
 (define (vector-length s) ('size s))
-(define (vector-ref s i) ('get s i))
-(define (vector-set! s i v) ('set s i v))
 (define (vector-for-each f l)
   (let ((i 0))
     (while (< i (vector-length l))
@@ -285,9 +309,6 @@
 
 (define-mtable-class boolean)
 
-(define *standard-input*  (%root 'stdin))
-(define *standard-output* (%root 'stdout))
-(define *standard-error*  (%root 'stderr))
 (define-mtable-class io)
 (define (open-output-file fname)
   ('open ('new <io>) fname "w+"))
@@ -307,19 +328,6 @@
     (set! r (proc f))
     (close-output-file f)
     r))
-
-(define (newline . port)
-  ('_write (if (pair? port) (car port) *standard-output*) "\n"))
-
-(define (write obj . port)
-  ('lisp_write obj 
-    (if (pair? port) (car port) *standard-output*)))
-
-(define (display obj . port)
-  (set! port (if (pair? port) (car port) *standard-output*)) 
-  (if (string? obj)
-    ('_write port obj)
-    (write obj port)))
 
 (define (read . port)
   (set! port (if (pair? port) (car port) *standard-input*))
@@ -412,16 +420,14 @@
 ;; ('add_method <tagged> '+ (lambda (a b) (+ a b)))
 ('add_method <string> '+ (lambda (a b) ('append ('clone a) b)))
 
-(display ";; boot.lisp complete!")(newline)
-;; ('_inspect ('get &root '_printf_dispatch) *standard-output*)(newline)
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;; (set! *load-debug* #t)
-; (set! &trace 1)
 (load "lisp/lib/struct.lisp")
+
 (define (%extern sym)
   (let ((ptr ('get ('get ('get &root 'dl_maps) 'all) sym)))
     (display " sym ")(write sym)(display " => ")(write ptr)(newline)
     ptr
     ))
-;; (load "compiler/lib/compiler.scm")
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(display ";; boot.lisp complete!")(newline)
+; (set! &trace 0)

@@ -40,7 +40,6 @@ typedef struct tort_lisp_environment { tort_H;
   tort_v rest;
   tort_v rest_ok;
   tort_v parent;
-  tort_v macros;
   tort_v _globals;
   tort_v msg;
 } tort_lisp_environment;
@@ -52,7 +51,6 @@ tort_ACCESSOR(lisp_environment,tort_v,rest);
 tort_ACCESSOR(lisp_environment,tort_v,rest_ok);
 tort_ACCESSOR(lisp_environment,tort_v,parent);
 tort_ACCESSOR(lisp_environment,tort_v,_globals);
-tort_ACCESSOR(lisp_environment,tort_v,macros);
 tort_ACCESSOR(lisp_environment,tort_v,msg);
 
 tort_v _tort_M_lisp_formals__new(tort_tp tort_mtable *mtable, tort_v formals)
@@ -164,9 +162,8 @@ tort_v _tort_m_lisp_closure__lisp_apply(tort_tp tort_lisp_closure *obj, tort_v a
 
 tort_v _tort_m_lisp_environment__lisp_write(tort_tp tort_lisp_environment *rcvr, tort_v io)
 {
-  return tort_printf(io, "#&env(%O %O . %O)", 
+  return tort_printf(io, "#&env(%O . %O)", 
 		     rcvr->formals->map, 
-		     rcvr->macros,
 		     rcvr->parent);
 }
 
@@ -216,7 +213,6 @@ tort_v _tort_M_lisp_environment__new(tort_tp tort_mtable *mtable, tort_lisp_form
   env->parent = parent_env;
   if ( parent_env != tort_nil )
     env->msg = ((tort_lisp_environment *)parent_env)->msg;
-  env->macros = tort_nil;
   env->_globals = tort_false;
   return env;
 }
@@ -327,34 +323,23 @@ tort_v _tort_m_lisp_environment__add(tort_tp tort_lisp_environment *env, tort_v 
   return_tort_send(tort_s(add_locative), env, name, NEW_LOC(value));
 }
 
-tort_v _tort_m_lisp_environment__get_macro(tort_tp tort_lisp_environment *env, tort_v name)
-{
-  tort_v result = tort_nil;
-  if ( env->macros != tort_nil )
-    result = tort_send(tort__s(get), env->macros, name);
-  if ( result == tort_nil && env->parent != tort_nil )
-    return_tort_send(tort_s(get_macro), env->parent, name);
-  return result;
-}
-
-tort_v _tort_m_lisp_environment__set_macro(tort_tp tort_lisp_environment *env, tort_v name, tort_v value)
-{
-  if ( env->macros == tort_nil )
-    env->macros = tort_send(tort__s(new), tort__mt(map));
-  tort_send(tort__s(set), env->macros, name, value);
-  return name;
-}
-
 tort_v _tort_m_lisp_environment__define(tort_tp tort_lisp_environment *env, tort_v name, tort_v value)
 {
   tort_v globals = tort_send(tort_s(globals), env);
   return_tort_send(tort__s(add), globals, name, value);
 }
 
-tort_v _tort_m_lisp_environment__define_macro(tort_tp tort_lisp_environment *env, tort_v name, tort_v value)
+tort_v _tort_m_object__lisp_eval_top_level(tort_tp tort_v expr, tort_v env)
 {
-  tort_v globals = tort_send(tort_s(globals), env);
-  return_tort_send(tort_s(set_macro), globals, name, value);
+  if ( _tort_lisp_macro_trace ) tort_printf(tort_stderr, "  ME    %T\n", expr);
+  expr = tort_send(tort_s(macro_expand), env, expr);
+  if ( _tort_lisp_macro_trace ) tort_printf(tort_stderr, "  ME => %T\n", expr);
+  return_tort_send(tort_s(lisp_eval), expr, env);
+}
+
+tort_v _tort_m_lisp_environment__macro_expand(tort_tp tort_v env, tort_v expr)
+{
+  return expr;
 }
 
 tort_v _tort_m_symbol__lisp_eval(tort_tp tort_v sym, tort_v env)
@@ -451,33 +436,12 @@ tort_v _tort_m_cons__lisp_eval(tort_tp tort_cons *obj, tort_v env)
   }
   else {
     tort_v args;
-    if ( (args = tort_send(tort_s(lisp_macro_expand), obj, env)) != tort_nil ) {
-      return_tort_send(tort_s(lisp_eval), args, env);
-    } else {
-      val  = tort_send(tort_s(lisp_eval_car), val, env);
-      args = tort_send(tort_s(lisp_eval_args), obj->cdr, env);
-      // if ( _tort_lisp_trace || 1) tort_printf(tort_stderr, "\n  lisp_eval %O\n", obj);
-      // if ( _tort_lisp_trace || 1) tort_printf(tort_stderr, "\n  f = %O, args = %O\n", val, args);
-      return_tort_send(tort_s(lisp_apply), val, args, env);
-    }
+    val  = tort_send(tort_s(lisp_eval_car), val, env);
+    args = tort_send(tort_s(lisp_eval_args), obj->cdr, env);
+    // if ( _tort_lisp_trace || 1) tort_printf(tort_stderr, "\n  lisp_eval %O\n", obj);
+    // if ( _tort_lisp_trace || 1) tort_printf(tort_stderr, "\n  f = %O, args = %O\n", val, args);
+    return_tort_send(tort_s(lisp_apply), val, args, env);
   }
-}
-
-tort_v _tort_m_cons__lisp_macro_expand(tort_tp tort_cons *obj, tort_v env)
-{
-  tort_v val = obj->car;
-  if ( tort_h_mtable(val) == tort__mt(symbol) && (val = tort_send(tort_s(get_macro), env, val)) != tort_nil ) {
-    if ( _tort_lisp_macro_trace >= 2 ) tort_printf(tort_stderr, "   M  %O =>\n    %O\n", obj->car, val);
-    val = tort_send(tort_s(lisp_apply), val, obj->cdr, env);
-    if ( _tort_lisp_macro_trace ) tort_printf(tort_stderr, "   EM %O =>\n    %O\n", obj, val);
-    return val;
-  }
-  return tort_nil;
-}
-
-tort_v _tort_m_object__lisp_macro_expand(tort_tp tort_v obj, tort_v env)
-{
-  return tort_nil;
 }
 
 tort_v _tort_m_symbol__lisp_eval_car(tort_tp tort_v obj, tort_v env)
@@ -570,6 +534,8 @@ tort_v _tort_m_object__lisp_eval_body(tort_tp tort_cons *obj, tort_v env)
   return_tort_send(tort_s(lisp_eval), obj->car, env);
 }
 
+//////////////////////////////////////////////////////////////////////
+
 tort_v _tort_m_lisp_repl__read(tort_tp tort_repl *repl)
 {
   repl->expr = tort_send(tort_s(lisp_read), repl->input);
@@ -582,7 +548,6 @@ tort_v _tort_m_lisp_repl__new_environment(tort_tp tort_repl *repl)
 	      tort_nil, tort_nil, tort_nil, tort_nil);
   tort_send(tort_s(add), env, tort_s(ANDrepl), repl);
   repl->env = env;
-  env->msg = _tort_message->previous_message; // FIXME?
   return repl;
 }
 tort_v _tort_m_lisp_repl__caughtE(tort_tp tort_repl *repl, tort_v value)
