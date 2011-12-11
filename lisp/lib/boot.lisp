@@ -6,7 +6,7 @@
 (define nil '())
 
 (define (current-environment) &globals)
-(define (eval o e) ('lisp_eval o e))
+(define (eval o e) ('lisp_eval_top_level o e))
 (define (load name) ('load &repl name))
 
 (define (apply f . args) (f . args))
@@ -84,6 +84,9 @@
   (lambda (env expr)
     ('expand *top-level-macro-environment* expr)
     ))
+(define (macro-expand expr . env)
+  (set! env (if (pair? env) (car env) &env))
+  ('expand *top-level-macro-environment* expr))
 
 (define-macro (send sel rcvr . args) `(,sel ,rcvr ,@args))
 
@@ -186,15 +189,6 @@
 
 (define-macro quasiquote &quasiquote)
 
-#|
-(define-macro (let-macro bindings . body)
-  `(&let ()
-     ,@(map (lambda (b)
-	      `('set_macro &env ',(caar b) (lambda ,(cdar b) ,@(cdr b))))
-	 bindings)
-     ,@body))
-|#
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define-macro (begin . body)
@@ -214,13 +208,6 @@
     ((null? bindings) `(begin ,@body))
     ((pair? bindings)
       `(let (,(car bindings)) (let* (,@(cdr bindings)) ,@body)))))
-
-#|
-(define (macro-expand expr . env)
-  (set! env (if (pair? env) (car env) &env))
-  (let ((result ('lisp_macro_expand expr env)))
-    (if (null? result) expr result)))
-|#
 
 (define-macro (macro-bind bindings . body)
   (let ((anon-bindings (map (lambda (b) (cons (make-symbol '()) b)) bindings)))
