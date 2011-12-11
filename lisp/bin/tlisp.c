@@ -5,7 +5,7 @@
 int main(int argc, char **argv, char **environ)
 {
   int argi;
-  tort_v in = tort_nil, out = tort_nil, io = tort_nil;
+  tort_v in = tort_nil, out = tort_nil;
   tort_repl *repl = tort_nil;
   int interactive = 0, verbose = 0;
 
@@ -55,27 +55,15 @@ int main(int argc, char **argv, char **environ)
       out = tort_nil;
     } else {
       in = tort_string_new_cstr(arg);
-      tort_printf(out, ";; %s: reading %T\n", argv[0], in);
-      io = tort_send(tort_s(new), tort__mt(io));
-      io = tort_send(tort_s(open), io, in, tort_string_new_cstr("r"));
-      in = io;
-      out = tort_nil;
+      tort_send(tort_s(load), repl, in);
     }
-    repl->input = in;
-    repl->output = out;
-    if ( verbose ) {
-      repl->prompt = out;
-      repl->message = tort_stderr;
-    }
-    tort_send(tort_s(run), repl);
-    repl->prompt = tort_nil;
   }
   if ( argc == 1 || interactive ) {
     repl->input = tort_stdin;
     repl->output = tort_stdout;
     repl->message = tort_stderr;
     repl->prompt = tort_stderr;
-    tort_printf(tort_stderr, ";; %s: READY:\n", argv[0]);
+    tort_printf(repl->prompt, ";; %s: READY:\n", argv[0]);
     tort_send(tort_s(run), repl);
   }
   tort_send(tort_s(print), repl, repl->result);
