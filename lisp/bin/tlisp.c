@@ -62,7 +62,7 @@ int main(int argc, char **argv, char **environ)
     repl->input = tort_stdin;
     repl->output = tort_stdout;
     repl->message = tort_stderr;
-    repl->prompt = tort_stderr;
+    repl->prompt = tort_stdout;
     tort_printf(repl->prompt, ";; %s: READY:\n", argv[0]);
     tort_send(tort_s(run), repl);
   }
