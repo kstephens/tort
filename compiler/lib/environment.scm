@@ -120,18 +120,18 @@
 	    ('loc= binding `(&o ,alloc-offset (&r %rbp)))
 	    ;; (debug 'allocate-binding)(debug binding)
 	    )))))
-  (define-method environ ('allocate-bindings env)
+  (define-method environ ('allocate-bindings self)
     ;; (debug "allocate-bindings" env)
-    (for-each (lambda (b) ('allocate-binding env b))
-      ('binding-list env)))
+    (for-each (lambda (b) ('allocate-binding self b))
+      ('binding-list self)))
 
-  (define-method environ ('add-export! env b)
+  (define-method environ ('add-export! self b)
     (if (null? ('get ('exports self)))
       (let ((export-index ('size ('export-vector self))))
 	(if (= export-index 0)
 	  (begin
 	    ;; Create a name for the export-vector.
-	    ('add env ('new env-binding 'name &export-vector))
+	    ('add self ('new env-binding 'name '&export-vector))
 	    ;; Space for export-vector itself.
 	    ('add ('export-vector self) nil) 
 	    (set! export-index 1)))
