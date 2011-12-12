@@ -209,16 +209,21 @@
     ((pair? bindings)
       `(let (,(car bindings)) (let* (,@(cdr bindings)) ,@body)))))
 
+#|
 (define-macro (macro-bind bindings . body)
   (let ((anon-bindings (map (lambda (b) (cons (make-symbol '()) b)) bindings)))
    `(let ,(map (lambda (b) `(,(cadr b) ,(car b))) anon-bindings)
      (let ,(map (lambda (b) `(,(car b) ,(caddr b))) anon-bindings)
        ,@body))))
+|#
 
 (define-macro (letrec bindings . body)
   `(let ,(map (lambda (b) `(,(car b) #f)) bindings)
      ,@(map (lambda (b) `(set! ,(car b) ,@(cdr b))) bindings)
      ,@body))
+
+(define <symbol> (%mtable-by-name 'symbol)) ;; bootstrap
+(define (make-symbol s) ('new <symbol> s))
 
 (define-macro (case val-expr . cases)
   (letrec ((val (make-symbol '()))
@@ -228,7 +233,7 @@
 		 (let ((c (car cases)))
 		   (if (eq? (car c) 'else)
 		     `(begin ,@(cdr c))
-		     `(if (pair? (memv ,val ',(car c)))
+		     `(if (or ,@(map (lambda (e) `(eqv? ',e ,val)) (car c)))
 			(begin ,@(cdr c))
 			,(%case (cdr cases)))))))))
     `(let ((,val ,val-expr))
@@ -261,7 +266,7 @@
 (define (string-append . args)
   (set-car! args ('clone (car args)))
   (%reduce 'append args))
-(define <symbol> (%mtable-by-name 'symbol)) ;; bootstrap
+
 (define-macro (define-mtable-class name)
   (let ((name-s (symbol->string name))
 	 (mtable (%mtable-by-name name)))
@@ -269,6 +274,7 @@
        (define ,(string->symbol (string-append "<" name-s ">")) ',mtable)
        (define (,(string->symbol (string-append name-s "?")) o) (eq? ('_mtable o) ',mtable)))))
 (define-mtable-class string)
+(define-mtable-class symbol)
 (define (string-new . size) ('new <string> (if (pair? size) (car size) 0)))
 (define (string-length s) ('size s))
 (define (string-ref s i) ('get s i))
@@ -290,9 +296,6 @@
       (set! r (cdr r))
       (set! i (+ i 1)))
     (cdr l)))
-
-(define-mtable-class symbol)
-(define (make-symbol s) ('new <symbol> s))
 
 (define-mtable-class boolean)
 
