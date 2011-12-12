@@ -1,3 +1,4 @@
+(define *macro-expand-trace* #f)
 (define <macro-environment> ('new_class <mtable> <vector>))
 ('add_method ('_mtable <macro-environment>) 'new 
   (lambda (mtable)
@@ -45,7 +46,9 @@
     e))
 ('add_method <macro-environment> 'expand-expr
   (lambda (self e)
-    ;; (display "    expand-expr ")(write e)(newline)
+    (if *macro-expand-trace*
+      (let ()
+	(display "    expand-expr ")(write e)(newline)))
     (if (pair? e)
       (let ((head (car e)))
 	(if (eq? 'quote head) 
