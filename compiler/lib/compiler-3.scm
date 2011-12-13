@@ -1,69 +1,3 @@
-#|
-x86 64: calling sequence:
-
-http://en.wikipedia.org/wiki/X86_calling_conventions#Microsoft_x64_calling_convention
-
-System V AMD64 ABI convention
-
-The calling convention of the System V AMD64 application binary interface[9] is followed on Linux and other non-Microsoft operating systems. 
-The registers RDI, RSI, RDX, RCX, R8 and R9 are used for integer and pointer arguments while XMM0, XMM1, XMM2, XMM3, XMM4, XMM5, XMM6 and XMM7 are used for floating point arguments.
-For system calls, R10 is used instead of RCX.[9] As in the Microsoft x64 calling convention, additional arguments are pushed onto the stack and the return value is stored in RAX.
-
-
-At Entry into callee:
-
-(arg0, arg1, arg2, arg3, arg4, arg5, arg6)
- %rdi  %rsi  %rdx  %rcx  %r8   %r9   16(%rbp)
-
-Callee saves %rbp:
-
-	pushq	%rbp
-	movq	%rsp, %rbp
-
-???? prbp arg6
-0    8    16
-^
-|
-rsp
-rbp
-
-Callee saves registers:
-
-	movq	%rbx, -40(%rbp)
-	movq	%r12, -32(%rbp)
-	movq	%r13, -24(%rbp)
-	movq	%r14, -16(%rbp)
-	movq	%r15, -8(%rbp)
-	subq	$80, %rsp // extra space for %r9 temp and additional arg?
-
-Callee saves arguments on stack:
-	movq    %r9,  -56(%rbp)
-
-????  or9   ???? orbx or12 or13 or14 or15 orbp
--64  -56    -48  -40  -32  -24  -16  -8   0
-^                                         ^
-|                                         |
-%rsp                                      %rbp
-
-... DO STUFF...
-
-Callee restores registers:
-
-	movq	-40(%rbp), %rbx
-	movq	-32(%rbp), %r12
-	movq	-24(%rbp), %r13
-	movq	-16(%rbp), %r14
-	movq	-8(%rbp), %r15
-
-Callee restores %rbp and %rsp:
-
-	leave
-
-Returns result in %rax:
-
-	ret
- 
-|#
 ;; (set! &trace 9)
 (load "compiler/lib/environment.scm")
 (load "compiler/lib/debug.scm")
@@ -87,7 +21,7 @@ Returns result in %rax:
   ;; (&e env expr): binds expr in env.
   ;; (&_ expr): Void expression, result of expr not used.
   ;; (&extern SYM) => (&g binding): external global binding.
-  ;; (&c f . args); Call f with args.
+  ;; (&c f . args); Call C function f with args.
   ;; (&p expr): Create boxed pointer for expr value.
   ;; (&P p-expr): Get boxed pointer's value.
   ;; (&L! l-expr v-expr): Set locative's value.
@@ -115,11 +49,11 @@ Returns result in %rax:
 			    unspec)))
 	    ((while)  `(&while ,(f (cadr e)) ,(f `(begin ,@(cddr e)))))
 	    ((set!)   `(&set! (&v ,(cadr e)) ,(f (caddr e))))
-	    ((lambda)   ; (lambda formals . body) => (&lambda 'formals (begin . body) 'name)
+	    ((lambda)   ;; (lambda formals . body) => (&lambda 'formals (begin . body) 'name)
 	      `(&lambda  ,`(&q ,(cadr e))  ,(f `(begin ,@(cddr e)))))
-	    ((&c-func)  ; (&c-func name formals . body) => (&&c-func 'formals (begin . body) 'name)
+	    ((&c-func)  ;; (&c-func name formals . body) => (&&c-func 'formals (begin . body) 'name)
 	      `(&&c-func ,`(&q ,(caddr e)) ,(f `(begin ,@(cdddr e))) (&q ,(cadr e))))
-	    ((let)      ; (let bindings . body) => (&let #f bindings (begin . body))
+	    ((let)      ;; (let bindings . body) => (&let #f bindings (begin . body))
 	      `(&let     ,(map (lambda (e) `(,(car e) ,(f (cadr e)))) (cadr e))
 		            ,(f `(begin ,@(cddr e)))))
 	    ((begin)  (cond
@@ -162,28 +96,40 @@ Returns result in %rax:
 	((environ? e) e)
 	((eq? (car e) '&q) e)
 	((eq? (car e) '&v) e)
+	((eq? (car e) '&r) e)
 	((eq? (car e) '&&extern) e)
-	((eq? (car e) '&lambda)  ; (&lambda formals body)
+#|
+	((and 
+	   (eq? (car e) '&eq?)  ;; (&eq? 'x 'y)
+	   (eq? (car (cadr e)) '&q)
+	   (eq? (car (caddr e)) '&q))
+	  (f `(&q ,(eq? (cadr (cadr e)) (cadr (caddr e))))))
+	((and 
+	   (eq? (car e) '&if)  ;; (&if '??? ...)
+	   (eq? (car (cadr e)) '&q))
+	  (f (if (cadr (cadr e)) (caddr e) (cadddr e))))
+|#
+	((eq? (car e) '&lambda)  ;; (&lambda formals body)
 	  `(&lambda  ,(cadr e) ,(f (caddr e))))
-	((eq? (car e) '&&c-func) ; (&&c-func formals body name)
+	((eq? (car e) '&&c-func) ;; (&&c-func formals body name)
 	  `(&&c-func ,(cadr e) ,(f (caddr e)) ,(f (cadddr e))))
-	((eq? (car e) '&let)     ; (&let bindings body)
-	  (if (null? (cadr e))   ; (&let () body)
+	((eq? (car e) '&let)     ;; (&let bindings body)
+	  (if (null? (cadr e))   ;; (&let () body)
 	    (f (caddr e))
 	    `(&let ,(map (lambda (e) `(,(car e) ,(f (cadr e)))) (cadr e))
 	       ,(f (caddr e)))))
-	((and                    ; (&c (&q SYMBOL) ...) => 
-	   (eq? (car e) '&c)  ; (&send (&q SYMBOL) ...)
+	((and                    ;; (&c (&q SYMBOL) ...) => 
+	   (eq? (car e) '&c)     ;;   (&send (&q SYMBOL) ...)
 	   (pair? (cadr e)) (eq? (car (cadr e)) '&q)
 	   (symbol? (cadr (cadr e))))
 	  `(&send ,@(map f (cdr e))))
 	((and 
-	   (eq? (car e) '&c)                       ; (&c
-	   (pair? (cadr e)) (eq? (caadr e) '&lambda)) ;   (&lambda
+	   (eq? (car e) '&c)                          ;; (&c
+	   (pair? (cadr e)) (eq? (caadr e) '&lambda)) ;;   (&lambda
 	  (let ( (b '()) 
-		 (vars  (cadr  (cadr e)))            ;     vars
-		 (body  (caddr (cadr e)))            ;     body)
-		 (inits (cddr e))                     ;  . inits)
+		 (vars  (cadr  (cadr e)))             ;;      vars
+		 (body  (caddr (cadr e)))             ;;      body)
+		 (inits (cddr e))                     ;;      . inits)
 		 )
 	    (while (or (pair? vars) (pair? inits))
 	      (set! b (cons (list (car vars) (f (car inits))) b))
@@ -363,7 +309,11 @@ Returns result in %rax:
 	    ('emit o `(movq %rax ,('loc (cadr e)))))
 	  ((&set!)
 	    (f o (caddr e))
-	    ('emit o `(movq %rax ,(loc o (cadr e)))))
+	    (cond
+	      ((and (pair? (cadr e)) (eq? (car (cadr e)) '&r))
+		('emit o `(movq %rax ,(cadr (cadr e))))))
+	      (else
+		('emit o `(movq %rax ,(loc o (cadr e))))))
 	  ((&eq?) 
 	    (let ((Lf ('label o))
 		  (Le ('label o)))
@@ -502,7 +452,7 @@ Returns result in %rax:
 		    (f o ('init b)))))
 	      ('binding-list (cadr e)))
 	    (f o (caddr e)))
-	  ((&c)
+	  ((&c) ;; C function call.
 	    (let ((stack-args-size 0) (nargs 0))
 	      ;; Push args onto stack.
 	      (for-each
@@ -526,8 +476,18 @@ Returns result in %rax:
 	      ('emit o '(callq* (&r %rax)))
 	      ;; Pop remaining stack args.
 	      (if (> stack-args-size 0)
-		('emit o `(addq (&$ ,stack-args-size) %rsp)))))
+		('emit o `(addq (&$ ,stack-args-size) (&r %rsp))))))
 	  ((&e) (f o (caddr e)))
+	  ((&o)
+	    (f o (cadr e))
+	    ('emit o '(pushq (&r %rax)))
+	    (f o (caddr e))
+	    ('emit o 
+	      '(popq (&r %rdx)) 
+	      '(addq (&r %rdx) (&r %rax))
+	      '(movq (&o 0 (&r %rax)) (&r %rax))))
+	  ((&r)
+	    ('emit o '(movq ,e (&r %rax))))q
 	  (else
 	    (for-each (lambda (e) (f o e)) (cdr e))))
 	e)))
