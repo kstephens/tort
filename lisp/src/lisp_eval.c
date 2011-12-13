@@ -577,11 +577,11 @@ tort_v _tort_m_lisp_repl__load(tort_tp tort_repl *repl, tort_v name)
   if ( io == tort_nil )
     return tort_error(tort_ta "load: cannot open %T\n", name);
   if ( repl->message != tort_nil )
-    tort_printf(repl->message, ";; reading %T\n", name);
+    tort_printf(repl->message, ";; load %T\n", name);
   repl->input = io;
   result = tort_send(tort_s(run), repl);
   if ( repl->message != tort_nil )
-    tort_printf(repl->message, ";; reading %T: done\n", name);
+    tort_printf(repl->message, ";; load %T: done\n", name);
   return result;
 }
 
