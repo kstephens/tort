@@ -1,0 +1,12 @@
+(define-struct label
+  (id #f)
+  (name #f)
+  (scope 'local)
+  (position #f)
+  (references '())
+  )
+(define-method label ('lisp_write self port)
+  (case ('scope self)
+    ((global)
+      (display "g:" port)))
+  ('lisp_write ('name self) port))
