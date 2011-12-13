@@ -55,7 +55,9 @@ int main(int argc, char **argv, char **environ)
       out = tort_nil;
     } else {
       in = tort_string_new_cstr(arg);
+      if ( verbose ) repl->message = tort_stderr;
       tort_send(tort_s(load), repl, in);
+      repl->message = tort_nil;
     }
   }
   if ( argc == 1 || interactive ) {
