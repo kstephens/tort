@@ -209,13 +209,11 @@
     ((pair? bindings)
       `(let (,(car bindings)) (let* (,@(cdr bindings)) ,@body)))))
 
-#|
 (define-macro (macro-bind bindings . body)
   (let ((anon-bindings (map (lambda (b) (cons (make-symbol '()) b)) bindings)))
    `(let ,(map (lambda (b) `(,(cadr b) ,(car b))) anon-bindings)
      (let ,(map (lambda (b) `(,(car b) ,(caddr b))) anon-bindings)
        ,@body))))
-|#
 
 (define-macro (letrec bindings . body)
   `(let ,(map (lambda (b) `(,(car b) #f)) bindings)
