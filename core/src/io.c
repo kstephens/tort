@@ -78,26 +78,30 @@ tort_v _tort_M_io__new(tort_tp tort_mtable *mtable)
 
 tort_v _tort_m_io__open(tort_tp tort_io *rcvr, tort_v name, tort_v mode)
 {
+  tort_send(tort__s(close), rcvr);
   if ( (FP = fopen(tort_string_data(name), tort_string_data(mode))) ){
     ++ _tort_io_open_count;
     IO->name = name;
     IO->mode = mode;
     IO->flags |= 1;
     tort_send(tort__s(__register_finalizer), rcvr);
+    return rcvr;
   }
-  return rcvr;
+  return tort_nil;
 }
 
 tort_v _tort_m_io__popen(tort_tp tort_io *rcvr, tort_v name, tort_v mode)
 {
+  tort_send(tort__s(close), rcvr);
   if ( (FP = popen(tort_string_data(name), tort_string_data(mode))) ) {
     ++ _tort_io_open_count;
     IO->name = name;
     IO->mode = mode;
     IO->flags |= 3;
     tort_send(tort__s(__register_finalizer), rcvr);
+    return rcvr;
   }
-  return rcvr;
+  return tort_nil;
 }
 
 tort_v _tort_m_io__close(tort_tp tort_io *rcvr)
