@@ -23,5 +23,6 @@ tort_d_mt(tagged)
 tort_d_mt(value)
 tort_d_mt(vector)
 tort_d_mt(vector_base)
+tort_d_mt(word)
 /* -*- c -*- */
 #undef tort_d_mt

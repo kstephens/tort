@@ -1,15 +1,30 @@
 #include "tort/tort.h"
 
-tort_v _tort_m_object___to_c_literal(tort_tp tort_v p)
+tort_v _tort_m_object___to_literal(tort_tp tort_v p)
 {
   char buf[64];
   snprintf(buf, sizeof(buf) - 1, "0x%llx", (unsigned long long) (size_t) p);
   return tort_string_new(buf, strlen(buf));
 }
-tort_v _tort_m_fixnum___to_c_literal(tort_tp tort_v p)
+
+tort_v _tort_m_tagged___to_literal(tort_tp tort_v p)
 {
   char buf[64];
   snprintf(buf, sizeof(buf) - 1, "%lld", (long long) (ssize_t) p);
+  return tort_string_new(buf, strlen(buf));
+}
+
+tort_v _tort_m_word___to_literal(tort_tp tort_v p)
+{
+  char buf[64];
+  snprintf(buf, sizeof(buf) - 1, "%lld", (unsigned long long) tort_W(p));
+  return tort_string_new(buf, strlen(buf));
+}
+
+tort_v _tort_m_ptr___to_literal(tort_tp tort_v p)
+{
+  char buf[64];
+  snprintf(buf, sizeof(buf) - 1, "0x%llx", (unsigned long long) (size_t) tort_P(p));
   return tort_string_new(buf, strlen(buf));
 }
 

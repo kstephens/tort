@@ -131,6 +131,15 @@ struct tort_message { tort_H;
 tort_h_struct(tort_message);
 
 typedef
+struct tort_word { tort_H; /* basic word data. */
+  tort_vi data;
+} tort_word;
+#define tort_W(V) tort_ref(tort_word, V)->data
+#define tort_w(P) tort_word_new(P)
+tort_vi tort_word_data(tort_v x);
+tort_v tort_word_new(tort_vi word);
+
+typedef
 struct tort_ptr { tort_H; /* basic ptr. */
   void *data;
 } tort_ptr;

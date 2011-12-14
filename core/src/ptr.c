@@ -13,12 +13,6 @@ tort_v _tort_m_ptr___ptr_data(tort_tp tort_v p, void **pptr)
   return p;
 }
 
-tort_v _tort_m_ptr___ptr_object(tort_tp tort_v p, void **pptr)
-{
-  *pptr = tort_P(p);
-  return p;
-}
-
 tort_v _tort_m_ptr___ccall(tort_tp tort_v p)
 {
   void *ptr = tort_P(p);
@@ -87,18 +81,21 @@ tort_v _tort_m_tagged___object_ptr(tort_tp tort_v obj)
   return tort_nil;
 }
 
-tort_v _tort_m_ptr___to_string(tort_tp tort_v p)
-{
-  char buf[64];
-  snprintf(buf, sizeof(buf) - 1, "%llx", (unsigned long long) (size_t) tort_P(p));
-  return tort_string_new(buf, strlen(buf));
-}
-
 void *tort_ptr_data(tort_v v)
 {
   void *ptr = 0;
   tort_send(tort__s(_ptr_data), v, &ptr);
   return ptr;
+}
+
+tort_v _tort_m_object__nullQ(tort_tp tort_v a)
+{
+  return a == tort_nil ? tort_true : tort_false;
+}
+
+tort_v _tort_m_ptr__nullQ(tort_tp tort_v a)
+{
+  return tort_P(a) ? tort_false : tort_true;
 }
 
 #define ROP(N,OP) tort_v _tort_m_ptr__##N(tort_tp tort_v a, tort_v b);
@@ -115,11 +112,6 @@ void *tort_ptr_data(tort_v v)
   { return (OP tort_P(a)) ? tort_true : tort_false; } 
 #include "tort/ops.h"
 
-tort_v _tort_m_ptr__nilQ(tort_tp tort_v a)
-{
-  return tort_P(a) ? tort_false : tort_true;
-}
-
 tort_v _tort_m_ptr__ADD(tort_tp tort_v a, tort_v b)
 {
   return tort_p(a + tort_I(b));
@@ -127,6 +119,9 @@ tort_v _tort_m_ptr__ADD(tort_tp tort_v a, tort_v b)
 
 tort_v _tort_m_ptr__SUB(tort_tp tort_v a, tort_v b)
 {
-  return tort_p(a - tort_I(b));
+  if ( tort_h_mtable(a) == tort_h_mtable(b) )
+    return tort_i(a - tort_P(b)); // FIXME: may overflow fixnum.
+  else
+    return tort_p(a - tort_I(b));
 }
 

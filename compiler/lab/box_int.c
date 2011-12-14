@@ -1,5 +1,4 @@
 #include "tort/tort.h"
-#include <stdarg.h>
 
 tort_v _tort_box_int(tort_vi i)
 {

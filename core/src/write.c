@@ -24,9 +24,18 @@ tort_v _tort_m_fixnum___inspect(tort_tp tort_v rcvr, tort_v io)
   return tort_nil;
 }
 
+tort_v _tort_m_word___inspect(tort_tp tort_v rcvr, tort_v io)
+{
+  printf("@w%llx", (long long) tort_W(rcvr));
+  return tort_nil;
+}
+
 tort_v _tort_m_ptr___inspect(tort_tp tort_v rcvr, tort_v io)
 {
-  printf("@%p", tort_P(rcvr));
+  if ( tort_P(rcvr) )
+    printf("@p%p", tort_P(rcvr));
+  else
+    printf("@p0");
   return tort_nil;
 }
 

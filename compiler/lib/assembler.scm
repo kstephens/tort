@@ -89,6 +89,7 @@
 		  ((&r)  (display (cadr e) o))
 		  ((&g)  (x (cadr e)))
 		  ((&$)  (display "$" o) (display (cadr e) o))
+		  ((&&)  (display "$" o) (display ('_to_literal (cadr e)) o))
 		  ((&o)  (display (cadr e) o)
 		         (display "(" o) (x (caddr e))
 		         (display ")" o))

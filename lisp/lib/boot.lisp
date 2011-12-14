@@ -389,6 +389,8 @@
 (define-mtable-class slotted_object)
 (define <slotted-object> <slotted_object>) ; FIXME
 (define-mtable-class catch)
+(define-mtable-class word)
+(define-mtable-class ptr)
 (define-mtable-class locative)
 (define-mtable-class value)
 (define-mtable-class dynlib)

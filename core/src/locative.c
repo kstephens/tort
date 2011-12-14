@@ -22,16 +22,20 @@ tort_v _tort_m_locative__valueSET(tort_tp tort_v l, tort_v v)
   return l;
 }
 
+tort_v _tort_m_locative___word(tort_tp tort_v l)
+{
+  return tort_ptr_new(tort_L(l));
+}
+
 tort_v _tort_m_locative___ptr_data(tort_tp tort_v l, void **pptr)
 {
   *pptr = tort_L(l);
   return l;
 }
 
-tort_v _tort_m_locative___ptr_object(tort_tp tort_v l, void **pptr)
+tort_v _tort_m_locative___object_ptr(tort_tp tort_v l)
 {
-  *pptr = tort_L(l);
-  return l;
+  return tort_p(tort_L(l));
 }
 
 tort_v _tort_m_locative___to_string(tort_tp tort_v l)

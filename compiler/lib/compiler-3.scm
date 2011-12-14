@@ -242,7 +242,7 @@
 
   ;; 6) Emit preliminary instructions.
   (letrec (
-    (literal (lambda (x) `(&$ ,('_to_c_literal x))))
+    (literal (lambda (x) `(&& ,('_word x))))
     (loc 
       (lambda (o b)
 	(let ((l ('loc b)))
@@ -487,7 +487,7 @@
 	      '(addq (&r %rdx) (&r %rax))
 	      '(movq (&o 0 (&r %rax)) (&r %rax))))
 	  ((&r)
-	    ('emit o '(movq ,e (&r %rax))))q
+	    ('emit o '(movq ,e (&r %rax))))
 	  (else
 	    (for-each (lambda (e) (f o e)) (cdr e))))
 	e)))
