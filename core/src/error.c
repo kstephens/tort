@@ -37,7 +37,7 @@ tort_v _tort_error(tort_tp const char *format, va_list *vapp)
   tort_error_messagev("error", format, vapp);
   result = tort_send(tort__s(__debugger), _tort_message);
   if ( tort_(error_catch) != tort_nil ) {
-    result = tort_sendn(tort_s(value), 1, tort_(error_catch), result);
+    result = tort_sendn(tort__s(value), 1, tort_(error_catch), result);
   }
   return result;
 }

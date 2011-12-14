@@ -110,7 +110,6 @@ tort_v _tort_m_mtable__alias_method (tort_tp tort_mtable *mtable, tort_symbol *s
 {
   tort_message_ msg_;
   tort_message *msg = &msg_._;
-  msg->_h[-1].mtable = tort__mt(message);
   msg->selector = other_symbol;
   msg->method = tort_nil;
   msg = tort_send(tort__s(lookup), mtable, msg);
@@ -236,7 +235,9 @@ tort_v tort_runtime_initialize_mtable()
   tort__mt(method)      = tort_mtable_new_class(tort__mt(object));
   tort__mt(value)       = tort_mtable_new_class(tort__mt(method));
   tort__mt(message)     = tort_mtable_new_class(tort__mt(object));
+  tort__mt(message)->instance_size = sizeof(tort_message);
   tort__mt(caller_info) = tort_mtable_new_class(tort__mt(object));
+  tort__mt(caller_info)->instance_size = sizeof(tort_caller_info);
   tort__mt(boolean)     = tort_mtable_new_class(tort__mt(object));
 
   /* io */

@@ -36,33 +36,27 @@ tort_v _tort_m_message__initialize(tort_tp tort_message *rcvr)
   return rcvr;
 }
 
-tort_v _tort_m_object____message(tort_thread_param tort_v rcvr)
+tort_v _tort_m_object____message(tort_tp tort_v rcvr)
 {
   rcvr = _tort_message;
   // rcvr = tort_ref(tort_message, rcvr)->previous_message;
   return_tort_send(tort__s(clone), rcvr);
 }
 
-tort_v _tort_m_message__backtrace(tort_tp tort_v rcvr)
+tort_v _tort_m_message__backtrace(tort_tp tort_message *rcvr)
 {
-  tort_v v, msg;
-  size_t i = 0;
+  tort_v v;
+  tort_message *msg, **prev_msg;
 
-  i = 0;
-  msg = rcvr;
-  while ( msg != tort_nil ) {
-    i ++;
-    msg = tort_ref(tort_message, msg)->previous_message;
-  }
+  v = tort_send(tort__s(new), tort__mt(vector), tort_i(0));
 
-  v = tort_send(tort__s(new), tort__mt(vector), tort_i(i));
-
-  i = 0;
-  msg = rcvr;
-  while ( msg != tort_nil ) {
-    msg = tort_send(tort__s(clone), msg);
-    tort_vector_data(v)[i ++] = msg;
-    msg = tort_ref(tort_message, msg)->previous_message; 
+  msg = tort_nil;
+  prev_msg = &msg;
+  while ( rcvr != tort_nil ) {
+    msg = *prev_msg = tort_send(tort__s(clone), rcvr);
+    tort_send(tort__s(add), v, msg);
+    rcvr = rcvr->previous_message;
+    prev_msg = &(msg->previous_message);
   }
 
   return v;

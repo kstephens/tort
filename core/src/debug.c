@@ -19,7 +19,7 @@ tort_v _tort_m_object____debugger(tort_tp tort_v rcvr)
   printf("rcvr = "); tort_inspect(IO, rcvr); printf("\n");
   printf("type = %s\n", tort_object_name(tort_h_mtable(rcvr)));
   printf("expr = %O\n", _tort_debug_expr); 
-  bt = tort_send(tort_s(backtrace), _tort_message);
+  bt = tort_send(tort__s(backtrace), _tort_message);
   printf("backtrace =\n----\n"); 
   tort_vector_loop(bt, msg); {
     printf("  ");
