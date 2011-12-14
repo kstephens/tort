@@ -84,6 +84,7 @@ tort_v tort_runtime_create_ (int *argcp, char ***argvp, char ***envp)
 
   /* Install core methods. */
   INIT(method);
+  INIT(eq);
 
   /* Create the root table. */
   tort_(root) = tort_map_new();

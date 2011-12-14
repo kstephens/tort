@@ -1,7 +1,7 @@
 ;; -*- scheme -*-
 (define (eq? a b) ('eq? a b))
-(define equal? 'equal?)
-(define eqv? 'equal?) ;; FIXME
+(define (equal? a b) ('equal? a b))
+(define (eqv? a b0) ('eqv? a b))
 
 (define nil '())
 
@@ -417,6 +417,27 @@
     (display " sym ")(write sym)(display " => ")(write ptr)(newline)
     ptr
     ))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Optimizations:
+
+(letrec
+  ( (-is-eq?
+      (lambda (a)
+	(or (fixnum? a) (boolean? a) (string? a) (vector? a) (symbol? a))))
+    (is-eq?
+      (lambda (a)
+	(or 
+	  (fixnum? a) (boolean? a) (string? a) (tagged? a)
+	  (and 
+	    (pair? a)       (eq? 'quote (car a)) 
+	    (pair? (cdr a)) (-is-eq?    (cadr a)))))))
+  (define-macro (eqv? a b)
+    (if (or (is-eq? a) (is-eq? b))
+      `(eq? ,a ,b)
+      `('eqv? ,a ,b)
+    )))
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (display ";; boot.lisp complete!")(newline)
