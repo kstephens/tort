@@ -1,6 +1,7 @@
 (define-struct isns
   (name      #f)
   (isns      (vector))
+  (constants (vector))
   (labels    ('new <map>))
   (label-id  0)
   (literals '())

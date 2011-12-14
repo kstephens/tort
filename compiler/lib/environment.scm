@@ -143,6 +143,7 @@
     (name        #f)
     (init        #f)
     (env         #f)
+    (constant?    #f)
     (referenced?  #f)
     (closed-over? #f)
     (set?        #f)
