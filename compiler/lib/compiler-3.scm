@@ -3,6 +3,7 @@
 (load "compiler/lib/debug.scm")
 (load "compiler/lib/label.scm")
 (load "compiler/lib/assembler.scm")
+(load "compiler/lib/peephole.scm")
 
 (let ( 
               ;; x68_64
@@ -16,58 +17,58 @@
        )
   (for-each (lambda (o) ('set ops (car o) o)) 
     `(
-       (&INV (notq ,car))
-       (&NEG (negq ,car))
-       (&ADD (addq ,cadr ,car))
-       (&SUB (subq ,cadr ,car))
-       (&MUL (imulq ,cadr ,car))
-       (&DIV 
+       (&INV 1 (notq ,car))
+       (&NEG 1 (negq ,car))
+       (&ADD 2 (addq ,cadr ,car))
+       (&SUB 2 (subq ,cadr ,car))
+       (&MUL 2 (imulq ,cadr ,car))
+       (&DIV 2
 	 (movq ,car (&r %rdx))
 	 (sarq (&$ 63) (&r %rdx))
 	 (idivq ,cadr))
-       (&AND (andq ,cadr ,car))
-       (&OR  (orq  ,cadr ,car))
-       (&XOR (xorq ,cadr ,car))
-       (&MOD 
+       (&AND 2 (andq ,cadr ,car))
+       (&OR  2 (orq  ,cadr ,car))
+       (&XOR 2 (xorq ,cadr ,car))
+       (&MOD 2
 	 (movq ,car (&r %rdx))
 	 (sarq (&$ 63) (&r %rdx))
 	 (idivq ,cadr)
 	 (movq (&r %rdx) (&r %rax)))
-       (&LSH
+       (&LSH 2
 	 (movl ,cadr (&r %ecx))
 	 (movq ,car (&r %rax))
 	 (salq (&r %cl) (&r %rax)))
-       (&RSH
+       (&RSH 2
 	 (movl ,cadr (&r %ecx))
 	 (movq ,car (&r %rax))
 	 (sarq (&r %cl) (&r %rax)))
-       (&NOT 
+       (&NOT 1
 	 (cmpq ($& 0) ,car)
 	 (sete (&r %al))
 	 (movzbl (&r %al) (&r %eax))
 	 )
        ;; LOR, LAND ;; FIXME
-       (&EQ
+       (&EQ  2
 	 (cmpq ,cadr ,car)
 	 (sete (&r %al))
 	 (movzbl (&r %al) (&r %eax)))
-       (&NE
+       (&NE  2
 	 (cmpq ,cadr ,car)
 	 (setne (&r %al))
 	 (movzbl (&r %al) (&r %eax)))
-       (&LT
+       (&LT  2
 	 (cmpq ,cadr ,car)
 	 (setl (&r %al))
 	 (movzbl (&r %al) (&r %eax)))
-       (&GT
+       (&GT  2
 	 (cmpq ,cadr ,car)
 	 (setg (&r %al))
 	 (movzbl (&r %al) (&r %eax)))
-       (&LE
+       (&LE  2
 	 (cmpq ,cadr ,car)
 	 (setle (&r %al))
 	 (movzbl (&r %al) (&r %eax)))
-       (&GE
+       (&GE  2
 	 (cmpq ,cadr ,car)
 	 (setge (&r %al))
 	 (movzbl (&r %al) (&r %eax)))
@@ -114,7 +115,7 @@
 	    ((&c-func)  ;; (&c-func name formals . body) => (&&c-func 'formals (begin . body) 'name)
 	      `(&&c-func ,`(&q ,(caddr e)) ,(f `(begin ,@(cdddr e))) (&q ,(cadr e))))
 	    ((let)      ;; (let bindings . body) => (&let #f bindings (begin . body))
-	      `(&let     ,(map (lambda (e) `(,(car e) ,(f (cadr e)))) (cadr e))
+	      `(&let     ,(map (lambda (e) `(,(car e) ,(f (cadr e)) @,(cddr e))) (cadr e))
 		            ,(f `(begin ,@(cddr e)))))
 	    ((begin)  (cond
 			((null? (cdr e))   unspec)
@@ -136,7 +137,8 @@
 		     ((null? (cddr e))  (f (cadr e)))
 		     (else `(&and ,@(map f (cddr e))))))
 	    ((&e)      `(&e (&q ,(cadr e)) ,(f (caddr e))))
-	    ((&extern &stack-alloc) `(,(car e) (&q ,(cadr e))))
+	    ((&extern)      `(&&extern (&q ,(cadr e))))
+	    ((&stack-alloc) `(,(car e) (&q ,(cadr e))))
 	    (else     (if (and (symbol? (car e)) (equal? (string-ref (symbol->string (car e)) 0) #\&))
 			`(,(car e) ,@(map f (cdr e)))
 			`(&c    ,@(map f e))))
@@ -176,7 +178,7 @@
 	((eq? (car e) '&let)     ;; (&let bindings body)
 	  (if (null? (cadr e))   ;; (&let () body)
 	    (f (caddr e))
-	    `(&let ,(map (lambda (e) `(,(car e) ,(f (cadr e)))) (cadr e))
+	    `(&let ,(map (lambda (e) `(,(car e) ,(f (cadr e)) ,@(cddr e))) (cadr e))
 	       ,(f (caddr e)))))
 	((and                    ;; (&c (&q SYMBOL) ...) => 
 	   (eq? (car e) '&c)     ;;   (&send (&q SYMBOL) ...)
@@ -228,6 +230,7 @@
 			  ('add subenv ('new env-binding 
 					 'name (car b) 
 					 'init (f env (cadr b))
+					 'options (cddr b)
 					 )))
 		(car (cdr e)))
 	      (set-car! (cdr e) subenv)
@@ -366,14 +369,14 @@
 	      '(callq _tort_locative_new_value)))
 	  ((&s!) ;; non-locative set! used for initializers.
 	    (f env o (caddr e))
-	    ('emit o `(movq %rax ,('loc (cadr e)))))
+	    ('emit o `(movq (&r %rax) ,('loc (cadr e)))))
 	  ((&set!)
 	    (f env o (caddr e))
 	    (cond
 	      ((and (pair? (cadr e)) (eq? (car (cadr e)) '&r))
-		('emit o `(movq %rax ,(cadr (cadr e))))))
+		('emit o `(movq (&r %rax) ,(cadr (cadr e))))))
 	      (else
-		('emit o `(movq %rax ,(loc o (cadr e))))))
+		('emit o `(movq (&r %rax) ,(loc o (cadr e))))))
 	  ((&eq?) 
 	    (let ((Lf ('label o))
 		  (Le ('label o)))
@@ -537,7 +540,7 @@
 	      ;; Pull register args off stack.
 	      (let ((i 0))
 		(while (and (< i nargs) (< i (vector-length arg-regs)))
-		  ('emit o `(popq ,(vector-ref arg-regs i)))
+		  ('emit o `(popq (&r ,(vector-ref arg-regs i))))
 		  (set! stack-args-size (- stack-args-size word-size))
 		  (set! i (+ i 1))))
 	      ;; Load %rbx with argc.
@@ -607,6 +610,11 @@
 			 (display "    | ")(display x)(newline))
 	('isns ('isns asm)))
 
+      (display "isns-peephole = ")(newline)
+      (vector-for-each (lambda (x)
+			 (display "    | ")(display x)(newline))
+	('isns-peephole ('isns asm)))
+
       (display "asm = \n")(display ('asm asm))(newline)
 
       (set! result ('load asm))
@@ -654,10 +662,13 @@
     (t '(&I 5) '1)
     (t '(&i ((&extern tort_prints) (&P "Hello, World!\n")))
       '14)
+#|
     (t '(&i ((&extern printf) (&P "Hello, World!\n")))
       '14)
-    (t '(foo 1 2)     '(&c (&v foo) (&q 1) (&q 2)))
-    (t '(&primitive 1 2) '(&primitive (&q 1) (&q 2)))
+|#
+    (t '(let ((foo (&c-func #f (a b) a b)))
+	  ((&P foo) 1 2))
+      '2)
     (t '(let ((a 1)) (lambda (x) (+ a x)))
       'HUH?)
     ;; rewrite-2

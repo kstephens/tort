@@ -144,6 +144,7 @@
     (name        #f)
     (init        #f)
     (env         #f)
+    (options     '())
     (constant?    #f)
     (referenced?  #f)
     (closed-over? #f)

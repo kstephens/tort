@@ -1,7 +1,10 @@
+(load "compiler/lib/peephole.scm")
+
 (define-struct isns
   (name      #f)
   (isns      (vector))
-  (constants (vector))
+  (_isns-peephole #f)
+  (literals  ('equality= ('new <map>) 'equal?))
   (labels    ('new <map>))
   (label-id  0)
   (literals '())
@@ -35,6 +38,14 @@
     ('name= label name)
     ('set ('labels self) name label)
     label))
+
+(define-method isns ('isns-peephole self . options)
+  (let ((o ('_isns-peephole self)))
+    (if (not o)
+      (begin
+	(set! o (assembler:peephole ('isns self)))
+	('_isns-peephole= self o)))
+    o))
 
 (let ((output-name-id 0))
   (define-struct assembler
@@ -117,6 +128,7 @@
 	  (lambda (e)
 	    ;; (display "  isn = ")(write e)(newline)
 	    (case (car e)
+	      ((.nop)         )
 	      ((.align)       (isn '.align (cadr e) "0x90"))
 	      ((.globl)       (isn '.globl (cadr e)))
 	      ((.label:)      (isn (cadr e) ':))
@@ -124,7 +136,7 @@
 	      ((callq*)       (isn "callq *" (cadr e)))
 	      ((movq)         (isn-pic . e))
 	      (else           (isn . e))))
-	  ('isns ('isns self)))
+	  ('isns-peephole ('isns self)))
 	))
       o))
 
