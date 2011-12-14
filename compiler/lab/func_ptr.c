@@ -1,5 +1,4 @@
 #include "tort/tort.h"
-#include <stdarg.h>
 
 tort_v _tort_return_func_ptr()
 {
