@@ -237,6 +237,14 @@
     `(let ((,val ,val-expr))
        ,(%case cases))))
 
+(define-macro (let-and* bindings . body)
+  (if (null? bindings)
+    `(begin ,@body)
+    `(let (,(car bindings))
+       (if ,(caar bindings)
+	 (let-and ,(cdr bindings) ,@body)
+	 #f))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define-macro (define-method mtable name-and-args . body)
