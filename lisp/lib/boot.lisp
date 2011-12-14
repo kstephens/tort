@@ -393,6 +393,8 @@
 (define-mtable-class mtable)
 (define-mtable-class map)
 (define-mtable-class message)
+(define-mtable-class lisp_closure)
+(define procedure? lisp_closure?) ; FIXME?
 (define-mtable-class method)
 (define-mtable-class slotted_object)
 (define <slotted-object> <slotted_object>) ; FIXME
