@@ -82,10 +82,15 @@
       (while (not (equal? e-next e-last))
 	(set! e-last e-next)
 	(set! e-next ('expand-expr self e-last))
-	;; (display " e-last = ")(write e-last)(newline)	  
-	;; (display " e-next = ")(write e-next)(newline)	  
+	(if *macro-expand-trace*
+	  (let ()
+	    (display " e-last = ")(write e-last)(newline)	  
+	    (display " e-next = ")(write e-next)(newline)	  
+	    ))
 	)
-	;; (display " result = ")(write e-next)(newline)	  
+      (if *macro-expand-trace*
+	(let ()
+	  (display " result = ")(write e-next)(newline)))	  
       e-next)))
 
 (define *top-level-macro-environment* ('new <macro-environment>))
