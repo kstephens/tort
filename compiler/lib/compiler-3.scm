@@ -12,7 +12,66 @@
        (locative-tag ('get ('get &root 'tagged_mtables) <locative>))
        (fixnum-tag   ('get ('get &root 'tagged_mtables) <fixnum>))
        (unspec `(&q ,(if #f #f)))
+       (ops          ('new <map>))
        )
+  (for-each (lambda (o) ('set ops (car o) o)) 
+    `(
+       (&INV (notq ,car))
+       (&NEG (negq ,car))
+       (&ADD (addq ,cadr ,car))
+       (&SUB (subq ,cadr ,car))
+       (&MUL (imulq ,cadr ,car))
+       (&DIV 
+	 (movq ,car (&r %rdx))
+	 (sarq (&$ 63) (&r %rdx))
+	 (idivq ,cadr))
+       (&AND (andq ,cadr ,car))
+       (&OR  (orq  ,cadr ,car))
+       (&XOR (xorq ,cadr ,car))
+       (&MOD 
+	 (movq ,car (&r %rdx))
+	 (sarq (&$ 63) (&r %rdx))
+	 (idivq ,cadr)
+	 (movq (&r %rdx) (&r %rax)))
+       (&LSH
+	 (movl ,cadr (&r %ecx))
+	 (movq ,car (&r %rax))
+	 (salq (&r %cl) (&r %rax)))
+       (&RSH
+	 (movl ,cadr (&r %ecx))
+	 (movq ,car (&r %rax))
+	 (sarq (&r %cl) (&r %rax)))
+       (&NOT 
+	 (cmpq ($& 0) ,car)
+	 (sete (&r %al))
+	 (movzbl (&r %al) (&r %eax))
+	 )
+       ;; LOR, LAND ;; FIXME
+       (&EQ
+	 (cmpq ,cadr ,car)
+	 (sete (&r %al))
+	 (movzbl (&r %al) (&r %eax)))
+       (&NE
+	 (cmpq ,cadr ,car)
+	 (setne (&r %al))
+	 (movzbl (&r %al) (&r %eax)))
+       (&LT
+	 (cmpq ,cadr ,car)
+	 (setl (&r %al))
+	 (movzbl (&r %al) (&r %eax)))
+       (&GT
+	 (cmpq ,cadr ,car)
+	 (setg (&r %al))
+	 (movzbl (&r %al) (&r %eax)))
+       (&LE
+	 (cmpq ,cadr ,car)
+	 (setle (&r %al))
+	 (movzbl (&r %al) (&r %eax)))
+       (&GE
+	 (cmpq ,cadr ,car)
+	 (setge (&r %al))
+	 (movzbl (&r %al) (&r %eax)))
+       ))
 
   ;; 1) Rewrite scheme to canonical forms:
   ;;
