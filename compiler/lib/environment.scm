@@ -6,6 +6,7 @@
     (_alloc-env       #f)
     (alloc-offset     0)
     (alloc-offset-max 0)
+    (stack-alloc      0)
     (closure          #f)
     (formals          #f)
     (bindings         ('new <map>))

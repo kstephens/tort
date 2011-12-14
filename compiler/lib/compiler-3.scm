@@ -87,6 +87,7 @@
   ;; (&l expr): Create locative for expr value.
   ;; (&L l-expr): Get locative's value.
   ;; (&L! l-expr v-expr): Set locative's value.
+  ;; (&stack-alloc size): allocate size bytes on stack.
   ;; (begin) => UNSPEC
   ;; (begin e) => e
   ;; (begin e . exprs) => (&b e . exprs)
@@ -135,7 +136,7 @@
 		     ((null? (cddr e))  (f (cadr e)))
 		     (else `(&and ,@(map f (cddr e))))))
 	    ((&e)      `(&e (&q ,(cadr e)) ,(f (caddr e))))
-	    ((&extern) `(&&extern (&q ,(cadr e))))
+	    ((&extern &stack-alloc) `(,(car e) (&q ,(cadr e))))
 	    (else     (if (and (symbol? (car e)) (equal? (string-ref (symbol->string (car e)) 0) #\&))
 			`(,(car e) ,@(map f (cdr e)))
 			`(&c    ,@(map f e))))
@@ -319,55 +320,55 @@
 	    (else
 	      l)))))
     (f 
-      (lambda (o e)
+      (lambda (env o e)
 	;; (display "  6 e = ")(write e)(newline)
 	(case (car e)
 	  ((&_) 
 	    (case (car (cadr e))
 	      ((&q &v)  )
-	      (else     (f o (cadr e)))))
+	      (else     (f env o (cadr e)))))
 	  ((&q) ('emit o `(movq ,(literal (cadr e)) (&r %rax))))
-	  ((&b) (for-each (lambda (e) (f o e)) (cdr e)))
+	  ((&b) (for-each (lambda (e) (f env o e)) (cdr e)))
 	  ((&&extern) ('emit o `(movq ,('label o (cadr (cadr e))) (&r %rax))))
 	  ((&v) 
 	    ('emit o `(movq ,(loc o (cadr e)) (&r %rax))))
 	  ((&&)  ;; get the address of a variable.
 	    ('emit o `(leaq ,('loc (cadr (cadr e))) (&r %rax))))
 	  ((&i)  ;; box an int.
-	    (f o (cadr e))
+	    (f env o (cadr e))
 	    ('emit o 
 	      '(salq (&$ 2) (&r %rax))
 	      '(orq  (&$ 1) (&r %rax))))
 	  ((&I)  ;; unbox an int.
-	    (f o (cadr e))
+	    (f env o (cadr e))
 	    ('emit o '(sarq (&$ 2) (&r %rax))))
 	  ((&p)  ;; box a pointer.
-	    (f o (cadr e))
+	    (f env o (cadr e))
 	    ('emit o 
 	      '(movq (&r %rax) (&r %rdi))
 	      '(callq _tort_ptr_new)))
 	  ((&P)  ;; unbox a pointer.
-	    (f o (cadr e))
+	    (f env o (cadr e))
 	    ('emit o '(movq (&o 0 (&r %rax)) (&r %rax))))
 	  ((&L)  ;; get locative's value.
-	    (f o (cadr e))
+	    (f env o (cadr e))
 	    ('emit o '(movq (&o ,(- locative-tag) (&r %rax)) (&r %rax))))
 	  ((&l!) ;; set locative's value.
-	    (f o (cadr e))
+	    (f env o (cadr e))
 	    ('emit o '(pushq (&r %rax)))
-	    (f o (caddr e))
+	    (f env o (caddr e))
 	    ('emit o '(popq (&r %rdx)))
 	    ('emit o '(movq (&r %rax) (&o ,(- locative-tag) (&r %rdx)))))
 	  ((&l) ;; create new locative to value.
-	    (f o (cadr e))
+	    (f env o (cadr e))
 	    ('emit o 
 	      '(movq (&r %rax) (&r &rdi))
 	      '(callq _tort_locative_new_value)))
 	  ((&s!) ;; non-locative set! used for initializers.
-	    (f o (caddr e))
+	    (f env o (caddr e))
 	    ('emit o `(movq %rax ,('loc (cadr e)))))
 	  ((&set!)
-	    (f o (caddr e))
+	    (f env o (caddr e))
 	    (cond
 	      ((and (pair? (cadr e)) (eq? (car (cadr e)) '&r))
 		('emit o `(movq %rax ,(cadr (cadr e))))))
@@ -376,9 +377,9 @@
 	  ((&eq?) 
 	    (let ((Lf ('label o))
 		  (Le ('label o)))
-	      (f o (caddr e))
+	      (f env o (caddr e))
 	      ('emit o '(pushq (&r %rax)))
-	      (f o (cadr e))
+	      (f env o (cadr e))
 	      ('emit o
 		'(pop %rdx)
 		'(cmpq (&r %rdx) (&r %rax))
@@ -391,26 +392,26 @@
 	  ((&if)
 	    (let ((Lf ('label o))
 		  (Le ('label o)))
-	      (f o (cadr e))
+	      (f env o (cadr e))
 	      ('emit o 
 		`(movq ,(literal #f) (&r %rdx))
 		'(cmpq (&r %rdx) (&r %rax))
 		`(je ,Lf))
-	      (f o (caddr e))
+	      (f env o (caddr e))
 	      ('emit o `(jmp ,Le) '(.align 4) `(.label: ,Lf))
-	      (f o (cadddr e))
+	      (f env o (cadddr e))
 	      ('emit o `(.label: ,Le))
 	      ))
 	  ((&while)
 	    (let ((Lb ('label o))
 		  (Le ('label o)))
 	      ('emit o '(.align 4) `(.label: ,Lb))
-	      (f o (cadr e))
+	      (f env o (cadr e))
 	      ('emit o
 		`(movq ,(literal #f) (&r %rdx))
 		'(cmpq (&r %rdx) (&r %rax))
 		`(je ,Le))
-	      (f o (caddr e))
+	      (f env o (caddr e))
 	      ('emit o `(jmp ,Lb))
 	      ('emit o '(.align 4) `(.label: ,Le))
 	      ))
@@ -418,7 +419,7 @@
 	    (let ((Le ('label o)))
 	      (set! e (cdr e))
 	      (while (not (null? e))
-		(f o (car e))
+		(f env o (car e))
 		('emit o 
 		  `(movq ,(literal #f) (&r %rdx))
 		  '(cmpq (&r %rdx) (&r %rax))
@@ -430,7 +431,7 @@
 	    (let ((Le ('label o)))
 	      (set! e (cdr e))
 	      (while (not (null? e))
-		(f o (car e))
+		(f env o (car e))
 		('emit o 
 		  `(movq ,(literal #f) (&r %rdx))
 		  '(cmpq (&r %rdx) (&r %rax))
@@ -483,11 +484,11 @@
 		(lambda (b)
 		  (if ('closed-over? b)
 		    (begin
-		      (f o `(&s! ,b (&l ,('loc b))))))
+		      (f env o `(&s! ,b (&l ,('loc b))))))
 		  )
 		('binding-list env))
 	      ;; Emit body instructions.
-	      (f o (caddr e))
+	      (f env o (caddr e))
 	      ('emit o
 		`(.label: ,return)
 		'(leave)
@@ -501,28 +502,38 @@
 		'(callq _tort_ptr_new))
 	      ))
 	  ((&let)
-	    (for-each 
-	      (lambda (b)
-		(if ('init b)
-		  (if ('referenced? b)
-		    (let ((init 
-			    (if ('closed-over? b) `(&l ,('init b)) ('init b))))
-		      (f o `(&s! ,b ,init)))
-		    (f o ('init b)))))
-	      ('binding-list (cadr e)))
-	    (f o (caddr e)))
+	    (let ((subenv (cadr e)))
+	      (for-each 
+		(lambda (b)
+		  (if ('init b)
+		    (if ('referenced? b)
+		      (let ((init 
+			      (if ('closed-over? b) `(&l ,('init b)) ('init b))))
+			(f subenv o `(&s! ,b ,init)))
+		      (f subenv o ('init b)))))
+		('binding-list subenv))
+	      (f subenv o (caddr e))
+	      (if (> ('stack-alloc subenv) 0)
+		('emit o `(addq (&$ ,('stack-alloc subenv)) (&r %rsp))))))
+	  ((&stack-alloc)
+	    (let ((size (cadr (cadr e))))
+	      (set! size (* (/ (+ size (- word-size 1)) word-size) word-size)) ;; align
+	      ('stack-alloc= env (+ ('stack-alloc env) size))
+	      ('emit o
+		'(movq (&r %rsp)  (&r %rax))
+		`(subq (&$ ,size) (&r %rsp)))))
 	  ((&c) ;; C function call.
 	    (let ((stack-args-size 0) (nargs 0))
 	      ;; Push args onto stack.
 	      (for-each
 		(lambda (e)
-		  (f o e)
+		  (f env o e)
 		  ('emit o '(pushq (&r %rax)))
 		  (set! nargs (+ nargs 1))
 		  (set! stack-args-size (+ stack-args-size word-size))) 
 		(reverse (cddr e)))
 	      ;; Load function into %rax.
-	      (f o (cadr e))
+	      (f env o (cadr e))
 	      ;; Pull register args off stack.
 	      (let ((i 0))
 		(while (and (< i nargs) (< i (vector-length arg-regs)))
@@ -536,11 +547,11 @@
 	      ;; Pop remaining stack args.
 	      (if (> stack-args-size 0)
 		('emit o `(addq (&$ ,stack-args-size) (&r %rsp))))))
-	  ((&e) (f o (caddr e)))
+	  ((&e) (f (cadr (cadr e)) o (caddr e)))
 	  ((&o)
-	    (f o (cadr e))
+	    (f env o (cadr e))
 	    ('emit o '(pushq (&r %rax)))
-	    (f o (caddr e))
+	    (f env o (caddr e))
 	    ('emit o 
 	      '(popq (&r %rdx)) 
 	      '(addq (&r %rdx) (&r %rax))
@@ -548,11 +559,11 @@
 	  ((&r)
 	    ('emit o '(movq ,e (&r %rax))))
 	  (else
-	    (for-each (lambda (e) (f o e)) (cdr e))))
+	    (for-each (lambda (e) (f env o e)) (cdr e))))
 	e)))
     (define (compiler:pass-6 env e)
       (let* ( (isns ('new isns)))
-	(f isns e)
+	(f env isns e)
 	isns))
     ) ;; letrec
 
@@ -633,6 +644,8 @@
     (t '(if #f 2 3)    '3)
     (t '(let ((a 1) (b 2)) 3 a)
       '1)
+    (t '(let ((a (&p (&stack-alloc 15))) (b 2)) a b)
+      '2)
     (t '(case 'a ((a 1) '1) (else 2))
       '1)
     (t '(lambda (a b) 1 a)
