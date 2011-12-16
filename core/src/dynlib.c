@@ -88,8 +88,8 @@ tort_v _tort_m_dynlib__dlopen(tort_tp struct tort_dynlib *rcvr, tort_v name)
   file = file_buffer;
   rcvr->path = tort_string_new_cstr(file);
   rcvr->base_sym = rcvr->base_ptr = tort_nil;
-  tort_send(tort_s(emptyE), rcvr);
-  tort_send(tort_s(_load_symtab), rcvr, file, 0);
+  tort_send(tort__s(emptyE), rcvr);
+  tort_send(tort__s(_load_symtab), rcvr, file, 0);
   if ( ! tort_map_size(rcvr) )
     return rcvr;
   base_sym = tort_symbol_data(tort_map_data(rcvr)[0]->first);
@@ -117,17 +117,18 @@ tort_v _tort_m_dynlib__dlopen(tort_tp struct tort_dynlib *rcvr, tort_v name)
     base_ptr = info.dli_fbase;
   }
   tort_dlclose(dl);
-  tort_send(tort_s(emptyE), rcvr);
-  tort_send(tort_s(_load_symtab), rcvr, file, base_ptr);
-  tort_send(tort_s(set), tort_(dl_maps), tort_string_new_cstr(file), rcvr);
+  tort_send(tort__s(emptyE), rcvr);
+  tort_send(tort__s(_load_symtab), rcvr, file, base_ptr);
+  tort_send(tort__s(set), tort_(dl_maps), tort_string_new_cstr(file), rcvr);
   return rcvr;
 }
 
 tort_v _tort_m_dynlib__load(tort_tp struct tort_dynlib *rcvr, tort_v name)
 {
-  tort_send(tort_s(dlopen), rcvr, name);
-  tort_send(tort_s(_run_initializers), rcvr);
-  tort_send(tort_s(_load_methods), rcvr);
+  tort_send(tort__s(dlopen), rcvr, name);
+  tort_send(tort__s(_run_initializers), rcvr);
+  tort_send(tort__s(_load_methods), rcvr);
+  tort_send(tort__s(_load_slots), rcvr);
   return rcvr;
 }
 
@@ -201,6 +202,42 @@ tort_v tort_m_dynlib___load_methods(tort_tp tort_v map)
     // fprintf(stderr, "e = @%p \"%s\"\n", e, name);
     if ( (result = process_method(0, obj_prefix, e)) == 0 )
       result = process_method(1, cls_prefix, e);
+    if ( result < 0 ) break;
+  }
+  tort_map_EACH_END();
+  return result >= 0 ? map : tort_nil;
+}
+
+
+static int process_slot(const char *prefix, tort_pair *e)
+{
+  const char *name = tort_symbol_data(e->first);
+  // fprintf(stderr, "  slot? %s (%s)\n", name, prefix);
+  if ( strncmp(name, prefix, strlen(prefix)) == 0 ) {
+    void *ptr = tort_ptr_data(e->second);
+    void * (*func)() = ptr;
+    tort_slot *slot;
+    if ( _tort_dl_debug >= 2 ) 
+      fprintf(stderr, "  slot %s => func @%p\n", name, ptr);
+    ptr = func();
+    if ( _tort_dl_debug >= 2 ) 
+      fprintf(stderr, "  slot %s => tort_slot_ @%p\n", name, ptr);
+    slot = tort_slot_attach(ptr);
+    if ( _tort_dl_debug >= 2 || 1 ) 
+      fprintf(stderr, "  slot %s => tort_slot @%p\n", name, slot);
+    return 1;
+  }
+  return 0;
+}
+
+tort_v tort_m_dynlib___load_slots(tort_tp tort_v map)
+{
+  int result = 0;
+  static const char slot_prefix[] = "_tort_slot_";
+  tort_map_EACH(map, e) {
+    if ( tort_h_mtable(e->first) != tort__mt(symbol) ) continue;
+    // fprintf(stderr, "e = @%p \"%s\"\n", e, name);
+    result = process_slot(slot_prefix, e);
     if ( result < 0 ) break;
   }
   tort_map_EACH_END();
@@ -289,8 +326,8 @@ tort_v _tort_m_dynlib___load_symtab(tort_tp tort_v st, const char *file, void *p
 	tort_v t_name = tort_symbol_new(c_name);
 	tort_v t_addr = tort_ptr_new(c_addr);
 	if ( c_addr == (void*) tort_ptr_data(t_addr) ) {
-	  tort_send(tort_s(set), st, t_name, t_addr);
-	  tort_send(tort_s(set), st, t_addr, t_name);
+	  tort_send(tort__s(set), st, t_name, t_addr);
+	  tort_send(tort__s(set), st, t_addr, t_name);
 	} else {
 	  fprintf(stderr, "  tort: cannot store %s -> %p pointer in tort_ptr_data", c_name, c_addr);
 	}
@@ -309,8 +346,8 @@ tort_v _tort_m_dynlib___load_symtab(tort_tp tort_v st, const char *file, void *p
     pclose(fp);
 
     {
-      tort_v all = tort_send(tort_s(get), tort_(dl_maps), tort_s(all));
-      tort_send(tort_s(emit), st, all);
+      tort_v all = tort_send(tort__s(get), tort_(dl_maps), tort__s(all));
+      tort_send(tort__s(emit), st, all);
     }
   }
 
@@ -324,21 +361,22 @@ tort_v tort_runtime_initialize_dynlib()
     const char *s = getenv("TORT_DL_DEBUG");
     _tort_dl_debug = s && *s ? atoi(s) : 0;
   }
-  tort_send(tort__s(set), tort_(root), tort_s(dynlib_suffix), tort_string_new_cstr(TORT_DLIB_SUFFIX));
-  tort_send(tort__s(set), tort_(root), tort_s(dynlib_global_prefix), tort_string_new_cstr(TORT_DYNLIB_GLOBAL_PREFIX));
+  tort_send(tort__s(set), tort_(root), tort__s(dynlib_suffix), tort_string_new_cstr(TORT_DLIB_SUFFIX));
+  tort_send(tort__s(set), tort_(root), tort__s(dynlib_global_prefix), tort_string_new_cstr(TORT_DYNLIB_GLOBAL_PREFIX));
   tort_add_method(tort__mt(dynlib), "_run_initializers", tort_m_dynlib___run_initializers);
   tort_add_method(tort__mt(dynlib), "_load_methods", tort_m_dynlib___load_methods);
+  tort_add_method(tort__mt(dynlib), "_load_slots", tort_m_dynlib___load_slots);
   tort_(dl_maps) = tort_map_new();
-  tort_send(tort__s(set), tort_(root), tort_s(dl_maps), tort_(dl_maps));
+  tort_send(tort__s(set), tort_(root), tort__s(dl_maps), tort_(dl_maps));
   tort_v all = tort_map_new();
-  tort_send(tort__s(set), tort_(dl_maps), tort_s(all), all);
+  tort_send(tort__s(set), tort_(dl_maps), tort__s(all), all);
 
   st = tort_send(tort__s(new), tort__mt(dynlib));
   _tort_m_dynlib___load_symtab(tort_ta st, tort_(_argv)[0], 0);
-  tort_send(tort__s(set), tort_(root), tort_s(prog_symtab), st);
+  tort_send(tort__s(set), tort_(root), tort__s(prog_symtab), st);
 
   st = tort_send(tort__s(new), tort__mt(dynlib));
-  tort_send(tort_s(dlopen), st, tort_string_new_cstr("libtortcore"));
+  tort_send(tort__s(dlopen), st, tort_string_new_cstr("libtortcore"));
 
   return all;
 }
