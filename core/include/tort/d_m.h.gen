@@ -11,15 +11,16 @@ $srcs
 EOF
     for f in $srcs
     do
-      (set -x; ${CC} ${CFLAGS} -E -o - "${f}") || :
+      echo "  $f" 1>&2
+      (
+	# set -x; 
+	${CC} ${CFLAGS} -E -o - "${f}"
+      ) || :
     done |
     tr ";}" "\n" | 
     perl -ne '
-if ( ! /^\s*static\b/ && /^\s*[a-zA-Z0-9_]+?.*?\s+(_tort_m_([a-zA-Z0-9_]+?)__([a-zA-Z0-9_]+))\s*[(].*?[)]\s*(;|$)/ ) { 
-  print "tort_d_m(tort__mt(", $2, "), tort__s(", $3, "), $1)\n";
-}
-if ( ! /^\s*static\b/ && /^\s*[a-zA-Z0-9_]+?.*?\s+(_tort_M_([a-zA-Z0-9_]+?)__([a-zA-Z0-9_]+))\s*[(].*?[)]\s*(;|$)/ ) { 
-  print "tort_d_m(tort_h_ref(tort__mt(", $2, "))->mtable, tort__s(", $3, "), $1)\n";
+if ( ! /^\s*static\b/ && /^\s*[a-zA-Z0-9_]+?.*?\s+(_tort_(m|M)_([a-zA-Z0-9_]+?)__([a-zA-Z0-9_]+))\s*[(].*?[)]\s*(;|$)/ ) { 
+  print "tort_d_m($2,$3,$4,$1)\n";
 }
 ' - /dev/null | 
     sort -u # | tee /dev/tty

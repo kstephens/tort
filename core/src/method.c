@@ -31,32 +31,58 @@ tort_v _tort_m_object___applyfSET(tort_tp tort_v o, tort_v ptr)
   return tort_h(o)->applyf = p;
 }
 
-tort_method* tort_offset_getter_new(tort_v offset)
-{
-  return tort_method_new(_tort_offset_getter__applyf, offset);
-}
 tort_v _tort_offset_getter__applyf(tort_tp void *o)
 {
   assert(_tort_message->argc >= tort_i(1));
   return *(tort_v*)(o + tort_I(_tort_message->method->data));
 }
-
-tort_method* tort_offset_setter_new(tort_v offset)
+tort_method* tort_offset_getter_new(tort_v offset)
 {
-  return tort_method_new(_tort_offset_setter__applyf, offset);
+  return tort_method_new(_tort_offset_getter__applyf, offset);
 }
+
 tort_v _tort_offset_setter__applyf(tort_tp void *o, tort_v v)
 {
   assert(_tort_message->argc >= tort_i(2));
   *(tort_v*)(o + tort_I(_tort_message->method->data)) = v;
   return o;
 }
+tort_method* tort_offset_setter_new(tort_v offset)
+{
+  return tort_method_new(_tort_offset_setter__applyf, offset);
+}
+
+tort_v _tort_offset_locater__applyf(tort_tp void *o)
+{
+  assert(_tort_message->argc >= tort_i(1));
+  return tort_l((tort_v*)(o + tort_I(_tort_message->method->data)));
+}
+tort_method* tort_offset_locater_new(tort_v offset)
+{
+  return tort_method_new(_tort_offset_locater__applyf, offset);
+}
+
+static struct d_m {
+  const char *type;
+  const char *mtable;
+  const char *name;
+  void *func;
+} meths[] = {
+#define tort_d_m(T,MT,N,F) { #T, #MT, #N, F },
+#include "tort/d_m.h"
+  { 0 }
+};
 
 tort_v tort_runtime_initialize_method()
 {
-#define tort_d_m(MT, S, F) \
-  tort_send(tort__s(add_method), MT, S, tort_method_new(F, 0)); 
-#include "tort/d_m.h"
+  int i;
+  for ( i = 0; meths[i].func; ++ i ) {
+    tort_mtable *mt = tort_mtable_get(meths[i].mtable);
+    tort_v sel = tort_symbol_new_encode(meths[i].name);
+    if ( meths[i].type[0] == 'M' )
+      mt = tort_h_mtable(mt);
+    tort_send(tort__s(add_method), mt, sel, tort_method_new(meths[i].func, 0)); 
+  }
   return 0;
 }
 

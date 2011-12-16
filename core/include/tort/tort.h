@@ -439,6 +439,7 @@ tort_mtable* tort_mtable_create_class(const char *string, tort_v parent);
 tort_method* tort_method_new (void *applyf, tort_v data);
 tort_method* tort_offset_getter_new (tort_v offset);
 tort_method* tort_offset_setter_new (tort_v offset);
+tort_method* tort_offset_locater_new (tort_v offset);
 tort_method* tort_constant_getter_new (tort_v value);
 
 tort_v tort_add_method(tort_v map, const char *name, void *applyf);
