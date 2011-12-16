@@ -124,9 +124,9 @@ tort_v tort_runtime_create_ (int *argcp, char ***argvp, char ***envp)
   ROOT(symbols, tort_(symbols));
   ROOT(mtable, tort_(m_mtable));
   ROOT(unknown_caller_info, tort_(unknown_caller_info));
-  ROOT(TAG_BITS, tort_i(TORT_TAG_BITS));
-  ROOT(WORD_SIZE, tort_i(sizeof(tort_v)));
-  ROOT(OBJECT_HEADER_SIZE, tort_i(sizeof(tort_header)));
+  ROOT(tag_bits, tort_i(TORT_TAG_BITS));
+  ROOT(word_size, tort_i(sizeof(tort_v)));
+  ROOT(object_header_size, tort_i(sizeof(tort_header)));
 
   INIT(io);
   INIT(printf);
