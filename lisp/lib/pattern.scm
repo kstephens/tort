@@ -89,20 +89,18 @@
 (define pattern-predicate caddr)
 (define (pattern-predicate:match? pattern datum dictionary)
   (let ((pred (pattern-predicate pattern)))
-    (if (cond
-	 ((procedure? pred)
-	  (pred datum))
-	 (else
-	  (eval `(,@pred datum))))
-	(pattern:variable:match? `(? ,(pattern:variable pattern)) datum dictionary)
-	#f)))
+    (cond
+      ((procedure? pred)
+	(and (pred datum) (pattern:variable:match? `(? ,(pattern:variable pattern)) datum dictionary)))
+      ((eq? pred 'not)
+	(not (pattern:variable:match? `(? ,(pattern:variable pattern)) datum dictionary)))
+      (else (error "INVALID pattern-predicate")))))
 (define (pattern-predicate:replace pattern datum replacement)
   (let ((pred (pattern-predicate pattern)))
     (cond
      ((procedure? pred)
       (pred datum))
-     (else
-      (eval `(,@pred datum))))))
+     (else datum))))
 
 (define pattern:*debug* #f)
 (define (pattern-dictionary:replace d pattern datum)
