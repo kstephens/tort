@@ -60,6 +60,10 @@
     '(0))
   (t '(&r %rsi)
     '(1))
+
+  ;; Message send.
+  (t '(&send '+ 1 2)
+    '(3))
   #|
   (t '(&i ((&extern printf) (&P "Hello, World!\n")))
   '14)

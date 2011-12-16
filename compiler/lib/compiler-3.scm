@@ -5,6 +5,7 @@
 (load "compiler/lib/assembler.scm")
 (load "compiler/lib/peephole.scm")
 (load "compiler/lib/inline.scm")
+(load "compiler/lib/send.scm")
 
 (let* ( 
               ;; x68_64
