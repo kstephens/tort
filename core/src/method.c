@@ -12,6 +12,14 @@ tort_method* tort_method_new(void *applyf, tort_v data)
   return meth;
 }
 
+/* non-symbol lookup interface. */
+tort_v _tort_m_method__lookup(tort_tp tort_method *obj, tort_message *msg)
+{
+  msg->mtable = tort_h_mtable(obj);
+  msg->method = (tort_v) obj;
+  return msg;
+}
+
 tort_v _tort_m_object___applyf(tort_tp tort_v o)
 {
   return tort_h(o)->applyf;
