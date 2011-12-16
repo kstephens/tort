@@ -1,7 +1,7 @@
 #include "tort/core.h"
 
-tort_ACCESSOR(method,tort_v,name);
-tort_ACCESSOR(method,tort_v,data);
+tort_SLOT(method,tort_v,name);
+tort_SLOT(method,tort_v,data);
 
 tort_method* tort_method_new(void *applyf, tort_v data)
 {

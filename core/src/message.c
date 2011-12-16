@@ -1,19 +1,19 @@
 #include "tort/tort.h"
 
-tort_ACCESSOR(message,tort_v,selector);
-tort_ACCESSOR(message,tort_v,receiver);
-tort_ACCESSOR(message,tort_v,previous_message);
-tort_ACCESSOR(message,tort_v,fiber);
-tort_ACCESSOR(message,tort_v,method);
-tort_ACCESSOR(message,tort_v,mtable);
-tort_ACCESSOR(message,tort_v,argc);
+tort_SLOT(message,tort_v,selector);
+tort_SLOT(message,tort_v,receiver);
+tort_SLOT(message,tort_v,previous_message);
+tort_SLOT(message,tort_v,fiber);
+tort_SLOT(message,tort_v,method);
+tort_SLOT(message,tort_v,mtable);
+tort_SLOT(message,tort_v,argc);
 #if TORT_MESSAGE_FILE_LINE
-tort_ACCESSOR(message,tort_v,caller_info);
+tort_SLOT(message,tort_v,caller_info);
 #endif
 
 tort_ACCESSOR(caller_info,charP,file)
 tort_ACCESSOR(caller_info,int,line)
-tort_ACCESSOR(caller_info,tort_v,data)
+tort_SLOT(caller_info,tort_v,data)
 
 tort_v _tort_M_message__new(tort_tp tort_v mtable)
 {

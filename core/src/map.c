@@ -1,7 +1,7 @@
 #include "tort/core.h"
 #include <stdarg.h>
 
-tort_ACCESSOR(map,tort_v,equality);
+tort_SLOT(map,tort_v,equality);
 #define EQ(X,Y) (rcvr->equality != tort_nil ? tort_sendn(rcvr->equality, 2, (X), (Y)) != tort_false : (X) == (Y))
 
 tort_v _tort_M_map__new(tort_tp tort_v mtable, ...)

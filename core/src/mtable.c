@@ -3,9 +3,9 @@
 // tort_GETTER(mtable,tort_v,delegate)
 tort_ACCESSOR(mtable,size_t,instance_size);
 tort_ACCESSOR(mtable,voidP,gc_data);
-tort_ACCESSOR(mtable,tort_v,gc_mark_method);
-tort_ACCESSOR(mtable,tort_v,gc_free_method);
-tort_ACCESSOR(mtable,tort_v,data);
+tort_SLOT(mtable,tort_v,gc_mark_method);
+tort_SLOT(mtable,tort_v,gc_free_method);
+tort_SLOT(mtable,tort_v,data);
 
 tort_v _tort_m_mtable__initialize(tort_tp tort_mtable *mt, tort_v delegate)
 {
