@@ -207,9 +207,9 @@ tort_v tort_runtime_initialize_io()
   tort_stdout = _tort_M_io____new(tort_ta tort__mt(io), stdout);
   tort_stderr = _tort_M_io____new(tort_ta tort__mt(io), stderr);
 
-  tort_send(tort__s(set), tort_(root), tort_s(stdin), tort_stdin);
-  tort_send(tort__s(set), tort_(root), tort_s(stdout), tort_stdout);
-  tort_send(tort__s(set), tort_(root), tort_s(stderr), tort_stderr);
+  tort_send(tort__s(set), tort_(root), tort__s(io_stdin), tort_stdin);
+  tort_send(tort__s(set), tort_(root), tort__s(io_stdout), tort_stdout);
+  tort_send(tort__s(set), tort_(root), tort__s(io_stderr), tort_stderr);
 
   tort_eos    = tort_allocate(tort__mt(eos), sizeof(tort_object));
 

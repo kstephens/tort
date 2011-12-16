@@ -20,9 +20,9 @@
 (define <string> (%mtable-by-name 'string))
 (define (string? o) (eq? ('_mtable o) <string>))
 
-(define *standard-input*  (%root 'stdin))
-(define *standard-output* (%root 'stdout))
-(define *standard-error*  (%root 'stderr))
+(define *standard-input*  (%root 'io_stdin))
+(define *standard-output* (%root 'io_stdout))
+(define *standard-error*  (%root 'io_stderr))
 
 (define (newline . port)
   ('_write (if (pair? port) (car port) *standard-output*) "\n"))
