@@ -1,0 +1,23 @@
+#!/bin/sh
+set -e # x
+(
+    cat "$1.begin"
+    srcs="$(ls src/*.c 2>&1)"
+    cat <<EOF
+/* Sources:
+$srcs
+*/
+EOF
+    for f in $srcs
+    do
+      # set -x
+      echo "  $f" 1>&2
+      ${CC} ${CFLAGS} -E -o - -Dtort_d_slot=tort_d_slot -Dtort_SLOT=tort_SLOT "${f}" || :
+      # set +x
+    done |
+    tr ";}" "\n" | 
+    perl -ne 'while ( s/\btort_SLOT[(]([^)]+)[)]// ) { print "tort_d_slot(", $1, ")\n"; } ' |
+    sort -u
+    cat "$1.end"
+) > "$2"
+

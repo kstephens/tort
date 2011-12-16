@@ -50,6 +50,7 @@ check-gen-new : $(GEN_FILES_NEW)
 	done
 boot: boot/include/.touch
 boot/include/.touch :
+	-rm -f $(GEN_FILES_NEW)
 	@mkdir -p $$(dirname $@)
 	set -ex; for f in $(GEN_H_FILES); do \
 	  dst="boot/$$f" ;\

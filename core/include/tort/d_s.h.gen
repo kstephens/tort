@@ -1,12 +1,30 @@
 #!/bin/sh
+srcs="$(ls src/*.c include/tort/*.h 2>/dev/null | fgrep -v '*')"
 set -e
 (
     cat "$1.begin"
+    cat <<EOF
+/* Sources:
+$srcs
+*/
+EOF
+    for f in $srcs
+    do
+      echo "  $f" 1>&2
+      (
+	#set -x; 
+	${CC} ${CFLAGS} -Dtort_d_s=tort_d_s -D'tort_s(X)=tort__s(X)' -D'tort__s(X)=tort__s(X)' -E -o - "${f}"
+      ) || : 
+    done |
+    tr ";}" "\n" | 
+    tee "$1.out" |
     perl -ne '
-if ( ! /^#/ && /\btort__?s[(]([a-zA-Z0-9_]+?)[)]/ ) { 
-  print "tort_d_s($1)\n";
+if ( ! /^#/ ) {
+  while ( s/\btort__?s\s*[(]([a-zA-Z0-9_]+)[)]// ) { 
+    print "tort_d_s($1)\n";
+  }
 }
-' src/*.c include/tort/*.h /dev/null | 
+' | 
     sort -u # | tee /dev/tty
     cat "$1.end"
 ) > "$2"

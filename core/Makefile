@@ -10,17 +10,11 @@ include $(BASE_DIR)/mk/target.mk
 # default:
 #
 
-bootstrap : clean
-	$(MAKE) clean
-	-rm -f include/tort/fixnum.h.new
-	-$(MAKE) 
-	-rm -f include/tort/internal.h.new
-	-$(MAKE) 
-	-rm -f include/tort/d_m.h.new
-	-$(MAKE) 
-	-rm -f include/tort/symbol.h.new
-	-$(MAKE) 
+bootstrap : veryclean
+	-$(MAKE) make-gen-files
 	$(MAKE)
+
+.PHONY : bootstrap make-gen-files
 
 ######################################################################
 # include:

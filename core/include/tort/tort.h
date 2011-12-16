@@ -305,8 +305,10 @@ struct tort_runtime { tort_H;
 #define tort_d_mt(N) tort_mtable *_mt_##N;
 #include "tort/d_mt.h"
 
+#ifndef tort_d_s
 #define tort_d_s(N) tort_symbol *_s_##N;
 #include "tort/d_s.h"
+#endif
 
   /* io */
   tort_v _io_stdin;
@@ -431,13 +433,19 @@ tort_v _tort_allocate (tort_tp tort_v meth_table, size_t size);
 #endif
 
 #if TORT_MULTIPLICITY
+#ifndef tort_s
 #define tort_s(X) tort_symbol_new_encode(#X)
+#endif
 #define tort_mt(X) tort_mtable_get(#X)
 #else
+#ifndef tort_s
 #define tort_s(X)  ({ static tort_v _s_##X;  _s_##X ?  _s_##X :  (_s_##X  = tort_symbol_new_encode(#X)); })
+#endif
 #define tort_mt(X) ({ static tort_v _mt_##X; _mt_##X ? _mt_##X : (_mt_##X = tort_mtable_get(#X)); })
 #endif
+#ifndef tort__s
 #define tort__s(X) tort_(_s_##X)
+#endif
 #define tort__mt(X) tort_(_mt_##X)
 
 tort_v tort_object_new ();

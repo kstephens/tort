@@ -3,9 +3,10 @@
 include/tort/box.h
 include/tort/config.h
 include/tort/core.h
-include/tort/d_m.h
 include/tort/d_mt.h
+include/tort/d_s.all.h
 include/tort/d_s.h
+include/tort/d_slot.h
 include/tort/fixnum.h
 include/tort/init.h
 include/tort/internal.h
@@ -30,6 +31,7 @@ src/object.c
 src/pair.c
 src/printf.c
 src/ptr.c
+src/slot.c
 src/string.c
 src/symbol.c
 src/symbol_encoding.c
