@@ -71,11 +71,18 @@
 			      (map (lambda (b) (cons (car b) ('expand-args self (cdr b))))
 				(car (cdr e)))
 			      ('expand-args self (cdr (cdr e)))))
-	      (let ((transformer ('get-transformer self head)))
-		;; (display "  macro for ")(display (car e))(display " = ")(write macro)(newline)
-		(if (null? transformer)
-		  ('expand-args self e)
-		  ('apply-transformer self transformer e)))))))
+	      (if (eq? '&macro-scope head) ;; (&macro-scope (quote env) . body)
+		(let ((args ('expand-args self (cdr e))))
+		  (cons '&macro-scope
+		    (cons (car args) 
+		      ('expand-args (car (cdr (car args))) (cdr args)))))
+		(if (eq? '&macro-environment head) ;; (&macro-environment)
+		  (cons 'quote (cons self '()))
+		  (let ((transformer ('get-transformer self head)))
+		    ;; (display "  macro for ")(display (car e))(display " = ")(write macro)(newline)
+		    (if (null? transformer)
+		      ('expand-args self e)
+		      ('apply-transformer self transformer e)))))))))
       e)))
 ('add_method <macro-environment> 'expand-args
   (lambda (self e)
@@ -105,11 +112,14 @@
       e-next)))
 
 (define *top-level-macro-environment* ('new <macro-environment>))
+(define (&macro-environment) *top-level-macro-environment*)
 (define (%define-macro name transformer)
-  ('define-transformer *top-level-macro-environment* name transformer))
+  ('define-transformer (&macro-environment) name transformer))
 
 (%define-macro 'define-macro 
   (lambda (name . body)
     (if (pair? name)
       (list '%define-macro (list 'quote (car name)) (cons 'lambda (cons (cdr name) body)))
       (cons '%define-macro (cons (list 'quote name) body)))))
+
+

@@ -216,6 +216,17 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(define-macro (macro-scope . body)
+  (let ((env ('parent= ('new <macro-environment>) (&macro-environment))))
+    `(&macro-scope ',env ,@body)))
+
+(define-macro (set-macro! name . body)
+    (if (pair? name)
+      `('set-transformer (&macro-environment) ',(car name) (lambda ,(cdr name) ,@body))
+      `('set-transformer (&macro-environment) ',name ,@body)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (define-macro (begin . body)
   (if (null? body) ''() ; undef
     (if (null? (cdr body)) (car body)
