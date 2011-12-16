@@ -41,6 +41,7 @@
 
 (define (not o) (if o #f #t))
 
+(define <null> ('_mtable '()))
 (define (null? o) (eq? o '()))
 (define (not-nil o) (if (null? o) #f o))
 (define <cons> (%mtable-by-name 'cons))
@@ -53,7 +54,7 @@
 (define (list . args) args)
 (define (length o) ('size o))
 (define list-length length)
-(define (map f l)
+(define (%map l f)
   (let ((result (cons #f '()))
 	 (r #f)
 	 (c '()))
@@ -64,6 +65,10 @@
       (set! r c)
       (set! l (cdr l)))
     (cdr result)))
+('add_method <cons> 'map %map)
+('add_method <null> 'map (lambda (l f) '()))
+(define (map f l)
+  ('map l f))
 (define <vector> (%mtable-by-name 'vector))
 (define (vector-ref s i) ('get s i))
 (define (vector-set! s i v) ('set s i v))
