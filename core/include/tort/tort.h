@@ -62,15 +62,6 @@ typedef struct tort_method tort_method;
 extern tort_apply_decl(_tort_m_object___method_not_found);
 extern tort_apply_decl(_tort_m_object___cannot_apply);
 
-#define tort_GETTER(MT,T,N) \
-  tort_v _tort_M_##MT##___offset_##N ( tort_tp tort_mtable *mtable ) { return tort_i(&((struct tort_##MT*) 0)->N); } \
-  tort_v _tort_m_##MT##__##N ( tort_tp struct tort_##MT *rcvr ) { return tort_box_(T,rcvr->N); }
-#define tort_SETTER(MT,T,N) \
-  tort_v _tort_m_##MT##__##N##SET ( tort_tp struct tort_##MT *rcvr, tort_v val ) { rcvr->N = tort_unbox_(T,val); return rcvr; }
-#define tort_ACCESSOR(MT,T,N) \
-  tort_GETTER(MT,T,N); \
-  tort_SETTER(MT,T,N)
-
 typedef
 struct tort_header {
 #if TORT_ALLOC_DEBUG
@@ -220,11 +211,31 @@ struct tort_mtable { tort_H;
   tort_map _map; /* same layout as tort_map. */
   tort_mtable* delegate;
   size_t instance_size; /** allocated object size, not including this header */
+  tort_map* slots;
   void *gc_data;
   tort_v gc_mark_method;
   tort_v gc_free_method;
   tort_v data;
 };
+
+typedef struct tort_slot { tort_H;
+  tort_v mtable, name;
+  tort_v type, offset, size;
+  tort_v getter, setter, locater;
+} tort_slot;
+tort_h_struct(tort_slot);
+
+#ifndef tort_SLOT
+#define tort_SLOT(MT,T,N) \
+  tort_slot_ _tort_slot_##MT##__##N = { { }, { { }, #MT, #N, #T, tort_i(&((struct tort_##MT*) 0)->N), tort_i(sizeof((struct tort_##MT*) 0)->N) } };
+#endif
+#define tort_GETTER(MT,T,N) \
+  tort_v _tort_m_##MT##__##N ( tort_tp struct tort_##MT *rcvr ) { return tort_box_(T,rcvr->N); }
+#define tort_SETTER(MT,T,N) \
+  tort_v _tort_m_##MT##__##N##SET ( tort_tp struct tort_##MT *rcvr, tort_v val ) { rcvr->N = tort_unbox_(T,val); return rcvr; }
+#define tort_ACCESSOR(MT,T,N) \
+  tort_GETTER(MT,T,N); \
+  tort_SETTER(MT,T,N)
 
 struct tort_symbol { tort_H;
   tort_string *name;

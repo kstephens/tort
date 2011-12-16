@@ -82,9 +82,18 @@ tort_v tort_runtime_create_ (int *argcp, char ***argvp, char ***envp)
   /* Create the core symbols. */
   INIT(symbol);
 
+  /* Create the mtable map. */
+  tort_(m_mtable) = tort_map_new();
+#define tort_d_mt(X) \
+  if ( tort__mt(X) )  _tort_m_map__set(tort_ta tort_(m_mtable), tort_symbol_new(#X), tort__mt(X));
+#include "tort/d_mt.h"
+
   /* Install core methods. */
   INIT(method);
   INIT(eq);
+
+  /* Add core slots. */
+  INIT(slot);
 
   /* Create the root table. */
   tort_(root) = tort_map_new();
@@ -106,9 +115,6 @@ tort_v tort_runtime_create_ (int *argcp, char ***argvp, char ***envp)
   tort_(unknown_caller_info) = tort_send(tort__s(_allocate), tort__mt(caller_info), tort_i(sizeof(tort_caller_info)));
   tort_(unknown_caller_info)->file = "<unknown>";
 
-  /* Create the mtable map. */
-  tort_(m_mtable) = tort_map_new();
-  
   /* Setup the root namespace. */
 #define ROOT(N,V) tort_send(tort__s(set), tort_(root), tort_symbol_new(#N), (V))
   ROOT(runtime, tort_ref_box(_tort));
@@ -121,9 +127,6 @@ tort_v tort_runtime_create_ (int *argcp, char ***argvp, char ***envp)
   ROOT(TAG_BITS, tort_i(TORT_TAG_BITS));
   ROOT(WORD_SIZE, tort_i(sizeof(tort_v)));
   ROOT(OBJECT_HEADER_SIZE, tort_i(sizeof(tort_header)));
-#define tort_d_mt(X) \
-  if ( tort__mt(X) ) tort_send(tort__s(set), tort_(m_mtable), tort_symbol_new(#X), tort__mt(X));
-#include "tort/d_mt.h"
 
   INIT(io);
   INIT(printf);

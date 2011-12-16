@@ -12,6 +12,7 @@ tort_v _tort_m_mtable__initialize(tort_tp tort_mtable *mt, tort_v delegate)
   _tort_m_map__initialize(tort_ta (tort_v) mt);
   mt->delegate = delegate;
   mt->instance_size = 0;
+  mt->slots = 0;
   mt->gc_data = 0;
   mt->gc_mark_method = 0;
   mt->gc_free_method = 0;
@@ -27,6 +28,13 @@ tort_v _tort_m_mtable__delegates(tort_tp tort_mtable *mtable)
     mtable = tort_send(tort__s(delegate), mtable);
   }
   return v;
+}
+
+tort_v _tort_m_mtable__slots(tort_tp tort_mtable *mtable)
+{
+  if ( mtable->slots == 0 || mtable->slots == tort_nil ) 
+    mtable->slots = tort_send(tort__s(new), tort__mt(map));
+  return mtable->slots;
 }
 
 tort_v _tort_M_mtable__new_mtable(tort_tp tort_mtable *mtable, tort_v delegate)
@@ -162,7 +170,7 @@ tort_mtable* tort_mtable_new_class(tort_v delegate)
 tort_mtable* tort_mtable_get(const char *name)
 {
   tort_v sym = tort_symbol_new(name);
-  tort_v mt = tort_send(tort__s(get), tort_(m_mtable), sym);
+  tort_v mt =  _tort_m_map__get(tort_ta tort_(m_mtable), sym);
   return mt;
 }
 
@@ -233,6 +241,8 @@ tort_v tort_runtime_initialize_mtable()
   tort__mt(string)      = tort_mtable_new_class(tort__mt(vector_base));
   tort__mt(symbol)      = tort_mtable_new_class(tort__mt(object));
   tort__mt(method)      = tort_mtable_new_class(tort__mt(object));
+  tort__mt(slot)        = tort_mtable_new_class(tort__mt(object));
+  tort__mt(slot)->instance_size = sizeof(tort_slot);  
   tort__mt(value)       = tort_mtable_new_class(tort__mt(method));
   tort__mt(message)     = tort_mtable_new_class(tort__mt(object));
   tort__mt(message)->instance_size = sizeof(tort_message);

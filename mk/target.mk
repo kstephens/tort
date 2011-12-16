@@ -40,7 +40,8 @@ bins : $(BINS_EARLY) $(GEN_BINS)
 $(BINS_EARLY) $(GEN_BINS) : $(LINK_DEPS)
 early : early-headers early-files check-gen-new
 early-headers: boot/include/.touch
-GEN_FILES_NEW=$(GEN_FILES:%.gen=%.new)#
+GEN_FILES_NEW=$(GEN_H_GEN_FILES:%.gen=%.new)#
+gen-files-new: $(GEN_FILES_NEW)
 check-gen-new : $(GEN_FILES_NEW)
 	@set -e ;\
 	for f in $(GEN_FILES_NEW:%.new=%) ;\
@@ -57,6 +58,10 @@ boot/include/.touch :
 	  cp "$$dst" "$$f" ;\
 	done
 	touch $@
+
+make-gen-files : boot gen-files-new check-gen-new
+
+.PHONY: all components libs bins early early-headers make-gen-files gen-files-new check-gen-new boot
 
 ######################################################################
 
@@ -124,12 +129,16 @@ accept-all-test : tests
 ######################################################################
 
 clean ::
-	rm -f $(TEST_T_FILES) $(GEN_LIBS) $(GEN_BINS) src/*{.o,.lo,.la} t/*.{t,out} $(GEN_C_FILES) $(GEN_H_FILES) .stats/*
-	rm -rf boot/include
+	rm -f $(TEST_T_FILES) $(GEN_LIBS) $(GEN_BINS) src/*{.o,.lo,.la} t/*.{t,out} 
 	find . -name '*.dSYM' -type d -print0 | xargs -0 rm -rf
 	@for d in $(SUBDIRS) .; do [ "$$d" = '.' ] && break; $(MAKE) -wC "$$d" clean; done
 veryclean :: very-clean
 very-clean :: clean
+	rm -f $(GEN_C_FILES) $(GEN_H_FILES) $(GEN_FILES_NEW) .stats/*
+	rm -rf boot/include
+	@for d in $(SUBDIRS) .; do [ "$$d" = '.' ] && break; $(MAKE) -wC "$$d" very-clean; done
+
+.PHONY: clean veryclean very-clean
 
 FIND_STAT_FILES= \
    -name '*.h' -o -name '*.c' -o -name '*.lisp' -o -name '*.scm' \
