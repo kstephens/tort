@@ -1,16 +1,16 @@
 #include "tort/tort.h"
 #include "tort/repl.h"
 
-tort_SETTER(repl,tort_v,input);
-tort_SETTER(repl,tort_v,output);
-tort_SETTER(repl,tort_v,message);
-tort_SETTER(repl,tort_v,prompt);
-tort_SETTER(repl,tort_v,env);
-tort_SETTER(repl,tort_v,catch);
-tort_SETTER(repl,tort_v,caught);
-tort_SETTER(repl,tort_v,running);
-tort_SETTER(repl,tort_v,expr);
-tort_SETTER(repl,tort_v,result);
+tort_SLOT(repl,tort_v,input);
+tort_SLOT(repl,tort_v,output);
+tort_SLOT(repl,tort_v,message);
+tort_SLOT(repl,tort_v,prompt);
+tort_SLOT(repl,tort_v,env);
+tort_SLOT(repl,tort_v,catch);
+tort_SLOT(repl,tort_v,caught);
+tort_SLOT(repl,tort_v,running);
+tort_SLOT(repl,tort_v,expr);
+tort_SLOT(repl,tort_v,result);
 
 tort_v _tort_M_repl__new(tort_tp tort_mtable *mtable)
 {

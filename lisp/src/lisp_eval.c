@@ -15,11 +15,11 @@ typedef struct tort_lisp_formals { tort_H;
   tort_v rest;
 } tort_lisp_formals;
 
-tort_ACCESSOR(lisp_formals,tort_v,formals);
-tort_ACCESSOR(lisp_formals,tort_v,formals_n);
-tort_ACCESSOR(lisp_formals,tort_v,argc);
-tort_ACCESSOR(lisp_formals,tort_v,map);
-tort_ACCESSOR(lisp_formals,tort_v,rest);
+tort_SLOT(lisp_formals,tort_v,formals);
+tort_SLOT(lisp_formals,tort_v,formals_n);
+tort_SLOT(lisp_formals,tort_v,argc);
+tort_SLOT(lisp_formals,tort_v,map);
+tort_SLOT(lisp_formals,tort_v,rest);
 
 typedef struct tort_lisp_closure { tort_H; /* Same layout as tort_method. */
   tort_v name;
@@ -28,10 +28,10 @@ typedef struct tort_lisp_closure { tort_H; /* Same layout as tort_method. */
   tort_v environment;
 } tort_lisp_closure;
 
-tort_ACCESSOR(lisp_closure,tort_v,name);
-tort_ACCESSOR(lisp_closure,tort_v,formals);
-tort_ACCESSOR(lisp_closure,tort_v,body);
-tort_ACCESSOR(lisp_closure,tort_v,environment);
+tort_SLOT(lisp_closure,tort_v,name);
+tort_SLOT(lisp_closure,tort_v,formals);
+tort_SLOT(lisp_closure,tort_v,body);
+tort_SLOT(lisp_closure,tort_v,environment);
 
 typedef struct tort_lisp_environment { tort_H;
   tort_lisp_formals *formals;
@@ -44,14 +44,14 @@ typedef struct tort_lisp_environment { tort_H;
   tort_v msg;
 } tort_lisp_environment;
 
-tort_ACCESSOR(lisp_environment,tort_v,formals);
-tort_ACCESSOR(lisp_environment,tort_v,argc);
-tort_ACCESSOR(lisp_environment,tort_v,argv);
-tort_ACCESSOR(lisp_environment,tort_v,rest);
-tort_ACCESSOR(lisp_environment,tort_v,rest_ok);
-tort_ACCESSOR(lisp_environment,tort_v,parent);
-tort_ACCESSOR(lisp_environment,tort_v,_globals);
-tort_ACCESSOR(lisp_environment,tort_v,msg);
+tort_SLOT(lisp_environment,tort_v,formals);
+tort_SLOT(lisp_environment,tort_v,argc);
+tort_SLOT(lisp_environment,tort_v,argv);
+tort_SLOT(lisp_environment,tort_v,rest);
+tort_SLOT(lisp_environment,tort_v,rest_ok);
+tort_SLOT(lisp_environment,tort_v,parent);
+tort_SLOT(lisp_environment,tort_v,_globals);
+tort_SLOT(lisp_environment,tort_v,msg);
 
 tort_v _tort_M_lisp_formals__new(tort_tp tort_mtable *mtable, tort_v formals)
 {
