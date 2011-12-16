@@ -1,29 +1,37 @@
 (define *macro-expand-trace* #f)
 (define <macro-environment> ('new_class <mtable> <vector>))
-('add_method ('_mtable <macro-environment>) 'new 
-  (lambda (mtable)
-    (let ((instance (vector '<struct> #f #f #f ('new <map>))))
-      ('_mtable= instance mtable)
-      instance)))
-('add_method <macro-environment> 'parent
+(let ((id 0))
+  ('add_method ('_mtable <macro-environment>) 'new 
+    (lambda (mtable)
+      (set! id (+ id 1))
+      (let ((instance (vector '<struct> #f #f id #f ('new <map>))))
+	('_mtable= instance mtable)
+	instance))))
+('add_method <macro-environment> 'id
   (lambda (self)
     (vector-ref self 3)))
-('add_method <macro-environment> 'parent=
-  (lambda (self v)
-    (vector-set! self 3 v)))
-('add_method <macro-environment> 'bindings
+('add_method <macro-environment> 'parent
   (lambda (self)
     (vector-ref self 4)))
+('add_method <macro-environment> 'parent=
+  (lambda (self v)
+    (vector-set! self 4 v) self))
+('add_method <macro-environment> 'bindings
+  (lambda (self)
+    (vector-ref self 5)))
 ('add_method <macro-environment> 'bindings=
   (lambda (self v)
-    (vector-set! self 4 v)))
+    (vector-set! self 5 v) self))
 ('add_method <macro-environment> 'lisp_write 
   (lambda (self port)
-    ('_write port "#<macro-environment >")))
+    ('_write port "#<macro-environment ")
+    ('_inspect ('id self) port)
+    ('_write port " >")))
 ('add_method <macro-environment> 'set-transformer 
   (lambda (self symbol transformer)
     ('set ('bindings self) symbol transformer)
     ;; (display "\n\n  ### set-macro ")(write symbol)(write transformer)(display "\n\n")
+    self
     ))
 ('add_method <macro-environment> 'get-transformer
   (lambda (self car-expr)
