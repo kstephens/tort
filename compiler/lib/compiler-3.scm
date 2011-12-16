@@ -4,80 +4,22 @@
 (load "compiler/lib/label.scm")
 (load "compiler/lib/assembler.scm")
 (load "compiler/lib/peephole.scm")
+(load "compiler/lib/inline.scm")
 
 (let* ( 
               ;; x68_64
        (arg-regs     '#(%rdi %rsi %rdx %rcx %r8 %r9))
-       (object-header-size ('get &root 'object_header_size))
-       (word-size    ('get &root 'word_size))
-       (tag-bits     ('get &root 'tag_bits))
-       (locative-tag ('get ('get &root 'tagged_mtables) <locative>))
-       (fixnum-tag   ('get ('get &root 'tagged_mtables) <fixnum>))
-       (unspec `(&q ,(if #f #f)))
-       (inline-asm    ('new <map>))
+       (object-header-size (send 'get &root 'object_header_size))
+       (word-size    (send 'get &root 'word_size))
+       (tag-bits     (send 'get &root 'tag_bits))
+       (locative-tag (send 'get (send 'get &root 'tagged_mtables) <locative>))
+       (fixnum-tag   (send 'get (send 'get &root 'tagged_mtables) <fixnum>))
+       (unspec       `(&q ,(if #f #f)))
        (rtn          '(&r %rax))
        (arg0         `(&r ,(vector-ref arg-regs 0)))
        (arg1         `(&r ,(vector-ref arg-regs 1)))
        (arg2         `(&r ,(vector-ref arg-regs 2)))
        )
-  (for-each (lambda (o) ('set inline-asm (car o) `(&asm ,@(cdr o))))
-    `(
-       (&INV 1 (notq ,rtn))
-       (&NEG 1 (negq ,rtn))
-       (&ADD 2 (addq ,arg1 ,rtn))
-       (&SUB 2 (subq ,arg1 ,rtn))
-       (&MUL 2 (imulq ,arg1 ,rtn))
-       (&DIV 2
-	 (movq ,rtn (&r %rdx))
-	 (sarq (&$ 63) (&r %rdx))
-	 (idivq ,arg1))
-       (&AND 2 (andq ,arg1 ,arg0))
-       (&OR  2 (orq  ,arg1 ,arg0))
-       (&XOR 2 (xorq ,arg1 ,arg0))
-       (&MOD 2
-	 (movq ,rtn (&r %rdx))
-	 (sarq (&$ 63) (&r %rdx))
-	 (idivq ,arg1)
-	 (movq (&r %rdx) (&r %rax)))
-       (&LSH 2
-	 (movl ,arg1 (&r %ecx))
-	 (movq ,rtn (&r %rax))
-	 (salq (&r %cl) (&r %rax)))
-       (&RSH 2
-	 (movl ,arg1 (&r %ecx))
-	 (movq ,rtn (&r %rax))
-	 (sarq (&r %cl) (&r %rax)))
-       (&NOT 1
-	 (cmpq ($& 0) ,rtn)
-	 (sete (&r %al))
-	 (movzbl (&r %al) (&r %eax))
-	 )
-       ;; LOR, LAND ;; FIXME
-       (&EQ  2
-	 (cmpq ,arg1 ,rtn)
-	 (sete (&r %al))
-	 (movzbl (&r %al) (&r %eax)))
-       (&NE  2
-	 (cmpq ,arg1 ,rtn)
-	 (setne (&r %al))
-	 (movzbl (&r %al) (&r %eax)))
-       (&LT  2
-	 (cmpq ,arg1 ,rtn)
-	 (setl (&r %al))
-	 (movzbl (&r %al) (&r %eax)))
-       (&GT  2
-	 (cmpq ,arg1 ,rtn)
-	 (setg (&r %al))
-	 (movzbl (&r %al) (&r %eax)))
-       (&LE  2
-	 (cmpq ,arg1 ,rtn)
-	 (setle (&r %al))
-	 (movzbl (&r %al) (&r %eax)))
-       (&GE  2
-	 (cmpq ,arg1 ,rtn)
-	 (setge (&r %al))
-	 (movzbl (&r %al) (&r %eax)))
-       ))
 
   ;; 1) Rewrite scheme to canonical forms:
   ;;
@@ -144,7 +86,7 @@
 	    ((&e)      `(&e (&q ,(cadr e)) ,(f (caddr e))))
 	    ((&extern)      `(&&extern (&q ,(cadr e))))
 	    ((&stack-alloc) `(,(car e) (&q ,(cadr e))))
-	    ((&r)    e)
+	    ((&r &asm)    e)
 	    (else     (if (and (symbol? (car e)) (equal? (string-ref (symbol->string (car e)) 0) #\&))
 			`(,(car e) ,@(map f (cdr e)))
 			`(&c    ,@(map f e))))
@@ -165,6 +107,7 @@
 	((eq? (car e) '&q) e)
 	((eq? (car e) '&v) e)
 	((eq? (car e) '&r) e)
+	((eq? (car e) '&asm) e)
 	((eq? (car e) '&&extern) e)
 #|
 	((and 
@@ -218,7 +161,7 @@
       (lambda (env e)
 	;;(display "  3 e = ")(write e)(newline)
 	(case (car e)
-	  ((&q &v &r &&extern) )
+	  ((&q &v &r &asm &&extern) )
 	  ((&lambda &&c-func) ; (&lambda  'formals body) => (&lambda env body) 
 	    (let ((subenv ('subenv env)))
 	      ('closure= subenv e)
@@ -258,7 +201,7 @@
       (lambda (env e)
 	;; (display "  4 e = ")(write e)(newline)
 	(case (car e)
-	  ((&q &r &g) )
+	  ((&q &r &g &asm) )
 	  ((&v &set!)
 	    (let ((b ('lookup-or-add-global env (cadr e))))
 	      ;; (display "   b = ")(write b)(newline)
@@ -286,7 +229,7 @@
       (lambda (env e)
 	;; (display "  5 e = ")(write e)(newline)
 	(case (car e)
-	  ((&q &v &r &g) )
+	  ((&q &v &r &asm &g) )
 	  ((&lambda &&c-func)  
 	    ('allocate-bindings (cadr e))
 	    (f (cadr e) (caddr e)))
@@ -559,10 +502,10 @@
 	  ((&&call)
 	    (let ((func (cadr e)) (nargs (caddr e)))
 	      (case (car func)
-		((&asm) ;; (&inline ARGC . isns)
-		  (display " INLINE: ")(write func)(newline)
+		((&asm) ;; (&asm . isns)
+		  (display " &asm: ")(write func)(newline)
 		  ('emit o `(movq ,arg0 ,rtn))
-		  (for-each (lambda (isn) ('emit o isn)) (cddr func)))
+		  (for-each (lambda (isn) ('emit o isn)) (cdr func)))
 	      (else
 		;; Load %rbx with argc.
 		('emit o 
@@ -581,10 +524,7 @@
 	  ((&r)
 	    ('emit o `(movq ,e (&r %rax))))
 	  (else
-	    (let ((asm ('get inline-asm (car e))))
-	      (if (pair? asm)
-		(f env o `(&c ,asm ,@(cdr e)))
-		(for-each (lambda (e) (f env o e)) (cdr e))))))
+	    (for-each (lambda (e) (f env o e)) (cdr e))))
 	e)))
     (define (compiler:pass-6 env e)
       (let* ( (isns ('new isns)))
@@ -598,10 +538,16 @@
 
   (define (compile expr env)
     (let ((result expr)
-	  (asm ('new assembler)))
+	  (asm ('new assembler))
+	   (macro-env #f))
       (if (not env) (set! env ('new environ 'arg-regs arg-regs 'word-size word-size)))
       (display "\nexpr     = ")(write expr)(newline)
-      (set! result (macro-expand result))
+
+      (set! macro-env (send 'new <macro-environment>))
+      (send 'parent= macro-env *top-level-macro-environment*)
+      (send 'bindings= macro-env (compiler:inline-asm-macros))
+      (set! result (send 'expand macro-env result))
+
       (display "mac-xpnd = ")(write result)(newline)
       (set! result `(&e ,env
 		      (&c-func ,('init-symbol asm) () ,result)))
