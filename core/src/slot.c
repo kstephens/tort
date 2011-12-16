@@ -27,12 +27,15 @@ tort_v _tort_m_slot__initialize(tort_tp tort_slot *slot)
   if ( slot->type == tort__s(tort_v) ) {
     slot->locater = tort_symbol_new(strcat(strcpy(name_buf, name), "&"));
   }
+  free(name_buf);
   return slot;
 }
 
 tort_v _tort_m_slot__attach(tort_tp tort_slot *slot)
 {
   tort_v slots = tort_send(tort__s(slots), slot->mtable);
+  tort_v other_slot;
+  if ( (other_slot = tort_send(tort__s(get), slots, slot->name)) != tort_nil ) return other_slot;
   tort_send(tort__s(set), slots, slot->name, slot);
   if ( slot->type == tort__s(tort_v) ) {
     tort_send(tort__s(add_method), slot->mtable, slot->getter,  tort_offset_getter_new(slot->offset));
@@ -43,24 +46,34 @@ tort_v _tort_m_slot__attach(tort_tp tort_slot *slot)
   return slot;
 }
 
-tort_slot* tort_slot_prepare(tort_slot *slot)
+tort_slot* tort_slot_attach(tort_slot_ *slot_)
 {
+  tort_slot *slot = &slot_->_;
+  if ( tort_h_mtable(slot) ) return 0; /* only once. */
   tort_h_mtable(slot) = tort__mt(slot);
   slot = tort_send(tort__s(clone), slot);
+  // fprintf(stderr, "  slot @%p -> @%p\n", slot_, slot);
   slot->mtable = tort_mtable_get((const char *) slot->mtable);
   slot->name = tort_symbol_new((const char*) slot->name);
   slot->type = tort_symbol_new((const char*) slot->type);
   tort_send(tort__s(initialize), slot);
-  return slot;
+  fprintf(stderr, "  slot @%p %s.%-24s %-10s +%d [%d]\n", 
+	  slot,
+	  tort_object_name(slot->mtable), 
+	  tort_object_name(slot->name), 
+	  tort_object_name(slot->type),
+	  (int) tort_I(slot->offset),
+	  (int) tort_I(slot->size));
+  return tort_send(tort__s(attach), slot);
 }
 
 #ifndef tort_d_slot
-#define tort_d_slot(MT,T,N) extern tort_slot_ _tort_slot_##MT##__##N;
+#define tort_d_slot(MT,T,N) extern tort_slot_* _tort_slot_##MT##__##N();
 #include "tort/d_slot.h"
 #endif
-static tort_slot_ *slots[] = {
+static void *slots[] = {
 #ifndef tort_d_slot
-#define tort_d_slot(MT,T,N) &_tort_slot_##MT##__##N,
+#define tort_d_slot(MT,T,N) _tort_slot_##MT##__##N,
 #include "tort/d_slot.h"
 #endif
   0
@@ -70,7 +83,8 @@ tort_v tort_runtime_initialize_slot()
 {
   int i;
   for ( i = 0; slots[i]; ++ i ) {
-    tort_send(tort__s(attach), tort_slot_prepare(&slots[i]->_));
+    void *(*func)() = slots[i];
+    tort_slot_attach(func());
   }
   return 0;
 }

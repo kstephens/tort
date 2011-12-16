@@ -224,10 +224,13 @@ typedef struct tort_slot { tort_H;
   tort_v getter, setter, locater;
 } tort_slot;
 tort_h_struct(tort_slot);
-
+tort_slot *tort_slot_attach(tort_slot_ *ptr);
 #ifndef tort_SLOT
-#define tort_SLOT(MT,T,N) \
-  tort_slot_ _tort_slot_##MT##__##N = { { }, { { }, #MT, #N, #T, tort_i(&((struct tort_##MT*) 0)->N), tort_i(sizeof((struct tort_##MT*) 0)->N) } };
+#define tort_SLOT(MT,T,N)						\
+tort_slot_ *_tort_slot_##MT##__##N() {				\
+  static tort_slot_ x = { { }, { { }, #MT, #N, #T, tort_i(&((struct tort_##MT*) 0)->N), tort_i(sizeof((struct tort_##MT*) 0)->N) } }; \
+  return &x;								\
+}
 #endif
 #define tort_GETTER(MT,T,N) \
   tort_v _tort_m_##MT##__##N ( tort_tp struct tort_##MT *rcvr ) { return tort_box_(T,rcvr->N); }
