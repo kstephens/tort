@@ -414,7 +414,11 @@
 (define (%bin-op op)
   (lambda (a b) (op a b)))
 
+(define << (%bin-op '<<))
+(define >> (%bin-op '>>))
 (define = eq?)
+(define == (%bin-op '==))
+(define != (%bin-op '!=))
 (define < (%bin-op '<))
 (define > (%bin-op '>))
 (define <= (%bin-op '<=))
