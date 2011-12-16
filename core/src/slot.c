@@ -70,15 +70,7 @@ tort_v tort_runtime_initialize_slot()
 {
   int i;
   for ( i = 0; slots[i]; ++ i ) {
-    tort_slot *slot = tort_slot_prepare(&slots[i]->_);
-    fprintf(stderr, "  slot %p\n", slot);
-    fprintf(stderr, "  slot %s.%s %s +%d %d\n", 
-	    tort_object_name(slot->mtable), 
-	    tort_object_name(slot->name), 
-	    tort_object_name(slot->type),
-	    (int) tort_I(slot->offset),
-	    (int) tort_I(slot->size));
-    tort_send(tort__s(attach), slot);
+    tort_send(tort__s(attach), tort_slot_prepare(&slots[i]->_));
   }
   return 0;
 }
