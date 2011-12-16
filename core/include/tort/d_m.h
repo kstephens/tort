@@ -3,6 +3,7 @@
 include/tort/box.h
 include/tort/config.h
 include/tort/core.h
+include/tort/d_m.h
 include/tort/d_mt.h
 include/tort/d_s.all.h
 include/tort/d_s.h

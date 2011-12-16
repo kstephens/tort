@@ -5,71 +5,76 @@
 (load "compiler/lib/assembler.scm")
 (load "compiler/lib/peephole.scm")
 
-(let ( 
+(let* ( 
               ;; x68_64
        (arg-regs     '#(%rdi %rsi %rdx %rcx %r8 %r9))
-       (word-size    ('get &root 'WORD_SIZE))
-       (tag-bits     ('get &root 'TAG_BITS))
+       (object-header-size ('get &root 'object_header_size))
+       (word-size    ('get &root 'word_size))
+       (tag-bits     ('get &root 'tag_bits))
        (locative-tag ('get ('get &root 'tagged_mtables) <locative>))
        (fixnum-tag   ('get ('get &root 'tagged_mtables) <fixnum>))
        (unspec `(&q ,(if #f #f)))
-       (ops          ('new <map>))
+       (inline-asm    ('new <map>))
+       (rtn          '(&r %rax))
+       (arg0         `(&r ,(vector-ref arg-regs 0)))
+       (arg1         `(&r ,(vector-ref arg-regs 1)))
+       (arg2         `(&r ,(vector-ref arg-regs 2)))
        )
-  (for-each (lambda (o) ('set ops (car o) o)) 
+  (for-each (lambda (o) ('set inline-asm (car o) `(&asm ,@(cdr o))))
     `(
-       (&INV 1 (notq ,car))
-       (&NEG 1 (negq ,car))
-       (&ADD 2 (addq ,cadr ,car))
-       (&SUB 2 (subq ,cadr ,car))
-       (&MUL 2 (imulq ,cadr ,car))
+       (&INV 1 (notq ,rtn))
+       (&NEG 1 (negq ,rtn))
+       (&ADD 2 (addq ,arg1 ,rtn))
+       (&SUB 2 (subq ,arg1 ,rtn))
+       (&MUL 2 (imulq ,arg1 ,rtn))
        (&DIV 2
-	 (movq ,car (&r %rdx))
+	 (movq ,rtn (&r %rdx))
 	 (sarq (&$ 63) (&r %rdx))
-	 (idivq ,cadr))
-       (&AND 2 (andq ,cadr ,car))
-       (&OR  2 (orq  ,cadr ,car))
-       (&XOR 2 (xorq ,cadr ,car))
+	 (idivq ,arg1))
+       (&AND 2 (andq ,arg1 ,arg0))
+       (&OR  2 (orq  ,arg1 ,arg0))
+       (&XOR 2 (xorq ,arg1 ,arg0))
        (&MOD 2
-	 (movq ,car (&r %rdx))
+	 (movq ,rtn (&r %rdx))
 	 (sarq (&$ 63) (&r %rdx))
-	 (idivq ,cadr)
+	 (idivq ,arg1)
 	 (movq (&r %rdx) (&r %rax)))
        (&LSH 2
-	 (movl ,cadr (&r %ecx))
-	 (movq ,car (&r %rax))
+	 (movl ,arg1 (&r %ecx))
+	 (movq ,rtn (&r %rax))
 	 (salq (&r %cl) (&r %rax)))
        (&RSH 2
-	 (movl ,cadr (&r %ecx))
-	 (movq ,car (&r %rax))
+	 (movl ,arg1 (&r %ecx))
+	 (movq ,rtn (&r %rax))
 	 (sarq (&r %cl) (&r %rax)))
        (&NOT 1
-	 (cmpq ($& 0) ,car)
+	 (cmpq ($& 0) ,rtn)
 	 (sete (&r %al))
 	 (movzbl (&r %al) (&r %eax))
 	 )
        ;; LOR, LAND ;; FIXME
        (&EQ  2
-	 (cmpq ,cadr ,car)
+	 (cmpq ,arg1 ,rtn)
 	 (sete (&r %al))
 	 (movzbl (&r %al) (&r %eax)))
        (&NE  2
-	 (cmpq ,cadr ,car)
+	 (cmpq ,arg1 ,rtn)
 	 (setne (&r %al))
 	 (movzbl (&r %al) (&r %eax)))
        (&LT  2
-	 (cmpq ,cadr ,car)
+	 (cmpq ,arg1 ,rtn)
 	 (setl (&r %al))
 	 (movzbl (&r %al) (&r %eax)))
        (&GT  2
-	 (cmpq ,cadr ,car)
+	 (cmpq ,arg1 ,rtn)
 	 (setg (&r %al))
 	 (movzbl (&r %al) (&r %eax)))
        (&LE  2
-	 (cmpq ,cadr ,car)
+	 (cmpq ,arg1 ,rtn)
 	 (setle (&r %al))
 	 (movzbl (&r %al) (&r %eax)))
        (&GE  2
-	 (cmpq ,cadr ,car)
+	 (cmpq ,arg1 ,rtn)
 	 (setge (&r %al))
 	 (movzbl (&r %al) (&r %eax)))
        ))
@@ -526,7 +531,7 @@
 		'(movq (&r %rsp)  (&r %rax))
 		`(subq (&$ ,size) (&r %rsp)))))
 	  ((&c) ;; C function call.
-	    (let ((stack-args-size 0) (nargs 0))
+	    (let ((stack-args-size 0) (nargs 0) (callable #f))
 	      ;; Push args onto stack.
 	      (for-each
 		(lambda (e)
@@ -536,6 +541,7 @@
 		  (set! stack-args-size (+ stack-args-size word-size))) 
 		(reverse (cddr e)))
 	      ;; Load function into %rax.
+	      ;; OR prepare inline &asm.
 	      (f env o (cadr e))
 	      ;; Pull register args off stack.
 	      (let ((i 0))
@@ -543,13 +549,25 @@
 		  ('emit o `(popq (&r ,(vector-ref arg-regs i))))
 		  (set! stack-args-size (- stack-args-size word-size))
 		  (set! i (+ i 1))))
-	      ;; Load %rbx with argc.
-	      ('emit o `(movq (&$ ,nargs) (&r %rbx)))
 	      ;; Call function in %rax.
-	      ('emit o '(callq* (&r %rax)))
+	      ;; OR emit &asm.
+	      (f env o `(&&call ,(cadr e) ,nargs))
 	      ;; Pop remaining stack args.
 	      (if (> stack-args-size 0)
 		('emit o `(addq (&$ ,stack-args-size) (&r %rsp))))))
+	  ((&&call)
+	    (let ((func (cadr e)) (nargs (caddr e)))
+	      (case (car func)
+		((&asm) ;; (&inline ARGC . isns)
+		  (display " INLINE: ")(write func)(newline)
+		  ('emit o `(movq ,arg0 ,rtn))
+		  (for-each (lambda (isn) ('emit o isn)) (cddr func)))
+	      (else
+		;; Load %rbx with argc.
+		('emit o 
+		  `(movq (&$ ,nargs) (&r %rbx))
+		  '(callq* (&r %rax)))))))
+	  ((&asm) "NOTHING")
 	  ((&e) (f (cadr (cadr e)) o (caddr e)))
 	  ((&o)
 	    (f env o (cadr e))
@@ -562,7 +580,10 @@
 	  ((&r)
 	    ('emit o '(movq ,e (&r %rax))))
 	  (else
-	    (for-each (lambda (e) (f env o e)) (cdr e))))
+	    (let ((asm ('get inline-asm (car e))))
+	      (if (pair? asm)
+		(f env o `(&c ,asm ,@(cdr e)))
+		(for-each (lambda (e) (f env o e)) (cdr e))))))
 	e)))
     (define (compiler:pass-6 env e)
       (let* ( (isns ('new isns)))
@@ -662,6 +683,13 @@
     (t '(&I 5) '1)
     (t '(&i ((&extern tort_prints) (&P "Hello, World!\n")))
       '14)
+
+    ;; Inline assembly.
+    (t '(&i (&ADD (&I 2) (&I 3)))
+      '5)
+    (t '(&i (&MUL (&I 2) (&I 3)))
+      '6)
+
 #|
     (t '(&i ((&extern printf) (&P "Hello, World!\n")))
       '14)
