@@ -113,7 +113,7 @@
   (set! env (if (pair? env) (car env) &env))
   ('expand *top-level-macro-environment* expr))
 
-(define-macro (send sel rcvr . args) `(,sel ,rcvr ,@args))
+(define-macro (send sel rcvr . args) (cons sel (cons rcvr args)))
 
 (define (reverse l)
   (let ((r nil))
