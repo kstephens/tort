@@ -14,6 +14,9 @@
 ('add_method <macro-environment> 'bindings
   (lambda (self)
     (vector-ref self 4)))
+('add_method <macro-environment> 'bindings=
+  (lambda (self v)
+    (vector-set! self 4 v)))
 ('add_method <macro-environment> 'lisp_write 
   (lambda (self port)
     ('_write port "#<macro-environment >")))
