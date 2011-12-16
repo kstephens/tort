@@ -313,8 +313,8 @@
   (letrec (
     (literal (lambda (x) `(&& ,('_word x))))
     (loc 
-      (lambda (o b)
-	(let ((l ('loc b)))
+      (lambda (env o b)
+	(let ((l ('loc env b)))
 	  (cond
 	    ((locative? l) ;; a known global.
 	      (begin 
@@ -340,9 +340,9 @@
 	  ((&b) (for-each (lambda (e) (f env o e)) (cdr e)))
 	  ((&&extern) ('emit o `(movq ,('label o (cadr (cadr e))) (&r %rax))))
 	  ((&v) 
-	    ('emit o `(movq ,(loc o (cadr e)) (&r %rax))))
+	    ('emit o `(movq ,(loc env o (cadr e)) (&r %rax))))
 	  ((&&)  ;; get the address of a variable.
-	    ('emit o `(leaq ,('loc (cadr (cadr e))) (&r %rax))))
+	    ('emit o `(leaq ,('loc env (cadr (cadr e))) (&r %rax))))
 	  ((&i)  ;; box an int.
 	    (f env o (cadr e))
 	    ('emit o 
@@ -375,14 +375,14 @@
 	      '(callq _tort_locative_new_value)))
 	  ((&s!) ;; non-locative set! used for initializers.
 	    (f env o (caddr e))
-	    ('emit o `(movq (&r %rax) ,('loc (cadr e)))))
+	    ('emit o `(movq (&r %rax) ,('loc env (cadr e)))))
 	  ((&set!)
 	    (f env o (caddr e))
 	    (cond
 	      ((and (pair? (cadr e)) (eq? (car (cadr e)) '&r))
 		('emit o `(movq (&r %rax) ,(cadr (cadr e))))))
 	      (else
-		('emit o `(movq (&r %rax) ,(loc o (cadr e))))))
+		('emit o `(movq (&r %rax) ,(loc env o (cadr e))))))
 	  ((&eq?) 
 	    (let ((Lf ('label o))
 		  (Le ('label o)))

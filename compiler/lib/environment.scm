@@ -126,6 +126,10 @@
     (for-each (lambda (b) ('allocate-binding self b))
       ('binding-list self)))
 
+  (define-method environ ('loc self b)
+    ;; TODO: Search in import map first.
+    ('loc b))
+
   (define-method environ ('add-export! self b)
     (if (null? ('get ('exports self)))
       (let ((export-index ('size ('export-vector self))))
