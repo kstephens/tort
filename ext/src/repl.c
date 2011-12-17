@@ -11,6 +11,7 @@ tort_SLOT(repl,tort_v,caught);
 tort_SLOT(repl,tort_v,running);
 tort_SLOT(repl,tort_v,expr);
 tort_SLOT(repl,tort_v,result);
+tort_SLOT(repl,tort_v,main);
 
 tort_v _tort_M_repl__new(tort_tp tort_mtable *mtable)
 {
@@ -26,6 +27,7 @@ tort_v _tort_M_repl__new(tort_tp tort_mtable *mtable)
   repl->running = tort_false;
   repl->expr = tort_nil;
   repl->result = tort_nil;
+  repl->main = tort_nil;
   return repl;
 }
 
@@ -88,6 +90,10 @@ tort_v _tort_m_repl__run(tort_tp tort_repl *repl)
       if ( tort_send(tort_s(applied), repl->catch) != tort_false ) {
 	tort_send(tort_s(caughtE), repl, repl->caught);
 	tort_printf(tort_stderr, "\nExpression aborted\n");
+	if ( repl->main != tort_nil ) {
+	  tort_printf(tort_stderr, "Resuming REPL %T\n", repl->main->prompt_id);
+	  tort_send(tort_s(run), repl->main);
+	}
       }
     }
   } while ( repl->running != tort_false );

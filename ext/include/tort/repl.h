@@ -15,6 +15,7 @@ typedef struct tort_repl {
   tort_v running;
   tort_v expr;
   tort_v result;
+  tort_v main;
 } tort_repl;
 
 #endif

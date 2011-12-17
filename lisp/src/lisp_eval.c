@@ -567,11 +567,14 @@ tort_v _tort_m_lisp_repl__print(tort_tp tort_repl *repl, tort_v thing)
   return repl;
 }
 
-tort_v _tort_m_lisp_repl__load(tort_tp tort_repl *repl, tort_v name)
+tort_v _tort_m_lisp_repl__load(tort_tp tort_repl *repl_main, tort_v name)
 {
+  tort_repl *repl;
   tort_v io, result;
-  repl = tort_send(tort_s(clone), repl);
-  repl->catch = tort_nil;
+  repl = tort_send(tort_s(clone), repl_main);
+  repl->prompt_id = name;
+  if ( repl->main == tort_nil )
+    repl->main = repl_main;
   io = tort_send(tort_s(new), tort__mt(io));
   io = tort_send(tort_s(open), io, name, tort_string_new_cstr("r"));
   if ( io == tort_nil )
