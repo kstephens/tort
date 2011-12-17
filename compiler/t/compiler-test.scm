@@ -11,11 +11,9 @@
 	 (set! result ('_ccallv func '#(0 1 2 3 4 5)))
 	 (display "expr     = ")(write expr)(newline)
 	 (display "result   = ")(write result)(newline)
-	 (cond
-	   ((pair? expect-expr)
-	     (set! expect (car expect-expr))))
 	 (if expect-expr
 	   (begin
+	     (set! expect (car expect-expr))
 	     (display "expect   = ")(write expect)(newline)))
 	 (if (and expect-expr (not (equal? result expect)))
 	   (error "result != expect"))
