@@ -57,6 +57,7 @@ tort_slot* tort_slot_attach(tort_slot_ *slot_)
   slot->name = tort_symbol_new((const char*) slot->name);
   slot->type = tort_symbol_new((const char*) slot->type);
   tort_send(tort__s(initialize), slot);
+#if 0
   fprintf(stderr, "  slot @%p %s.%-24s %-10s +%d [%d]\n", 
 	  slot,
 	  tort_object_name(slot->mtable), 
@@ -64,6 +65,7 @@ tort_slot* tort_slot_attach(tort_slot_ *slot_)
 	  tort_object_name(slot->type),
 	  (int) tort_I(slot->offset),
 	  (int) tort_I(slot->size));
+#endif
   return tort_send(tort__s(attach), slot);
 }
 
