@@ -10,7 +10,7 @@ tort_v _tort_m_posix__errno(tort_tp tort_v rcvr)
 }
 tort_v _tort_m_posix__errnoSET(tort_tp tort_v rcvr, tort_v v)
 {
-  return tort_i(errno == tort_I(v));
+  return tort_i(errno = tort_I(v));
 }
 tort_v _tort_m_posix__errstr(tort_tp tort_v rcvr, tort_v v)
 {
