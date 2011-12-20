@@ -2,7 +2,7 @@
 #include "tort/fiber.h"
 #include <assert.h>
 
-tort_ACCESSOR(message,tort_v,fiber);
+tort_SLOT(message,tort_v,fiber);
 
 struct tort_fiber_data
 {

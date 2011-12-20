@@ -10,7 +10,7 @@ tort_v _tort_m_posix__errno(tort_tp tort_v rcvr)
 }
 tort_v _tort_m_posix__errnoSET(tort_tp tort_v rcvr, tort_v v)
 {
-  return tort_i(errno == tort_I(v));
+  return tort_i(errno = tort_I(v));
 }
 tort_v _tort_m_posix__errstr(tort_tp tort_v rcvr, tort_v v)
 {
@@ -45,6 +45,22 @@ tort_v _tort_m_posix__fork(tort_tp tort_v rcvr)
 tort_v _tort_m_posix__exit(tort_tp tort_v rcvr, tort_v code)
 {
   exit(tort_I(code));
+  return rcvr;
+}
+
+tort_v _tort_m_posix__getenv(tort_tp tort_v rcvr, tort_string *name)
+{
+  return tort_string_new_cstr(getenv(tort_string_data(name)));
+}
+
+tort_v _tort_m_posix__setenv(tort_tp tort_v rcvr, tort_string *name, tort_string *val)
+{
+  return tort_i(setenv(tort_string_data(name), tort_string_data(val), 1));
+}
+
+tort_v _tort_m_posix__unsetenv(tort_tp tort_v rcvr, tort_string *name)
+{
+  unsetenv(tort_string_data(name));
   return rcvr;
 }
 
