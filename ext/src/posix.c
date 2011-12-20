@@ -48,6 +48,22 @@ tort_v _tort_m_posix__exit(tort_tp tort_v rcvr, tort_v code)
   return rcvr;
 }
 
+tort_v _tort_m_posix__getenv(tort_tp tort_v rcvr, tort_string *name)
+{
+  return tort_string_new_cstr(getenv(tort_string_data(name)));
+}
+
+tort_v _tort_m_posix__setenv(tort_tp tort_v rcvr, tort_string *name, tort_string *val)
+{
+  return tort_i(setenv(tort_string_data(name), tort_string_data(val), 1));
+}
+
+tort_v _tort_m_posix__unsetenv(tort_tp tort_v rcvr, tort_string *name)
+{
+  unsetenv(tort_string_data(name));
+  return rcvr;
+}
+
 tort_v _tort_m_posix__system(tort_tp tort_v rcvr, tort_string *str)
 {
   return tort_i(system(tort_string_data(str)));
