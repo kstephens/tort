@@ -40,9 +40,17 @@ tort_v tort_cddr(tort_v v)
 {
   return tort_cdr(tort_cdr(v));
 }
+tort_v tort_cdddr(tort_v v) 
+{
+  return tort_cdr(tort_cddr(v));
+}
 tort_v tort_caddr(tort_v v) 
 {
   return tort_cdr(tort_cddr(v));
+}
+tort_v tort_cadddr(tort_v v) 
+{
+  return tort_cdr(tort_cdddr(v));
 }
 
 tort_v _tort_m_list__size(tort_tp tort_cons *rcvr) /**/
