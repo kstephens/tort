@@ -91,7 +91,7 @@ tort_v _tort_m_repl__run(tort_tp tort_repl *repl)
 	tort_send(tort_s(caughtE), repl, repl->caught);
 	tort_printf(tort_stderr, "\nExpression aborted\n");
 	if ( repl->main != tort_nil ) {
-	  tort_printf(tort_stderr, "Resuming REPL %T\n", repl->main->prompt_id);
+	  tort_printf(tort_stderr, "Resuming REPL %T\n", ((tort_repl*) repl->main)->prompt_id);
 	  tort_send(tort_s(run), repl->main);
 	}
       }
