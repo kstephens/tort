@@ -19,14 +19,14 @@ clean ::
 # libgc.a:
 #
 
-ifeq "$(TORT_GC_BDW)" "0"
+ifneq "$(TORT_GC_BDW)" "0"
 LIBS_EARLY += gc-bdw #
 
 gc-bdw : $(GC_BDW)/.libs/libgc.a
 
 $(GC_BDW)/.libs/libgc.a : $(BASE_DIR)/archive/$(GC_BDW_VERSION).tar.gz
 	if [ ! -d $(GC_BDW) ]; then tar -zxvf $^; fi
-	unset CFLAGS LDFLAGS; export CC='$(CC)'; cd $(GC_BDW) && if [ ! -f Makefile ]; then ./configure --enable-shared --prefix=$(PREFIX); fi
+	unset CFLAGS LDFLAGS; export CC='$(CC)'; cd $(GC_BDW) && if [ ! -f Makefile ]; then ./configure --enable-shared --enable-parallel-mark --enable-threads=posix --enable-large-config --enable-gc-debug USE_I686_PREFETCH=1 --prefix=$(PREFIX); fi
 	unset CFLAGS LDFLAGS; export CC='$(CC)'; cd $(GC_BDW) && make && make install
 
 $(BASE_DIR)/archive/$(GC_BDW_VERSION).tar.gz :

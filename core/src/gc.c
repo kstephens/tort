@@ -382,8 +382,9 @@ tort_v tort_runtime_initialize_malloc()
 
 #if TORT_GC_BDW
   if ( ! strcmp(var, "bdw") ) {
-    GC_init();
-    GC_finalize_on_demand = 1;
+    GC_set_all_interior_pointers(1);
+    GC_set_finalize_on_demand(0);
+    GC_INIT();
     _tort_gc_mode = "bdw";
     _tort_malloc  = GC_malloc;
     _tort_malloc_atomic = GC_malloc_atomic;
