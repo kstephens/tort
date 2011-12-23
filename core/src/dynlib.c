@@ -35,13 +35,11 @@ void *tort_dlopen(const char *file, char *file_buffer)
     file = file_buffer;
   }
   if ( file_buffer != file ) strcpy(file_buffer, file);
-  if ( _tort_dl_debug ) {
+  if ( _tort_dl_debug )
     fprintf(stderr, "  tort_dlopen: file = %s\n", file);
-  }
   if ( (dl = dlopen(file, RTLD_NOW | RTLD_GLOBAL | RTLD_NODELETE)) ) {
-    if ( _tort_dl_debug >= 2 ) {
+    if ( _tort_dl_debug >= 2 )
       fprintf(stderr, "    dl = @%p\n", dl);
-    }
     return dl;
   }
   return 0;
@@ -57,9 +55,8 @@ void *tort_dlsym(void *dl, const char *symbol)
   symbol = _symbol;
 #endif
   ptr = dlsym(dl, symbol);
-  if ( _tort_dl_debug ) {
+  if ( _tort_dl_debug )
     fprintf(stderr, "    tort_dlsym(@%p, \"%s\") => @%p\n", dl, symbol, ptr);
-  }
   return ptr;
 }
 
@@ -101,9 +98,8 @@ tort_v _tort_m_dynlib__dlopen(tort_tp struct tort_dynlib *rcvr, tort_v name)
     fprintf(stderr, "    base_ptr = %p\n", base_ptr);
   }
   base_ptr = dlsym(dl, base_sym);
-  if ( _tort_dl_debug ) {
+  if ( _tort_dl_debug )
     fprintf(stderr, "    dlsym(@%p, \"%s\") => @%p\n", dl, base_sym, base_ptr);
-  }
   {
     Dl_info info;
     bzero(&info, sizeof(info));
@@ -152,9 +148,8 @@ tort_v tort_m_dynlib___run_initializers(tort_tp tort_v map)
       if ( _tort_dl_debug ) 
 	fprintf(stderr, "  init %s => @%p\n", name,  ptr);
       func();
-     }
-  }
-  tort_map_EACH_END();
+    }
+  } tort_map_EACH_END();
   return 0;
 }
 
@@ -180,9 +175,8 @@ static int process_method(int cmeth, const char *prefix, tort_pair *e)
 	  tort_error(tort_ta "dl: cannot find mtable %s", cls_buf);
 	  return -1;
 	}
-	if ( cmeth ) {
+	if ( cmeth )
 	  mtable = tort_h_ref(mtable)->mtable;
-	}
 	tort_add_method(mtable, meth, ptr);
 	return 1;
       }
@@ -203,8 +197,7 @@ tort_v tort_m_dynlib___load_methods(tort_tp tort_v map)
     if ( (result = process_method(0, obj_prefix, e)) == 0 )
       result = process_method(1, cls_prefix, e);
     if ( result < 0 ) break;
-  }
-  tort_map_EACH_END();
+  } tort_map_EACH_END();
   return result >= 0 ? map : tort_nil;
 }
 
@@ -223,8 +216,8 @@ static int process_slot(const char *prefix, tort_pair *e)
     if ( _tort_dl_debug >= 2 ) 
       fprintf(stderr, "  slot %s => tort_slot_ @%p\n", name, ptr);
     slot = tort_slot_attach(ptr);
-    if ( _tort_dl_debug >= 2 || 1 ) 
-      fprintf(stderr, "  slot %s => tort_slot @%p\n", name, slot);
+    if ( _tort_dl_debug >= 2 ) 
+      fprintf(stderr, "  %p slot %s => tort_slot @%p\n", e, name, slot);
     return 1;
   }
   return 0;
@@ -239,8 +232,7 @@ tort_v tort_m_dynlib___load_slots(tort_tp tort_v map)
     // fprintf(stderr, "e = @%p \"%s\"\n", e, name);
     result = process_slot(slot_prefix, e);
     if ( result < 0 ) break;
-  }
-  tort_map_EACH_END();
+  } tort_map_EACH_END();
   return result >= 0 ? map : tort_nil;
 }
 
@@ -273,20 +265,15 @@ tort_v _tort_m_dynlib___load_symtab(tort_tp tort_v st, const char *file, void *p
 {
   FILE *fp;
   char cmd[1024];
-  
   snprintf(cmd, sizeof(cmd), "nm '%s' 2>&1",
 	   file);
-
-  if ( _tort_dl_debug >= 2 ) {
+  if ( _tort_dl_debug >= 2 )
     fprintf(stderr, "  load_symtab: cmd => %s\n", cmd);
-  }
-
   if ( ! (fp = popen(cmd, "r")) ) {
     return tort_error(tort_ta "cannot run %s", cmd);
   } else {
     char *line = 0;
     size_t line_size = 0;
-    
     while ( _getline(&line, &line_size, fp) != -1 ) {
       void *c_addr;
       char c_mode = 0;
@@ -294,11 +281,8 @@ tort_v _tort_m_dynlib___load_symtab(tort_tp tort_v st, const char *file, void *p
       char *c_name = c_name_buf;
       char c_fileline[1024];
       int  c_tokens = 0;
-
-      if ( _tort_dl_debug >= 3 ) {
+      if ( _tort_dl_debug >= 3 )
 	fprintf(stderr, "  line => @%p '%s'\n", line, line);
-      }
-
       c_name[0] = c_fileline[0] = 0;
       // line[line_size] = '\0';
       c_tokens = sscanf(line, "%p %c %128s %1024s", 
@@ -315,14 +299,6 @@ tort_v _tort_m_dynlib___load_symtab(tort_tp tort_v st, const char *file, void *p
 #ifdef __APPLE__
 	if ( *c_name == '_' ) ++ c_name;
 #endif
-
-#if 0
-	fprintf(stderr, "   => %p %c %s %s\n", 
-		c_addr,
-		c_mode,
-		c_name,
-		c_fileline);
-#endif
 	tort_v t_name = tort_symbol_new(c_name);
 	tort_v t_addr = tort_ptr_new(c_addr);
 	if ( c_addr == (void*) tort_ptr_data(t_addr) ) {
@@ -332,25 +308,16 @@ tort_v _tort_m_dynlib___load_symtab(tort_tp tort_v st, const char *file, void *p
 	  fprintf(stderr, "  tort: cannot store %s -> %p pointer in tort_ptr_data", c_name, c_addr);
 	}
       }
-#if 0
-      fprintf(stderr, " c_tokens = %d\n", c_tokens);
-#endif
-
+      // fprintf(stderr, " c_tokens = %d\n", c_tokens);
       free(line);
     }
-
-#if 0
-    fprintf(stderr, "  DONE @%p\n", fp);
-#endif
-
+    // fprintf(stderr, "  DONE @%p\n", fp);
     pclose(fp);
-
     {
       tort_v all = tort_send(tort__s(get), tort_(dl_maps), tort__s(all));
       tort_send(tort__s(emit), st, all);
     }
   }
-
   return st;
 }
 
