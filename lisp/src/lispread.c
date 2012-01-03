@@ -1,6 +1,6 @@
 /*
 ** lispread.c - a generic lisp reader.
-** Copyright 1998, 1999 Kurt A. Stephens http://www.acm.org/~stephensk
+** Copyright 1998, 1999, 2011, 2012 Kurt A. Stephens http://kurtstephens.com/
 */
 /*
 This lisp reader is very minimal, it does not implement the full Common Lisp syntax.  In general it is compliant with the Revised 5 Scheme Report.  
