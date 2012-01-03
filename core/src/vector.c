@@ -129,7 +129,7 @@ tort_v _tort_m_u8vector__set (tort_tp tort_vector_base *rcvr, tort_v i, tort_v v
 
 tort_v _tort_M_u8vector___new(tort_tp tort_mtable *mtable, const char *bytes, size_t size)
 {
-  tort_string *v = tort_vector_base_new(mtable, bytes, size, sizeof(bytes[0]));
+  tort_vector_base *v = tort_vector_base_new(mtable, bytes, size, sizeof(bytes[0]));
   if ( ! bytes )
     bzero(v->data, v->alloc_size);
   return v;
