@@ -51,7 +51,6 @@ GETC(stream)        Read a C char or EOF from the stream.
 
 EOS                 The end-of-stream VALUE.
 CONS(X,Y)           Return a new lisp CONS object.
-IMMUTABLE_CONS(X)   Converts pair X to an immutable cons.  Opt.
 CAR(CONS)           Get the car field of a pair VALUE as in: (car CONS)
 SET_CDR(CONS,V)     Set the cdr field of a pair VALUE as in: (set-cdr! CONS V)
 SET(LOC,V)          Set a local variable as in (set! VARIABLE V).  Opt.  
@@ -59,10 +58,8 @@ SET(LOC,V)          Set a local variable as in (set! VARIABLE V).  Opt.
 MAKE_CHAR(I)        Create a lisp CHARACTER VALUE from a C integer.
 
 LIST_2_VECTOR(X)    Convert list VALUE X into a VECTOR VALUE.
-IMMUTABLE_VECTOR(X) Convert VECTOR VALUE X into an immutable VECTOR VALUE.  Opt.
 
 STRING(char*,int)   Create a new lisp STRING VALUE from a MALLOCed buffer.
-IMMUTABLE_STRING(X) Convert STRING VALUE X to an immutable STRING VALUE.  Opt.
 ESCAPE_STRING(X)    Return a new STRING VALUE with escaped characters (\\, \") replaced.  Opt.
 STRING_2_NUMBER(X)  Convert string VALUE X into a NUMBER VALUE, or return F.
 STRING_2_SYMBOL(X)  Convert string VALUE X into a SYMBOL VALUE.
@@ -144,18 +141,6 @@ int eat_whitespace_peekchar(VALUE stream)
   return(c);
 }
 
-#ifndef IMMUTABLE_CONS
-#define IMMUTABLE_CONS(X) X
-#endif
-
-#ifndef IMMUTABLE_VECTOR
-#define IMMUTABLE_VECTOR(X) X
-#endif
-
-#ifndef IMMUTABLE_STRING
-#define IMMUTABLE_STRING(X) X
-#endif
-
 #ifndef RETURN
 #define RETURN(X) return (X)
 #endif
@@ -182,17 +167,17 @@ READ_DECL
 
   switch ( c ) {
     case '\'':
-      RETURN(IMMUTABLE_CONS(CONS(SYMBOL(quote), IMMUTABLE_CONS(CONS(READ_CALL(), NIL)))));
+      RETURN(CONS(SYMBOL(quote), CONS(READ_CALL(), NIL)));
 
     case '`':
-      RETURN(IMMUTABLE_CONS(CONS(SYMBOL(quasiquote), IMMUTABLE_CONS(CONS(READ_CALL(), NIL)))));
+      RETURN(CONS(SYMBOL(quasiquote), CONS(READ_CALL(), NIL)));
 
     case ',':
       if ( PEEKC(stream) == '@' ) {
 	GETC(stream);
-	RETURN(IMMUTABLE_CONS(CONS(SYMBOL(unquote_splicing), IMMUTABLE_CONS(CONS(READ_CALL(), NIL)))));
+	RETURN(CONS(SYMBOL(unquote_splicing), CONS(READ_CALL(), NIL)));
       } else {
-	RETURN(IMMUTABLE_CONS(CONS(SYMBOL(unquote), IMMUTABLE_CONS(CONS(READ_CALL(), NIL)))));
+	RETURN(CONS(SYMBOL(unquote), CONS(READ_CALL(), NIL)));
       }
       break;
 
@@ -214,7 +199,6 @@ READ_DECL
           }
 
           SET_CDR(lc, READ_CALL());
-	  (void) IMMUTABLE_CONS(lc);
 
           c = eat_whitespace_peekchar(stream);
           GETC(stream);
@@ -228,13 +212,10 @@ READ_DECL
             SET(l, y);
           } else {
             SET_CDR(lc, y);
-	    (void) IMMUTABLE_CONS(lc);
           }
           SET(lc, y);
-	  (void) IMMUTABLE_CONS(lc);
         }
       }
-      (void) IMMUTABLE_CONS(l);
       RETURN(l);
       }
 
@@ -287,7 +268,7 @@ READ_DECL
 	goto try_again;
 
       case '(':
-	RETURN(IMMUTABLE_VECTOR(LIST_2_VECTOR(READ_CALL())));
+	RETURN(LIST_2_VECTOR(READ_CALL()));
         
       case '\\':
 	GETC(stream);
@@ -423,7 +404,7 @@ READ_DECL
       }
 
       buf[len] = '\0';
-      RETURN(IMMUTABLE_STRING(ESCAPE_STRING(STRING(buf, len))));
+      RETURN(ESCAPE_STRING(STRING(buf, len)));
     }
 
     read_number:
