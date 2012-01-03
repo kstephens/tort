@@ -22,6 +22,7 @@ Characters    #\b (#\space and #\newline are not IMPLEMENTED)
 False         #f, #F
 True          #t, #T
 Unspecified   #u, #U (Opt.)
+Logical EOF   ## (Opt.)
 Numbers       #b0101002, #o1726m #d2349, #x0123456789abcedf, 1234, 1234.00, etc.
 Strings       "...", "\"\\"
 Symbols       asdf, +, etc.
