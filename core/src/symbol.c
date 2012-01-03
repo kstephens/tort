@@ -31,19 +31,33 @@ tort_symbol* _tort_M_symbol__new(tort_tp tort_mtable *mtable, tort_v name)
 tort_symbol* tort_symbol_new(const char *string)
 {
   if ( string ) {
-    tort_pair *e = _tort_m_map__get_entry_cstr(tort_ta tort_(symbols), string);
-    if ( e ) {
-      // fprintf(stderr, "\n old symbol = %s %p\n", tort_symbol_data(e->second), (void *) e->second);
+    tort_pair *e;
+    tort_string *name = 0;
+    if ( tort_(_initialized) )
+      e = (void*) tort_send(tort__s(get_entry), tort_(symbols), name = (void*) tort_string_new_cstr(string));
+    else
+      e = _tort_m_map__get_entry_cstr(tort_ta tort_(symbols), string);
+    if ( e != 0 && e != tort_nil ) {
+      // if ( tort_(_initialized) ) fprintf(stderr, "\n  old symbol = %s %p\n", tort_string_data(e->first), (void *) e->second);
       return e->second;
     } else {
-      tort_string *name = tort_string_new_cstr(string);
-      tort_symbol *sym = _tort_M_symbol___create(tort_ta tort__mt(symbol), name);
-      _tort_m_map__add(tort_ta tort_(symbols), name, sym);
-      // fprintf(stderr, "\n new symbol = %s %p\n", tort_symbol_data(value), (void *) value);
+      tort_symbol *sym;
+      if ( ! name ) name = tort_string_new_cstr(string);
+      if ( tort_(_initialized) ) {
+        sym = tort_send(tort__s(_create), tort__mt(symbol), name);
+        tort_send(tort__s(add), tort_(symbols), name, sym);
+	// fprintf(stderr, "\n  new symbol = %s %p\n", tort_symbol_data(sym), (void *) sym);
+      } else {
+        sym = _tort_M_symbol___create(tort_ta tort__mt(symbol), name);
+        _tort_m_map__add(tort_ta tort_(symbols), name, sym);
+      }
       return sym;
     }
   } else {
-    return _tort_M_symbol___create(tort_ta tort__mt(symbol), tort_nil);
+    if ( tort_(_initialized) )
+      return tort_send(tort__s(_create), tort__mt(symbol), tort_nil);
+    else
+      return _tort_M_symbol___create(tort_ta tort__mt(symbol), tort_nil);
   }
 }
 
@@ -56,7 +70,6 @@ tort_v tort_runtime_initialize_symbol()
   tort_(symbols)->equality = tort__s(equalQ);
   /* Prepare special symbol table get method. */
   tort_h(tort_(symbols))->mtable = tort_mtable_new_class(tort_h_mtable(tort_(symbols)));
-  tort_(symbols)->equality = tort__s(equalQ);
   tort_add_method(tort_h_mtable(tort_(symbols)), "get", _tort_m_map__get_string);
   tort_add_method(tort_h_mtable(tort_(symbols)), "set", _tort_m_object__identity);
   tort_add_method(tort_h_mtable(tort_(symbols)), "delete", _tort_m_object__identity);
