@@ -9,7 +9,7 @@ The ';', '(', ')', '#' and whitespace characters are token terminators.
 Tokens that are not numbers are assumed to be symbols.
 This reader does not decaseify symbols before calling STRING_2_SYMBOL.
 ';' comments are treated as whitespace.
-Note: the "#!" comment allows lisp files to executable scripts on unix systems that support '#!/usr/local/bin/lisp'.
+Note: the "#!" comment allows lisp files to execute scripts on unix systems that support '#!/usr/local/bin/lisp'.
 
 The following synactic structures can be read:
 
