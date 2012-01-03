@@ -24,6 +24,8 @@ tort_v tort_runtime_create_ (int *argcp, char ***argvp, char ***envp)
   _tort = tort_ref(tort_runtime, tort_allocate(0, sizeof(tort_runtime)));
 #endif
 
+  tort_(_initialized) = 0;
+
   INIT(error);
 
   /* Setup environment from main. */

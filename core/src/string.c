@@ -11,19 +11,6 @@ tort_v _tort_m_string__set (tort_tp tort_string *rcvr, tort_v i, tort_v v)
   return rcvr;
 }
 
-tort_v _tort_M_string___new(tort_tp tort_mtable *mtable, const char *string, size_t size)
-{
-  tort_string *v = tort_vector_base_new(mtable, string, size, sizeof(string[0]));
-  if ( ! string )
-    bzero(v->data, v->alloc_size);
-  return v;
-}
-
-tort_v _tort_M_string__new(tort_tp tort_mtable *mtable, tort_v size)
-{
-  return_tort_send(tort__s(_new), mtable, 0, tort_I(size));
-}
-
 tort_v _tort_m_string__unescapeE(tort_tp tort_string *str)
 {
   unsigned char *dst, *src = (void*) str->data, *src_end = (void*) (str->data + str->size);
@@ -97,10 +84,13 @@ tort_v _tort_m_string__escape(tort_tp tort_string *str, tort_v more)
 
 tort_v tort_string_new(const char *ptr, size_t size)
 {
-  return _tort_M_string___new(tort_ta tort__mt(string), ptr, size);
+  if ( tort_(_initialized) )
+    return tort_send(tort__s(_new), tort__mt(string), ptr, size);
+  else
+    return _tort_M_u8vector___new(tort_ta tort__mt(string), ptr, size);
 }
 
 tort_v tort_string_new_cstr(const char *string)
 {
-  return tort_string_new(string, strlen(string));
+  return tort_string_new(string, string ? strlen(string) : 0);
 }

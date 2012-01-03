@@ -238,7 +238,8 @@ tort_v tort_runtime_initialize_mtable()
   /* Other core. */
   tort__mt(word)        = tort_mtable_new_class(tort__mt(object));
   tort__mt(ptr)         = tort_mtable_new_class(tort__mt(word));
-  tort__mt(string)      = tort_mtable_new_class(tort__mt(vector_base));
+  tort__mt(u8vector)    = tort_mtable_new_class(tort__mt(vector_base));
+  tort__mt(string)      = tort_mtable_new_class(tort__mt(u8vector));
   tort__mt(symbol)      = tort_mtable_new_class(tort__mt(object));
   tort__mt(method)      = tort_mtable_new_class(tort__mt(object));
   tort__mt(slot)        = tort_mtable_new_class(tort__mt(object));

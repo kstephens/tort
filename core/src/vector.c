@@ -116,6 +116,30 @@ tort_v _tort_m_vector_base___add (tort_tp tort_vector_base *v, const void *datap
   return _tort_m_vector_base___append(tort_ta v, datap, 1);
 }
 
+tort_v _tort_m_u8vector__get (tort_tp tort_vector_base *rcvr, tort_v i)
+{
+  return tort_i(((unsigned char *)rcvr->data)[tort_I(i)]);
+}
+
+tort_v _tort_m_u8vector__set (tort_tp tort_vector_base *rcvr, tort_v i, tort_v v)
+{
+  ((unsigned char *)(rcvr->data))[tort_I(i)] = tort_I(v);
+  return rcvr;
+}
+
+tort_v _tort_M_u8vector___new(tort_tp tort_mtable *mtable, const char *bytes, size_t size)
+{
+  tort_string *v = tort_vector_base_new(mtable, bytes, size, sizeof(bytes[0]));
+  if ( ! bytes )
+    bzero(v->data, v->alloc_size);
+  return v;
+}
+
+tort_v _tort_M_u8vector__new(tort_tp tort_mtable *mtable, tort_v size)
+{
+  return_tort_send(tort__s(_new), mtable, 0, tort_I(size));
+}
+
 /********************************************************************/
 
 tort_v _tort_M_vector___new(tort_tp tort_v mtable, const void *data, size_t size)
