@@ -92,7 +92,7 @@ tort_v _tort_m_message___inspect(tort_tp tort_message *msg, tort_v io)
   printf("@message( ");
   tort_inspect(IO, msg->selector);
   printf(", ");
-  tort_inspect(IO, msg->receiver);
+  printf("%s", tort_object_name(msg->receiver));
   printf(", ");
   tort_inspect(IO, msg->method);
   printf(", ");
