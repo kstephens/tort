@@ -1,5 +1,4 @@
 #include "tort/tort.h"
-#include <assert.h>
 
 tort_v _tort_m_object__not (tort_tp tort_v rcvr)
 {
@@ -8,22 +7,21 @@ tort_v _tort_m_object__not (tort_tp tort_v rcvr)
 
 tort_v _tort_m_object___mtable (tort_tp tort_v rcvr)
 {
-  return tort_h(rcvr)->mtable;
+  return tort_h_mtable(rcvr);
 }
 
 tort_v _tort_m_object___mtableSET (tort_tp tort_v rcvr, tort_v mtable)
 {
-  tort_h(rcvr)->mtable = mtable;
+  tort_h_mtable(rcvr) = mtable;
   return rcvr;
 }
 
 tort_v _tort_m_object__clone (tort_tp tort_v rcvr)
 {
-  size_t instance_size = tort_h(rcvr)->mtable->instance_size;
-  void *ptr = tort_object_alloc(tort_h(rcvr)->mtable, instance_size);
+  tort_mtable *mtable = tort_h_mtable(rcvr);
+  void *ptr = tort_object_alloc(mtable, mtable->instance_size);
   tort_h(ptr)->applyf = tort_h(rcvr)->applyf;
-  memcpy(ptr, rcvr, instance_size);
-  return ptr;
+  return memcpy(ptr, rcvr, mtable->instance_size);
 }
 
 tort_v _tort_m_object__identity (tort_tp tort_v rcvr)
@@ -68,7 +66,12 @@ tort_v _tort_m_object___gc_free(tort_tp tort_v o)
 
 tort_v tort_object_new()
 {
-  tort_v obj = tort_allocate(tort__mt(object), sizeof(tort_object));
-  return obj;
+  return tort_allocate(tort__mt(object), sizeof(tort_object));
+}
+
+#undef tort_v_mtable
+tort_mtable *tort_v_mtable(tort_v x)
+{
+  return tort_h_mtable(x);
 }
 
