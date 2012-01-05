@@ -37,7 +37,7 @@ extern tort_v tort_locative_new(tort_v *);
 //#define tort_l(P) tort_locative_new((void*) P)
 #define tort_l(P) _tort_l(P)
 #define _tort_l(P) ((tort_v )(((size_t) (P)) ^ tort_tag_locative))
-#define tort_L(X) ((tort_v*)(((size_t) (X)) - tort_tag_locative))
+#define tort_L(X)  ((tort_v*)(((size_t) (X)) - tort_tag_locative))
 #endif
 
 /* Characters: */
@@ -90,7 +90,7 @@ struct tort_object { tort_H;
 #if TORT_NIL_IS_ZERO
 #define tort_h_nil(X)    &tort_(nil_header)
 #define tort_nil         ((tort_v) 0)
-#define tort_nilQ(X)     ((X) == 0)
+#define tort_nilQ(X)     (!(X))
 #define tort_h(X)        ( tort_nilQ(X) ? tort_h_nil(X) : tort_h_tagged(X) )
 #else
 #define tort_nil         tort_(nil)
@@ -98,7 +98,9 @@ struct tort_object { tort_H;
 #define tort_h(X)        tort_h_tagged(X)
 #endif
 
-#define tort_h_mtable(X)  tort_h(X)->mtable
+tort_mtable *tort_v_mtable(tort_v);
+#define tort_h_mtable(X) tort_h(X)->mtable
+#define tort_v_mtable(X) tort_h_mtable(X)
 
 typedef struct tort_caller_info { tort_H;
   const char   *file; 
@@ -131,7 +133,7 @@ tort_vi tort_word_data(tort_v x);
 tort_v tort_word_new(tort_vi word);
 
 typedef
-struct tort_ptr { tort_H; /* basic ptr. */
+struct tort_ptr { tort_H; /* basic ptr: same layout as tort_word */
   void *data;
 } tort_ptr;
 #define tort_P(V) tort_ref(tort_ptr, V)->data
@@ -142,9 +144,7 @@ tort_v tort_ptr_new(void *ptr);
 typedef 
 struct tort_vector_base { tort_H; /* Same layout as tort_vector, tort_string. */
   void *data;
-  size_t size;
-  size_t alloc_size;
-  size_t element_size;
+  size_t size, alloc_size, element_size;
 } tort_vector_base;
 tort_v tort_vector_base_new(tort_v mtable, const void *d, size_t s, size_t element_size);
 #define tort_vector_base_data(X) tort_ref(tort_vector_base, X)->data
@@ -155,9 +155,7 @@ tort_v tort_vector_base_new(tort_v mtable, const void *d, size_t s, size_t eleme
 typedef
 struct tort_vector { tort_H; /* Same layout as tort_vector_base. */
   tort_v *data;
-  size_t size;
-  size_t alloc_size;
-  size_t element_size; /* sizeof(tort_v) */
+  size_t size, alloc_size, element_size; /* sizeof(tort_v) */
 } tort_vector;
 tort_v tort_vector_new(const tort_v *d, size_t s);
 #define tort_vector_data(X) ((tort_v*)tort_vector_base_data(X))
@@ -194,16 +192,12 @@ tort_v tort_map_new();
 typedef
 struct tort_string { tort_H; /* Same layout as tort_vector_base. */
   char *data;
-  size_t size;
-  size_t alloc_size;
-  size_t element_size; /* sizeof(char) */
+  size_t size, alloc_size, element_size; /* sizeof(char) */
 } tort_string;
-
 #define tort_string_charP(X) ((char*)tort_vector_base_data(X))
 #define tort_string_data(X) tort_string_charP(X)
 #define tort_string_size(X) tort_vector_base_size(X)
 #define tort_string_alloc_size(X) tort_vector_base_alloc_size(X)
-
 tort_v tort_string_new(const char *d, size_t s);
 tort_v tort_string_new_cstr(const char *str);
 
@@ -247,7 +241,6 @@ struct tort_symbol { tort_H;
   tort_map *mtable_method_map;
 #endif
 };
-
 static inline 
 const char *tort_symbol_charP(tort_v sym) 
 { 
@@ -256,24 +249,20 @@ const char *tort_symbol_charP(tort_v sym)
     "";
 }
 #define tort_symbol_data(X) tort_symbol_charP(X)
-
 tort_symbol* tort_symbol_new(const char *string);
 const char *tort_symbol_encode(const char *in);
 tort_symbol* tort_symbol_new_encode(const char *string);
 
 struct tort_method { tort_H;
-  tort_v data;
-  tort_v name;
+  tort_v data, name;
 };
 tort_h_struct(tort_method);
 
 typedef
 struct tort_io { tort_H;
   FILE *fp;
-  tort_v name;
-  tort_v mode;
+  tort_v name, mode, data;
   int flags;
-  tort_v data;
 } tort_io;
 
 typedef
@@ -299,7 +288,7 @@ struct tort_runtime { tort_H;
   tort_error_decl((*error));
   tort_error_decl((*fatal));
   tort_v error_catch;
-  tort_v top_catch;
+  tort_v top_catch; /* Current catch: not thread/fiber-safe. */
 
   int _argc; /** Process argument count from main(). */
   char **_argv;/** Process argument vector from main(). */
@@ -483,17 +472,12 @@ const char *tort_object_name(tort_v val);
 extern const char *_tort_gc_mode;
 void tort_gc_collect();
 void tort_gc_dump_stats();
-void tort_gc_invoke_finalizers();
 
 typedef struct tort_dynlib { tort_H;
   tort_map _map; /* same layout as map. */
-  tort_v name;
-  tort_v path;
-  tort_v error;
-  tort_v base_sym;
-  tort_v base_ptr;
+  tort_v name, path, error;
+  tort_v base_sym, base_ptr;
 } tort_dynlib;
-
 void *tort_dlopen(const char *file, char *file_buffer);
 void *tort_dlsym(void *handle, const char *symbol);
 void tort_dlclose(void *handle);

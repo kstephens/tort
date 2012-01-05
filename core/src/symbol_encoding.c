@@ -1,5 +1,4 @@
 #include "tort/core.h"
-
 #include <string.h>
 
 typedef struct tort_symbol_mapping {
@@ -14,6 +13,7 @@ static tort_symbol_mapping mappings[] =
     { "_TO_", "->" },
     { "DOT",  "." },
     { "SET",  "=" },
+    { "LOC",  "&" },
 #define UOP(N,OP) { #N, #OP },
 #define LUP(N,OP) { #N, #OP },
 #define BOP(N,OP) { #N, #OP },
@@ -28,6 +28,12 @@ static tort_symbol_mapping mappings[] =
     { "Q",    "?" },
     { "S",    "*" },
     { "A",    "&" },
+    { "C",    ":" },
+    { "T",    "~" },
+    { "H",    "#" },
+    { "L",    "$" },
+    { "B",    "`" },
+    { "F",    "'" },
     { 0, 0 },
   };
 
@@ -61,7 +67,8 @@ tort_symbol_mapping *find_mapping(tort_symbol_mapping *sm, const char *s)
   return 0;
 }
 
-const char *tort_symbol_encode(const char *in)
+static
+const char *_tort_symbol_encode(const char *in)
 {
   const char *s = in;
   char *out = tort_malloc_atomic(sizeof(out[0]) * (strlen(in) + 1));
@@ -89,6 +96,7 @@ const char *tort_symbol_encode(const char *in)
   *t = '\0';
 
   if ( encoded ) {
+    // fprintf(stderr, "  symbol_encode %s => %s\n", in, out); 
     return out;
   } else {
     tort_free_atomic(out);
@@ -96,7 +104,30 @@ const char *tort_symbol_encode(const char *in)
   }
 }
 
+tort_v _tort_m_symbol_encoder__encode(tort_tp tort_mtable *mtable, tort_v str)
+{
+  const char *s = tort_string_data(str);
+  const char *t = tort_symbol_encode(s);
+  return s == t ? str : tort_string_new_cstr(t);
+}
+
+const char *tort_symbol_encode(const char *in)
+{
+  if ( ! in ) return in;
+  if ( 0 && tort_(symbol_encoder) )
+    return tort_string_data(tort_send(tort__s(encode), tort_(symbol_encoder), tort_string_new_cstr(in)));
+  else
+    return _tort_symbol_encode(in);
+}
+
 tort_symbol* tort_symbol_new_encode(const char *string)
 {
   return tort_symbol_new(tort_symbol_encode(string));
+}
+
+tort_v tort_runtime_initialize_symbol_encoder()
+{
+  tort_(symbol_encoder) = tort_send(tort__s(new), tort__mt(symbol_encoder));
+  tort_send(tort__s(set), tort_(root), tort_s(symbol_encoder), tort_(symbol_encoder));
+  return 0;
 }

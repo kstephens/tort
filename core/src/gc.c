@@ -138,6 +138,13 @@ tort_v _tort_m_object____register_finalizer(tort_tp tort_v rcvr)
 
 int _tort_gc_disabled;
 
+static void (*_tort_gc_invoke_finalizers)() = 0;
+void tort_gc_invoke_finalizers()
+{
+  if ( _tort_gc_invoke_finalizers )
+    _tort_gc_invoke_finalizers();
+}
+
 static void (*_tort_gc_collect)() = 0;
 void tort_gc_collect()
 {
@@ -146,13 +153,6 @@ void tort_gc_collect()
   if ( _tort_gc_collect )
     _tort_gc_collect();
   tort_gc_invoke_finalizers();
-}
-
-static void (*_tort_gc_invoke_finalizers)() = 0;
-void tort_gc_invoke_finalizers()
-{
-  if ( _tort_gc_invoke_finalizers )
-    _tort_gc_invoke_finalizers();
 }
 
 /********************************************************************/
@@ -271,9 +271,8 @@ static void *_type_for_size(size_t size)
 static void *_tort_object_alloc_smal(tort_mtable *mtable, size_t size)
 {
   if ( mtable ) {
-    if ( ! mtable->gc_data ) {
+    if ( ! mtable->gc_data )
       mtable->gc_data = _type_for_size(size);
-    }
     if ( ++ allocs_since_gc > allocs_per_gc ) {
       tort_gc_collect();
       allocs_since_gc = 0;
@@ -412,16 +411,25 @@ tort_v tort_runtime_initialize_malloc()
     }
   }
 #endif
-  if ( ! strcmp(var, "malloc") ) {
+  if ( ! strcmp(var, "malloc") )
     _tort_gc_mode = "malloc";
-  }
+
   if ( ! _tort_gc_mode ) {
     _tort_gc_mode = "malloc";
     fprintf(stderr, "  tort: WARNING: defaulting to TORT_GC=%s\n", _tort_gc_mode);
   }
-  if ( ! strcmp(_tort_gc_mode, "malloc") ) {
+
+  if ( ! strcmp(_tort_gc_mode, "malloc") )
     fprintf(stderr, "  tort: WARNING: using malloc(), NO GC!\n");
+
+  { /* assert alignments. */
+    void *p;
+    assert((size_t) (p = tort_malloc(sizeof(tort_header))) % sizeof(tort_v) == 0);
+    tort_free(p);
+    assert((size_t) (p = tort_malloc_atomic(sizeof(tort_header))) % sizeof(tort_v) == 0);
+    tort_free_atomic(p);
   }
+
   return 0;
 }
 

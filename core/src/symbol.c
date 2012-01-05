@@ -67,8 +67,8 @@ tort_v tort_runtime_initialize_symbol()
 #define tort_d_s(N) tort__s(N) = tort_symbol_new(tort_symbol_encode(#N));
 #include "tort/d_s.h"
 #endif
-  tort_(symbols)->equality = tort__s(equalQ);
-  /* Prepare special symbol table get method. */
+  ((tort_map*) tort_(symbols))->equality = tort__s(equalQ);
+  /* Prepare special symbol table map methods. */
   tort_h(tort_(symbols))->mtable = tort_mtable_new_class(tort_h_mtable(tort_(symbols)));
   tort_add_method(tort_h_mtable(tort_(symbols)), "get", _tort_m_map__get_string);
   tort_add_method(tort_h_mtable(tort_(symbols)), "set", _tort_m_object__identity);

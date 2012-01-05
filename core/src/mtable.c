@@ -241,6 +241,7 @@ tort_v tort_runtime_initialize_mtable()
   tort__mt(u8vector)    = tort_mtable_new_class(tort__mt(vector_base));
   tort__mt(string)      = tort_mtable_new_class(tort__mt(u8vector));
   tort__mt(symbol)      = tort_mtable_new_class(tort__mt(object));
+  tort__mt(symbol_encoder) = tort_mtable_new_class(tort__mt(object));
   tort__mt(method)      = tort_mtable_new_class(tort__mt(object));
   tort__mt(slot)        = tort_mtable_new_class(tort__mt(object));
   tort__mt(slot)->instance_size = sizeof(tort_slot);  

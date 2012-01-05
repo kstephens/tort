@@ -1,6 +1,7 @@
 #include "tort/tort.h"
 #include "tort/internal.h"
 #include "tort/init.h"
+#include <assert.h>
 
 #if TORT_MULTIPLICITY
 tort_runtime *_tort;
@@ -17,6 +18,8 @@ tort_runtime *_tort = &__tort._;
 tort_v tort_runtime_create_ (int *argcp, char ***argvp, char ***envp)
 {
   tort_mtable *obj_mt, *cls_mt;
+
+  assert(sizeof(tort_header) % sizeof(tort_v) == 0);
   INIT(malloc);
 
   /* Create runtime object. */
@@ -100,6 +103,9 @@ tort_v tort_runtime_create_ (int *argcp, char ***argvp, char ***envp)
 
   /* Create the root table. */
   tort_(root) = tort_map_new();
+
+  /* Symbol Encoder. */
+  INIT(symbol_encoder);
 
   /* Uncloneable objects. */
   tort_add_method(tort__mt(symbol),  "clone", _tort_m_object__identity);  

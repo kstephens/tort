@@ -24,9 +24,8 @@ tort_v _tort_m_slot__initialize(tort_tp tort_slot *slot)
   slot->getter = slot->name;
   slot->setter = tort_symbol_new(strcat(strcpy(name_buf, name), "="));
   slot->locater = tort_nil;
-  if ( slot->type == tort__s(tort_v) ) {
+  if ( slot->type == tort__s(tort_v) )
     slot->locater = tort_symbol_new(strcat(strcpy(name_buf, name), "&"));
-  }
   free(name_buf);
   return slot;
 }
@@ -43,6 +42,7 @@ tort_v _tort_m_slot__attach(tort_tp tort_slot *slot)
     if ( slot->locater != tort_nil )
       tort_send(tort__s(add_method), slot->mtable, slot->locater, tort_offset_locater_new(slot->offset));
   }
+  // fprintf(stderr, "  slot %s @%s %s %s %s\n", tort_object_name(slot->mtable), tort_object_name(slot->getter), tort_object_name(slot->offset), tort_object_name(slot->setter), tort_object_name(slot->locater));
   return slot;
 }
 
@@ -84,6 +84,7 @@ static void *slots[] = {
 tort_v tort_runtime_initialize_slot()
 {
   int i;
+  tort__mt(slot)->instance_size = sizeof(tort_slot);
   for ( i = 0; slots[i]; ++ i ) {
     void *(*func)() = slots[i];
     tort_slot_attach(func());
