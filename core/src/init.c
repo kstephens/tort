@@ -93,6 +93,7 @@ tort_v tort_runtime_create_ (int *argcp, char ***argvp, char ***envp)
   /* Install core methods. */
   INIT(method);
   INIT(eq);
+  INIT(cmp);
 
   /* Add core slots. */
   INIT(slot);

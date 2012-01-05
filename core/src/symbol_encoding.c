@@ -10,6 +10,7 @@ typedef struct tort_symbol_mapping {
 
 static tort_symbol_mapping mappings[] =
   {
+    { "CMP",  "<=>" },
     { "_TO_", "->" },
     { "DOT",  "." },
     { "SET",  "=" },

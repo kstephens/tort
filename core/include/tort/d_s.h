@@ -13,6 +13,7 @@ include/tort/init.h
 include/tort/internal.h
 include/tort/ops.h
 include/tort/tort.h
+src/cmp.c
 src/debug.c
 src/dynlib.c
 src/eq.c
@@ -44,6 +45,7 @@ src/write.c
 */
 tort_d_s(ADD)
 tort_d_s(AND)
+tort_d_s(CMP)
 tort_d_s(DIV)
 tort_d_s(EQ)
 tort_d_s(GE)
@@ -174,10 +176,12 @@ tort_d_s(emit)
 tort_d_s(emptyE)
 tort_d_s(eof)
 tort_d_s(eos)
+tort_d_s(eqCMP)
 tort_d_s(eqQ)
 tort_d_s(equalQ)
 tort_d_s(equality)
 tort_d_s(equalitySET)
+tort_d_s(eqvCMP)
 tort_d_s(eqvQ)
 tort_d_s(error)
 tort_d_s(escape)

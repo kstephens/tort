@@ -285,8 +285,9 @@ struct tort_runtime { tort_H;
   tort_v nil;
 #endif
   tort_v b_true, b_false;
-  tort_map *symbols; /** Symbol table map: string=>symbol. */
-  tort_v root; /** Root namespace. */
+  tort_v symbols; /** Symbol table map: string=>symbol. */
+  tort_v symbol_encoder;
+  tort_v root; /** Root namespace map. */
 
   tort_v message; /* Current message: not thread/fiber-safe. */
   tort_caller_info *unknown_caller_info;
