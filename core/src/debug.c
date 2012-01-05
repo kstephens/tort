@@ -67,7 +67,7 @@ const char *tort_object_name_(tort_v val)
   else if ( val == tort_false ) {
     snprintf(str = buf, S, "false");
   }
-  else if ( tort_taggedQ(val) ) {
+  else if ( tort_h_mtable(val) == tort__mt(fixnum) ) {
     snprintf(str = buf, S, "%lld", (long long) tort_I(val));
   }
   else if ( tort_h_mtable(val) == tort__mt(string) ) {
@@ -109,7 +109,7 @@ const char *tort_object_name_(tort_v val)
 #include "tort/d_mt.h"
 #define tort_d_mt(N) else if ( tort_h_mtable(val) == tort__mt(N) ) { snprintf(str = buf, S, "@%s(@%p)", #N, (void*) val); }
 #include "tort/d_mt.h"
-  else if ( tort_h_mtable(val) == tort__mt(mtable) ) { snprintf(str = buf, S, "@mtable(%p)", (void*) val); }
+  else if ( tort_h_mtable(val) == tort__mt(mtable) ) { snprintf(str = buf, S, "@mtable(@%p)", (void*) val); }
   else {
     return 0;
   }
