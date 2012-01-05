@@ -12,7 +12,12 @@ tort_v _tort_m_object___mtable (tort_tp tort_v rcvr)
 
 tort_v _tort_m_object___mtableSET (tort_tp tort_v rcvr, tort_v mtable)
 {
-  tort_h_mtable(rcvr) = mtable;
+  tort_mtable *old_mtable = tort_h_mtable(rcvr);
+  if ( old_mtable != mtable ) {
+    tort_sendn(tort__s(object_changing_mtable_to), 3, old_mtable, rcvr, mtable);
+    tort_h_mtable(rcvr) = mtable;
+    tort_sendn(tort__s(object_changed_mtable_from), 3, mtable, rcvr, old_mtable);
+  }
   return rcvr;
 }
 

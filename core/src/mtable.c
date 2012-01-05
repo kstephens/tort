@@ -30,6 +30,16 @@ tort_v _tort_m_mtable__delegates(tort_tp tort_mtable *mtable)
   return v;
 }
 
+tort_v _tort_m_mtable__object_changing_mtable_to(tort_tp tort_mtable *mtable, tort_v obj, tort_mtable *other)
+{
+  return mtable;
+}
+
+tort_v _tort_m_mtable__object_changed_mtable_from(tort_tp tort_mtable *mtable, tort_v obj, tort_mtable *other)
+{
+  return mtable;
+}
+
 tort_v _tort_m_mtable__slots(tort_tp tort_mtable *mtable)
 {
   if ( mtable->slots == 0 || mtable->slots == tort_nil ) 
