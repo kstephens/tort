@@ -261,13 +261,13 @@
 	    ((locative? l) ;; a known global.
 	      (begin 
 		('emit o `(movq ,(literal ('_to_c_ptr l)) (&r %rdx)))
-		`(&o 0 (&r %rdx))))
+		`(&o (&r %rdx) 0)))
 #|
 	    (('export-index b)
-	      `(&o ,(- locative-tag) ,l))
+	      `(&o ,l ,(- locative-tag)))
 |#
 	    (('closed-over? b)
-	      `(&o ,(- locative-tag) ,l))
+	      `(&o ,l ,(- locative-tag)))
 	    (else
 	      l)))))
     (f 
@@ -300,16 +300,16 @@
 	      '(callq _tort_ptr_new)))
 	  ((&P)  ;; unbox a pointer.
 	    (f env o (cadr e))
-	    ('emit o '(movq (&o 0 (&r %rax)) (&r %rax))))
+	    ('emit o '(movq (&o (&r %rax) 0) (&r %rax))))
 	  ((&L)  ;; get locative's value.
 	    (f env o (cadr e))
-	    ('emit o '(movq (&o ,(- locative-tag) (&r %rax)) (&r %rax))))
+	    ('emit o `(movq (&o (&r %rax) ,(- locative-tag)) (&r %rax))))
 	  ((&l!) ;; set locative's value.
 	    (f env o (cadr e))
 	    ('emit o '(pushq (&r %rax)))
 	    (f env o (caddr e))
 	    ('emit o '(popq (&r %rdx)))
-	    ('emit o '(movq (&r %rax) (&o ,(- locative-tag) (&r %rdx)))))
+	    ('emit o `(movq (&r %rax) (&o (&r %rdx) ,(- locative-tag)))))
 	  ((&l) ;; create new locative to value.
 	    (f env o (cadr e))
 	    ('emit o 
@@ -372,7 +372,7 @@
 	  ((&or)
 	    (let ((Le ('label o)))
 	      (set! e (cdr e))
-	      (while (not (null? e))
+	      (while (pair? e)
 		(f env o (car e))
 		('emit o 
 		  `(movq ,(literal #f) (&r %rdx))
@@ -522,7 +522,7 @@
 	    ('emit o 
 	      '(popq (&r %rdx)) 
 	      '(addq (&r %rdx) (&r %rax))
-	      '(movq (&o 0 (&r %rax)) (&r %rax))))
+	      '(movq (&o (&r %rax) 0) (&r %rax))))
 	  ((&r)
 	    ('emit o `(movq ,e (&r %rax))))
 	  (else
