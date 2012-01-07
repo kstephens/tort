@@ -78,11 +78,11 @@
 	    ((or)  (cond
 		     ((null? (cdr e))   '(&q #f))
 		     ((null? (cddr e))  (f (cadr e)))
-		     (else `(&or ,@(map f (cddr e))))))
+		     (else `(&or ,@(map f (cdr e))))))
 	    ((and)  (cond
 		     ((null? (cdr e))   '(&q #t))
 		     ((null? (cddr e))  (f (cadr e)))
-		     (else `(&and ,@(map f (cddr e))))))
+		     (else `(&and ,@(map f (cdr e))))))
 	    ((&e)      `(&e (&q ,(cadr e)) ,(f (caddr e))))
 	    ((&extern)      `(&&extern (&q ,(cadr e))))
 	    ((&stack-alloc) `(,(car e) (&q ,(cadr e))))
