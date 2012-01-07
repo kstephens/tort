@@ -184,7 +184,7 @@
 		(car (cdr e)))
 	      (set-car! (cdr e) subenv)
 	      (f subenv (caddr e)) ;; body
-	      ))
+	      ))					
 	  ((&e)  ;; (&e (&q env) expr) =>  
 	    (f (cadr (cadr e)) (caddr e)))
 	  (else
@@ -206,7 +206,8 @@
 	    (let ((b ('lookup-or-add-global env (cadr e))))
 	      ;; (display "   b = ")(write b)(newline)
 	      (set-car! (cdr e) b)
-	      ('referenced-from! b env)))
+	      ('referenced-from! b env)
+	      ))
 	  ((&lambda &&c-func)  ;; (&lambda formals body)
 	    (f (cadr e) (caddr e)))
 	  ((&let)  ;; (&let env body) 
@@ -261,13 +262,13 @@
 	    ((locative? l) ;; a known global.
 	      (begin 
 		('emit o `(movq ,(literal ('_to_c_ptr l)) (&r %rdx)))
-		`(&o 0 (&r %rdx))))
+		'(&o (&r %rdx) 0)))
 #|
 	    (('export-index b)
-	      `(&o ,(- locative-tag) ,l))
+	      `(&o ,l ,(- locative-tag)))
 |#
 	    (('closed-over? b)
-	      `(&o ,(- locative-tag) ,l))
+	      `(&o ,l ,(- locative-tag)))
 	    (else
 	      l)))))
     (f 
@@ -285,6 +286,7 @@
 	    ('emit o `(movq ,(loc env o (cadr e)) (&r %rax))))
 	  ((&&)  ;; get the address of a variable.
 	    ('emit o `(leaq ,('loc env (cadr (cadr e))) (&r %rax))))
+#|
 	  ((&i)  ;; box an int.
 	    (f env o (cadr e))
 	    ('emit o 
@@ -293,6 +295,7 @@
 	  ((&I)  ;; unbox an int.
 	    (f env o (cadr e))
 	    ('emit o '(sarq (&$ 2) (&r %rax))))
+
 	  ((&p)  ;; box a pointer.
 	    (f env o (cadr e))
 	    ('emit o 
@@ -300,34 +303,32 @@
 	      '(callq _tort_ptr_new)))
 	  ((&P)  ;; unbox a pointer.
 	    (f env o (cadr e))
-	    ('emit o '(movq (&o 0 (&r %rax)) (&r %rax))))
+	    ('emit o '(movq (&o (&r %rax) 0) (&r %rax))))
 	  ((&L)  ;; get locative's value.
 	    (f env o (cadr e))
-	    ('emit o '(movq (&o ,(- locative-tag) (&r %rax)) (&r %rax))))
+	    ('emit o `(movq (&o (&r %rax) ,(- locative-tag)) (&r %rax))))
 	  ((&l!) ;; set locative's value.
 	    (f env o (cadr e))
 	    ('emit o '(pushq (&r %rax)))
 	    (f env o (caddr e))
 	    ('emit o '(popq (&r %rdx)))
-	    ('emit o '(movq (&r %rax) (&o ,(- locative-tag) (&r %rdx)))))
-	  ((&l) ;; create new locative to value.
+	    ('emit o `(movq (&r %rax) (&o (&r %rdx) ,(- locative-tag)))))
+	  ((&nl) ;; create new locative to value.
 	    (f env o (cadr e))
 	    ('emit o 
 	      '(movq (&r %rax) (&r &rdi))
 	      '(callq _tort_locative_new_value)))
+|#
 	  ((&s!) ;; non-locative set! used for initializers.
 	    (f env o (caddr e))
 	    ('emit o `(movq (&r %rax) ,('loc env (cadr e)))))
 	  ((&set!)
 	    (f env o (caddr e))
-	    (let ((var (cadr e)))
-	      (cond
-		((and (pair? var) (eq? (car var) '&v))
-		  ('emit o `(movq (&r %rax) ,(loc env o (cadr var)))))
-		((and (pair? var) (eq? (car var) '&r))
-		  ('emit o `(movq (&r %rax) ,var)))
-		(else
-		  (error "invalid expr %O" e)))))
+	    (cond
+	      ((and (pair? (cadr e)) (eq? (car (cadr e)) '&r))
+		('emit o `(movq (&r %rax) ,(cadr (cadr e)))))
+	      (else
+		('emit o `(movq (&r %rax) ,(loc env o (cadr e)))))))
 	  ((&eq?) 
 	    (let ((Lf ('label o))
 		  (Le ('label o)))
@@ -372,7 +373,7 @@
 	  ((&or)
 	    (let ((Le ('label o)))
 	      (set! e (cdr e))
-	      (while (not (null? e))
+	      (while (pair? e)
 		(f env o (car e))
 		('emit o 
 		  `(movq ,(literal #f) (&r %rdx))
@@ -438,7 +439,7 @@
 		(lambda (b)
 		  (if ('closed-over? b)
 		    (begin
-		      (f env o `(&s! ,b (&l ,('loc b))))))
+		      (f env o `(&s! ,b (&nl ,('loc b))))))
 		  )
 		('binding-list env))
 	      ;; Emit body instructions.
@@ -508,11 +509,11 @@
 		  (display " &asm: ")(write func)(newline)
 		  ('emit o `(movq ,arg0 ,rtn))
 		  (for-each (lambda (isn) ('emit o isn)) (cdr func)))
-	      (else
-		;; Load %rbx with argc.
-		('emit o 
-		  `(movq (&$ ,nargs) (&r %rbx))
-		  '(callq* (&r %rax)))))))
+		(else
+		  ;; Load %rbx with argc.
+		  ('emit o 
+		    `(movq (&$ ,nargs) (&r %rbx))
+		    '(callq* (&r %rax)))))))
 	  ((&asm) "NOTHING")
 	  ((&e) (f (cadr (cadr e)) o (caddr e)))
 	  ((&o)
@@ -522,7 +523,7 @@
 	    ('emit o 
 	      '(popq (&r %rdx)) 
 	      '(addq (&r %rdx) (&r %rax))
-	      '(movq (&o 0 (&r %rax)) (&r %rax))))
+	      '(movq (&o (&r %rax) 0) (&r %rax))))
 	  ((&r)
 	    ('emit o `(movq ,e (&r %rax))))
 	  (else

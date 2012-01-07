@@ -87,7 +87,7 @@
 		(set! reg `(&r ,(vector-ref arg-regs arg-i))))
 	      (else
 		;; location is relative to BP.
-		(set! loc `(&o ,arg-bp-offset (%r %rbp)))
+		(set! loc `(&o (%r %rbp) ,arg-bp-offset))
 		(set! arg-bp-offset (+ arg-bp-offset word-size))))))
 	(set! binding ('new env-binding 
 			'name arg
@@ -107,7 +107,7 @@
 	('size= binding alloc-size)
 	;; If it's exported, it's locative in the &export-vector.
 	(if ('export-index binding)
-	  ('loc= binding `(&o ,('export-index binding) &export-vector))
+	  ('loc= binding `(&o &export-vector ,('export-index binding)))
 	  ;; Else, it's locative is on the stack.
 	  (let* (
 		  (alloc-env (or ('alloc-env env) env))
@@ -118,7 +118,7 @@
 	    ('alloc-offset= alloc-env alloc-offset)
 	    (if (> ('alloc-offset-max alloc-env) alloc-offset)
 	      ('alloc-offset-max= alloc-env alloc-offset))
-	    ('loc= binding `(&o ,alloc-offset (&r %rbp)))
+	    ('loc= binding `(&o (&r %rbp) ,alloc-offset))
 	    ;; (debug 'allocate-binding)(debug binding)
 	    )))))
   (define-method environ ('allocate-bindings self)
