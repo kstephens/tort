@@ -476,6 +476,14 @@
     ptr
     ))
 
+('add_method <mtable> 'ancestors 
+  (lambda (mtable)
+    (let ((ancestors '()))
+      (while (not (null? mtable))
+	(set! ancestors (cons mtable ancestors))
+	(set! mtable ('delegate mtable)))
+      (reverse ancestors))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Optimizations:
 
