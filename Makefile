@@ -13,7 +13,10 @@ bootstrap : very-clean clean
 #	$(MAKE)
 
 clean ::
-	rm -f tmp/*.*
+	rm -f tmp/*.* GPATH GRTAGS GTAGS
+
+tags :
+	gtags
 
 ######################################################################
 # libgc.a:

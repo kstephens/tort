@@ -12,3 +12,8 @@ gc-*/
 *.dSYM/
 local/
 tmp/
+GPATH
+GRTAGS
+GTAGS
+TAGS
+tags
