@@ -39,6 +39,7 @@
 	(slot-setter-sel  #f)
 	(slot-setter-proc #f)
 	(new_lambda_name #f)
+        (coercer ('new <symbol> nil))
 	  ;; Create a class-oriented mtable delegating to <vector>.
 	(mtable ('new_class <mtable> <struct>)))
     ;; (display "\nname- = ")(write name-)(newline)
@@ -97,6 +98,8 @@
 	     (set! inits (cddr inits))))
 	 ('initialize-struct instance)))
      ;; (set! &trace 0)
+     ('add_method ',('_mtable mtable) 'coercer 
+       (lambda (mtable) ',coercer))
      ('add_method ',('_mtable mtable) 'new 
        (lambda (mtable . args)
 	 (,new_lambda_name . args)))

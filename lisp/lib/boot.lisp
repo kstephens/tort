@@ -313,8 +313,10 @@
   (let ((name-s (symbol->string name))
 	 (mtable (%mtable-by-name name)))
     `(begin
+       ('add_method ('_mtable ',mtable) 'coercer (lambda (mtable) ',('new <symbol> nil)))
        (define ,(string->symbol (string-append "<" name-s ">")) ',mtable)
        (define (,(string->symbol (string-append name-s "?")) o) (eq? ('_mtable o) ',mtable)))))
+(define (coercer mtable) ('coercer mtable))
 (define-mtable-class string)
 (define-mtable-class symbol)
 (define (string-new . size) ('new <string> (if (pair? size) (car size) 0)))
