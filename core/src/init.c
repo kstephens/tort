@@ -200,7 +200,7 @@ tort_v _tort_m_initializer__go(tort_tp tort_v init, tort_v name)
   tort_v state = tort_send(tort__s(get), init, name);
   if ( state == tort_nil ) {
     tort_send(tort__s(set), init, name, tort__s(initializing));
-    if ( _tort_init_debug )
+    if ( _tort_init_debug >= 2 )
       fprintf(stderr, "  tort: init %s\n", tort_symbol_data(name));
     tort_send(name, init);
     if ( _tort_init_debug )
