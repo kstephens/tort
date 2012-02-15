@@ -136,7 +136,7 @@ tort_v _tort_M_lisp_closure__new(tort_tp tort_mtable *mtable, tort_v formals, to
   formals = tort_send(tort__s(new), tort_mt(lisp_formals), formals);
   body = tort_send(tort_s(list_TO_vector), body);
   if ( tort_vector_size(body) == 0 ) {
-    tort_v x = tort_nil;
+    tort_v x = tort_nil; // unspec
     body = tort_vector_new(&x, 1);
   }
   meth->name = tort_nil;
@@ -275,7 +275,7 @@ tort_v _tort_m_lisp_environment__set(tort_tp tort_lisp_environment *env, tort_v 
 {
   tort_v index = tort_send(tort__s(get), env->formals->map, name);
   if ( index != tort_nil ) {
-    index = tort_send(tort__s(get), env->argv, index);
+    index = tort_send(tort__s(get), env->argv, index); // index => locative
     *tort_L(index) = value; 
   }
   else if ( env->formals->rest == name ) {
@@ -517,7 +517,7 @@ tort_v _tort_m_object__lisp_eval_args(tort_tp tort_v obj, tort_v env)
 tort_v _tort_m_vector__lisp_eval_body(tort_tp tort_vector *obj, tort_v env)
 {
   size_t i = 0;
-  if ( ! obj->size ) return tort_nil; // undef
+  if ( ! obj->size ) return tort_nil; // unspec
   while ( i < obj->size - 1 )
     tort_send(tort_s(lisp_eval), obj->data[i ++], env);
   return_tort_send(tort_s(lisp_eval), obj->data[i], env);
@@ -525,7 +525,7 @@ tort_v _tort_m_vector__lisp_eval_body(tort_tp tort_vector *obj, tort_v env)
 
 tort_v _tort_m_object__lisp_eval_body(tort_tp tort_cons *obj, tort_v env)
 {
-  if ( obj == tort_nil ) return obj; // undef
+  if ( obj == tort_nil ) return obj; // unspec
   while ( obj->cdr != tort_nil ) {
     tort_send(tort_s(lisp_eval), obj->car, env);
     obj = obj->cdr;
