@@ -184,7 +184,7 @@
 		(car (cdr e)))
 	      (set-car! (cdr e) subenv)
 	      (f subenv (caddr e)) ;; body
-	      ))
+	      ))					
 	  ((&e)  ;; (&e (&q env) expr) =>  
 	    (f (cadr (cadr e)) (caddr e)))
 	  (else
@@ -206,7 +206,8 @@
 	    (let ((b ('lookup-or-add-global env (cadr e))))
 	      ;; (display "   b = ")(write b)(newline)
 	      (set-car! (cdr e) b)
-	      ('referenced-from! b env)))
+	      ('referenced-from! b env)
+	      ))
 	  ((&lambda &&c-func)  ;; (&lambda formals body)
 	    (f (cadr e) (caddr e)))
 	  ((&let)  ;; (&let env body) 
@@ -261,7 +262,7 @@
 	    ((locative? l) ;; a known global.
 	      (begin 
 		('emit o `(movq ,(literal ('_to_c_ptr l)) (&r %rdx)))
-		`(&o (&r %rdx) 0)))
+		'(&o (&r %rdx) 0)))
 #|
 	    (('export-index b)
 	      `(&o ,l ,(- locative-tag)))
@@ -285,49 +286,16 @@
 	    ('emit o `(movq ,(loc env o (cadr e)) (&r %rax))))
 	  ((&&)  ;; get the address of a variable.
 	    ('emit o `(leaq ,('loc env (cadr (cadr e))) (&r %rax))))
-	  ((&i)  ;; box an int.
-	    (f env o (cadr e))
-	    ('emit o 
-	      '(salq (&$ 2) (&r %rax))
-	      '(orq  (&$ 1) (&r %rax))))
-	  ((&I)  ;; unbox an int.
-	    (f env o (cadr e))
-	    ('emit o '(sarq (&$ 2) (&r %rax))))
-	  ((&p)  ;; box a pointer.
-	    (f env o (cadr e))
-	    ('emit o 
-	      '(movq (&r %rax) (&r %rdi))
-	      '(callq _tort_ptr_new)))
-	  ((&P)  ;; unbox a pointer.
-	    (f env o (cadr e))
-	    ('emit o '(movq (&o (&r %rax) 0) (&r %rax))))
-	  ((&L)  ;; get locative's value.
-	    (f env o (cadr e))
-	    ('emit o `(movq (&o (&r %rax) ,(- locative-tag)) (&r %rax))))
-	  ((&l!) ;; set locative's value.
-	    (f env o (cadr e))
-	    ('emit o '(pushq (&r %rax)))
-	    (f env o (caddr e))
-	    ('emit o '(popq (&r %rdx)))
-	    ('emit o `(movq (&r %rax) (&o (&r %rdx) ,(- locative-tag)))))
-	  ((&l) ;; create new locative to value.
-	    (f env o (cadr e))
-	    ('emit o 
-	      '(movq (&r %rax) (&r &rdi))
-	      '(callq _tort_locative_new_value)))
 	  ((&s!) ;; non-locative set! used for initializers.
 	    (f env o (caddr e))
 	    ('emit o `(movq (&r %rax) ,('loc env (cadr e)))))
 	  ((&set!)
 	    (f env o (caddr e))
-	    (let ((var (cadr e)))
-	      (cond
-		((and (pair? var) (eq? (car var) '&v))
-		  ('emit o `(movq (&r %rax) ,(loc env o (cadr var)))))
-		((and (pair? var) (eq? (car var) '&r))
-		  ('emit o `(movq (&r %rax) ,var)))
-		(else
-		  (error "invalid expr %O" e)))))
+	    (cond
+	      ((and (pair? (cadr e)) (eq? (car (cadr e)) '&r))
+		('emit o `(movq (&r %rax) ,(cadr (cadr e)))))
+	      (else
+		('emit o `(movq (&r %rax) ,(loc env o (cadr e)))))))
 	  ((&eq?) 
 	    (let ((Lf ('label o))
 		  (Le ('label o)))
@@ -438,7 +406,7 @@
 		(lambda (b)
 		  (if ('closed-over? b)
 		    (begin
-		      (f env o `(&s! ,b (&l ,('loc b))))))
+		      (f env o `(&s! ,b (&nl ,('loc b))))))
 		  )
 		('binding-list env))
 	      ;; Emit body instructions.
@@ -508,11 +476,11 @@
 		  (display " &asm: ")(write func)(newline)
 		  ('emit o `(movq ,arg0 ,rtn))
 		  (for-each (lambda (isn) ('emit o isn)) (cdr func)))
-	      (else
-		;; Load %rbx with argc.
-		('emit o 
-		  `(movq (&$ ,nargs) (&r %rbx))
-		  '(callq* (&r %rax)))))))
+		(else
+		  ;; Load %rbx with argc.
+		  ('emit o 
+		    `(movq (&$ ,nargs) (&r %rbx))
+		    '(callq* (&r %rax)))))))
 	  ((&asm) "NOTHING")
 	  ((&e) (f (cadr (cadr e)) o (caddr e)))
 	  ((&o)

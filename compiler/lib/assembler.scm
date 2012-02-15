@@ -136,7 +136,8 @@
 	      ((callq*)       (isn "callq *" (cadr e)))
 	      ((movq)         (isn-pic . e))
 	      (else           (isn . e))))
-	  ('isns-peephole ('isns self)))
+;;	  ('isns-peephole ('isns self)))
+	  ('isns ('isns self)))
 	))
       o))
 
