@@ -12,12 +12,28 @@ tort_runtime *_tort = &__tort._;
 
 #define INIT(N) {                                                       \
     extern tort_v _tort_m_initializer__##N(tort_tp tort_v init);	\
-    _tort_m_initializer__##N(0, 0);                                     \
+    if ( tort_(initializer) ) {						\
+      tort_send(tort__s(N), tort_(initializer));			\
+    } else {								\
+      if ( _tort_init_debug )						\
+	fprintf(stderr, "  tort: init %s (bootstrap)\n", #N);		\
+      init_backlog[init_backlog_n ++] = tort__s(N);			\
+      _tort_m_initializer__##N(tort_ta 0);				\
+    }									\
   }
+
+static int _tort_init_debug;
 
 tort_v tort_runtime_create_ (int *argcp, char ***argvp, char ***envp)
 {
   tort_mtable *obj_mt, *cls_mt;
+  tort_v init_backlog[10]; int init_backlog_n = 0;
+
+  {
+    char *s;
+    if ( (s = getenv("TORT_INIT_DEBUG")) && *s )
+      _tort_init_debug = atoi(s);
+  }
 
   assert(sizeof(tort_header) % sizeof(tort_v) == 0);
   INIT(malloc);
@@ -95,6 +111,12 @@ tort_v tort_runtime_create_ (int *argcp, char ***argvp, char ***envp)
 
   /* Install core methods. */
   INIT(method);
+
+  /* Start initializer. */
+  tort_(initializer) = tort_send(tort__s(new), tort__mt(initializer));
+  while ( init_backlog_n > 0 )
+    tort_send(tort__s(set), tort_(initializer), init_backlog[-- init_backlog_n], tort__s(initialized));
+
   INIT(eq);
   INIT(cmp);
 
@@ -127,6 +149,7 @@ tort_v tort_runtime_create_ (int *argcp, char ***argvp, char ***envp)
   /* Setup the root namespace. */
 #define ROOT(N,V) tort_send(tort__s(set), tort_(root), tort_symbol_new(#N), (V))
   ROOT(runtime, tort_ref_box(_tort));
+  ROOT(initializer, tort_(initializer));
   ROOT(nil, tort_nil);
   ROOT(true, tort_true);
   ROOT(false, tort_false);
@@ -172,3 +195,17 @@ tort_v tort_runtime_create_ (int *argcp, char ***argvp, char ***envp)
   return tort_ref_box(_tort);
 }
 
+tort_v _tort_m_initializer__go(tort_tp tort_v init, tort_v name)
+{
+  tort_v state = tort_send(tort__s(get), init, name);
+  if ( state == tort_nil ) {
+    tort_send(tort__s(set), init, name, tort__s(initializing));
+    if ( _tort_init_debug )
+      fprintf(stderr, "  tort: init %s\n", tort_symbol_data(name));
+    tort_send(name, init);
+    if ( _tort_init_debug )
+      fprintf(stderr, "  tort: init %s : DONE\n", tort_symbol_data(name));
+    tort_send(tort__s(set), init, name, tort__s(initialized));
+  }
+  return init;
+}

@@ -262,6 +262,7 @@ tort_v _tort_m_initializer__mtable(tort_tp tort_v init)
   tort__mt(caller_info)->instance_size = sizeof(tort_caller_info);
   tort__mt(boolean)     = tort_mtable_new_class(tort__mt(object));
   tort__mt(initializer) = tort_mtable_new_class(tort__mt(map));
+  tort__mt(initializer)->instance_size = sizeof(tort_map);
 
   /* io */
   tort__mt(io)     = tort_mtable_new_class(tort__mt(object));
