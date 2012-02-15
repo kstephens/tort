@@ -1,5 +1,4 @@
 #include "tort/lisp.h"
-#include "tort/repl.h"
 #include <stdarg.h>
 
 int _tort_lisp_trace = 0;
