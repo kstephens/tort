@@ -136,18 +136,18 @@ tort_v _tort_M_dynlib__load(tort_tp tort_mtable *mtable, tort_v name)
 
 tort_v tort_m_dynlib___run_initializers(tort_tp tort_v map)
 {
-  static const char prefix[] = "tort_runtime_initialize_";
+  static const char prefix[] = "_tort_m_initializer__";
   tort_map_EACH(map, e) {
     if ( tort_h_mtable(e->first) != tort__mt(symbol) ) continue;
     const char *name = tort_symbol_data(e->first);
     // fprintf(stderr, "e = @%p \"%s\"\n", e, name);
     if ( strncmp(name, prefix, strlen(prefix)) == 0 ) {
       void *ptr = tort_ptr_data(e->second);
-      tort_v (*func)();
+      tort_v (*func)(tort_tp tort_v);
       func = ptr;
       if ( _tort_dl_debug ) 
 	fprintf(stderr, "  init %s => @%p\n", name,  ptr);
-      func();
+      func(tort_ta tort_nil);
     }
   } tort_map_EACH_END();
   return 0;
@@ -321,7 +321,7 @@ tort_v _tort_m_dynlib___load_symtab(tort_tp tort_v st, const char *file, void *p
   return st;
 }
 
-tort_v tort_runtime_initialize_dynlib()
+tort_v _tort_m_initializer__dynlib(tort_tp tort_v init)
 {
   tort_v st;
   {
@@ -345,6 +345,6 @@ tort_v tort_runtime_initialize_dynlib()
   st = tort_send(tort__s(new), tort__mt(dynlib));
   tort_send(tort__s(dlopen), st, tort_string_new_cstr("libtortcore"));
 
-  return all;
+  return init;
 }
 

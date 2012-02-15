@@ -81,7 +81,7 @@ static void *slots[] = {
   0
 };
 
-tort_v tort_runtime_initialize_slot()
+tort_v _tort_m_initializer__slot(tort_tp tort_v init)
 {
   int i;
   tort__mt(slot)->instance_size = sizeof(tort_slot);
@@ -89,6 +89,6 @@ tort_v tort_runtime_initialize_slot()
     void *(*func)() = slots[i];
     tort_slot_attach(func());
   }
-  return 0;
+  return init;
 }
 

@@ -461,9 +461,9 @@ tort_v _tort_M_object_graph__graph(tort_tp tort_v mtable, tort_v obj)
   return obj;
 }
 
-tort_v tort_runtime_initialize_object_graph()
+tort_v _tort_m_initializer__object_graph(tort_tp tort_v init)
 {
-  tort_v _mt_og = tort_mtable_create_class("object_graph", 0);
-  return _mt_og;
+  tort_mtable_create_class("object_graph", 0);
+  return init;
 }
 

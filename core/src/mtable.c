@@ -195,7 +195,7 @@ tort_mtable* tort_mtable_create_class(const char *name, tort_v parent)
   return mt;
 }
 
-tort_v tort_runtime_initialize_mtable()
+tort_v _tort_m_initializer__mtable(tort_tp tort_v init)
 {
   tort_mtable *obj_mt, *cls_mt;
 
@@ -261,6 +261,7 @@ tort_v tort_runtime_initialize_mtable()
   tort__mt(caller_info) = tort_mtable_new_class(tort__mt(object));
   tort__mt(caller_info)->instance_size = sizeof(tort_caller_info);
   tort__mt(boolean)     = tort_mtable_new_class(tort__mt(object));
+  tort__mt(initializer) = tort_mtable_new_class(tort__mt(map));
 
   /* io */
   tort__mt(io)     = tort_mtable_new_class(tort__mt(object));
@@ -275,6 +276,6 @@ tort_v tort_runtime_initialize_mtable()
   /* force references for extensions. */
   (void) tort__mt(block);
 
-  return tort__mt(mtable);
+  return init;
 }
 

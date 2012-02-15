@@ -200,8 +200,8 @@ tort_v _tort_m_string__close(tort_tp tort_string *rcvr)
   return rcvr;
 }
 
-extern tort_v tort_runtime_initialize_printf();
-tort_v tort_runtime_initialize_io()
+extern tort_v _tort_m_initializer__printf(tort_tp tort_v init);
+tort_v _tort_m_initializer__io(tort_tp tort_v init)
 {
   tort_stdin  = _tort_M_io____new(tort_ta tort__mt(io), stdin);
   tort_stdout = _tort_M_io____new(tort_ta tort__mt(io), stdout);
@@ -213,8 +213,7 @@ tort_v tort_runtime_initialize_io()
 
   tort_eos    = tort_allocate(tort__mt(eos), sizeof(tort_object));
 
-  tort_runtime_initialize_printf();
-
-  return tort__mt(io);
+  _tort_m_initializer__printf(tort_ta init);
+  return init;
 }
 

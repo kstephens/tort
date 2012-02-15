@@ -533,7 +533,7 @@ tort_v _tort_m_object__lisp_eval_body(tort_tp tort_cons *obj, tort_v env)
   return_tort_send(tort_s(lisp_eval), obj->car, env);
 }
 
-tort_v tort_runtime_initialize_lisp_eval()
+tort_v _tort_m_initializer__lisp_eval(tort_tp tort_v init)
 {
   tort_send(tort_s(load), tort_mt(dynlib), tort_string_new_cstr("libtortext"));
   tort_mtable_create_class("lisp_repl", tort_mt(repl));
@@ -545,6 +545,6 @@ tort_v tort_runtime_initialize_lisp_eval()
     tort_v dir = tort_string_new_cstr(str && *str ? str : TORT_LISP_LIB_DIR);
     tort_send(tort_s(set), tort_(root), tort_s(lisp_lib_dir), dir);
   }
-  return 0;
+  return init;
 }
 

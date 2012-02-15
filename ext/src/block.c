@@ -12,9 +12,9 @@ tort_lookup_decl(_tort_M_block__lookup)
   }
 }
 
-tort_v tort_runtime_initialize_block()
+tort_v _tort_m_initializer__block(tort_tp tort_v init)
 {
   tort__mt(block) = tort_mtable_create_class("block", tort_mt(method));
-  return tort__mt(block);
+  return init;
 }
 

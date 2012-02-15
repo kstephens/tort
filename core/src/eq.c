@@ -60,10 +60,10 @@ tort_v _tort_m_map__equalQ (tort_tp tort_map *rcvr, tort_map *val)
 #undef EQUALQ
 #undef return_EQUALQ
 
-tort_v tort_runtime_initialize_eq()
+tort_v _tort_m_initializer__eq(tort_tp tort_v init)
 {
   tort_send(tort__s(alias_method), tort__mt(object), tort__s(eqvQ),   tort__s(eqQ));
   tort_send(tort__s(alias_method), tort__mt(object), tort__s(equalQ), tort__s(eqQ));
   tort_send(tort__s(alias_method), tort__mt(word),   tort__s(equalQ), tort__s(eqvQ));
-  return 0;
+  return init;
 }

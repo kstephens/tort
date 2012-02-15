@@ -369,7 +369,7 @@ void tort_gc_dump_stats()
   tort_flush(io);
 }
 
-tort_v tort_runtime_initialize_malloc()
+tort_v _tort_m_initializer__malloc(tort_tp tort_v init)
 {
   const char *var;
   _tort_gc_disabled ++; // temporarily disabled till boot is finished.
@@ -429,8 +429,7 @@ tort_v tort_runtime_initialize_malloc()
     assert((size_t) (p = tort_malloc_atomic(sizeof(tort_header))) % sizeof(tort_v) == 0);
     tort_free_atomic(p);
   }
-
-  return 0;
+  return init;
 }
 
 static void tort_gc_atexit()
@@ -464,16 +463,16 @@ tort_v _tort_M_gc__mark(tort_tp tort_mtable *o, tort_v object)
   return o;
 }
 
-tort_v tort_runtime_initialize_gc()
+tort_v _tort_m_initializer__gc(tort_tp tort_v init)
 {
   tort_add_method(tort__mt(object), "__finalize",  _tort_m_object__identity);
-  return 0;
+  return init;
 }
 
-tort_v tort_runtime_initialize_gc_ready()
+tort_v _tort_m_initializer__gc_ready(tort_tp tort_v init)
 {
   assert(_tort_gc_disabled);
   _tort_gc_disabled --;
   atexit(tort_gc_atexit);
-  return 0;
+  return init;
 }

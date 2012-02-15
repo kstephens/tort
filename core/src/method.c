@@ -73,7 +73,7 @@ static struct d_m {
   { 0 }
 };
 
-tort_v tort_runtime_initialize_method()
+tort_v _tort_m_initializer__method(tort_tp tort_v init)
 {
   int i;
   for ( i = 0; meths[i].func; ++ i ) {
@@ -83,6 +83,6 @@ tort_v tort_runtime_initialize_method()
       mt = tort_h_mtable(mt);
     tort_send(tort__s(add_method), mt, sel, tort_method_new(meths[i].func, 0)); 
   }
-  return 0;
+  return init;
 }
 

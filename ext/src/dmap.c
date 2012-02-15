@@ -37,8 +37,9 @@ tort_v _tort_m_dmap__set(tort_tp tort_dmap *dmap, tort_v key, tort_v value)
   return dmap;
 }
 
-tort_v tort_runtime_initialize_dmap()
+tort_v _tort_m_initializer__dmap(tort_tp tort_v init)
 {
-  return tort_mtable_create_class("dmap", tort_mt(object));
+  tort_mtable_create_class("dmap", tort_mt(object));
+  return init;
 }
 

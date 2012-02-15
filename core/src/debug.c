@@ -160,8 +160,8 @@ tort_v _tort_m_object___name(tort_tp tort_v rcvr)
   return tort_string_new_cstr(tort_object_name(rcvr));
 }
 
-tort_v tort_runtime_initialize_debug()
+tort_v _tort_m_initializer__debug(tort_tp tort_v init)
 {
-  return 0;
+  return init;
 }
 

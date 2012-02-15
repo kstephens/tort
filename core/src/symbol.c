@@ -61,7 +61,7 @@ tort_symbol* tort_symbol_new(const char *string)
   }
 }
 
-tort_v tort_runtime_initialize_symbol()
+tort_v _tort_m_initializer__symbol(tort_tp tort_v init)
 {
 #ifndef tort_d_s
 #define tort_d_s(N) tort__s(N) = tort_symbol_new(tort_symbol_encode(#N));
@@ -73,6 +73,6 @@ tort_v tort_runtime_initialize_symbol()
   tort_add_method(tort_h_mtable(tort_(symbols)), "get", _tort_m_map__get_string);
   tort_add_method(tort_h_mtable(tort_(symbols)), "set", _tort_m_object__identity);
   tort_add_method(tort_h_mtable(tort_(symbols)), "delete", _tort_m_object__identity);
-  return tort_(symbols);
+  return init;
 }
 

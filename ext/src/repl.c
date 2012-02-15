@@ -100,9 +100,9 @@ tort_v _tort_m_repl__run(tort_tp tort_repl *repl)
   return repl;
 }
 
-tort_v tort_runtime_initialize_repl()
+tort_v _tort_m_initializer__repl(tort_tp tort_v init)
 {
   tort_mtable_create_class("repl", 0);
-  return tort_nil;
+  return init;
 }
 

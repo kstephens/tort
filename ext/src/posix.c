@@ -74,9 +74,9 @@ tort_v _tort_m_posix__unlink(tort_tp tort_v rcvr, tort_string *str)
   return tort_i(unlink(tort_string_data(str)));
 }
 
-tort_v tort_runtime_initialize_posix()
+tort_v _tort_m_initializer__posix(tort_tp tort_v init)
 {
   tort_mtable_create_class("posix", 0);
-  return 0;
+  return init;
 }
 

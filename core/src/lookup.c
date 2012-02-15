@@ -371,7 +371,7 @@ static void mark_cache(void *data)
   tort_gc_mark_range(tort_nil, &mcache, ((void*) &mcache) + sizeof(mcache));
 }
 
-tort_v tort_runtime_initialize_lookup()
+tort_v _tort_m_initializer__lookup(tort_tp tort_v init)
 {
   tort_(_m_method_not_found) = tort_method_new(_tort_m_object___method_not_found, 0);
   tort_(_m_cannot_apply) = tort_method_new(_tort_m_object___cannot_apply, 0);
@@ -380,6 +380,6 @@ tort_v tort_runtime_initialize_lookup()
   if ( getenv("TORT_MCACHE_STATS") )
     atexit(_tort_mcache_stats);
 #endif
-  return 0;
+  return init;
 }
 

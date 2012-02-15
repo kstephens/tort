@@ -203,10 +203,10 @@ tort_v _tort_m_io__printf_as_string(tort_tp tort_v io, tort_v val)
   return tort_nil;
 }
 
-tort_v tort_runtime_initialize_printf()
+tort_v _tort_m_initializer__printf(tort_tp tort_v init)
 {
   tort_v map = tort_(_printf_dispatch) = tort_map_new();
   tort_send(tort_s(set), map, tort_i('S'), tort_s(printf_as_string));
   tort_send(tort_s(set), tort_(root), tort_s(_printf_dispatch), map);
-  return tort__mt(io);
+  return init;
 }

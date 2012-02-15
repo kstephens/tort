@@ -77,9 +77,9 @@ tort_v _tort_m_map__CMP (tort_tp tort_map *rcvr, tort_map *val)
 #undef CMP
 #undef return_CMP
 
-tort_v tort_runtime_initialize_cmp()
+tort_v _tort_m_initializer__cmp(tort_tp tort_v init)
 {
   tort_send(tort__s(alias_method), tort__mt(object), tort__s(eqCMP),   tort__s(CMP));
   tort_send(tort__s(alias_method), tort__mt(object), tort__s(eqvCMP),  tort__s(CMP));
-  return 0;
+  return init;
 }

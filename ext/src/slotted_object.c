@@ -85,9 +85,9 @@ tort_v _tort_M_slotted_object__new(tort_tp tort_mtable *mtable, ...)
   return_tort_send(tort_ta tort__s(_initialize), o);
 }
 
-tort_v tort_runtime_initialize_slotted_object()
+tort_v _tort_m_initializer__slotted_object(tort_tp tort_v init)
 {
   tort_mtable_create_class("slotted_object", 0);
-  return tort_true;
+  return init;
 }
 

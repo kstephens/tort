@@ -8,7 +8,7 @@ int main(int argc, char **argv, char **environ)
   tort_v io;
   tort_v s, p, v;
   tort_v st;
-  extern tort_v tort_runtime_initialize_dynlib();
+  extern tort_v _tort_m_initializer__dynlib(tort_tp tort_v init);
 
   tort_runtime_create();
   st = tort_send(tort_s(get), tort_(root), tort_s(core_symtab));
@@ -16,8 +16,8 @@ int main(int argc, char **argv, char **environ)
 
   io = tort_stdout;
   
-  s = tort_s(tort_runtime_initialize_dynlib);
-  p = tort_ptr_new(&tort_runtime_initialize_dynlib);
+  s = tort_s(_tort_m_initializer__dynlib);
+  p = tort_ptr_new(&_tort_m_initializer__dynlib);
 
   tort_printf(io, "  (size _symtab) => %T\n", tort_send(tort__s(size), st));
 

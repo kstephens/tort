@@ -125,9 +125,9 @@ tort_symbol* tort_symbol_new_encode(const char *string)
   return tort_symbol_new(tort_symbol_encode(string));
 }
 
-tort_v tort_runtime_initialize_symbol_encoder()
+tort_v _tort_m_initializer__symbol_encoder(tort_tp tort_v init)
 {
   tort_(symbol_encoder) = tort_send(tort__s(new), tort__mt(symbol_encoder));
   tort_send(tort__s(set), tort_(root), tort_s(symbol_encoder), tort_(symbol_encoder));
-  return 0;
+  return init;
 }

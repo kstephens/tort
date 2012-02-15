@@ -10,9 +10,9 @@ tort_runtime_ __tort;
 tort_runtime *_tort = &__tort._;
 #endif
 
-#define INIT(N) {					\
-    extern tort_v tort_runtime_initialize_##N();	\
-    tort_runtime_initialize_##N();			\
+#define INIT(N) {                                                       \
+    extern tort_v _tort_m_initializer__##N(tort_tp tort_v init);	\
+    _tort_m_initializer__##N(0, 0);                                     \
   }
 
 tort_v tort_runtime_create_ (int *argcp, char ***argvp, char ***envp)

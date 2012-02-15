@@ -83,12 +83,11 @@ tort_v _tort_m_string___fatal(tort_tp tort_string *fmt, ...)
   return result;
 }
 
-tort_v tort_runtime_initialize_error()
+tort_v _tort_m_initializer__error(tort_tp tort_v init)
 {
   tort_(_in_error) = 0;
   tort_(error) = _tort_error;
   tort_(fatal) = _tort_fatal;
   tort_(error_catch) = tort_nil;
-
-  return 0;
+  return init;
 }
