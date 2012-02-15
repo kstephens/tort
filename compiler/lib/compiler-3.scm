@@ -286,39 +286,6 @@
 	    ('emit o `(movq ,(loc env o (cadr e)) (&r %rax))))
 	  ((&&)  ;; get the address of a variable.
 	    ('emit o `(leaq ,('loc env (cadr (cadr e))) (&r %rax))))
-#|
-	  ((&i)  ;; box an int.
-	    (f env o (cadr e))
-	    ('emit o 
-	      '(salq (&$ 2) (&r %rax))
-	      '(orq  (&$ 1) (&r %rax))))
-	  ((&I)  ;; unbox an int.
-	    (f env o (cadr e))
-	    ('emit o '(sarq (&$ 2) (&r %rax))))
-
-	  ((&p)  ;; box a pointer.
-	    (f env o (cadr e))
-	    ('emit o 
-	      '(movq (&r %rax) (&r %rdi))
-	      '(callq _tort_ptr_new)))
-	  ((&P)  ;; unbox a pointer.
-	    (f env o (cadr e))
-	    ('emit o '(movq (&o (&r %rax) 0) (&r %rax))))
-	  ((&L)  ;; get locative's value.
-	    (f env o (cadr e))
-	    ('emit o `(movq (&o (&r %rax) ,(- locative-tag)) (&r %rax))))
-	  ((&l!) ;; set locative's value.
-	    (f env o (cadr e))
-	    ('emit o '(pushq (&r %rax)))
-	    (f env o (caddr e))
-	    ('emit o '(popq (&r %rdx)))
-	    ('emit o `(movq (&r %rax) (&o (&r %rdx) ,(- locative-tag)))))
-	  ((&nl) ;; create new locative to value.
-	    (f env o (cadr e))
-	    ('emit o 
-	      '(movq (&r %rax) (&r &rdi))
-	      '(callq _tort_locative_new_value)))
-|#
 	  ((&s!) ;; non-locative set! used for initializers.
 	    (f env o (caddr e))
 	    ('emit o `(movq (&r %rax) ,('loc env (cadr e)))))
