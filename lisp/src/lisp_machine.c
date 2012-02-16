@@ -40,8 +40,8 @@ tort_v _tort_m_lisp_machine__eval_dispatch(tort_tp tort_lisp_machine *lm)
   SYM(ANDevif_decide);
   SYM(ANDapply_no_args);
 #undef SYM
-  tort_v mt_pair = tort_mt(pair);
-  tort_v mt_symbol = tort_mt(symbol);
+  // tort_v mt_pair = tort__mt(pair);
+  // tort_v mt_symbol = tort__mt(symbol);
 #define CONS tort_cons
 #define CAR tort_car
 #define CDR tort_cdr
@@ -53,8 +53,8 @@ tort_v _tort_m_lisp_machine__eval_dispatch(tort_tp tort_lisp_machine *lm)
 #define NIL tort_nil
 #define EQ(X,Y) ((X) == (Y))
 #define NULLQ(X) EQ(X, NIL)
-#define PAIRQ(X) (tort_h_mtable(X) == mt_pair)
-#define SYMBOLQ(X) (tort_h_mtable(X) == mt_symbol)
+#define PAIRQ(X) (tort_h_mtable(X) == tort__mt(pair))
+#define SYMBOLQ(X) (tort_h_mtable(X) == tort__mt(symbol))
 #define VALUE(sym, env) tort_send(tort_s(VALUE), lm, (env), (sym))
 #define VALUE1(sym, env) tort_send(tort_s(VALUE1), lm, (env), (sym))
 #define LOOKUP(sym, env) tort_send(tort_s(LOOKUP), lm, (env), (sym))
@@ -219,9 +219,15 @@ DEFINE(LOOKUP1, tort_v NAME, tort_v VARS, tort_v VALS, tort_v ENV)
  LOOKUP1:
   if ( NULLQ(VARS) ) {
     // return LOOKUP(NAME,CDR(ENV));
+  DO_LOOKUP:
     ENV = CDR(ENV);
     goto LOOKUP;
   } else { 
+    if ( SYMBOLQ(VARS) ) {
+      if ( EQ(NAME, VARS) )
+	return VALS;
+      goto DO_LOOKUP;
+    }
     if ( EQ(NAME, CAR(VARS)) ) 
       return VALS;
     // return LOOKUP1(NAME, CDR(VARS), CDR(VALS), ENV);
