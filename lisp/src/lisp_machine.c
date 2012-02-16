@@ -203,20 +203,31 @@ DEFINE(VALUE1, tort_v NAME, tort_v SLOT)
 }
 DEFINE(LOOKUP, tort_v NAME, tort_v ENV)
 {
+ LOOKUP:
   if ( NULLQ(ENV) )
     return tort_s(ANDunbound);
-  else
-    return LOOKUP1(NAME, CAAR(ENV), CDAR(ENV), ENV);
+  // return LOOKUP1(NAME, CAAR(ENV), CDAR(ENV), ENV);
+  tort_v VARS, VALS;
+  VARS = CAAR(ENV);
+  VALS = CDAR(ENV);
+  goto LOOKUP1;
+#if 0
 }
 DEFINE(LOOKUP1, tort_v NAME, tort_v VARS, tort_v VALS, tort_v ENV)
 {
+#endif
+ LOOKUP1:
   if ( NULLQ(VARS) ) {
-    return LOOKUP(NAME,CDR(ENV));
+    // return LOOKUP(NAME,CDR(ENV));
+    ENV = CDR(ENV);
+    goto LOOKUP;
   } else { 
     if ( EQ(NAME, CAR(VARS)) ) 
       return VALS;
-    else
-      return LOOKUP1(NAME, CDR(VARS), CDR(VALS), ENV);
+    // return LOOKUP1(NAME, CDR(VARS), CDR(VALS), ENV);
+    VARS = CDR(VARS);
+    VALS = CDR(VALS);
+    goto LOOKUP1;
   }
 }
 
