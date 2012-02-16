@@ -268,7 +268,7 @@ struct tort_io { tort_H;
 typedef
 struct tort_runtime { tort_H;
   tort_header nil_header; /** Header for tort_nil object. */
-  tort_header tagged_header[1 << TORT_TAG_BITS]; /** Header for tagged object (integers). */
+  tort_header tagged_header[1 << TORT_TAG_BITS]; /** Header for tagged object (fixnum, etc.). */
 
 #if ! TORT_NIL_IS_ZERO
   tort_v nil;
@@ -337,7 +337,7 @@ extern tort_runtime_ __tort;
 #define tort_inspect(io, obj) tort_send(tort__s(_inspect), obj, io)
 #define tort_printf(io, fmt, args...) tort_send(tort__s(__printfs), io, fmt, ## args)
 #define tort_printfv(io, fmt, vapp) tort_send(tort__s(__printfsv), io, fmt, vapp)
-#define tort_flush(io) tort_send(tort_s(flush), io)
+#define tort_flush(io) tort_send(tort__s(flush), io)
 #define tort_sprintf(STR, FMT, ARGS...) tort_send(tort__s(__printfs), (tort_v) (STR), (FMT), ##ARGS)
 
 tort_message* _tort_lookup (tort_tp tort_v rcvr, tort_message *message);
