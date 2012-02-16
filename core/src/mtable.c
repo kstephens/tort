@@ -86,9 +86,7 @@ tort_v _tort_M_object__allocate (tort_tp tort_mtable *mtable)
 
 tort_v _tort_M_object___allocate (tort_tp tort_mtable *mtable, tort_v size)
 {
-  void *ptr;
-  ptr = tort_object_alloc(mtable, tort_I(size));
-  return ptr;
+  return tort_object_alloc(mtable, tort_I(size));
 }
 
 tort_v _tort_m_mtable__add_method (tort_tp tort_mtable *mtable, tort_symbol *symbol, tort_method *method)
