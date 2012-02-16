@@ -9,7 +9,6 @@ include/tort/d_s.all.h
 include/tort/d_s.h
 include/tort/d_slot.h
 include/tort/fixnum.h
-include/tort/init.h
 include/tort/internal.h
 include/tort/ops.h
 include/tort/tort.h
@@ -219,9 +218,12 @@ tort_d_s(get_entry_string)
 tort_d_s(get_key)
 tort_d_s(get_string)
 tort_d_s(gid)
+tort_d_s(go)
 tort_d_s(identity)
 tort_d_s(initialize)
+tort_d_s(initialized)
 tort_d_s(initializer)
+tort_d_s(initializing)
 tort_d_s(ino)
 tort_d_s(instance_size)
 tort_d_s(instance_sizeSET)

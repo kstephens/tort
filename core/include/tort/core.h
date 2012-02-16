@@ -2,7 +2,6 @@
 #define _tort_CORE_H
 
 #include "tort/tort.h"
-#include "tort/init.h"
 #include "tort/internal.h"
 
 #include <stdlib.h>

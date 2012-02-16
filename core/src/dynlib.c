@@ -122,8 +122,13 @@ tort_v _tort_m_dynlib__dlopen(tort_tp struct tort_dynlib *rcvr, tort_v name)
 tort_v _tort_m_dynlib__load(tort_tp struct tort_dynlib *rcvr, tort_v name)
 {
   tort_send(tort__s(dlopen), rcvr, name);
+  // Load all initializer methods.
+  tort_send(tort__s(_load_methods), rcvr, tort__s(initializer));
+  // Run the initializer; assume some of them will initialize classes.
   tort_send(tort__s(_run_initializers), rcvr);
-  tort_send(tort__s(_load_methods), rcvr);
+  // Load methods for all other classes.
+  tort_send(tort__s(_load_methods), rcvr, tort_nil);
+  // Load slots for all the classes.
   tort_send(tort__s(_load_slots), rcvr);
   return rcvr;
 }
@@ -143,17 +148,21 @@ tort_v tort_m_dynlib___run_initializers(tort_tp tort_v map)
     // fprintf(stderr, "e = @%p \"%s\"\n", e, name);
     if ( strncmp(name, prefix, strlen(prefix)) == 0 ) {
       void *ptr = tort_ptr_data(e->second);
-      tort_v (*func)(tort_tp tort_v);
-      func = ptr;
+      tort_v sel = tort_symbol_new_encode(name + strlen(prefix));
       if ( _tort_dl_debug ) 
-	fprintf(stderr, "  init %s => @%p\n", name,  ptr);
+	fprintf(stderr, "  init %s => @%p\n", name, ptr);
+      tort_send(tort__s(go), tort_(initializer), sel);
+#if 0
+      tort_v (*func)(tort_tp tort_v);x
+      func = ptr;
       func(tort_ta tort_nil);
+#endif
     }
   } tort_map_EACH_END();
   return 0;
 }
 
-static int process_method(int cmeth, const char *prefix, tort_pair *e)
+static int process_method(int cmeth, const char *prefix, tort_pair *e, tort_v match_mtable)
 {
   const char *name = tort_symbol_data(e->first);
   if ( strncmp(name, prefix, strlen(prefix)) == 0 ) {
@@ -166,13 +175,18 @@ static int process_method(int cmeth, const char *prefix, tort_pair *e)
 	cls_buf[meth - cls] = 0;
 	cls = cls_buf;
 	meth += 2;
+
+	if ( match_mtable != tort_nil && strcmp(cls, tort_symbol_data(match_mtable)) ) 
+	  return 1;
+
 	void *ptr = tort_ptr_data(e->second);
 	meth = tort_symbol_encode(meth);
 	if ( _tort_dl_debug ) 
-	  fprintf(stderr, "  method %s%c%s => @%p\n", cls, cmeth ? '.' : '#', meth, ptr);
-	tort_v mtable = tort_mtable_get(cls_buf);
+	  fprintf(stderr, "  method %s%c%s => @%p (match %s)\n", cls, cmeth ? '.' : '#', meth, ptr, match_mtable != tort_nil ? tort_symbol_data(match_mtable) : "*");
+
+	tort_v mtable = tort_mtable_get(cls);
 	if ( ! mtable ) {
-	  tort_error(tort_ta "dl: cannot find mtable %s", cls_buf);
+	  tort_error(tort_ta "dl: cannot find mtable %s", cls);
 	  return -1;
 	}
 	if ( cmeth )
@@ -186,7 +200,7 @@ static int process_method(int cmeth, const char *prefix, tort_pair *e)
   return 0;
 }
 
-tort_v tort_m_dynlib___load_methods(tort_tp tort_v map)
+tort_v tort_m_dynlib___load_methods(tort_tp tort_v map, tort_v match_mtable)
 {
   int result = 0;
   static const char obj_prefix[] = "_tort_m_";
@@ -194,8 +208,8 @@ tort_v tort_m_dynlib___load_methods(tort_tp tort_v map)
   tort_map_EACH(map, e) {
     if ( tort_h_mtable(e->first) != tort__mt(symbol) ) continue;
     // fprintf(stderr, "e = @%p \"%s\"\n", e, name);
-    if ( (result = process_method(0, obj_prefix, e)) == 0 )
-      result = process_method(1, cls_prefix, e);
+    if ( (result = process_method(0, obj_prefix, e, match_mtable)) == 0 )
+	 result = process_method(1, cls_prefix, e, match_mtable);
     if ( result < 0 ) break;
   } tort_map_EACH_END();
   return result >= 0 ? map : tort_nil;
