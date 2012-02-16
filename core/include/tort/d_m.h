@@ -9,7 +9,6 @@ include/tort/d_s.all.h
 include/tort/d_s.h
 include/tort/d_slot.h
 include/tort/fixnum.h
-include/tort/init.h
 include/tort/internal.h
 include/tort/ops.h
 include/tort/tort.h
