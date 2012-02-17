@@ -1,6 +1,5 @@
 #include "tort/tort.h"
 #include "tort/internal.h"
-#include "tort/init.h"
 #include <assert.h>
 
 #if TORT_MULTIPLICITY
