@@ -21,11 +21,15 @@ tort_SLOT(lisp_machine,tort_v,clink);
 
 tort_v _tort_m_lisp_machine__eval_dispatch(tort_tp tort_lisp_machine *lm)
 {
+#if 1
+  tort_v EXP = lm->exp, ENV = lm->env, VAL = lm->val, ARGS = lm->args, CLINK = lm->clink;
+#else
 #define EXP lm->exp
-#define ENV lm->exp
+#define ENV lm->env
 #define VAL lm->val
-#define ARGS lm->val
+#define ARGS lm->args
 #define CLINK lm->clink
+#endif
 #define EXP_pair ((tort_cons*) EXP)
 #define CAR_EXP EXP_pair->car
 #define CDR_EXP EXP_pair->cdr
@@ -59,7 +63,7 @@ tort_v _tort_m_lisp_machine__eval_dispatch(tort_tp tort_lisp_machine *lm)
 #define VALUE1(sym, env) tort_send(tort_s(VALUE1), lm, (env), (sym))
 #define LOOKUP(sym, env) tort_send(tort_s(LOOKUP), lm, (env), (sym))
 #define LOOKUP1(NAME, VARS, VALS, ENV) tort_send(tort_s(LOOKUP1), lm, (NAME), (VARS), (VALS), (ENV))
-#define BIND(formals, args, env) tort_send(tort_s(bind), lm, env, formals, args)
+#define BIND(formals, args, env) tort_send(tort_s(BIND), lm, env, formals, args)
 #define PRIMOP_APPLY(op, args) tort_send(tort_s(sendv), op, args)
 #define ERROR() tort_error(tort_ta "lisp_machine")
 #define LENGTH(X) tort_send(tort_s(length), (X))
