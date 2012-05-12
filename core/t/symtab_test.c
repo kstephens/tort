@@ -25,15 +25,8 @@ int main(int argc, char **argv, char **environ)
   if ( v != tort_nil ) {
     assert(tort_ptr_data(v) == tort_ptr_data(p));
 
-#if 0
-    // FIXME!!
-    // PTRS are not guaranteed to be eq?.
-    // Split symbol tables into two halves,
-    // 1) maps symbols -> ptrs using eq?
-    // 2) maps ptrs -> symbols using eqv?
     v = tort_send(tort__s(get), st, p);
     assert(v == s);
-#endif
   }
 
   printf("\nDONE\n");

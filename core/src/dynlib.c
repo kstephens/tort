@@ -288,6 +288,7 @@ tort_v _tort_m_dynlib___load_symtab(tort_tp tort_v st, const char *file, void *p
   } else {
     char *line = 0;
     size_t line_size = 0;
+    tort_send(tort__s(equalitySET), st, tort__s(eqvQ));
     while ( _getline(&line, &line_size, fp) != -1 ) {
       void *c_addr;
       char c_mode = 0;
@@ -329,6 +330,7 @@ tort_v _tort_m_dynlib___load_symtab(tort_tp tort_v st, const char *file, void *p
     pclose(fp);
     {
       tort_v all = tort_send(tort__s(get), tort_(dl_maps), tort__s(all));
+      tort_send(tort__s(equalitySET), all, tort__s(eqvQ));
       tort_send(tort__s(emit), st, all);
     }
   }
