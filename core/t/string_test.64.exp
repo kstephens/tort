@@ -1,0 +1,12 @@
+
+  (v = "new") =>"new"
+  (clone v) => "new"
+  (size v) => 3
+  (alloc_size v) => 4
+  (get v 2) => 101
+  (set v 2 +1) => "nfw"
+  (a = "abc") => "abc"
+  (b = "123") => "123"
+  (append a b) => "abc123"
+  (clone v) => "abc123"
+DONE

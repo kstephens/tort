@@ -1,0 +1,5 @@
+(size v) => 10
+(size_other v) => 10
+(= v v) => true
+
+DONE
