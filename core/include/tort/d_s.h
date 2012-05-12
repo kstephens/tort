@@ -9,6 +9,7 @@ include/tort/d_s.all.h
 include/tort/d_s.h
 include/tort/d_slot.h
 include/tort/fixnum.h
+include/tort/integer.h
 include/tort/internal.h
 include/tort/ops.h
 include/tort/tort.h
@@ -129,6 +130,7 @@ tort_d_s(allocate)
 tort_d_s(append)
 tort_d_s(argc)
 tort_d_s(argcSET)
+tort_d_s(atime)
 tort_d_s(attach)
 tort_d_s(backtrace)
 tort_d_s(bdw_all_interior_pointers)
@@ -158,6 +160,7 @@ tort_d_s(caller_infoSET)
 tort_d_s(clone)
 tort_d_s(close)
 tort_d_s(cmp)
+tort_d_s(ctime)
 tort_d_s(data)
 tort_d_s(dataSET)
 tort_d_s(debug)
@@ -251,6 +254,7 @@ tort_d_s(mtable)
 tort_d_s(mtableSET)
 tort_d_s(mtable_method_map)
 tort_d_s(mtable_method_mapSET)
+tort_d_s(mtime)
 tort_d_s(name)
 tort_d_s(nameSET)
 tort_d_s(new)

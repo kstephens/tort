@@ -1,0 +1,5 @@
+main() @x1
+fiber_a = @x2
+a(from main()) @x2 @x3: n = 9
+tool/t: line 14: 52742 Bus error               $f.t < $in
+138

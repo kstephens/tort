@@ -1,0 +1,104 @@
+
+ ~ 123 => tort_send(tort__s(INV), 0x1ed) => -124
+
+ ~ 4 => tort_send(tort__s(INV), 0x11) => -5
+
+ ~ -123 => tort_send(tort__s(INV), 0xfffffe15) => 122
+
+ - 123 => tort_send(tort__s(NEG), 0x1ed) => -123
+
+ - 4 => tort_send(tort__s(NEG), 0x11) => -4
+
+ - -123 => tort_send(tort__s(NEG), 0xfffffe15) => 123
+
+ 123 + 4 => 127
+
+ 123 - 4 => 119
+
+ 123 * 4 => 492
+
+ 123 / 4 => 30
+
+ 123 & 4 => 0
+
+ 123 | 4 => 127
+
+ 123 ^ 4 => 127
+
+ 123 % 4 => 3
+
+ 123 << 4 => 1968
+
+ 123 >> 4 => 7
+
+ ! 123 => false
+
+ ! 0 => true
+
+ ! 1 => false
+
+ 123 && 4 => true
+
+ 0 && 0 => false
+
+ 0 && 1 => false
+
+ 1 && 1 => true
+
+ 123 || 4 => true
+
+ 0 || 0 => false
+
+ 0 || 1 => true
+
+ 1 || 1 => true
+
+ 123 == 4 => false
+
+ 0 == 0 => true
+
+ 0 == 1 => false
+
+ 1 == 1 => true
+
+ 123 != 4 => true
+
+ 0 != 0 => false
+
+ 0 != 1 => true
+
+ 1 != 1 => false
+
+ 123 < 4 => false
+
+ 0 < 0 => false
+
+ 0 < 1 => true
+
+ 1 < 1 => false
+
+ 123 > 4 => true
+
+ 0 > 0 => false
+
+ 0 > 1 => false
+
+ 1 > 1 => false
+
+ 123 <= 4 => false
+
+ 0 <= 0 => true
+
+ 0 <= 1 => true
+
+ 1 <= 1 => true
+
+ 123 >= 4 => true
+
+ 0 >= 0 => true
+
+ 0 >= 1 => false
+
+ 1 >= 1 => true
+
+DONE

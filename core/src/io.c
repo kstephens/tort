@@ -32,11 +32,17 @@ tort_v _tort_M_io____stat(tort_tp tort_mtable *mtable, tort_v name)
 #endif
 #else
     ST(time_t          ,st_atime,    atime);       /* [XSI] Time of last access */
+#ifdef APPLE
     ST(long            ,st_atimensec,atimensec);   /* nsec of last access */
+#endif
     ST(time_t          ,st_mtime,    mtime);       /* [XSI] Last data modification time */
+#ifdef APPLE
     ST(long            ,st_mtimensec,mtimensec);   /* last data modification nsec */
+#endif
     ST(time_t          ,st_ctime,    ctime);       /* [XSI] Time of last status change */
+#ifdef APPLE
     ST(long            ,st_ctimensec,ctimensec);   /* nsec of last status change */
+#endif
 #endif
     ST(off_t           ,st_size,    size);        /* [XSI] file size, in bytes */
     ST(blkcnt_t        ,st_blocks,  blocks);      /* [XSI] blocks allocated for file */

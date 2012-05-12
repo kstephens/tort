@@ -1,0 +1,28 @@
+  block a obj = 5
+
+v = 20
+
+  block a obj = 0
+  block a obj = 0
+  block a obj = 0
+  block a obj = 0
+  block a obj = 0
+  block a obj = 0
+  block a obj = 0
+  block a obj = 0
+  block a obj = 0
+  block a obj = 0
+
+v = @vector( 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 )
+  block a obj = 0
+  block a obj = 0
+  block a obj = 0
+  block a obj = 0
+  block a obj = 0
+  block a obj = 0
+  block a obj = 0
+  block a obj = 0
+  block a obj = 0
+  block a obj = 0
+
+DONE

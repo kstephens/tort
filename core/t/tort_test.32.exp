@@ -1,0 +1,12 @@
+
+tort debugger:
+rcvr = @io(stdout)
+type = @mtable(io)
+expr = nil
+backtrace =
+----
+  @message( __debugger, @io(stdout), @method(object::__debugger,@0x1), @mtable(object), "t/tort_test.c:10")
+----
+HELLO!
+
+DONE
