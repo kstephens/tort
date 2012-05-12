@@ -3,7 +3,7 @@ tort - Tiny Object RunTime
 
 Inspired by Ian Piumarta's idst, maru and other small runtimes.
 
-Core is approx. 3700 lines of C.
+Core is approx. 5000 lines of C.
 
 Supports:
 
@@ -49,7 +49,7 @@ Extensions are dynamically loaded:
 ** Object graphing using graphviz/dot.
 
 * LISP Extension Library.
-** Under 1900 lines.
+** Under 2400 lines.
 ** Lisp reader.
 ** Lisp writer.
 ** Lexical evaluator.
