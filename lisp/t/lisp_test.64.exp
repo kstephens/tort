@@ -1,0 +1,57 @@
+
+tort error: method not found
+tort error:   selector lisp_repl
+tort error:   receiver @io(stdin)
+tort error:   mtable   @mtable(io)
+tort error:   message @message( lisp_repl, @io(stdin), @method(#<unknown>,@0x1), @mtable(io), "t/lisp_test.c:41")
+
+tort error: : not applicable
+
+tort debugger:
+rcvr = @message( lisp_repl, @io(stdin), @method(#<unknown>,@0x1), @mtable(io), "t/lisp_test.c:41")
+type = @mtable(message)
+expr = nil
+backtrace =
+----
+  @message( __debugger, @message(@0x2), @method(object::__debugger,@0x3), @mtable(object), "src/error.c:38")
+  @message( lisp_repl, @io(stdin), @method(#<unknown>,@0x1), @mtable(io), "t/lisp_test.c:41")
+----
+v => @vector( nil, nil, nil, nil, nil, nil, nil, nil, nil, nil )
+v as lisp object => #(() () () () () () () () () ())
+read lisp object from stdin: (read o) => (hash-semi-comment nothing nil () nil nil symbol symbol string "string" number 123 cons (1 . 2) true #t false #f improper-list (1 2 . 3) vector #(1 2 3 4 5) quote 'quote quasiquote (quasiquote quasiquote) unquote (unquote unquote) unquote-splicing (unquote-splicing unquote-splicing))
+  tort GC stats:
+    tort_object_alloc_n = 12844
+    tort_object_alloc_bytes = 466648
+    tort_malloc_n = 13664
+    tort_malloc_bytes = 477390
+    tort_realloc_n = 6490
+    tort_realloc_bytes = 26101024
+    tort_malloc_atomic_n = 3483
+    tort_malloc_atomic_bytes = 46985
+    tort_realloc_atomic_n = 163
+    tort_realloc_atomic_bytes = 1133
+    tort_free_n = 675
+    tort_free_atomic_n = 0
+    tort_finalizer_n = 0
+    tort_finalize_n = 0
+    bdw_get_heap_size = 860160
+    bdw_get_free_bytes = 24576
+    bdw_get_bytes_since_gc = 349232
+    bdw_get_total_bytes = 1006784
+    bdw_gc_no = 3
+    bdw_all_interior_pointers = 1
+    bdw_finalize_on_demand = 0
+    bdw_java_finalization = 1
+    bdw_dont_gc = 0
+    bdw_dont_expand = 0
+    bdw_use_entire_heap = 0
+    bdw_full_freq = 19
+    bdw_non_gc_bytes = 0
+    bdw_no_dls = 0
+    bdw_free_space_divisor = 3
+    bdw_max_retries = 0
+    bdw_dont_precollect = 0
+
+
+
+DONE

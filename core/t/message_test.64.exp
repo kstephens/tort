@@ -1,0 +1,3 @@
+Some object ==> ( @message( clone, @message(@0x1), @method(object::clone,@0x2), @mtable(object), "src/message.c:43") ) <== is in here!
+
+DONE

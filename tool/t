@@ -4,6 +4,7 @@ _dir="$(cd "$_dir" && /bin/pwd)"
 progpath="$_dir/$(basename "$0")"
 errors=0
 tests=0
+word_size="$(../core/t/word_size.t)"
 action="$1"; shift
 for f in "$@"
 do
@@ -12,12 +13,13 @@ do
   f_d="$(cd "$f_d" && /bin/pwd)"
   f_t_libs="$(dirname "$f_t")/.libs/$(basename "$f_t")"
   [ -x "$f_t_libs" ] && f_t="$f_t_libs"
+  exp="$f.${word_size}.exp"
   case "$action"
   in
     accept)
       set -x
-      cp "$f.out" "$f.exp"
-      git add `ls $f.{c,exp,in} 2>/dev/null`
+      cp "$f.out" "$exp"
+      git add `ls $f.{c,*exp,in} 2>/dev/null`
       set +x 2>/dev/null
     ;;
     run|valgrind)
@@ -31,8 +33,12 @@ do
         (TORT_GC=0 valgrind "$f_t" <"$in" || echo $?) 2>&1 | $_dir/filter-output
       ;;
       *)
+    if [ ! -f "$exp" -a -f "$f.exp" ]
+    then
+      cp -p "$f.exp" "$exp"
+    fi
     ("$f_t" <$in || echo $?) 2>&1 | $_dir/filter-output > "$f.out" 
-    if ! diff -U 10 "$f.exp" "$f.out" ; then 
+    if ! diff -U 10 "$exp" "$f.out" ; then 
 	echo "========== $f.out ==========" 1>&2 
 	cat $f.out 
 	echo "========== To accept, run: " 1>&2 

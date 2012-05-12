@@ -1,0 +1,40 @@
+
+  _mt_map => @map( nil,
+ <=> => @method(map::<=>,@0x1),
+  _gc_mark => @method(map::_gc_mark,@0x2),
+  _inspect => @method(map::_inspect,@0x3),
+  add => @method(map::add,@0x4),
+  clone => @method(map::clone,@0x5),
+  delete => @method(map::delete,@0x6),
+  emit => @method(map::emit,@0x7),
+  equal? => @method(map::equal?,@0x8),
+  get => @method(map::get,@0x9),
+  get_entry => @method(map::get_entry,@0x10),
+  get_entry_by_value => @method(map::get_entry_by_value,@0x11),
+  get_entry_cstr => @method(map::get_entry_cstr,@0x12),
+  get_entry_string => @method(map::get_entry_string,@0x13),
+  get_key => @method(map::get_key,@0x14),
+  get_string => @method(map::get_string,@0x15),
+  initialize => @method(map::initialize,@0x16),
+  set => @method(map::set,@0x17),
+  equality => @method(map::equality,@0x18),
+  equality= => @method(map::equality=,@0x19),
+  equality& => @method(map::equality&,@0x20)  )
+o => @map( nil,
+   )
+(size o) => 0
+o => @map( nil,
+ 1 => 2  )
+(size o) => 1
+o => @map( nil,
+ 1 => 3  )
+(size o) => 1
+o => @map( nil,
+ 1 => 3,
+  3 => 4  )
+(size o) => 2
+o => @map( nil,
+ 3 => 4  )
+(size o) => 1
+
+DONE
