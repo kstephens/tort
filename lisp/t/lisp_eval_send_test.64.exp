@@ -1,0 +1,7 @@
+     expr = (lambda () ('+ 1 2))
+  closure = #<lambda () >
+  (send '#<lambda () > nil)
+  result = 3
+
+
+DONE
