@@ -23,7 +23,7 @@ False         #f, #F
 True          #t, #T
 Unspecified   #u, #U (Opt.)
 Logical EOF   ## (Opt.)
-Numbers       #b0101002, #o1726m #d2349, #x0123456789abcedf, 1234, 1234.00, etc.
+Numbers       #b0101001, #o1726m #d2349, #x0123456789abcedf, 1234, 1234.00, etc.
 Strings       "...", "\"\\"
 Symbols       asdf, +, etc.
 
@@ -353,24 +353,26 @@ READ_DECL
 	goto hash_again;
 
       case 'b': case 'B':
-	GETC(stream);
 	radix = 2;
-	goto read_number;
+	GETC(stream);
+	goto read_radix_number;
 	
       case 'o': case 'O':
-	GETC(stream);
 	radix = 8;
-	goto read_number;
+	GETC(stream);
+	goto read_radix_number;
 
       case 'd': case 'D':
-	GETC(stream);
 	radix = 10;
-	goto read_number;
+	GETC(stream);
+	goto read_radix_number;
 	
       case 'x': case 'X':
-	GETC(stream);
 	radix = 16;
-	goto read_number;
+
+      read_radix_number:
+        c = GETC(stream);
+        goto read_number;
 
       default:
 #ifdef CALL_MACRO_CHAR
