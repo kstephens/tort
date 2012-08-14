@@ -105,6 +105,10 @@ ERROR(format,...)   Raise an error using the printf() format.
 #define READ_DEBUG 0
 #endif
 
+#ifndef F
+#define F NIL
+#endif
+
 static
 int eat_whitespace_peekchar(VALUE stream)
 {
@@ -149,6 +153,13 @@ int eat_whitespace_peekchar(VALUE stream)
 #define ESCAPE_STRING(X) X
 #endif
 
+#ifndef MALLOC
+#define MALLOC(S) malloc(S)
+#endif
+
+#ifndef REALLOC
+#define REALLOC(P,S) realloc(P,S)
+#endif
 
 READ_DECL
 {
@@ -314,11 +325,9 @@ READ_DECL
 	}
 	RETURN(MAKE_CHAR(c));
 
-#ifdef F
       case 'f': case 'F':
 	GETC(stream);
 	RETURN(F);
-#endif
 
 #ifdef T
       case 't': case 'T':
