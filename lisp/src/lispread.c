@@ -164,7 +164,7 @@ int eat_whitespace_peekchar(VALUE stream)
 READ_DECL
 {
   int c;
-  int radix = 10;
+  int radix = 10, skip_radix_char = 0;
 
  try_again:
 #ifdef READ_PROLOGUE
@@ -353,25 +353,25 @@ READ_DECL
 	goto hash_again;
 
       case 'b': case 'B':
-	radix = 2;
+	skip_radix_char = 1; radix = 2;
 	GETC(stream);
 	goto read_radix_number;
 	
       case 'o': case 'O':
-	radix = 8;
+	skip_radix_char = 1; radix = 8;
 	GETC(stream);
 	goto read_radix_number;
 
       case 'd': case 'D':
-	radix = 10;
+	skip_radix_char = 1; radix = 10;
 	GETC(stream);
 	goto read_radix_number;
 	
       case 'x': case 'X':
-	radix = 16;
+	skip_radix_char = 1; radix = 16;
 
       read_radix_number:
-        c = GETC(stream);
+        // c = GETC(stream);
         goto read_number;
 
       default:
@@ -454,9 +454,10 @@ READ_DECL
       }
       buf[len] = '\0';
 
-      s = STRING(buf, len);
+      s = STRING(buf + skip_radix_char, len - skip_radix_char);
       n = STRING_2_NUMBER(s, radix);
       if ( EQ(n, F) ) {
+        if ( skip_radix_char ) RETURN(ERROR("invalid number string '%s'", buf));
 	n = STRING_2_SYMBOL(s);
 #ifdef NIL_SYMBOL
         if ( EQ(n, NIL_SYMBOL) ) {
