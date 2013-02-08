@@ -1,28 +1,34 @@
 /*
 ** lispread.c - a generic lisp reader.
-** Copyright 1998, 1999, 2011, 2012 Kurt A. Stephens http://kurtstephens.com/
+** Copyright 1998, 1999, 2011, 2012  Kurt A. Stephens  http://kurtstephens.com/
 */
 /*
-This lisp reader is very minimal, it does not implement the full Common Lisp syntax.  In general it is compliant with the Revised 5 Scheme Report.  
+This lisp reader is very minimal.
+It does not implement the full Common Lisp syntax.
+In general, it is compliant with a subset of the Revised 5 Scheme Report,
+with a few common extensions.
 
 The ';', '(', ')', '#' and whitespace characters are token terminators.
 Tokens that are not numbers are assumed to be symbols.
 This reader does not decaseify symbols before calling STRING_2_SYMBOL.
 ';' comments are treated as whitespace.
-Note: the "#!" comment allows lisp files to execute scripts on unix systems that support '#!/usr/local/bin/lisp'.
+The "#!...\n" comment allows lisp files to execute systems that support '#!PROG' scripts.
 
 The following synactic structures can be read:
 
-Comments      ;...\n, #!...\n
+Comments      ;...\n, #!...\n, #;DATUM
 Quote         'x
 Lists         (a b ...)
+              [a b ...]    (Optional)
 Conses        (a . d)
+              [a . d]      (Optional)
 Vectors       #(a b ...)
-Characters    #\b (#\space and #\newline are not IMPLEMENTED)
+              #[a b ...)   (Optional)
+Characters    #\C, #\space, #\newline
 False         #f, #F
 True          #t, #T
-Unspecified   #u, #U (Opt.)
-Logical EOF   ## (Opt.)
+Unspecified   #u, #U       (Optional)
+Logical EOF   ##           (Optional)
 Numbers       #b0101001, #o1726m #d2349, #x0123456789abcedf, 1234, 1234.00, etc.
 Strings       "...", "\"\\"
 Symbols       asdf, +, etc.
@@ -58,6 +64,7 @@ SET(LOC,V)          Set a local variable as in (set! VARIABLE V).  Opt.
 MAKE_CHAR(I)        Create a lisp CHARACTER VALUE from a C integer.
 
 LIST_2_VECTOR(X)    Convert list VALUE X into a VECTOR VALUE.
+BRACKET_LISTS       If defined, support [...] bracketed list syntax.
 
 STRING(char*,int)   Create a new lisp STRING VALUE from a MALLOCed buffer.
 ESCAPE_STRING(X)    Return a new STRING VALUE with escaped characters (\\, \") replaced.  Opt.
@@ -164,18 +171,17 @@ int eat_whitespace_peekchar(VALUE stream)
 READ_DECL
 {
   int c;
-  int radix = 10, skip_radix_char = 0;
+  int radix, skip_radix_char;
 
  try_again:
+  radix = 10; skip_radix_char = 0;
 #ifdef READ_PROLOGUE
   READ_PROLOGUE;
 #endif
   c = eat_whitespace_peekchar(stream);
   if ( c == EOF )
     RETURN(EOS);
-
   GETC(stream);
-
   switch ( c ) {
     case '\'':
       RETURN(CONS(SYMBOL(quote), CONS(READ_CALL(), NIL)));
@@ -192,12 +198,21 @@ READ_DECL
       }
       break;
 
-    case '(': {
+#ifdef BRACKET_LISTS
+    case '[': c = ']'; goto list;
+#endif
+    case '(': c = ')';
+#ifdef BRACKET_LISTS 
+                            list:
+#endif
+      {
+      int terminator = c;
       VALUE l = NIL, lc = NIL;
-      while ( (c = eat_whitespace_peekchar(stream)) != EOF ) {
+      while ( 1 ) {
         VALUE x;
-        
-        if ( c == ')' ) {
+        c = eat_whitespace_peekchar(stream);
+        if ( c == EOF ) { RETURN(ERROR("eos in list")); }
+        if ( c == terminator ) {
 	  GETC(stream);
           break;
         }
@@ -212,9 +227,10 @@ READ_DECL
           SET_CDR(lc, READ_CALL());
 
           c = eat_whitespace_peekchar(stream);
+          if ( c == EOF ) { RETURN(ERROR("eos in '.' list after cdr")); }
           GETC(stream);
-          if ( c != ')' ) {
-            RETURN(ERROR("expected ')': found '%c'", c));
+          if ( c != terminator ) {
+            RETURN(ERROR("expected '%c': found '%c'", terminator, c));
           }
           break;
         } else {
@@ -237,7 +253,7 @@ READ_DECL
       case EOF:
 	RETURN(ERROR("eos after '#'"));
 
-	/* #! sh-bang comment till eof */
+	/* #! sh-bang comment till EOL. */
       case '!':
 #if READ_DEBUG_WHITESPACE
 	fprintf(stderr, "  read: #!\n");
@@ -447,7 +463,11 @@ READ_DECL
       buf = MALLOC(len + 1);
       buf[0] = c;
 
-      while ( (c = PEEKC(stream)) != EOF && c != ';' && c != '(' && c != ')' && c != '#' && ! isspace(c) ) {
+      while ( (c = PEEKC(stream)) != EOF && c != ';' && c != '(' && c != ')'
+#ifdef BRACKET_LISTS
+              && c != '[' && c != ']'
+#endif
+              && c != '#' && ! isspace(c) ) {
         GETC(stream);
         buf = REALLOC(buf, len + 2);
         buf[len ++] = c;
@@ -470,6 +490,7 @@ READ_DECL
       break;
 
     default:
+      if ( c >= 128 ) goto read_number; // UTF8, 8-bit encoding?
       RETURN(ERROR("unexpected character '%c'", c));
   }
 }
