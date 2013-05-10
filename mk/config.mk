@@ -34,7 +34,7 @@ CFLAGS += -DTORT_GC_SMAL=$(TORT_GC_SMAL) #
 ifeq "$(UNAME_S)" "Linux"
 LIBS += -ldl
 else
-CFLAGS_OPTIMIZE = -fast
+# CFLAGS_OPTIMIZE = -fast
 # FIXME: -fnested-functions not supported on linux gcc 4.4.5
 CFLAGS += -fnested-functions
 endif
