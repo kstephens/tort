@@ -1,6 +1,6 @@
 #include "tort/tort.h"
 
-tort_v _tort_m_symbol___sendv(tort_tp tort_v sel, const tort_v *a, size_t n)
+tort_v _tort_m_object___sendv(tort_tp tort_v sel, const tort_v *a, size_t n)
 {
   switch ( n ) {
   case 0:
@@ -41,7 +41,7 @@ tort_v _tort_m_symbol___sendv(tort_tp tort_v sel, const tort_v *a, size_t n)
     return_tort_sendn(sel, 15, a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7], a[8], a[9],
 		      a[10], a[11], a[12], a[13], a[14]);
   default: 
-    return tort_error(tort_ta "symbol._sendv: too many arguments (%d)", n);
+    return tort_error(tort_ta "_sendv: too many arguments (%d)", n);
   }
   return tort_nil;
 }

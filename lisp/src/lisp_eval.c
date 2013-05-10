@@ -484,17 +484,11 @@ tort_v _tort_m_object__lisp_eval_let_values(tort_tp tort_v obj, tort_v env)
   return obj;
 }
 
-tort_v _tort_m_symbol__lisp_apply(tort_tp tort_v obj, tort_v args, tort_v env)
+tort_v _tort_m_object__lisp_apply(tort_tp tort_v obj, tort_v args, tort_v env)
 {
   tort_vector *argv = tort_send(tort_s(list_TO_vector), args);
   if ( _tort_lisp_trace > 2 ) tort_printf(tort_stderr, "    EA %O %O\n", obj, argv);
   return_tort_send(tort_s(_sendv), obj, tort_vector_data(argv), tort_vector_size(argv));
-}
-
-tort_v _tort_m_object__lisp_apply(tort_tp tort_cons *obj, tort_v args, tort_v env)
-{
-  if ( _tort_lisp_trace > 2 ) tort_printf(tort_stderr, "    EA %O %O\n", obj, args);
-  return_tort_send(tort_s(__debugger), obj);
 }
 
 tort_v _tort_m_cons__lisp_eval_args(tort_tp tort_cons *obj, tort_v env)

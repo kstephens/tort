@@ -41,6 +41,7 @@ struct {
     ,hit_sel_n
     ,hit_sel_version_n 
     ,lookup_n
+    ,non_symbol_lookup_n
     ,delegate_traverse_n
     ,method_change_n
     ,lookup_change_n
@@ -73,6 +74,7 @@ void _tort_mcache_stats()
   S(hit_sel_n);
   S(hit_sel_version_n);
   S(lookup_n);
+  S(non_symbol_lookup_n);
   S(delegate_traverse_n);
   S(mcache_size);
   S(method_change_n);
@@ -216,7 +218,10 @@ tort_lookup_decl(_tort_m_mtable__lookup)
 tort_message* _tort_lookup (tort_tp tort_v rcvr, tort_message *message)
 {
   tort_v sel = message->selector;
-  
+#if TORT_GLOBAL_MCACHE
+  tort_mcache_entry *mce = 0;
+#endif
+
   /* Reuse rcvr as the actual rcvr's mtable search start. */
   /* See tort_send* macros. */
   // Start from rcvr's mtable, if not specified.
@@ -248,6 +253,11 @@ tort_message* _tort_lookup (tort_tp tort_v rcvr, tort_message *message)
     tort_lookup_stop_at();
   }
 
+  if ( tort_h_mtable(sel) != tort__mt(symbol) ) {
+    (void) TORT_MCACHE_STAT(mcache_stats.non_symbol_lookup_n ++);
+    goto do_lookup;
+  }
+
 #if TORT_GLOBAL_MCACHE
   (void) TORT_MCACHE_STAT(mcache_stats.lookup_n ++);
   size_t i = 
@@ -255,7 +265,7 @@ tort_message* _tort_lookup (tort_tp tort_v rcvr, tort_message *message)
      (((size_t) MTABLE) << 2) ^
      (((size_t) sel) >> 3)
      );
-  tort_mcache_entry *mce = &mcache[i % MCACHE_SIZE];
+  mce = &mcache[i % MCACHE_SIZE];
   if (    mce->mt  == MTABLE && TORT_MCACHE_STAT(++ mcache_stats.hit_mtable_n)
        && mce->sel == sel    && TORT_MCACHE_STAT(++ mcache_stats.hit_sel_n)
 #if TORT_MCACHE_USE_SYMBOL_VERSION
@@ -271,6 +281,7 @@ tort_message* _tort_lookup (tort_tp tort_v rcvr, tort_message *message)
 #endif
 
     /* Avoid infinite regres. */
+  do_lookup:
     if ( sel == s_lookup && MTABLE == tort__mt(mtable) ) {
       message = _tort_m_mtable__lookup(tort_ta MTABLE, message);
     } else {
@@ -291,6 +302,7 @@ tort_message* _tort_lookup (tort_tp tort_v rcvr, tort_message *message)
     }
 
 #if TORT_GLOBAL_MCACHE
+    if ( mce ) {
     /* fill mcache entry. */
     // fprintf(stderr, "-");
     mce->mt  = tort_h_mtable(message->receiver);
@@ -305,6 +317,7 @@ tort_message* _tort_lookup (tort_tp tort_v rcvr, tort_message *message)
 #endif
     mce->method = message->method;
     mce->mtable = message->mtable;
+    }
   }
 #endif
 
