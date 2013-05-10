@@ -22,13 +22,13 @@ tort_v _tort_m_object____debugger(tort_tp tort_v rcvr)
   (void) tort__s(__printfs);
   printf("\ntort debugger:\n");
   tort_debug_stop_before();
-  printf("rcvr = "); tort_inspect(IO, rcvr); printf("\n");
-  printf("type = %s\n", tort_object_name(tort_h_mtable(rcvr)));
-  printf("expr = %T\n", _tort_debug_expr); 
+  printf("  receiver "); tort_inspect(IO, rcvr); printf("\n");
+  printf("  mtable   %s\n", tort_object_name(tort_h_mtable(rcvr)));
+  printf("  expr     %T\n", _tort_debug_expr);
   bt = tort_send(tort__s(backtrace), _tort_message);
-  printf("backtrace =\n----\n"); 
+  printf("  backtrace\n----\n");
   tort_vector_loop(bt, msg); {
-    printf("  ");
+    printf("    ");
     tort_inspect(IO, msg);
     printf("\n");
   }

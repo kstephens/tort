@@ -363,12 +363,12 @@ static void method_error(tort_message *message, const char *msg, tort_v object)
   tort_error_message("  receiver %s", tort_object_name(rcvr));
   tort_error_message("  mtable   %s", tort_object_name(tort_h_mtable(rcvr)));
 #if TORT_ALLOC_DEBUG
-  tort_error_message("  allocated at %s:%d #%lu",
+  tort_error_message("  receiver allocated at %s:%d #%lu",
 		     tort_h(rcvr).alloc_file,
 		     tort_h(rcvr).alloc_line,
 		     tort_h(rcvr).alloc_id);
 #endif
-  tort_error_message("  message %T", message);
+  tort_error_message("  message  %T", message);
   tort_debug_stop_at();
 }
 
