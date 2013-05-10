@@ -132,6 +132,7 @@ accept-all-test : tests
 clean ::
 	rm -f $(TEST_T_FILES) $(GEN_LIBS) $(GEN_BINS) src/*{.o,.lo,.la} t/*.{t,out} 
 	find . -name '*.dSYM' -type d -print0 | xargs -0 rm -rf
+	rm -rf src/.libs/ bin/.libs/
 	@for d in $(SUBDIRS) .; do [ "$$d" = '.' ] && break; $(MAKE) -wC "$$d" clean; done
 veryclean :: very-clean
 very-clean :: clean
