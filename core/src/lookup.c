@@ -156,6 +156,11 @@ void tort_lookup_stop_at() // Add breakpoint here.
   // NOTHING
 }
 
+void tort_lookup_not_found_stop_at() // Add breakpoint here.
+{
+  // NOTHING
+}
+
 tort_lookup_decl(_tort_m_mtable__lookup)
 {
   tort_v method = tort_nil;
@@ -299,6 +304,7 @@ tort_message* _tort_lookup (tort_tp tort_v rcvr, tort_message *message)
 
       // message->mtable = MTABLE; // ???
       message->method = tort_(_m_method_not_found);
+      tort_lookup_not_found_stop_at();
     }
 
 #if TORT_GLOBAL_MCACHE
