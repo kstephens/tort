@@ -286,8 +286,8 @@ tort_message* _tort_lookup (tort_tp tort_v rcvr, tort_message *message)
 #endif
 
     /* Avoid infinite regres. */
-  do_lookup:
     if ( sel == s_lookup && MTABLE == tort__mt(mtable) ) {
+    do_lookup:
       message = _tort_m_mtable__lookup(tort_ta MTABLE, message);
     } else {
       message = tort_sendn(s_lookup, 2, MTABLE, message);
