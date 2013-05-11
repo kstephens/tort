@@ -94,6 +94,10 @@ const char *tort_object_name_(tort_v val)
       snprintf(str = buf, S, "@method(@%p)", (void*) val);
     }
   }
+  else if ( tort_h_mtable(val) == tort__mt(caller_info) ) {
+    tort_caller_info *ci = val;
+    snprintf(str = buf, S, "@caller_info(\"%s\",%d,@%p)", ci->file, ci->line, ci->data);
+  }
   else if ( val == _tort ) {
     snprintf(str = buf, S, "@tort");
   }
