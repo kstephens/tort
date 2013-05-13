@@ -24,47 +24,55 @@ struct tort_fiber_t;
 typedef struct tort_fiber_t tort_fiber_t;
 
 #define tort_fiber_func_DECL(X) \
-  void * X(TORT_FIBER_VOLATILE tort_fiber_t *_tort_fiber_ptr, TORT_FIBER_VOLATILE void *data)
+  void * X(tort_fiber_t *_tort_fiber_ptr, void *data)
 
 typedef tort_fiber_func_DECL((*tort_fiber_func));
 
 typedef 
 enum tort_fiber_status_t {
   CREATED = 0,
+  INITIALIZED,
+  STARTING,
   RUNNING,
   PAUSED,
+  EXITED,
   TERMINATED
 } tort_fiber_status_t;
 
 struct tort_fiber_t {
+  struct tort_fiber_t *_prev, *_next;
+
   void *data;
   tort_fiber_status_t status;
-#if 1
   ucontext_t _ucontext;
-#define _tort_setjmp(F) getcontext(&(F)->_ucontext)
-#define _tort_longjmp(F, V) setcontext(&(F)->_ucontext)
-#else
-  jmp_buf _jb;
-#define _tort_setjmp(F) setjmp((F)->_jb)
-#define _tort_longjmp(F, V) longjmp((F)->_jb, (V))
-#endif
   struct tort_fiber_t *parent;
+
+  jmp_buf _func_exit;
+  int _func_exit_valid;
   tort_fiber_func func;
-  void *func_result;
   void *func_data;
-  void *stk_ptr;
+  void *func_result;
+
+  void *stk_base;
   size_t stk_size;
-  void *parent_sp;
-  void *start_sp;
+  void *stk_sp;
+
+  struct tort_fiber_t *prev;
+  const char *error_str;
+  int error_code;
 };
 
 extern size_t _tort_fiber_default_stack_size;
-extern void *(*__tort_fiber_allocate)(size_t size);
+extern void  (*__tort_fiber_mmap_region)(void *addr, size_t size);
+extern void  (*__tort_fiber_munmap_region)(void *addr, size_t size);
 
-void *__tort_fiber_new(tort_fiber_t *fiber_parent, tort_fiber_func func, void *func_data, size_t size);
+void  __tort_fiber_init(tort_fiber_t *fiber, size_t size);
+void  __tort_fiber_destroy(tort_fiber_t *fiber);
+void  __tort_fiber_terminate(tort_fiber_t *fiber, void *func_result);
+void  __tort_fiber_begin(tort_fiber_t *fiber, tort_fiber_t *fiber_parent, tort_fiber_func func, void *func_data);
+void  __tort_fiber_yield(tort_fiber_t *fiber, tort_fiber_t *other_fiber);
 
-void *__tort_fiber_yield(TORT_FIBER_VOLATILE tort_fiber_t *fiber, TORT_FIBER_VOLATILE tort_fiber_t *other_fiber);
-
-tort_v tort_runtime_initialize_fiber();
+tort_fiber_t *__tort_fiber_current();
+tort_fiber_t *__tort_fiber_main();
 
 #endif

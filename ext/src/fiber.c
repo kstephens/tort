@@ -22,34 +22,38 @@ tort_fiber_func_DECL(fiber_func)
   return (tort_v) tort_send(tort__s(value), d->block);
 }
 
-tort_v _tort_M_fiber__new(tort_thread_param tort_v rcvr, tort_v block)
+tort_v _tort_M_fiber__begin(tort_tp tort_v fiber, tort_v block)
 {
+  tort_v _tort_fiber = _tort_message->fiber;
   struct tort_fiber_data d = {
     _tort_message,
     block,
   };
-  tort_v _tort_fiber = _tort_message->fiber;
   assert(_tort_message);
   assert(block);
-  return __tort_fiber_new((tort_fiber_t*) _tort_fiber, fiber_func, &d, 0);  
+  __tort_fiber_begin(fiber, (tort_fiber_t*) _tort_fiber, fiber_func, &d);
+  return fiber;
 }
 
-tort_v _tort_m_fiber__yield (tort_thread_param tort_v rcvr)
+tort_v _tort_M_fiber__new(tort_tp tort_v rcvr)
+{
+  tort_fiber_t *fiber;
+  fiber = tort_send(tort__s(_allocate), rcvr, tort_i(sizeof(*fiber)));
+  __tort_fiber_init(fiber, 0);
+  return fiber;
+}
+
+tort_v _tort_m_fiber__yield (tort_tp tort_v rcvr)
 {
   tort_v _tort_fiber = _tort_message->fiber;
   assert(_tort_fiber);
-  return (tort_v) __tort_fiber_yield(_tort_fiber, tort_ref(tort_fiber_t, rcvr));
-}
-
-static void *allocate(size_t size)
-{
-  return tort_send(tort__s(_allocate), tort_mt(fiber), tort_i(size));
+  __tort_fiber_yield(_tort_fiber, tort_ref(tort_fiber_t, rcvr));
+  return rcvr;
 }
 
 tort_v _tort_m_initializer__fiber(tort_tp tort_v init)
 {
   tort_mtable_create_class("fiber", tort_mt(object));
-  __tort_fiber_allocate = allocate;
   return init;
 }
 
