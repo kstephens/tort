@@ -43,8 +43,10 @@ struct tort_fiber_t {
   struct tort_fiber_t *_prev, *_next;
 
   void *data;
+  const char *name;
   tort_fiber_status_t status;
   ucontext_t _ucontext;
+  ucontext_t _ucontext_start;
   struct tort_fiber_t *parent;
 
   jmp_buf _func_exit;
@@ -69,9 +71,9 @@ extern void  (*__tort_fiber_munmap_region)(void *addr, size_t size);
 
 void  __tort_fiber_init(tort_fiber_t *fiber, size_t size);
 void  __tort_fiber_destroy(tort_fiber_t *fiber);
-void  __tort_fiber_terminate(tort_fiber_t *fiber, void *func_result);
-void  __tort_fiber_begin(tort_fiber_t *fiber, tort_fiber_t *fiber_parent, tort_fiber_func func, void *func_data);
-void  __tort_fiber_yield(tort_fiber_t *fiber, tort_fiber_t *other_fiber);
+void  __tort_fiber_terminate(tort_fiber_t *fiber);
+void  __tort_fiber_start(tort_fiber_t *fiber, tort_fiber_func func, void *func_data);
+void  __tort_fiber_yield(tort_fiber_t *fiber);
 
 tort_fiber_t *__tort_fiber_current();
 tort_fiber_t *__tort_fiber_main();

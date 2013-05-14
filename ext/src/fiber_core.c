@@ -28,7 +28,8 @@ tort_fiber_t *__tort_fiber_current()
   return __tort_fiber_current_;
 }
 
-static void __tort_fiber_set_current(tort_fiber_t *fiber)
+static
+void __tort_fiber_set_current(tort_fiber_t *fiber)
 {
   // NOT THREAD SAFE
   if ( fiber == __tort_fiber_current() ) return;
@@ -42,12 +43,9 @@ tort_fiber_t *__tort_fiber_main()
   tort_fiber_t *fiber;
   if ( ! (fiber = __tort_fiber_main_) ) { // NOT THREAD SAFE
     fiber = &__tort_fiber_main__;
-    fiber->status = CREATED;
-    if ( getcontext(&fiber->_ucontext) ) {
-      __tort_fiber_error(fiber, "__tort_fiber_main: fiber main: getcontext");
-      abort(); return 0;
-    }
-    if ( fiber->status >= EXITED ) return fiber;
+    fiber->name = "*MAIN*";
+    // fprintf(stderr, "  fiber @%p(\"%s\")\n", fiber, fiber->name);
+    fiber->_next = fiber->_prev = fiber;
     __tort_fiber_set_current(fiber);
     __tort_fiber_main_ = fiber;
   }
@@ -55,9 +53,79 @@ tort_fiber_t *__tort_fiber_main()
 }
 
 static
+void __tort_fiber_add(tort_fiber_t *fiber)
+{
+  tort_fiber_t *head = __tort_fiber_main();
+  fiber->_prev = head->_prev;
+  fiber->_next = head;
+  head->_prev->_next = fiber;
+  head->_prev = fiber;
+}
+
+static
+void __tort_fiber_remove(tort_fiber_t *fiber)
+{
+  if ( ! fiber->_next ) return;
+  fiber->_prev->_next = fiber->_next;
+  fiber->_next->_prev = fiber->_prev;
+  fiber->_next = fiber->_prev = 0;
+}
+
+static
+void __tort_fiber_print_fibers(void *highlight)
+{
+  tort_fiber_t *head = __tort_fiber_main();
+  tort_fiber_t *f = head;
+  do { 
+    fprintf(stderr, "  %s@%p(\"%s\", %d) -->", f == highlight ? "^" : " ", f, f->name, f->status);
+    f = f->_next;
+  } while ( f != head );
+  fprintf(stderr, "  END\n");
+}
+
+static
+tort_fiber_t *__tort_fiber_find_paused(tort_fiber_t *fiber)
+{
+  tort_fiber_t *head = __tort_fiber_main();
+  tort_fiber_t *f = fiber->_next;
+  __tort_fiber_print_fibers(fiber);
+  do {
+    if ( f != head && f->status == PAUSED ) return f;
+    f = f->_next;
+  } while ( f != fiber );
+  return 0;
+}
+
+static
+void __tort_fiber_exited(tort_fiber_t *fiber)
+{
+  tort_fiber_t *next_fiber;
+
+  next_fiber = __tort_fiber_find_paused(fiber);
+  __tort_fiber_remove(fiber);
+  if ( ! next_fiber ) {
+    fprintf(stderr, "  fiber @%p(\"%s\") EXITED: no more fibers\n", fiber, fiber->name);
+    __tort_fiber_print_fibers(fiber);
+    next_fiber = __tort_fiber_main();
+    __tort_fiber_set_current(next_fiber);
+    if ( setcontext(&next_fiber->_ucontext_start) ) {
+      __tort_fiber_error(fiber, "__tort_fiber_func: NO FIBERS: setcontext");
+      abort();
+    }
+  }
+
+  fprintf(stderr, "  fiber @%p(\"%s\") EXITED: switch to fiber @%p(\"%s\")\n", fiber, fiber->name, next_fiber, next_fiber->name);
+  __tort_fiber_set_current(next_fiber);
+  if ( setcontext(&next_fiber->_ucontext) ) {
+    __tort_fiber_error(fiber, "__tort_fiber_func: EXIT: setcontext");
+    abort();
+  }
+}
+
+static
 void __tort_fiber_func(tort_fiber_t *fiber)
 {
-  fprintf(stderr, "  fiber @%p STARTING\n", fiber);
+  fprintf(stderr, "  fiber @%p(\"%s\") STARTING\n", fiber, fiber->name);
   if ( ! setjmp(fiber->_func_exit) ) {
     fiber->_func_exit_valid = 1;
     fiber->func_result = 0;
@@ -67,20 +135,15 @@ void __tort_fiber_func(tort_fiber_t *fiber)
     fiber->_func_exit_valid = 0;
   }
   assert(fiber->_func_exit_valid == 0);
-  fprintf(stderr, "  fiber @%p EXITED: switch to fiber @%p\n", fiber, fiber->prev);
-  if ( setcontext(&fiber->prev->_ucontext) ) {
-    __tort_fiber_error(fiber, "__tort_fiber_func: EXIT: setcontext");
-    abort();
-  }
+  __tort_fiber_exited(fiber);
 }
 
-void __tort_fiber_terminate(tort_fiber_t *fiber, void *func_result)
+void __tort_fiber_terminate(tort_fiber_t *fiber)
 {
   if ( fiber->status >= EXITED ) {
     __tort_fiber_error(fiber, "__tort_fiber_exit: already exited");
     abort(); return;
   }
-  fiber->func_result = func_result;
   fiber->status = TERMINATED;
   if ( __tort_fiber_current() == fiber ) {
     if ( ! fiber->_func_exit_valid ) {
@@ -92,24 +155,48 @@ void __tort_fiber_terminate(tort_fiber_t *fiber, void *func_result)
   }
 }
 
-void __tort_fiber_yield(tort_fiber_t *fiber, tort_fiber_t *other_fiber)
+void __tort_fiber_yield(tort_fiber_t *fiber)
 {
-  if ( other_fiber == fiber ) return;
-  fiber->stk_sp = &fiber; // approx.
-  fiber->status = PAUSED;
-  other_fiber->prev = fiber;
-  __tort_fiber_set_current(other_fiber);
-  if ( swapcontext(&fiber->_ucontext, &other_fiber->_ucontext) ) {
+  tort_fiber_t *curr = __tort_fiber_current();
+  if ( ! fiber && ! (fiber = __tort_fiber_find_paused(curr)) ) return;
+  if ( fiber == curr ) return;
+  if ( fiber->status >= EXITED ) {
+    __tort_fiber_error(curr, "__tort_fiber_yield: other fiber exited.");
+    abort(); return;
+  }
+
+  curr->stk_sp = &fiber; // approx.
+  curr->status = PAUSED;
+  fiber->prev = curr;
+  __tort_fiber_set_current(fiber);
+  fprintf(stderr, "  fiber @%p(\"%s\") -> @%p(\"%s\")\n", curr, curr->name, fiber, fiber->name);
+  if ( swapcontext(&curr->_ucontext, &fiber->_ucontext) ) {
     __tort_fiber_error(fiber, "__tort_fiber_yield: swapcontext");
     abort(); return;
   }
 }
 
-void __tort_fiber_begin(tort_fiber_t *fiber, tort_fiber_t *fiber_parent, tort_fiber_func func, void *func_data)
+void __tort_fiber_start(tort_fiber_t *fiber, tort_fiber_func func, void *func_data)
 {
+  tort_fiber_t *head = __tort_fiber_main();
+  tort_fiber_t *curr = __tort_fiber_current();
+
+  __tort_fiber_remove(fiber);
+  __tort_fiber_add(fiber);
+
+  fprintf(stderr, "  __tort_fiber_start: @%p(\"%s\"): in @%p(\"%s\")\n", fiber, fiber->name, curr, curr->name);
+  getcontext(&curr->_ucontext_start);
+  fprintf(stderr, "  __tort_fiber_start: @%p(\"%s\"): in @%p(\"%s\") again\n", fiber, fiber->name, curr, curr->name);
+  /* No more fibers? -- return to caller. */
+  if ( head->_next == head ) {
+    __tort_fiber_set_current(curr);
+    fprintf(stderr, "  no more fibers: returning to caller\n");
+    return;
+  }
+
   fiber->func = func;
   fiber->func_data = func_data;
-  fiber->parent = fiber_parent ? fiber_parent : __tort_fiber_current();
+  fiber->parent = curr;
   fiber->status = STARTING;
   if ( getcontext(&fiber->_ucontext) ) {
     __tort_fiber_error(fiber, "__tort_fiber_begin: getcontext");
@@ -123,12 +210,10 @@ void __tort_fiber_begin(tort_fiber_t *fiber, tort_fiber_t *fiber_parent, tort_fi
     __tort_fiber_error(fiber, "__tort_fiber_begin: makecontext");
     abort(); return;
   }
-  __tort_fiber_yield(fiber->parent, fiber);
 }
 
 void __tort_fiber_init(tort_fiber_t *fiber, size_t size)
 {
-  __tort_fiber_main();
   fiber->status = CREATED;
   if ( ! size ) size = _tort_fiber_default_stack_size;
   if ( ! fiber->stk_size ) fiber->stk_size = size;

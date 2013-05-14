@@ -24,14 +24,13 @@ tort_fiber_func_DECL(fiber_func)
 
 tort_v _tort_M_fiber__begin(tort_tp tort_v fiber, tort_v block)
 {
-  tort_v _tort_fiber = _tort_message->fiber;
   struct tort_fiber_data d = {
     _tort_message,
     block,
   };
   assert(_tort_message);
   assert(block);
-  __tort_fiber_begin(fiber, (tort_fiber_t*) _tort_fiber, fiber_func, &d);
+  __tort_fiber_start(fiber, fiber_func, &d);
   return fiber;
 }
 
@@ -45,9 +44,7 @@ tort_v _tort_M_fiber__new(tort_tp tort_v rcvr)
 
 tort_v _tort_m_fiber__yield (tort_tp tort_v rcvr)
 {
-  tort_v _tort_fiber = _tort_message->fiber;
-  assert(_tort_fiber);
-  __tort_fiber_yield(_tort_fiber, tort_ref(tort_fiber_t, rcvr));
+  __tort_fiber_yield(tort_ref(tort_fiber_t, rcvr));
   return rcvr;
 }
 
