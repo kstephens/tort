@@ -205,7 +205,7 @@ void __tort_fiber_start(tort_fiber_t *fiber, tort_fiber_func func, void *func_da
   fiber->_ucontext.uc_stack.ss_sp   = fiber->stk_base;
   fiber->_ucontext.uc_stack.ss_size = fiber->stk_size;
   fiber->_ucontext.uc_link          = &__tort_fiber_main()->_ucontext;
-  makecontext(&fiber->_ucontext, __tort_fiber_func, 1, fiber);
+  makecontext(&fiber->_ucontext, (void(*)()) __tort_fiber_func, 1, fiber);
   if ( 0 ) {
     __tort_fiber_error(fiber, "__tort_fiber_begin: makecontext");
     abort(); return;
