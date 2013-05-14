@@ -54,6 +54,7 @@ struct tort_fiber_t {
   void *func_result;
 
   void *stk_base;
+  void *stk_mmap;
   size_t stk_size;
   void *stk_sp;
 

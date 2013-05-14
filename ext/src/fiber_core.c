@@ -134,11 +134,13 @@ void __tort_fiber_init(tort_fiber_t *fiber, size_t size)
   if ( ! fiber->stk_size ) fiber->stk_size = size;
 
   if ( ! fiber->stk_base ) {
-    fiber->stk_base = mmap(NULL, fiber->stk_size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANON, -1, 0);
+    fiber->stk_base = fiber->stk_mmap = mmap(NULL, fiber->stk_size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANON, -1, 0);
     if ( fiber->stk_base == (void*) -1LL ) {
       __tort_fiber_error(fiber, "__tort_fiber_new: alloc stack: mmap");
       return;
     }
+    if ( __tort_fiber_mmap_region )
+      __tort_fiber_mmap_region(fiber->stk_base, fiber->stk_size);
   }
 #if 0
   if (mprotect(fiber->stk_base, fiber->stk_size, PROT_READ | PROT_WRITE) < 0) {
@@ -146,26 +148,18 @@ void __tort_fiber_init(tort_fiber_t *fiber, size_t size)
     return;
   }
 #endif
-  if ( __tort_fiber_mmap_region )
-    __tort_fiber_mmap_region(fiber->stk_base, fiber->stk_size);
-  
-  /*
-    +----------------+                    -------------------+
-    |                |                                       |
-    +----------------+                    -------------------+
-    |                 |                    |    |
-    base              base + size          sp   fp
-  */
   fiber->status = INITIALIZED;
 }
 
 void __tort_fiber_destroy(tort_fiber_t *fiber)
 {
   int result = 0;
-  if ( fiber->stk_base ) {
+  if ( fiber->stk_mmap ) {
+    void *stk_base = fiber->stk_mmap;
+    fiber->stk_mmap = 0;
     if ( __tort_fiber_munmap_region )
-      __tort_fiber_munmap_region(fiber->stk_base, fiber->stk_size);
-    if ( (result = munmap(fiber->stk_base, fiber->stk_size)) ) {
+      __tort_fiber_munmap_region(stk_base, fiber->stk_size);
+    if ( (result = munmap(stk_base, fiber->stk_size)) ) {
       __tort_fiber_error(fiber, "__tort_fiber_destroy: free stack: munmap");
     }
   }
