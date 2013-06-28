@@ -12,13 +12,17 @@ export LD_LIBRARY_PATH
 LD_LIBRARY_PATH:=$(libdir):$(LD_LIBRARY_PATH)
 
 LIBTOOL=$(GC_BDW)/libtool #
-CC=gcc-4.3# # for -fnested-functions support
+ifeq "$(UNAME_S)" "Darwin"
+CC=cc# # clang
+else
 CC=gcc#
+endif
 #CC=gcc-mp-4.3#
 CC_VERBOSE= #--verbose#
 CC_BASE=$(CC) $(CFLAGS) $(CPPFLAGS) $(TARGET_ARCH) $(CC_VERBOSE)#
 COMPILE.c = $(LIBTOOL) --tag=CC --mode=compile $(CC_BASE) -c #
 CFLAGS_SHARED=-shared -export-dynamic # 
+CFLAGS_SHARED=-shared # clang
 CFLAGS += $(CFLAGS_SHARED) #
 LIB_FLAGS += -rpath $(libdir) #
 
@@ -37,7 +41,9 @@ LIBS += -ldl
 else
 # CFLAGS_OPTIMIZE = -fast
 # FIXME: -fnested-functions not supported on linux gcc 4.4.5
-CFLAGS += -fnested-functions
+# CFLAGS += -fnested-functions
+# clang -fblocks
+CFLAGS += -DTORT_CLANG_BLOCKS=1 -fblocks
 endif
 CFLAGS += $(CPPFLAGS) -Wall -Werror $(CFLAGS_DEBUG) $(CFLAGS_OPTIMIZE)
 

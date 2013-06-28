@@ -8,7 +8,6 @@ int main(int argc, char **argv, char **environ)
 {
   tort_v io;
   tort_v v;
-  int i;
 
   tort_runtime_create();
   tort_send(tort_s(load), tort_mt(dynlib), tort_string_new_cstr("libtortext"));
@@ -26,7 +25,7 @@ int main(int argc, char **argv, char **environ)
 
   v = tort_send(tort_s(_new), tort_mt(vector), 0, 10);
   
-  i = 0;
+  tort_block_var int i = 0;
   tort_block_(b, tort_v obj) {
     fprintf(stderr, "  %d\n", (int) i);
     return tort_i(i ++);

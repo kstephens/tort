@@ -21,6 +21,9 @@ typedef struct tort_block { tort_H;
   tort_method _;
   tort_message *scope;
   void *data;
+#ifdef TORT_CLANG_BLOCKS
+  tort_v (^clang_block)(tort_tp struct tort_block *_block, ...);
+#endif
 } tort_block;
 tort_h_struct(tort_block);
 
@@ -30,10 +33,21 @@ tort_h_struct(tort_block);
   BLK##_._h.mtable = tort__mt(block);					\
   tort_block *BLK = &BLK##_._;						\
   BLK->scope = _tort_message;						\
-  tort_v BLK##_f (tort_thread_param tort_block *_block, ##PARAMS)
+  tort_block__(BLK,##PARAMS)
 
-#define tort_block_END(BLK)			\
+#ifdef TORT_CLANG_BLOCKS
+#define tort_block_var __block
+#define tort_block__(BLK,PARAMS...)                                     \
+  BLK->clang_block = (void*) ^ tort_v (tort_tp tort_block *_block, ##PARAMS)
+#define tort_block_END(BLK)                                             \
+  ; BLK##_._h.applyf = (void*) BLK->clang_block;
+#else
+#define tort_block_var
+#define tort_block__(BLK,PARAMS...)                                     \
+  tort_v BLK##_f (tort_tp tort_block *_block, ##PARAMS)
+#define tort_block_END(BLK)			                        \
   BLK##_._h.applyf = (void*) BLK##_f;
+#endif
 
 tort_v tort_runtime_initialize_block();
 
