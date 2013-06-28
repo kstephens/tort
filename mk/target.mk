@@ -22,6 +22,7 @@ export LIB_OFILES
 
 export CC
 export CFLAGS
+export CPPFLAGS
 
 ######################################################################
 
@@ -56,6 +57,7 @@ boot/include/.touch :
 	  dst="boot/$$f" ;\
 	  mkdir -p `dirname $$dst` ;\
 	  cat $$f.begin $$f.end > $$dst ;\
+	  touch $$dst.new ;\
 	  cp "$$dst" "$$f" ;\
 	done
 	touch $@

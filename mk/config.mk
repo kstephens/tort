@@ -28,9 +28,10 @@ CFLAGS_OPTIMIZE = -O3
 ifneq "$(TORT_NO_OPTIMIZE)" ""
 CFLAGS_OPTIMIZE = #
 endif
-CFLAGS += -DTORT_DLIB_DIR='"$(libdir)"' #
-CFLAGS += -DTORT_GC_BDW=$(TORT_GC_BDW) #
-CFLAGS += -DTORT_GC_SMAL=$(TORT_GC_SMAL) #
+CPPFLAGS += -DTORT_DLIB_DIR='"$(libdir)"' #
+CPPFLAGS += -DTORT_GC_BDW=$(TORT_GC_BDW) #
+CPPFLAGS += -DTORT_GC_SMAL=$(TORT_GC_SMAL) #
+CPPFLAGS += $(CFLAGS_INC) -Iinclude -I$(BASE_DIR)/core/include -I$(BASE_DIR)/core/boot/include $(INCS) 
 ifeq "$(UNAME_S)" "Linux"
 LIBS += -ldl
 else
@@ -38,7 +39,7 @@ else
 # FIXME: -fnested-functions not supported on linux gcc 4.4.5
 CFLAGS += -fnested-functions
 endif
-CFLAGS += $(CFLAGS_INC) -Iinclude -I$(BASE_DIR)/core/include -I$(BASE_DIR)/core/boot/include $(INCS) -Wall -Werror $(CFLAGS_DEBUG) $(CFLAGS_OPTIMIZE)
+CFLAGS += $(CPPFLAGS) -Wall -Werror $(CFLAGS_DEBUG) $(CFLAGS_OPTIMIZE)
 
 ifneq "$(TORT_GC_BDW)" "0"
 LDFLAGS += -L$(PREFIX)/lib #

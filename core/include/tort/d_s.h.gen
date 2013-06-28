@@ -12,8 +12,8 @@ EOF
     do
       echo "  $f" 1>&2
       (
-	#set -x; 
-	${CC} ${CFLAGS} -Dtort_d_s=tort_d_s -D'tort_s(X)=tort__s(X)' -D'tort__s(X)=tort__s(X)' -E -o - "${f}"
+	# set -x;
+	${CC} ${CPPFLAGS} -Iboot/include -Dtort_d_s=tort_d_s -D'tort_s(X)=tort__s(X)' -D'tort__s(X)=tort__s(X)' -E -o - "${f}"
       ) || : 
     done |
     tr ";}" "\n" | 

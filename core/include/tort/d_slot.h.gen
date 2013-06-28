@@ -12,7 +12,7 @@ EOF
     do
       # set -x
       echo "  $f" 1>&2
-      ${CC} ${CFLAGS} -E -o - -Dtort_d_slot=tort_d_slot -Dtort_SLOT=tort_SLOT "${f}" || :
+      ${CC} ${CPPFLAGS} -E -o - -Dtort_d_slot=tort_d_slot -Dtort_SLOT=tort_SLOT "${f}" || :
       # set +x
     done |
     tr ";}" "\n" | 
