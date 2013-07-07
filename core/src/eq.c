@@ -8,11 +8,28 @@ tort_v _tort_m_object__eqQ (tort_tp tort_v rcvr, tort_v val)
   return rcvr == val ? tort_true : tort_false;
 }
 
+tort_v _tort_m_object__eq_hash (tort_tp tort_v rcvr)
+{
+#define HSH_INIT() tort_vw h = 0xfeedface
+  HSH_INIT();
+#define HSH(x) do { h ^= (tort_vw) (x); h ^= h << 3; h ^= h >> 5; h ^= h << 7; h ^= h >> 11; } while ( 0 )
+  HSH(rcvr);
+#define HSH_VAL() tort_i(h >> (TORT_TAG_BITS + 1))
+  return HSH_VAL();
+}
+
 tort_v _tort_m_word__eqvQ (tort_tp tort_ptr *rcvr, tort_ptr *val)
 {
   if ( rcvr == val ) return tort_true;
   if ( tort_h_mtable(rcvr) != tort_h_mtable(val) ) return tort_false;
   return tort_W(rcvr) == tort_W(val) ? tort_true : tort_false;
+}
+
+tort_v _tort_m_word__eqv_hash (tort_tp tort_ptr *rcvr)
+{
+  HSH_INIT();
+  HSH(tort_W(rcvr));
+  return HSH_VAL();
 }
 
 tort_v _tort_m_vector_base__equalQ (tort_tp tort_vector_base *rcvr, tort_vector_base *val)
@@ -22,6 +39,16 @@ tort_v _tort_m_vector_base__equalQ (tort_tp tort_vector_base *rcvr, tort_vector_
   if ( rcvr->element_size != val->element_size ) return tort_false;
   if ( rcvr->size != val->size ) return tort_false;
   return memcmp(rcvr->data, val->data, rcvr->element_size * rcvr->size) == 0 ? tort_true : tort_false;
+}
+
+tort_v _tort_m_vector_base__equal_hash (tort_tp tort_vector_base *rcvr)
+{
+  size_t i;
+  HSH_INIT();
+  for ( i = 0; i < rcvr->element_size * rcvr->size; ++ i ) {
+    HSH(((unsigned char *) rcvr->data)[i]);
+  }
+  return HSH_VAL();
 }
 
 tort_v _tort_m_vector__equalQ (tort_tp tort_vector *rcvr, tort_vector *val)
@@ -36,12 +63,29 @@ tort_v _tort_m_vector__equalQ (tort_tp tort_vector *rcvr, tort_vector *val)
   return tort_true; // NOT TAIL-RECURSIVE
 }
 
+tort_v _tort_m_vector__equal_hash (tort_tp tort_vector_base *rcvr)
+{
+  HSH_INIT();
+  tort_vector_EACH(rcvr, v) {
+    HSH(tort_sendn(tort__s(equal_hash), 1, v));
+  } tort_vector_EACH_END();
+  return HSH_VAL();
+}
+
 tort_v _tort_m_pair__equalQ (tort_tp tort_pair *rcvr, tort_pair *val)
 {
   if ( rcvr == val ) return tort_true;
   if ( tort_h_mtable(rcvr) != tort_h_mtable(val) ) return tort_false;
   if ( ! EQUALQ(rcvr->first, val->first) ) return tort_false;
   return_EQUALQ(rcvr->second, val->second);
+}
+
+tort_v _tort_m_pair__equal_hash (tort_tp tort_pair *rcvr)
+{
+  HSH_INIT();
+  HSH(tort_sendn(tort__s(equal_hash), 1, rcvr->first));
+  HSH(tort_sendn(tort__s(equal_hash), 1, rcvr->second));
+  return HSH_VAL();
 }
 
 tort_v _tort_m_map__equalQ (tort_tp tort_map *rcvr, tort_map *val)
@@ -57,6 +101,18 @@ tort_v _tort_m_map__equalQ (tort_tp tort_map *rcvr, tort_map *val)
   return tort_true; // NOT TAIL-RECURSIVE
 }
 
+tort_v _tort_m_map__equal_hash (tort_tp tort_map *rcvr)
+{
+  HSH_INIT();
+  HSH(tort_sendn(tort__s(equal_hash), 1, rcvr->equality));
+  HSH(tort_sendn(tort__s(equal_hash), 1, rcvr->hash));
+  tort_map_EACH(rcvr, e) {
+    tort_pair *e2 = e;
+    HSH(tort_sendn(tort__s(equal_hash), 1, e2));
+  } tort_map_EACH_END();
+  return HSH_VAL();
+}
+
 #undef EQUALQ
 #undef return_EQUALQ
 
@@ -65,5 +121,8 @@ tort_v _tort_m_initializer__eq(tort_tp tort_v init)
   tort_send(tort__s(alias_method), tort__mt(object), tort__s(eqvQ),   tort__s(eqQ));
   tort_send(tort__s(alias_method), tort__mt(object), tort__s(equalQ), tort__s(eqQ));
   tort_send(tort__s(alias_method), tort__mt(word),   tort__s(equalQ), tort__s(eqvQ));
+  tort_send(tort__s(alias_method), tort__mt(object), tort__s(eqv_hash),   tort__s(eq_hash));
+  tort_send(tort__s(alias_method), tort__mt(object), tort__s(equal_hash), tort__s(eq_hash));
+  tort_send(tort__s(alias_method), tort__mt(word),   tort__s(equal_hash), tort__s(eqv_hash));
   return init;
 }
