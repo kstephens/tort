@@ -10,6 +10,10 @@ tort_SLOT(mtable,tort_v,data);
 tort_v _tort_m_mtable__initialize(tort_tp tort_mtable *mt, tort_v delegate)
 {
   _tort_m_map__initialize(tort_ta (tort_v) mt);
+  if ( 0 && tort_(_initialized) ) {
+    mt->_map.equality = tort__s(eqQ);
+    mt->_map.hash     = tort__s(eqQ_hash);
+  }
   mt->delegate = delegate;
   mt->instance_size = 0;
   mt->slots = 0;

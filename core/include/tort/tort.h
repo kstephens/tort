@@ -181,7 +181,8 @@ struct tort_pair { tort_H;
 typedef
 struct tort_map { tort_H; /* Same layout as tort_vector_base. */
   tort_vector_base _vector_base;
-  tort_v equality;
+  tort_v equality, hash;
+  tort_vector *hash_vector;
 } tort_map;
 tort_v tort_map_new();
 #define tort_map_data(X) ((tort_pair**)tort_vector_base_data(X))
