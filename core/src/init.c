@@ -145,6 +145,14 @@ tort_v tort_runtime_create_ (int *argcp, char ***argvp, char ***envp)
   tort_(unknown_caller_info) = tort_send(tort__s(_allocate), tort__mt(caller_info), tort_i(sizeof(tort_caller_info)));
   tort_(unknown_caller_info)->file = "<unknown>";
 
+  /* symbol table string equal? hashing. */
+  ((tort_map*) tort_(symbols))->hash = tort__s(equalQ_hash);
+  tort_sendn(tort__s(rehash), 1, tort_(symbols));
+
+  /* mtable symbol eq? hashing. */
+  // #define tort_d_mt(X) tort__mt(X)->_map.equality = tort__s(eqQ); tort__mt(X)->_map.hash = tort__s(eqQ_hash);
+  // #include "tort/d_mt.h"
+
   /* Setup the root namespace. */
 #define ROOT(N,V) tort_send(tort__s(set), tort_(root), tort_symbol_new(#N), (V))
   ROOT(runtime, tort_ref_box(_tort));

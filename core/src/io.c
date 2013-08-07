@@ -25,11 +25,9 @@ tort_v _tort_M_io____stat(tort_tp tort_mtable *mtable, tort_v name)
     ST(gid_t           ,st_gid,  gid);         /* [XSI] Group ID of the file */
     ST(dev_t           ,st_rdev, rdev);        /* [XSI] Device ID */
 #if !defined(_POSIX_C_SOURCE) || defined(_DARWIN_C_SOURCE)
-#if 0
-    ST(struct  timespec ,st_atimespec,atimespec);  /* time of last access */
-    ST(struct  timespec ,st_mtimespec,mtimespec);  /* time of last data modification */
-    ST(struct  timespec ,st_ctimespec,ctimespec);  /* time of last status change */
-#endif
+    ST(__darwin_time_t ,st_atimespec.tv_sec,atime);  /* time of last access */
+    ST(__darwin_time_t ,st_mtimespec.tv_sec,mtime);  /* time of last data modification */
+    ST(__darwin_time_t ,st_ctimespec.tv_sec,ctime);  /* time of last status change */
 #else
     ST(time_t          ,st_atime,    atime);       /* [XSI] Time of last access */
 #ifdef APPLE

@@ -15,6 +15,7 @@
 #include "tort/config.h"
 
 typedef void* tort_v;
+typedef size_t tort_vw;
 typedef ssize_t tort_vi;
 
 #define tort_ref(T, X)      ((struct T *)(X))
@@ -161,14 +162,16 @@ tort_v tort_vector_new(const tort_v *d, size_t s);
 #define tort_vector_data(X) ((tort_v*)tort_vector_base_data(X))
 #define tort_vector_size(X) tort_vector_base_size(X)
 #define tort_vector_alloc_size(X) tort_vector_base_alloc_size(X)
-#define tort_vector_loop(X, V) \
+#define tort_vector_EACH(X, V) \
   do {									\
   size_t V##_i;								\
   for ( V##_i = 0; V##_i < tort_vector_size(X); ++ V##_i ) {		\
   tort_v V = tort_vector_data(X)[V##_i];
-#define tort_vector_loop_end(X)			\
+#define tort_vector_EACH_END(X)			\
   }						\
     } while ( 0 )
+#define tort_vector_loop(X,V) tort_vector_EACH(X,V)
+#define tort_vector_loop_end(X) tort_vector_EACH_END(X)
 
 typedef 
 struct tort_pair { tort_H;
@@ -178,7 +181,8 @@ struct tort_pair { tort_H;
 typedef
 struct tort_map { tort_H; /* Same layout as tort_vector_base. */
   tort_vector_base _vector_base;
-  tort_v equality;
+  tort_v equality, hash;
+  tort_vector *hash_vector;
 } tort_map;
 tort_v tort_map_new();
 #define tort_map_data(X) ((tort_pair**)tort_vector_base_data(X))

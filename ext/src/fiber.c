@@ -22,7 +22,7 @@ tort_fiber_func_DECL(fiber_func)
   return (tort_v) tort_send(tort__s(value), d->block);
 }
 
-tort_v _tort_M_fiber__begin(tort_tp tort_v fiber, tort_v block)
+tort_v _tort_M_fiber__start(tort_tp tort_v fiber, tort_v block)
 {
   struct tort_fiber_data d = {
     _tort_message,
