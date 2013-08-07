@@ -31,6 +31,7 @@ typedef ssize_t tort_vi;
 /* Fixnums: Small integers */
 #define tort_i(V) tort_tagged_box(V,tort_tag_fixnum)
 #define tort_I(X) tort_tagged_data(X)
+#define tort_IQ(X) (tort_tag(X) == tort_tag_fixnum)
 
 /* Locatives: */
 #ifdef tort_tag_locative
