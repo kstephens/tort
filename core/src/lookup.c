@@ -29,7 +29,7 @@ typedef struct tort_mcache_entry {
   tort_mtable *mtable; /* The mtable the method was found in. */
 } tort_mcache_entry;
 
-#define MCACHE_SIZE 1021
+#define MCACHE_SIZE 1021 // Largest prime < 1024.
 static
 tort_mcache_entry mcache[MCACHE_SIZE];
 
@@ -288,11 +288,11 @@ tort_message* _tort_lookup (tort_tp tort_v rcvr, tort_message *message)
 
 #if TORT_GLOBAL_MCACHE
   (void) TORT_MCACHE_STAT(mcache_stats.lookup_n ++);
-  size_t i = 
-    (
-     (((size_t) MTABLE) << 2) ^
-     (((size_t) sel) >> 3)
-     );
+  size_t i = 0x13579cf02;
+  i ^= i << 3 ^ ((size_t) sel) >> 3;
+  i ^= i << 3 ^ ((size_t) sel) >> 10;
+  i ^= i << 3 ^ ((size_t) MTABLE) >> 3;
+  i ^= i << 3 ^ ((size_t) MTABLE) >> 10;
   mce = &mcache[i % MCACHE_SIZE];
   if (    mce->mt  == MTABLE && TORT_MCACHE_STAT(++ mcache_stats.hit_mtable_n)
        && mce->sel == sel    && TORT_MCACHE_STAT(++ mcache_stats.hit_sel_n)
