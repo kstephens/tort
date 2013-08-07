@@ -42,6 +42,7 @@ struct {
     ,hit_sel_version_n 
     ,lookup_n
     ,non_symbol_lookup_n
+    ,anon_symbol_lookup_n
     ,delegate_traverse_n
     ,method_change_n
     ,lookup_change_n
@@ -51,6 +52,8 @@ struct {
     ,symbol_version_change_n
     ,collision_n
     ,mcache_size
+    ,mcache_used_slot_n
+    ,symbol_n
     ;
 } mcache_stats;
 
@@ -63,10 +66,26 @@ struct {
 void _tort_mcache_stats()
 {
   mcache_stats.mcache_size = MCACHE_SIZE;
+
+  {
+    int i;
+    mcache_stats.mcache_used_slot_n = 0;
+    for ( i = 0; i < MCACHE_SIZE; ++ i ) {
+      if ( mcache[i].sel != tort_nil ) ++ mcache_stats.mcache_used_slot_n;
+    }
+  }
+
+  mcache_stats.symbol_n = tort_I(tort_send(tort__s(size), tort_(symbols)));
+
+  fprintf(stderr, "\n");
   fprintf(stderr, "tort: mcache: %lu hit / %lu lookup = %.8g\n",
 	  (unsigned long) mcache_stats.hit_n,
 	  (unsigned long) mcache_stats.lookup_n,
 	  (double) mcache_stats.hit_n / (double) mcache_stats.lookup_n);
+  fprintf(stderr, "tort: mcache: %lu collision / %lu lookup = %.8g\n",
+	  (unsigned long) mcache_stats.collision_n,
+	  (unsigned long) mcache_stats.lookup_n,
+	  (double) mcache_stats.collision_n / (double) mcache_stats.lookup_n);
 
 #define S(N) \
   fprintf(stderr, "tort: mcache: %26s = %16lu\n", #N, (unsigned long) mcache_stats.N)
@@ -75,8 +94,11 @@ void _tort_mcache_stats()
   S(hit_sel_version_n);
   S(lookup_n);
   S(non_symbol_lookup_n);
+  S(anon_symbol_lookup_n);
   S(delegate_traverse_n);
   S(mcache_size);
+  S(mcache_used_slot_n);
+  S(symbol_n);
   S(method_change_n);
   S(lookup_change_n);
   S(delegate_change_n);
@@ -176,9 +198,10 @@ tort_lookup_decl(_tort_m_mtable__lookup)
     return_tort_sendn(tort__s(lookup), 2, sel, message);
   }
 #if TORT_ANON_SYMBOL_MTABLE
-  if ( sel->name == tort_nil )
+  if ( sel->name == tort_nil ) {
+    (void) TORT_MCACHE_STAT(mcache_stats.anon_symbol_lookup_n ++);
     method = _tort_m_map__get(tort_ta (tort_v) sel->mtable_method_map, mtable);
-  else
+  } else
 #endif
     method = _tort_m_map__get(tort_ta (tort_v) mtable, sel);
 
