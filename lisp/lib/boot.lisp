@@ -508,5 +508,5 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(display ";; boot.lisp complete!")(newline)
+(display ";; boot.lisp complete!" *standard-error*)(newline *standard-error*)
 ; (set! &trace 0)
