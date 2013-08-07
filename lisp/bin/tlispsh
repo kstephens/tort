@@ -1,0 +1,11 @@
+#!/bin/sh
+dir0="$(dirname "$0")"
+args='-pyellow -b \(\)\{\}\[\]\#\`\,\@'
+symbols_txt="$dir0/../lib/symbols.txt"
+if [ -f "$symbols_txt" ]
+then
+  args="$args -f $symbols_txt"
+fi
+# set -x
+export LD_LIBRARY_PATH="$dir0/../local/lib:$LD_LIBRARY_PATH"
+exec rlwrap $args "$dir0/tlisp" "$@"
