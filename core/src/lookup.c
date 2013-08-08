@@ -340,8 +340,7 @@ tort_message* _tort_lookup (tort_tp tort_v rcvr, tort_message *message)
 #if TORT_GLOBAL_MCACHE
     if ( mce ) {
     /* fill mcache entry. */
-    // fprintf(stderr, "-");
-    mce->mt  = tort_h_mtable(message->receiver);
+    mce->mt  = MTABLE;
     mce->sel = sel;
 #if TORT_MCACHE_USE_SYMBOL_VERSION
     mce->sel_version = tort_ref(tort_symbol, mce->sel)->version;
