@@ -173,6 +173,13 @@ tort_v _tort_m_symbol___version_change(tort_tp tort_symbol *sym)
   return sym;
 }
 
+tort_v _tort_m_object__lookup_message(tort_tp tort_v sel, tort_message *message)
+{
+  message->mtable = tort__mt(object);
+  message->method = tort_(_m_cannot_apply);
+  return message;
+}
+
 void tort_lookup_stop_at() // Add breakpoint here.
 {
   // NOTHING
@@ -195,7 +202,7 @@ tort_lookup_decl(_tort_m_mtable__lookup)
   if ( tort_h_mtable(sel) != tort__mt(symbol) ) {
     if ( _tort_lookup_trace ) 
       _tort_lookup_trace_level ++;
-    return_tort_sendn(tort__s(lookup), 2, sel, message);
+    return_tort_sendn(tort__s(lookup_message), 2, sel, message);
   }
 #if TORT_ANON_SYMBOL_MTABLE
   if ( sel->name == tort_nil ) {
