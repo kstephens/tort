@@ -169,7 +169,7 @@ tort_v _tort_m_mtable___method_changed(tort_tp tort_mtable *rcvr, tort_v sym, to
 tort_v _tort_m_symbol___version_change(tort_tp tort_symbol *sym)
 {
   (void) TORT_MCACHE_STAT(++ mcache_stats.symbol_version_change_n);
-  sym->version += 2;
+  sym->version += (1 << TORT_TAG_BITS);
   return sym;
 }
 
