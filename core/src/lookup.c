@@ -296,11 +296,11 @@ tort_message* _tort_lookup (tort_tp tort_v rcvr, tort_message *message)
 #if TORT_GLOBAL_MCACHE
   (void) TORT_MCACHE_STAT(mcache_stats.lookup_n ++);
   size_t i = 0x13579cf02;
-  i ^= i << 3 ^ ((size_t) sel) >> 3;
-  i ^= i << 3 ^ ((size_t) sel) >> 10;
-  i ^= i << 3 ^ ((size_t) MTABLE) >> 3;
-  i ^= i << 3 ^ ((size_t) MTABLE) >> 10;
+  i ^= i << 3 ^ i >> 3 ^ ((size_t) sel) >> 3;
+  i ^= i << 3 ^ i >> 3 ^ ((size_t) MTABLE) >> 3;
+
   mce = &mcache[i % MCACHE_SIZE];
+
   if (    mce->mt  == MTABLE && TORT_MCACHE_STAT(++ mcache_stats.hit_mtable_n)
        && mce->sel == sel    && TORT_MCACHE_STAT(++ mcache_stats.hit_sel_n)
 #if TORT_MCACHE_USE_SYMBOL_VERSION
