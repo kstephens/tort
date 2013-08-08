@@ -89,23 +89,23 @@ void _tort_mcache_stats()
 
 #define S(N) \
   fprintf(stderr, "tort: mcache: %26s = %16lu\n", #N, (unsigned long) mcache_stats.N)
-  S(hit_mtable_n);
-  S(hit_sel_n);
-  S(hit_sel_version_n);
   S(lookup_n);
   S(non_symbol_lookup_n);
   S(anon_symbol_lookup_n);
+  S(hit_mtable_n);
+  S(hit_sel_n);
+  S(hit_sel_version_n);
+  S(collision_n);
   S(delegate_traverse_n);
-  S(mcache_size);
-  S(mcache_used_slot_n);
-  S(symbol_n);
-  S(method_change_n);
   S(lookup_change_n);
   S(delegate_change_n);
-  S(symbol_version_change_n);
   S(flush_all_n);
+  S(method_change_n);
+  S(symbol_version_change_n);
   S(flush_symbol_n);
-  S(collision_n);
+  S(mcache_size);
+  S(symbol_n);
+  S(mcache_used_slot_n);
 #undef S
 }
 
