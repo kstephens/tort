@@ -332,7 +332,7 @@ tort_message* _tort_lookup (tort_tp tort_v rcvr, tort_message *message)
 		tort_object_name(sel));
       }
 
-      // message->mtable = MTABLE; // ???
+      message->mtable = tort__mt(object); // ???
       message->method = tort_(_m_method_not_found);
       tort_lookup_not_found_stop_at();
     }
