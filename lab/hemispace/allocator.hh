@@ -4,6 +4,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <iostream>
+#include <algorithm>    // std::swap
 #include <assert.h>
 #include <sys/mman.h> /* mmap(), munmap() */
 
@@ -71,13 +72,12 @@ namespace hemispace {
 
     void flip(Space &other) 
     {
-#define SWAP(T,X) { T tmp = X; X = other.X; other.X = tmp; }
-      SWAP(void*, alloc_);
-      SWAP(void*, base_);
-      SWAP(void*, end_);
-      SWAP(size_t, size_);
-      SWAP(size_t, object_n_);
-#undef SWAP
+      std::swap(alloc_, other.alloc_);
+      std::swap(base_ , other.base_);
+      std::swap(end_  , other.end_);
+      std::swap(size_ , other.size_);
+      std::swap(object_n_, other.object_n_);
+      std::swap(name_ , other.name_);
     }
 
     size_t allocated_size() const {
