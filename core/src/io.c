@@ -80,32 +80,38 @@ tort_v _tort_M_io__new(tort_tp tort_mtable *mtable)
   return _tort_M_io____new(tort_ta mtable, 0);
 }
 
-tort_v _tort_m_io__open(tort_tp tort_io *rcvr, tort_v name, tort_v mode)
+tort_v _tort_m_io__after_open(tort_tp tort_io *rcvr)
 {
-  tort_send(tort__s(close), rcvr);
-  if ( (FP = fopen(tort_string_data(name), tort_string_data(mode))) ){
+  if ( FP ) {
     ++ _tort_io_open_count;
-    IO->name = name;
-    IO->mode = mode;
-    IO->flags |= 1;
     tort_send(tort__s(__register_finalizer), rcvr);
     return rcvr;
   }
   return tort_nil;
 }
 
+tort_v _tort_m_io__open(tort_tp tort_io *rcvr, tort_v name, tort_v mode)
+{
+  tort_send(tort__s(close), rcvr);
+  if ( tort_IQ(name) ) {
+    FP = fdopen(tort_I(name), tort_string_data(mode));
+  } else {
+    FP = fopen(tort_string_data(name), tort_string_data(mode));
+  }
+  IO->name = name;
+  IO->mode = mode;
+  IO->flags |= 1;
+  return_tort_send(tort__s(after_open), rcvr);
+}
+
 tort_v _tort_m_io__popen(tort_tp tort_io *rcvr, tort_v name, tort_v mode)
 {
   tort_send(tort__s(close), rcvr);
-  if ( (FP = popen(tort_string_data(name), tort_string_data(mode))) ) {
-    ++ _tort_io_open_count;
-    IO->name = name;
-    IO->mode = mode;
-    IO->flags |= 3;
-    tort_send(tort__s(__register_finalizer), rcvr);
-    return rcvr;
-  }
-  return tort_nil;
+  FP = popen(tort_string_data(name), tort_string_data(mode));
+  IO->name = name;
+  IO->mode = mode;
+  IO->flags |= 3;
+  return_tort_send(tort__s(after_open), rcvr);
 }
 
 tort_v _tort_m_io__close(tort_tp tort_io *rcvr)

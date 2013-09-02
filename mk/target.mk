@@ -22,6 +22,7 @@ export LIB_OFILES
 
 export CC
 export CFLAGS
+export CPPFLAGS
 
 ######################################################################
 
@@ -32,7 +33,7 @@ TEST_OUT_FILES = $(TEST_C_FILES:.c=.out)
 
 ######################################################################
 
-all : components tests
+all : components tests $(OTHER_TARGETS)
 	@for d in $(SUBDIRS) .; do [ $$d = '.' ] && break; $(MAKE) -wC "$$d" all; done
 components : early $(GEN_H_FILES) $(GEN_C_FILES) libs bins
 libs : $(LIBS_EARLY) $(GEN_LIBS)
@@ -56,6 +57,7 @@ boot/include/.touch :
 	  dst="boot/$$f" ;\
 	  mkdir -p `dirname $$dst` ;\
 	  cat $$f.begin $$f.end > $$dst ;\
+	  touch $$dst.new ;\
 	  cp "$$dst" "$$f" ;\
 	done
 	touch $@

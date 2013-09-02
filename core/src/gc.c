@@ -36,9 +36,9 @@ struct {
 } gc_stats;
 
 #if TORT_GC_STATS
-#define TORT_GC_STAT(X) ((gc_stats.X), 1)
+#define TORT_GC_STAT(X) (void) ((gc_stats.X), 1)
 #else
-#define TORT_GC_STAT(X) (1)
+#define TORT_GC_STAT(X) (void) (1)
 #endif
 
 const char *_tort_gc_mode;

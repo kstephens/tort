@@ -469,6 +469,9 @@
 ;; Lambdas as methods:
 ;; ('add_method <tagged> '+ (lambda (a b) (+ a b)))
 ('add_method <string> '+ (lambda (a b) ('append ('clone a) b)))
+('add_method <vector> '+ (lambda (a b) ('append ('clone a) b)))
+('add_method <cons> '+ append)
+('add_method <null> '+ append)
 
 (load "lisp/lib/struct.lisp")
 
@@ -508,5 +511,5 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(display ";; boot.lisp complete!")(newline)
+(display ";; boot.lisp complete!" *standard-error*)(newline *standard-error*)
 ; (set! &trace 0)

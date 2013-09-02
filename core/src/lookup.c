@@ -29,7 +29,7 @@ typedef struct tort_mcache_entry {
   tort_mtable *mtable; /* The mtable the method was found in. */
 } tort_mcache_entry;
 
-#define MCACHE_SIZE 1021
+#define MCACHE_SIZE 1021 // Largest prime < 1024.
 static
 tort_mcache_entry mcache[MCACHE_SIZE];
 
@@ -42,6 +42,7 @@ struct {
     ,hit_sel_version_n 
     ,lookup_n
     ,non_symbol_lookup_n
+    ,anon_symbol_lookup_n
     ,delegate_traverse_n
     ,method_change_n
     ,lookup_change_n
@@ -51,6 +52,8 @@ struct {
     ,symbol_version_change_n
     ,collision_n
     ,mcache_size
+    ,mcache_used_slot_n
+    ,symbol_n
     ;
 } mcache_stats;
 
@@ -63,27 +66,46 @@ struct {
 void _tort_mcache_stats()
 {
   mcache_stats.mcache_size = MCACHE_SIZE;
+
+  {
+    int i;
+    mcache_stats.mcache_used_slot_n = 0;
+    for ( i = 0; i < MCACHE_SIZE; ++ i ) {
+      if ( mcache[i].sel != tort_nil ) ++ mcache_stats.mcache_used_slot_n;
+    }
+  }
+
+  mcache_stats.symbol_n = tort_I(tort_send(tort__s(size), tort_(symbols)));
+
+  fprintf(stderr, "\n");
   fprintf(stderr, "tort: mcache: %lu hit / %lu lookup = %.8g\n",
 	  (unsigned long) mcache_stats.hit_n,
 	  (unsigned long) mcache_stats.lookup_n,
 	  (double) mcache_stats.hit_n / (double) mcache_stats.lookup_n);
+  fprintf(stderr, "tort: mcache: %lu collision / %lu lookup = %.8g\n",
+	  (unsigned long) mcache_stats.collision_n,
+	  (unsigned long) mcache_stats.lookup_n,
+	  (double) mcache_stats.collision_n / (double) mcache_stats.lookup_n);
 
 #define S(N) \
   fprintf(stderr, "tort: mcache: %26s = %16lu\n", #N, (unsigned long) mcache_stats.N)
+  S(lookup_n);
+  S(non_symbol_lookup_n);
+  S(anon_symbol_lookup_n);
   S(hit_mtable_n);
   S(hit_sel_n);
   S(hit_sel_version_n);
-  S(lookup_n);
-  S(non_symbol_lookup_n);
+  S(collision_n);
   S(delegate_traverse_n);
-  S(mcache_size);
-  S(method_change_n);
   S(lookup_change_n);
   S(delegate_change_n);
-  S(symbol_version_change_n);
   S(flush_all_n);
+  S(method_change_n);
+  S(symbol_version_change_n);
   S(flush_symbol_n);
-  S(collision_n);
+  S(mcache_size);
+  S(symbol_n);
+  S(mcache_used_slot_n);
 #undef S
 }
 
@@ -147,8 +169,15 @@ tort_v _tort_m_mtable___method_changed(tort_tp tort_mtable *rcvr, tort_v sym, to
 tort_v _tort_m_symbol___version_change(tort_tp tort_symbol *sym)
 {
   (void) TORT_MCACHE_STAT(++ mcache_stats.symbol_version_change_n);
-  sym->version += 2;
+  sym->version += (1 << TORT_TAG_BITS);
   return sym;
+}
+
+tort_v _tort_m_object__lookup_message(tort_tp tort_v sel, tort_message *message)
+{
+  message->mtable = tort__mt(object);
+  message->method = tort_(_m_cannot_apply);
+  return message;
 }
 
 void tort_lookup_stop_at() // Add breakpoint here.
@@ -173,12 +202,13 @@ tort_lookup_decl(_tort_m_mtable__lookup)
   if ( tort_h_mtable(sel) != tort__mt(symbol) ) {
     if ( _tort_lookup_trace ) 
       _tort_lookup_trace_level ++;
-    return_tort_sendn(tort__s(lookup), 2, sel, message);
+    return_tort_sendn(tort__s(lookup_message), 2, sel, message);
   }
 #if TORT_ANON_SYMBOL_MTABLE
-  if ( sel->name == tort_nil )
+  if ( sel->name == tort_nil ) {
+    (void) TORT_MCACHE_STAT(mcache_stats.anon_symbol_lookup_n ++);
     method = _tort_m_map__get(tort_ta (tort_v) sel->mtable_method_map, mtable);
-  else
+  } else
 #endif
     method = _tort_m_map__get(tort_ta (tort_v) mtable, sel);
 
@@ -265,12 +295,12 @@ tort_message* _tort_lookup (tort_tp tort_v rcvr, tort_message *message)
 
 #if TORT_GLOBAL_MCACHE
   (void) TORT_MCACHE_STAT(mcache_stats.lookup_n ++);
-  size_t i = 
-    (
-     (((size_t) MTABLE) << 2) ^
-     (((size_t) sel) >> 3)
-     );
+  size_t i = 0x13579cf02;
+  i ^= i << 3 ^ i >> 3 ^ ((size_t) sel) >> 3;
+  i ^= i << 3 ^ i >> 3 ^ ((size_t) MTABLE) >> 3;
+
   mce = &mcache[i % MCACHE_SIZE];
+
   if (    mce->mt  == MTABLE && TORT_MCACHE_STAT(++ mcache_stats.hit_mtable_n)
        && mce->sel == sel    && TORT_MCACHE_STAT(++ mcache_stats.hit_sel_n)
 #if TORT_MCACHE_USE_SYMBOL_VERSION
@@ -302,7 +332,7 @@ tort_message* _tort_lookup (tort_tp tort_v rcvr, tort_message *message)
 		tort_object_name(sel));
       }
 
-      // message->mtable = MTABLE; // ???
+      message->mtable = tort__mt(object); // ???
       message->method = tort_(_m_method_not_found);
       tort_lookup_not_found_stop_at();
     }
@@ -310,8 +340,7 @@ tort_message* _tort_lookup (tort_tp tort_v rcvr, tort_message *message)
 #if TORT_GLOBAL_MCACHE
     if ( mce ) {
     /* fill mcache entry. */
-    // fprintf(stderr, "-");
-    mce->mt  = tort_h_mtable(message->receiver);
+    mce->mt  = MTABLE;
     mce->sel = sel;
 #if TORT_MCACHE_USE_SYMBOL_VERSION
     mce->sel_version = tort_ref(tort_symbol, mce->sel)->version;

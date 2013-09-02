@@ -1,6 +1,6 @@
 #!/bin/sh
 srcs="$(ls src/*.c include/tort/*.h 2>/dev/null)"
-# ${CC} ${CFLAGS} -E -o - ${srcs} | tr ";}" "\n" | less # 
+# ${CC} ${CPPFLAGS} -E -o - ${srcs} | tr ";}" "\n" | less #
 set -e # x
 (
     cat "$1.begin"
@@ -13,8 +13,8 @@ EOF
     do
       echo "  $f" 1>&2
       (
-	# set -x; 
-	${CC} ${CFLAGS} -E -o - "${f}"
+	# set -x;
+	${CC} ${CPPFLAGS} -Iboot/include -E -o - "${f}"
       ) || :
     done |
     tr ";}" "\n" | 
