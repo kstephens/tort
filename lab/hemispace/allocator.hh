@@ -10,6 +10,21 @@
 namespace hemispace {
   class ref_;
 
+  class Config {
+  public:
+    static const size_t word_size = sizeof(void*);
+    static const int tag_mask = word_size - 1;
+    static size_t tag_bits(void *ptr) { return (size_t) ptr & tag_mask; }
+    static size_t align_to_word(size_t size) { return (size + tag_mask) & ~ (size_t) tag_mask; }
+    static size_t align_to_page(size_t size)
+    {
+#ifndef PAGESIZE
+#define PAGESIZE 4096UL
+#endif
+      return (size + PAGESIZE - 1) & ~(PAGESIZE - 1);
+    }
+  };
+
   class Class {
   public:
     size_t size_;
@@ -61,17 +76,11 @@ namespace hemispace {
 #undef SWAP
     }
 
-    size_t align_size(size_t size) const
-    {
-#ifndef PAGESIZE
-#define PAGESIZE 4096
-#endif
-      return (size + PAGESIZE - 1) & ~(PAGESIZE - 1);
-    }
-
     size_t allocated_size() const {
       return (char*) alloc_ - (char*) base_;
     }
+
+    size_t align_size(size_t size) const { return Config::align_to_page(size); }
 
     void *sys_mmap(void *base, size_t size) const
     {
