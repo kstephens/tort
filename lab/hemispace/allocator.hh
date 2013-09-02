@@ -54,6 +54,9 @@ namespace hemispace {
     Class *cls() const    { return ((Class**) p_)[-1]; }
     void cls_(Class *cls) { ((Class**) p_)[-1] = cls; }
 
+    int tag_bits() const { return Config::tag_bits(p_); }
+    int allocatedQ() const { return ! tag_bits(); }
+
     void scan();
   };
 
@@ -241,11 +244,11 @@ namespace hemispace {
     again:
       fprintf(stderr, "    ref @%p => %p\n", r, r->ptr());
       /* If ref points into "from" Space, */
-      if ( from_.containsQ(r->ptr()) ) {
+      if ( r->allocatedQ() && from_.containsQ(r->ptr()) ) {
 	void *to_ptr;
 
 	/* If there is a forwarding pointer in "from" Space to "to" Space, */
-	if ( to_ptr = forwarding_to(r) ) {
+	if ( (to_ptr = forwarding_to(r)) ) {
 	  fprintf(stderr, "      from %p forward to %p\n", r->ptr(), to_ptr);
 	  /* Redirect ref to "to" Space. */
 	  r->ptr_(to_ptr);
