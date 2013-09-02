@@ -64,6 +64,7 @@ namespace hemispace {
   public:
     void *alloc_, *base_, *end_;
     size_t size_, object_n_;
+    const char *name_;
 
     Space()  { }
     ~Space() { unmap(); }
@@ -89,12 +90,12 @@ namespace hemispace {
     {
       void *addr = mmap(base, size, PROT_READ | PROT_WRITE,
 			MAP_ANON | MAP_PRIVATE, -1, (off_t) 0);
-      fprintf(stderr, "  @%p: mmap(@%p, %llu) => @%p\n", this, base, (unsigned long long) size, addr);
+      fprintf(stderr, "  %s @%p: mmap(@%p, %llu) => @%p\n", name_, this, base, (unsigned long long) size, addr);
       return addr;
     }
     void sys_munmap(void *base, size_t size) const
     {
-      fprintf(stderr, "  @%p: munmap(@%p, %llu)\n", this, base, (unsigned long long) size);
+      fprintf(stderr, "  %s @%p: munmap(@%p, %llu)\n", name_, this, base, (unsigned long long) size);
       assert(munmap(base, size) == 0);
     }
 
@@ -119,8 +120,10 @@ namespace hemispace {
       size_t new_size = align_size(size);
       assert((char*) base_ + new_size <= end_);
       if ( new_size < size_ ) {
-	fprintf(stderr, "  shrinking [ %p, %p ) to [ %p, %p ) [%lu]\n",
-		base_, end_, base_, (char*) base_ + new_size,
+	fprintf(stderr, "  shrinking [ %p, %p ) [%lu] to [ %p, %p ) [%lu]\n",
+		base_, end_,
+                size_,
+                base_, (char*) base_ + new_size,
 		(unsigned long) new_size);
 	sys_munmap((char*) base_ + new_size, size_ - new_size);
 	size_ = new_size;
@@ -181,7 +184,7 @@ namespace hemispace {
     size_t initial_size_;
     void (*roots_)();
 
-    Allocator() { }
+    Allocator() { from_.name_ = "from"; to_.name_ = "to"; }
 
     void collect(size_t needed_size)
     {
@@ -192,8 +195,8 @@ namespace hemispace {
       fprintf(stderr, "\n  collect() : BEGIN\n");
       fprintf(stderr, "  collect() : before: object_n_ = %lu\n", (unsigned long) from_.object_n_);
       fprintf(stderr, "  collect() : before: new_size = %lu\n", (unsigned long) new_size);
-      fprintf(stderr, "  collect() : before: from [ @%p, @%p )\n",
-	      from_.base_, from_.alloc_);
+      fprintf(stderr, "  collect() : before: from [ @%p, @%p ) [%lu]\n",
+	      from_.base_, from_.alloc_, (unsigned long) from_.size_);
 
       // Resize "to" Space.
       to_.remap(new_size);
