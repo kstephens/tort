@@ -100,9 +100,9 @@ namespace hemispace {
 
     void map(size_t size)
     {
-      size_ = align_size(size);
+       size_ = align_size(size);
       alloc_ = base_ = sys_mmap(0, size_);
-	end_ = (char*) base_ + size_;
+        end_ = (char*) base_ + size_;
       object_n_ = 0;
     }
 
