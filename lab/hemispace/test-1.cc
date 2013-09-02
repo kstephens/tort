@@ -18,7 +18,7 @@ public:
   static Class cls;
   void * operator new(size_t size)
   {
-    Allocator::instance.alloc(&Cons::cls);
+    return Allocator::instance.alloc(&Cons::cls);
   }
 };
 

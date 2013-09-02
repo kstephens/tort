@@ -178,8 +178,8 @@ namespace hemispace {
       new_size += from_.size_ * 0.10 + needed_size;
 
       fprintf(stderr, "\n  collect() : BEGIN\n");
-      fprintf(stderr, "  collect() : before: object_n_ = %ld\n", (unsigned long) from_.object_n_);
-      fprintf(stderr, "  collect() : before: new_size = %ld\n", (unsigned long) new_size);
+      fprintf(stderr, "  collect() : before: object_n_ = %lu\n", (unsigned long) from_.object_n_);
+      fprintf(stderr, "  collect() : before: new_size = %lu\n", (unsigned long) new_size);
       fprintf(stderr, "  collect() : before: from [ @%p, @%p )\n",
 	      from_.base_, from_.alloc_);
 
@@ -200,7 +200,7 @@ namespace hemispace {
       // Flip "from" and "to".
       to_.flip(from_);
 
-      fprintf(stderr, "  collect() : after: object_n_ = %ld\n", (unsigned long) from_.object_n_);
+      fprintf(stderr, "  collect() : after: object_n_ = %lu\n", (unsigned long) from_.object_n_);
       fprintf(stderr, "  collect() : DONE\n\n");
     }
 
