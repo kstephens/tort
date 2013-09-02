@@ -31,7 +31,7 @@ namespace hemispace {
     ref_* (*scan_)(void *ptr);
     int flags_;
     Class(size_t size, ref_* (*scan)(void*), int flags = 0) :
-      size_(size), scan_(scan), flags_(flags) { }
+      size_(Config::align_to_word(size)), scan_(scan), flags_(flags) { }
   };
   
   class ref_ {
