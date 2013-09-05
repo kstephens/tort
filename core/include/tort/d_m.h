@@ -12,6 +12,7 @@ include/tort/fixnum.h
 include/tort/internal.h
 include/tort/ops.h
 include/tort/tort.h
+src/_.c
 src/cmp.c
 src/debug.c
 src/dynlib.c

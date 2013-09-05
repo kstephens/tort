@@ -1,5 +1,6 @@
 /* -*- c -*- */
 /* Sources:
+src/_.c
 src/cmp.c
 src/debug.c
 src/dynlib.c
