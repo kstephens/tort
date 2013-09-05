@@ -232,7 +232,7 @@ namespace hemispace {
 	collect(cls->size_);
 	ptr = from_.alloc(cls);
       }
-      fprintf(stderr, ".");
+      fprintf(stderr, "+");
       return ptr;
     }
 
