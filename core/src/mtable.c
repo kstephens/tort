@@ -96,10 +96,12 @@ tort_v _tort_M_object___allocate (tort_tp tort_mtable *mtable, tort_v size)
 tort_v _tort_m_mtable__add_method (tort_tp tort_mtable *mtable, tort_symbol *symbol, tort_method *method)
 {
   // fprintf(stderr, "  add_method %s %s %p\n", tort_object_name(mtable), tort_object_name(symbol), method->applyf);
+  if ( ! (symbol->name == tort_nil || symbol->name == 0) ) {
   if ( method->name == tort_nil || method->name == 0 ) {
     char *buf = tort_malloc(strlen(tort_mtable_name_(mtable)) + 2 + strlen(tort_symbol_charP(symbol)) + 1);
     sprintf(buf, "%s::%s", tort_mtable_name_(mtable), tort_symbol_charP(symbol));
     method->name = tort_symbol_new(buf);
+  }
   }
   _tort_m_symbol___version_change(tort_ta symbol);
 #if TORT_ANON_SYMBOL_MTABLE
