@@ -105,7 +105,7 @@ static void (*_tort_free_atomic)(void *ptr) = free;
 void tort_free_atomic(void *ptr)
 {
   if ( ! ptr )
-    tort_fatal(tort_ta "tort_free(%p): free null", ptr);
+    tort_fatal(tort_ta "tort_free_atomic(%p): free null", ptr);
   _tort_free_atomic(ptr);
   TORT_GC_STAT(free_n ++);
 }
