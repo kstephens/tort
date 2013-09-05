@@ -62,7 +62,7 @@ static void visited(tort_og_context *context, void *ptr)
   context->visited = v;
 }
 
-static void link(tort_og_context *context, tort_v src_obj, int src_port, tort_v dst_obj, int dst_port, const char *style)
+static void link_make(tort_og_context *context, tort_v src_obj, int src_port, tort_v dst_obj, int dst_port, const char *style)
 {
   struct link *link = malloc(sizeof(*link));
   bzero(link, sizeof(*link));
@@ -130,7 +130,7 @@ static char *slot_str(tort_og_context *context, struct slot *slot, tort_v val, i
     }
   } else {
     if ( port && tort_h_mtable(val) != tort__mt(method) ) 
-      link(context, slot->obj, port, val, 0, slot->link_style);
+      link_make(context, slot->obj, port, val, 0, slot->link_style);
     snprintf(buf, sizeof(buf), "%s", tort_object_name(val));
   }
   if ( e[0] != 0 ) {
