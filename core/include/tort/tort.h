@@ -308,6 +308,9 @@ struct tort_runtime { tort_H;
 #include "tort/d_s.h"
 #endif
 
+  /* getter/setter/locater cache */
+  tort_v _m_getter[256], _m_setter[256], _m_locater[256];
+
   /* io */
   tort_v _io_stdin;
   tort_v _io_stdout;

@@ -38,7 +38,12 @@ tort_v _tort_offset_getter__applyf(tort_tp void *o)
 }
 tort_method* tort_offset_getter_new(tort_v offset)
 {
-  return tort_method_new(_tort_offset_getter__applyf, offset);
+#define CACHE(N)                                                        \
+  int i = tort_I(offset); tort_v m;                                     \
+  if ( i < 256 && ! (m = tort_(_m_##N[i])) )                            \
+    m = tort_(_m_##N[i]) = tort_method_new(_tort_offset_##N##__applyf, offset); \
+  return m
+  CACHE(getter);
 }
 
 tort_v _tort_offset_setter__applyf(tort_tp void *o, tort_v v)
@@ -49,7 +54,7 @@ tort_v _tort_offset_setter__applyf(tort_tp void *o, tort_v v)
 }
 tort_method* tort_offset_setter_new(tort_v offset)
 {
-  return tort_method_new(_tort_offset_setter__applyf, offset);
+  CACHE(setter);
 }
 
 tort_v _tort_offset_locater__applyf(tort_tp void *o)
@@ -59,7 +64,8 @@ tort_v _tort_offset_locater__applyf(tort_tp void *o)
 }
 tort_method* tort_offset_locater_new(tort_v offset)
 {
-  return tort_method_new(_tort_offset_locater__applyf, offset);
+  CACHE(locater);
+#undef CACHE
 }
 
 static struct d_m {
