@@ -244,7 +244,7 @@ tort_v _tort_string_to_number(tort_v s, int radix) /**/
   }
 }
 
-#include "lispread.c"
+#include "lispread/lispread.c"
 
 tort_v _tort_m_io__printf_lisp_write(tort_tp tort_v io, tort_v val)
 {
