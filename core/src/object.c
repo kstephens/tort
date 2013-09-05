@@ -74,8 +74,10 @@ tort_v tort_object_new()
   return tort_allocate(tort__mt(object), sizeof(tort_object));
 }
 
+#ifdef tort_v_mtable
 #undef tort_v_mtable
-tort_mtable *tort_v_mtable(tort_v x)
+#endif
+tort_mtable *tort_v_mtable (tort_v x)
 {
   return tort_h_mtable(x);
 }

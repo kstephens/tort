@@ -40,6 +40,7 @@ tort_v _tort_m_object____debugger(tort_tp tort_v rcvr)
   return rcvr;
 }
 #undef printf
+#undef IO
 
 const char *tort_mtable_name_(tort_v val)
 {

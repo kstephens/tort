@@ -165,6 +165,8 @@ tort_v _tort_m_map__get_hash_entry(tort_tp tort_map *rcvr, tort_v key)
   return e;
 }
 
+#undef EQ
+
 tort_v _tort_m_map__delete_hash_entry(tort_tp tort_map *rcvr, tort_pair *entry)
 {
   tort_vw h; tort_pair *e, **ep;

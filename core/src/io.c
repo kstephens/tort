@@ -1,13 +1,13 @@
 #include "tort/core.h"
 #include "sys/stat.h"
 
-#define IO rcvr
-#define FP IO->fp
-
 #ifdef __linux__
 #include <printf.h>
 #include <libio.h>
 #endif
+
+#define IO rcvr
+#define FP IO->fp
 
 tort_v _tort_M_io____stat(tort_tp tort_mtable *mtable, tort_v name)
 {
@@ -209,6 +209,9 @@ tort_v _tort_m_string__close(tort_tp tort_string *rcvr)
 {
   return rcvr;
 }
+
+#undef IO
+#undef FP
 
 // extern tort_v _tort_m_initializer__printf(tort_tp tort_v init);
 tort_v _tort_m_initializer__io(tort_tp tort_v init)

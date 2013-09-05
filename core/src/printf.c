@@ -210,3 +210,5 @@ tort_v _tort_m_initializer__printf(tort_tp tort_v init)
   tort_send(tort_s(set), tort_(root), tort_s(_printf_dispatch), map);
   return init;
 }
+
+#undef FP
