@@ -1,4 +1,5 @@
 #include "tort/core.h"
+#include <stdlib.h> /* strtoll */
 
 tort_v _tort_m_string__get (tort_tp tort_string *rcvr, tort_v i)
 {
@@ -80,6 +81,15 @@ tort_v _tort_m_string__escape(tort_tp tort_string *str, tort_v more)
   }
   *dst = 0;
   return_tort_send(tort__s(resize), result, tort_i((char*) dst - (char*) result->data));
+}
+
+tort_v _tort_m_string__to_number(tort_tp tort_string *s, tort_v _radix)
+{
+  int radix = tort_I(_radix);
+  char *str = s->data, *endptr = str;
+  long long x = strtoll(str, &endptr, radix);
+  tort_v n = tort_i(x);
+  return tort_I(n) == x && endptr != str ? n : tort_false;
 }
 
 tort_v tort_string_new(const char *ptr, size_t size)

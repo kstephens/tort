@@ -224,7 +224,7 @@ tort_v _tort_m_io__lisp_read (tort_tp tort_v stream)
 #define SYMBOL_unquote() tort_s(unquote)
 #define SYMBOL_unquote_splicing() tort_s(unquoteSUBsplicing)
 #define SYMBOL(NAME) SYMBOL_##NAME()
-#define STRING_2_NUMBER(s, radix) _tort_string_to_number(s, radix)
+#define STRING_2_NUMBER(s, radix) tort_send(tort_s(to_number), s, tort_i(radix))
 #define STRING_2_SYMBOL(s) tort_symbol_new(tort_string_data(s))
 #define EQ(X, Y) ((X) == (Y))
 #define NIL tort_nil
@@ -233,16 +233,6 @@ tort_v _tort_m_io__lisp_read (tort_tp tort_v stream)
 #define U  tort_nil
 #define E  tort_eos
 #define ERROR(format, args...) tort_error(tort_ta format, ##args)
-
-tort_v _tort_string_to_number(tort_v s, int radix) /**/
-{
-  long long d = 0;
-  if ( radix == 10 /* FIXME */ && sscanf(tort_string_data(s), "%lld", &d) == 1 ) {
-    return tort_i(d);
-  } else {
-    return tort_false;
-  }
-}
 
 #include "lispread/lispread.c"
 
