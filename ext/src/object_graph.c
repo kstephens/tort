@@ -432,6 +432,16 @@ digraph g { \n\
   }
 }
 
+static
+int _system(const char *cmd)
+{
+  int result;
+  if ( (result = system(cmd)) != 0 ) {
+    fprintf(stderr, "%s: error: command %s failed: %d\n", __FILE__, cmd, result);
+  }
+  return result;
+}
+
 void tog(tort_v obj)
 {
   char cmd[1024];
@@ -449,10 +459,10 @@ void tog(tort_v obj)
 #define SVG_OPTS ""
 #endif
   sprintf(cmd, "dot -Tsvg%s -o %s %s", SVG_OPTS, graph_svg, graph_gv);
-  system(cmd);
+  if ( _system(cmd) != 0 ) return;
 
   sprintf(cmd, "open -a Firefox %s", graph_svg);  
-  system(cmd);
+  if ( _system(cmd) != 0 ) return;
 }
 
 tort_v _tort_M_object_graph__graph(tort_tp tort_v mtable, tort_v obj)
