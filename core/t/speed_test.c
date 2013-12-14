@@ -26,8 +26,10 @@ int main(int argc, char **argv, char **environ)
   tort_runtime_create();
 
   io = tort_stdout;
+  (void) io;
 
   v = tort_send(tort__s(get), tort_(symbols), tort_string_new_cstr("size"));
+  (void) v;
 
   t0 = tort_get_time();
   for ( i = 0; i < n; ++ i ) {

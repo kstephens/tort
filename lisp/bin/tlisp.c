@@ -9,6 +9,8 @@ int main(int argc, char **argv, char **environ)
   tort_repl *repl = tort_nil;
   int interactive = 0, verbose = 0;
 
+  (void) out;
+
   tort_runtime_create();
   tort_send(tort_s(load), tort_mt(dynlib), tort_string_new_cstr("libtortlisp"));
 

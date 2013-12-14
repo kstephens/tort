@@ -251,6 +251,7 @@ void og_object(tort_og_context *context, tort_v obj)
   visited(context, obj);
 
   obj_name = tort_object_name(obj);
+  (void) obj_name; // unused
 
 #define SLOT(NAME) og_slot(context, obj, #NAME, "%s", 0, o->NAME, 0, s_style, sl_style)
 

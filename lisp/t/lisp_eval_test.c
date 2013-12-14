@@ -23,6 +23,7 @@ int main(int argc, char **argv, char **environ)
   repl->prompt = tort_nil;
 
   v = tort_send(tort_s(run), repl);
+  (void) v;
 
   tort_printf(out, "\n\nDONE\n");
 

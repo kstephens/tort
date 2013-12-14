@@ -26,10 +26,10 @@ tort_v _tort_m_slotted_object___add_slot(tort_tp tort_slotted_object *o, tort_v 
 {
   tort_vi i = o->_names == tort_nil ? 0 : tort_vector_size(o->_names);
   tort_mtable *mtable = tort_h_mtable(o);
-  tort_v mmtable = tort_h_mtable(mtable);
+  // tort_v mmtable = tort_h_mtable(mtable); // unused
   tort_method *m;
 
-  mmtable = mtable->delegate; // ???
+  // mmtable = mtable->delegate; // ???
   if ( o->_names == tort_nil ) {
     o->_names  = tort_vector_new(&name,  i + 1);
     o->_values = tort_vector_new(&value, i + 1);
