@@ -91,7 +91,7 @@ static char *sgml_encode(const char *s)
       else if ( c == '<' ) strcpy(o, "&lt;");
       else if ( c == '>' ) strcpy(o, "&gt;");
       else if ( c == '"' ) strcpy(o, "&quot;");
-      else if ( c < ' ' || *s >= 127 ) sprintf(o, "&#%d;", c);
+      else if ( c < ' ' || c >= 127 ) sprintf(o, "&#%d;", c);
       else *(o ++) = c;
       o = strchr(o, 0);
     }
