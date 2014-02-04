@@ -18,7 +18,8 @@ CC=gcc#
 CC_VERBOSE= #--verbose#
 CC_BASE=$(CC) $(CFLAGS) $(CPPFLAGS) $(TARGET_ARCH) $(CC_VERBOSE)#
 COMPILE.c = $(LIBTOOL) --tag=CC --mode=compile $(CC_BASE) -c #
-CFLAGS_SHARED=-shared -export-dynamic # 
+CFLAGS_SHARED=-shared #
+#CFLAGS_SHARED+= -export-dynamic # clang does not support -export-dynamic
 CFLAGS += $(CFLAGS_SHARED) #
 LIB_FLAGS += -rpath $(libdir) #
 
@@ -37,7 +38,8 @@ LIBS += -ldl
 else
 # CFLAGS_OPTIMIZE = -fast
 # FIXME: -fnested-functions not supported on linux gcc 4.4.5
-CFLAGS += -fnested-functions
+# -fnested-functions is not supported by clang.
+# CFLAGS += -fnested-functions
 endif
 CFLAGS += $(CPPFLAGS) -Wall -Werror $(CFLAGS_DEBUG) $(CFLAGS_OPTIMIZE)
 
