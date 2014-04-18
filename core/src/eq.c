@@ -1,5 +1,28 @@
 #include "tort/tort.h"
 
+// http://en.wikipedia.org/wiki/Jenkins_hash_function
+static
+tort_vw jenkins_hash(tort_vw hash, unsigned char *key, size_t len)
+{
+  for ( size_t i = 0; i < len; ++ i ) {
+    hash += key[i];
+    hash += (hash << 10);
+    hash ^= (hash >> 6);
+  }
+  hash += (hash << 3);
+  hash ^= (hash >> 11);
+  hash += (hash << 15);
+  return hash;
+}
+
+tort_v _tort_m_object__hash_mix(tort_tp tort_v a, tort_v b)
+{
+  tort_vw r = (tort_vw) a + (tort_vw) b;
+  r = jenkins_hash(r, (void*) &a, sizeof(a));
+  r = jenkins_hash(r, (void*) &b, sizeof(b));
+  return tort_i(r >> (TORT_TAG_BITS + 1));
+}
+
 #define EQUALQ(X,Y) (tort_sendn(tort__s(equalQ), 2, (X), (Y)) != tort_false)
 #define return_EQUALQ(X,Y) return_tort_sendn(tort__s(equalQ), 2, (X), (Y))
 
@@ -12,7 +35,7 @@ tort_v _tort_m_object__eqQ_hash (tort_tp tort_v rcvr)
 {
 #define HSH_INIT() tort_vw h = 0xfeedface
   HSH_INIT();
-#define HSH(x) do { h ^= (tort_vw) (x); h ^= h << 3; h ^= h >> 5; h ^= h << 7; h ^= h >> 11; } while ( 0 )
+#define HSH(x) ({ tort_vw _tmp = (tort_vw) x; h = jenkins_hash(h, (void*) &(_tmp), sizeof(_tmp)); _tmp; })
   HSH(rcvr);
 #define HSH_VAL() tort_i(h >> (TORT_TAG_BITS + 1))
   return HSH_VAL();
@@ -43,11 +66,8 @@ tort_v _tort_m_vector_base__equalQ (tort_tp tort_vector_base *rcvr, tort_vector_
 
 tort_v _tort_m_vector_base__equalQ_hash (tort_tp tort_vector_base *rcvr)
 {
-  size_t i;
   HSH_INIT();
-  for ( i = 0; i < rcvr->element_size * rcvr->size; ++ i ) {
-    HSH(((unsigned char *) rcvr->data)[i]);
-  }
+  h = jenkins_hash(h, (unsigned char *) rcvr->data, rcvr->element_size * rcvr->size);
   return HSH_VAL();
 }
 
