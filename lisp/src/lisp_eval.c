@@ -365,14 +365,14 @@ tort_v _tort_m_cons__lisp_eval(tort_tp tort_cons *obj, tort_v env)
   _tort_debug_expr = obj;
   if ( val == tort_s(define) ) {
     tort_v name = tort_car(obj->cdr);
-    if ( tort_h_mtable(name) == tort__mt(symbol) ) {
-      /* (define name val) */
-      val = tort_car(tort_cdr(obj->cdr));
-    } else {
+    val = tort_cdr(obj->cdr);
+    while ( tort_h_mtable(name) != tort__mt(symbol) ) {
       /* (define (name . lambda-args) . lambda-body) */
-      val = tort_cons(tort_s(lambda), tort_cons(tort_cdr(name), tort_cdr(obj->cdr)));
+      val = tort_cons(tort_cons(tort_s(lambda), tort_cons(tort_cdr(name), val)), tort_nil);
       name = tort_car(name);
     }
+    /* (define name . val) */
+    val = tort_car(val);
     val = tort_send(tort_s(lisp_eval), val, env);
     tort_send(tort_s(define), env, name, val);
     return name;
