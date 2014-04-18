@@ -4,7 +4,8 @@
 static
 tort_vw jenkins_hash(tort_vw hash, unsigned char *key, size_t len)
 {
-  for ( size_t i = 0; i < len; ++ i ) {
+  size_t i;
+  for ( i = 0; i < len; ++ i ) {
     hash += key[i];
     hash += (hash << 10);
     hash ^= (hash >> 6);
