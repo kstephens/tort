@@ -1,12 +1,16 @@
 UNAME_S:=$(shell uname -s 2>/dev/null)#
 BASE_DIR:=$(shell cd "$(BASE_DIR)" && /bin/pwd)#
-GC_BDW_VERSION=gc-20101223-cvs#
-GC_BDW_VERSION=gc-7.2alpha6#
+GC_BDW_V=7.4.0#
+GC_BDW_VERSION=gc-$(GC_BDW_V)#
 GC_BDW=$(BASE_DIR)/$(GC_BDW_VERSION)#
+LIBATOMIC_OPS_VERSION=libatomic_ops-$(GC_BDW_V)#
+LIBATOMIC_OPS=$(BASE_DIR)/$(LIBATOMIC_OPS_VERSION)#
 TORT_GC_BDW=1#
 TORT_GC_SMAL=0#
 
 PREFIX:=$(shell mkdir -p $(BASE_DIR)/local && cd $(BASE_DIR)/local && /bin/pwd)#
+export PKG_CONFIG_PATH
+PKG_CONFIG_PATH:=$(PREFIX)/lib/pkgconfig:$(PKG_CONFIG_PATH)#
 libdir=$(PREFIX)/lib#
 export LD_LIBRARY_PATH
 LD_LIBRARY_PATH:=$(libdir):$(LD_LIBRARY_PATH)
