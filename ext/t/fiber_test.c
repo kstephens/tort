@@ -15,6 +15,7 @@ int main(int argc, char **argv, char **environ)
 
   io = tort_stdout;
 
+#if 0
   tort_block_(block_a, tort_v obj) {
     tort_v fiber_a = tort_send(tort_s(fiber), _tort_message);
     tort_v fiber_b = 0;
@@ -40,8 +41,10 @@ int main(int argc, char **argv, char **environ)
     return 0;
   } tort_block_END(block_a);
 
+#endif
+
   i = 20;
-  tort_send(tort_s(new), tort_mt(fiber), block_a);
+  //   tort_send(tort_s(new), tort_mt(fiber), block_a);
 
   printf("\nDONE\n");
 

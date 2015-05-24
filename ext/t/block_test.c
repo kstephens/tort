@@ -15,6 +15,7 @@ int main(int argc, char **argv, char **environ)
 
   io = tort_stdout;
 
+#if 0
   tort_block_(a, tort_v obj) {
     printf("  block a obj = %lld\n", (long long) tort_I(obj));
     return tort_i(tort_I(obj) << 2);
@@ -45,6 +46,9 @@ int main(int argc, char **argv, char **environ)
     return obj;
   } tort_block_END(c);
   tort_send(tort_s(each), v, c);
+#endif
+  i = 0;
+  v = 0;
 
   printf("\nDONE\n");
 
