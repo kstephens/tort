@@ -1,10 +1,5 @@
 UNAME_S:=$(shell uname -s 2>/dev/null)#
 BASE_DIR:=$(shell cd "$(BASE_DIR)" && /bin/pwd)#
-GC_BDW_V=7.4.0#
-GC_BDW_VERSION=gc-$(GC_BDW_V)#
-GC_BDW=$(BASE_DIR)/$(GC_BDW_VERSION)#
-LIBATOMIC_OPS_VERSION=libatomic_ops-$(GC_BDW_V)#
-LIBATOMIC_OPS=$(BASE_DIR)/$(LIBATOMIC_OPS_VERSION)#
 TORT_GC_BDW=1#
 TORT_GC_SMAL=0#
 
@@ -15,9 +10,10 @@ libdir=$(PREFIX)/lib#
 export LD_LIBRARY_PATH
 LD_LIBRARY_PATH:=$(libdir):$(LD_LIBRARY_PATH)
 
-LIBTOOL=$(GC_BDW)/libtool #
+LIBTOOL=$(BASE_DIR)/local/bin/libtool #
 CC=gcc-4.3# # for -fnested-functions support
 CC=gcc#
+CC=clang
 #CC=gcc-mp-4.3#
 CC_VERBOSE= #--verbose#
 CC_BASE=$(CC) $(CFLAGS) $(CPPFLAGS) $(TARGET_ARCH) $(CC_VERBOSE)#
@@ -48,8 +44,8 @@ endif
 CFLAGS += $(CPPFLAGS) -Wall -Werror $(CFLAGS_DEBUG) $(CFLAGS_OPTIMIZE)
 
 ifneq "$(TORT_GC_BDW)" "0"
-LDFLAGS += -L$(PREFIX)/lib #
-INCS += -I$(GC_BDW)/include 
+LDFLAGS += -L$(BASE_DIR)/local/lib
+INCS    += -I$(BASE_DIR)/local/include
 LIBS += -lgc #
 endif
 
