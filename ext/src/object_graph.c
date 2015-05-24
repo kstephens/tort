@@ -19,6 +19,7 @@ typedef struct tort_og_context
     const char *link_style;
     int port;
     struct slot *next;
+    int opts;
   } *slots, **slots_next;
 
   struct link {
@@ -118,7 +119,15 @@ static char *slot_str(tort_og_context *context, struct slot *slot, tort_v val, i
   } else if ( mt == tort__mt(fixnum) ) {
     snprintf(buf, sizeof(buf), "%lld", (long long) tort_I(val));
   } else if ( mt == tort__mt(ptr) ) {
-    snprintf(buf, sizeof(buf), "@%p", tort_P(val));
+    if ( slot->opts & 1 ) {
+      tort_v dynlib_all = tort_send(tort__s(get), tort_(dl_maps), tort__s(all));
+      tort_symbol *name;
+      if ( (name = tort_send(tort_s(get), dynlib_all, val)) ) {
+        snprintf(buf, sizeof(buf), "@p(%s)", tort_symbol_charP(name));
+        goto rtn;
+      }
+    }
+    snprintf(buf, sizeof(buf), "@p%p", tort_P(val));
   } else if ( mt == tort__mt(string) ) {
     snprintf(buf, sizeof(buf), "\"%s\"", tort_string_charP(val));
   } else if ( mt == tort__mt(symbol) ) {
@@ -136,6 +145,7 @@ static char *slot_str(tort_og_context *context, struct slot *slot, tort_v val, i
   if ( e[0] != 0 ) {
     e[0] = e[-1] = e[-2] = '.';
   }
+ rtn:
   return sgml_encode(buf);
 }
 
@@ -187,7 +197,8 @@ static void gdb_stop_here() { }
 #endif
 
 static
-void og_slot(tort_og_context *context, 
+struct slot*
+     og_slot(tort_og_context *context,
 	     tort_v obj, 
 	     tort_v name, const char *name_format, 
 	     const char *sep,
@@ -207,6 +218,7 @@ void og_slot(tort_og_context *context,
   slot->style = style;
   slot->link_style = link_style;
   slot->next = 0;
+  slot->opts = 0;
   *context->slots_next = slot;
   context->slots_next = &slot->next;
 #if 0
@@ -214,6 +226,7 @@ void og_slot(tort_og_context *context,
   if ( slot == tog_stop_slot )
     gdb_stop_here();
 #endif
+  return slot;
 }
 
 static
@@ -255,7 +268,7 @@ void og_object(tort_og_context *context, tort_v obj)
 
 #define SLOT(NAME) og_slot(context, obj, #NAME, "%s", 0, o->NAME, 0, s_style, sl_style)
 
-  og_slot(context, obj, "applyf",     "%s", 0, tort_h(obj)->applyf, "%p", h_style, 0);
+  og_slot(context, obj, "applyf",     "%s", 0, tort_ptr_new(tort_h(obj)->applyf), 0,    h_style, 0)->opts |= 1;
   og_slot(context, obj, "mtable",     "%s", 0, mt,                  0,    h_style, "style=\"dotted\"");
   og_slot(context, obj, 0,            "%s", 0, obj,                 0,    "BGCOLOR=\"black\" COLOR=\"WHITE\"", 0);
 
@@ -263,7 +276,7 @@ void og_object(tort_og_context *context, tort_v obj)
   } else if ( mt == tort__mt(string) ) {
     og_slot(context, obj, "data", "%s", 0, obj, 0, s_style, sl_style);
   } else if ( mt == tort__mt(vector)  ) {
-    og_slot(context, obj, "data", "%s", 0, obj, "%p", s_style, sl_style);
+    og_slot(context, obj, "data", "%s", 0, obj, "@p%p", s_style, sl_style);
   }
 
   if ( mt == tort__mt(string) || mt == tort__mt(vector) || mt == tort__mt(map) || mt == tort__mt(mtable) || cls_mt == tort__mt(mtable) ) {
@@ -462,7 +475,7 @@ void tog(tort_v obj)
   sprintf(cmd, "dot -Tsvg%s -o %s %s", SVG_OPTS, graph_svg, graph_gv);
   if ( _system(cmd) != 0 ) return;
 
-  sprintf(cmd, "open -a Firefox %s", graph_svg);  
+  sprintf(cmd, "open -a 'Google Chrome' %s", graph_svg);
   if ( _system(cmd) != 0 ) return;
 }
 

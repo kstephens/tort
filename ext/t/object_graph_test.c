@@ -11,6 +11,7 @@ int main(int argc, char **argv, char **environ)
   tort_runtime_create();
   // { extern int _tort_dl_debug; _tort_dl_debug = 1; }
   tort_send(tort_s(load), tort_mt(dynlib), tort_string_new_cstr("libtortext"));
+  tort_send(tort_s(load), tort_mt(dynlib), tort_string_new_cstr("libtortlisp"));
 
   io = tort_stdout;
 
